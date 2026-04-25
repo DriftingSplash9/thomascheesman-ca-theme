@@ -43,8 +43,13 @@ document.addEventListener('DOMContentLoaded', function () {
 function initKineticHero() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const heroTitle = document.querySelector('.hero-title.kinetic-text');
-    const heroSubtitle = document.querySelector('.hero-subtitle.kinetic-fade');
+    // Generalized selectors — match either the homepage's hero
+    // (.hero-title / .hero-subtitle) or any inner page's hero
+    // (.page-hero__title / .page-hero__subtitle). The class hooks
+    // .kinetic-text and .kinetic-fade are what carry the actual
+    // animation contract; the wrapper class names are cosmetic.
+    const heroTitle = document.querySelector('.kinetic-text');
+    const heroSubtitle = document.querySelector('.kinetic-fade');
 
     if (!heroTitle) return;
 

@@ -39,16 +39,16 @@ get_header(); ?>
                     <a href="<?php echo home_url('/family'); ?>">Explore Family Stories &rarr;</a>
                 </div>
 
-                <!-- PILLAR 2: KNOWLEDGE & HCS -->
+                <!-- PILLAR 2: RARE DISEASE & BYR -->
                 <div class="pillar-card">
                     <div class="pillar-icon">
                         <span>🔬</span>
                     </div>
-                    <h3>Knowledge &amp; HCS</h3>
+                    <h3>Rare Disease &amp; BYR</h3>
                     <p>
-                        Living with Hajdu-Cheney Syndrome means learning to adapt. I share insights, research, and personal experiences about HCS.
+                        Hajdu-Cheney Syndrome shaped how I think about rare conditions. I built Bare Your Rare so patients with ultra-rare diseases could tell their stories together — that's where the deeper writing lives.
                     </p>
-                    <a href="https://buildingyourrare.com" target="_blank" rel="noopener noreferrer">Learn More at BYR &rarr;</a>
+                    <a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Visit Bare Your Rare &rarr;</a>
                 </div>
 
                 <!-- PILLAR 3: COMMUNITY -->

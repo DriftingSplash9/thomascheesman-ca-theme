@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.2
+Version: 1.0.3
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -269,6 +269,15 @@ body {
     --card-color-b: #22D3EE;  /* cyan */
 }
 
+/* Card 4 — used on subpages (Family page's "Heritage" card). Warm
+   amber → orange palette: distinct from the cool palette of cards
+   1–3, reads as "heritage / passed down" without competing with the
+   violet→pink warmth of card 2. */
+.pillar-card:nth-child(4) {
+    --card-color-a: #F59E0B;  /* amber */
+    --card-color-b: #F97316;  /* orange */
+}
+
 .pillar-card {
     position: relative;
     /* Card body is dark with a 12% color-mix tint of its primary color in
@@ -355,6 +364,12 @@ body {
 
 .pillar-card:nth-child(3) .pillar-icon {
     background: var(--tertiary-gradient);
+}
+
+/* Card 4 icon gradient — amber → orange to match the Heritage card's
+   warm palette. */
+.pillar-card:nth-child(4) .pillar-icon {
+    background: linear-gradient(135deg, #F59E0B 0%, #F97316 100%);
 }
 
 .pillar-card h3 {
@@ -1599,6 +1614,135 @@ html.tc-menu-open body {
     }
 
     .tc-menu__list a .char {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ============================================
+   PAGE TEMPLATE — HERO / INTRO / FEED
+   ============================================
+   Used by inner pages (page-family.php and the About / Community /
+   Journal pages that will reuse this pattern). Deliberately simpler
+   than the homepage hero — transparent background so the WebGL +
+   particles read continuously, no horizon glow, smaller padding.
+   The "lit horizon" framing is reserved for the homepage so the
+   book-cover metaphor stays meaningful. */
+
+.page-hero {
+    position: relative;
+    /* Generous top padding so the kinetic title doesn't crowd the
+       fixed glass capsule (top: 20px + ~50px tall). */
+    padding: clamp(120px, 18vh, 200px) 20px 60px;
+    text-align: center;
+    color: var(--text-dark);
+    background: transparent;
+}
+
+.page-hero__eyebrow {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    margin-bottom: 18px;
+    /* Subtle reveal — the eyebrow is small enough that it can fade in
+       on load without needing the full per-character treatment. */
+    opacity: 0;
+    transform: translateY(10px);
+    animation: page-hero-eyebrow 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+
+@keyframes page-hero-eyebrow {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-hero__title {
+    /* Bigger than the homepage's hero title because pages are
+       single-purpose; the title IS the page identity. */
+    font-size: clamp(3rem, 11vw, 6rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin: 0 0 24px 0;
+    color: var(--text-dark);
+}
+
+.page-hero__subtitle {
+    font-size: clamp(1.05rem, 2.5vw, 1.4rem);
+    font-weight: 300;
+    color: var(--text-light);
+    margin: 0 auto;
+    max-width: 640px;
+    line-height: 1.5;
+}
+
+/* Lead paragraph block — narrow column, generous line-height for
+   reading. Sits between the hero and the first content section. */
+.page-intro {
+    padding: 0 20px clamp(40px, 8vh, 80px);
+    background: transparent;
+}
+
+.page-intro .container {
+    max-width: 760px;
+}
+
+.page-intro__lead {
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+    line-height: 1.75;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+/* ---- Person card extras ---- */
+
+/* A "monogram" — single uppercase letter inside the circular icon
+   well. Replaces the homepage pillars' emoji icons with a typographic
+   mark that reads as a personal nameplate. */
+.person-card__monogram {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: rgba(255, 255, 255, 0.95);
+    /* Slight text-shadow lifts the letter off the gradient. */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* The role label below the name — "Daughter", "Son", "Family lines". */
+.person-card__role {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--card-color-a);
+    margin: -6px 0 12px 0;  /* tuck closer under the name */
+    font-weight: 600;
+}
+
+/* ---- Empty-state for filtered post feeds ---- */
+
+.page-feed__empty {
+    grid-column: 1 / -1;  /* span the full posts-grid width */
+    text-align: center;
+    color: var(--text-light);
+    font-size: 14px;
+    padding: 40px 20px;
+}
+
+.page-feed__empty code {
+    background: var(--bg-card);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 20%, transparent);
+    color: var(--primary-color);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+/* Reduced-motion fallback for the eyebrow keyframe. */
+@media (prefers-reduced-motion: reduce) {
+    .page-hero__eyebrow {
+        animation: none;
         opacity: 1;
         transform: none;
     }

@@ -123,7 +123,7 @@
             <div class="tc-menu__meta-block">
                 <span class="tc-menu__meta-label">Elsewhere</span>
                 <ul class="tc-menu__meta-list">
-                    <li><a href="https://buildingyourrare.com" target="_blank" rel="noopener noreferrer">BuildingYourRare <span aria-hidden="true">↗</span></a></li>
+                    <li><a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare <span aria-hidden="true">↗</span></a></li>
                     <li><a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">GPRS <span aria-hidden="true">↗</span></a></li>
                 </ul>
             </div>
