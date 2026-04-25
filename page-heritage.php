@@ -93,7 +93,9 @@ get_header(); ?>
                 </div>
             </section>
 
-            <hr class="heritage-line__divider" aria-hidden="true">
+            <div class="heritage-line__divider" aria-hidden="true">
+                <span class="heritage-line__divider-glyph">&#10022;</span>
+            </div>
 
             <!-- 02 — DOCHERTYS -->
             <section class="heritage-line scroll-animate" id="dochertys">
@@ -124,7 +126,9 @@ get_header(); ?>
                 </div>
             </section>
 
-            <hr class="heritage-line__divider" aria-hidden="true">
+            <div class="heritage-line__divider" aria-hidden="true">
+                <span class="heritage-line__divider-glyph">&#10022;</span>
+            </div>
 
             <!-- 03 — LAKEMANS -->
             <section class="heritage-line scroll-animate" id="lakemans">
@@ -161,7 +165,9 @@ get_header(); ?>
                 </div>
             </section>
 
-            <hr class="heritage-line__divider" aria-hidden="true">
+            <div class="heritage-line__divider" aria-hidden="true">
+                <span class="heritage-line__divider-glyph">&#10022;</span>
+            </div>
 
             <!-- 04 — RYCROFTS -->
             <section class="heritage-line scroll-animate" id="rycrofts">
@@ -192,7 +198,9 @@ get_header(); ?>
                 </div>
             </section>
 
-            <hr class="heritage-line__divider" aria-hidden="true">
+            <div class="heritage-line__divider" aria-hidden="true">
+                <span class="heritage-line__divider-glyph">&#10022;</span>
+            </div>
 
             <!-- 05 — HAISTES -->
             <section class="heritage-line scroll-animate" id="haistes">

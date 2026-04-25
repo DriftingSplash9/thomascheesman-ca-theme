@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initPillarReveal();
     initBlogReveal();
     initScrollReveals();
+    initHeritagePage();
     initInkTrail();
     initParticleField();
     initCustomCursor();
@@ -1386,4 +1387,248 @@ function initSiteChrome() {
             closeMenu();
         });
     });
+}
+
+/**
+ * Heritage page — chrome + scroll choreography.
+ *
+ * Only runs when .heritage-page is present on the document. Builds three
+ * persistent UI elements at runtime and wires per-section scroll
+ * triggers:
+ *
+ *   1. Top reading-progress bar — a thin colored stripe across the top of
+ *      the viewport that fills as the user scrolls. Color smoothly
+ *      transitions through each line's accent palette as the active
+ *      section changes.
+ *
+ *   2. Vertical TOC on the left edge — five labeled dots, one per family
+ *      line. The currently-in-view line's dot enlarges, picks up its
+ *      accent color, and reveals its label. Click jumps to the section
+ *      with smooth scroll.
+ *
+ *   3. Per-section reveals — each .heritage-line__title is split into
+ *      character spans and animated in stagger when the section enters
+ *      the viewport. Pull quotes (.heritage-line__quote) fade + slide
+ *      into view on the same trigger.
+ *
+ * The IntersectionObserver picks "current" line as the one with the
+ * highest visibility ratio in a 50%-from-top reading band; that drives
+ * both the TOC active state and the progress-bar color.
+ *
+ * Sit-out conditions: no .heritage-page found.
+ * Reduced motion: animations are skipped, but the chrome (TOC, progress
+ * bar) still renders so reader orientation isn't lost.
+ */
+function initHeritagePage() {
+    const page = document.querySelector('.heritage-page');
+    if (!page) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const lines = Array.from(page.querySelectorAll('.heritage-line'));
+    if (lines.length === 0) return;
+
+    // Mark the page as JS-ready so the CSS pre-animation states
+    // (.heritage-page--js .char { opacity: 0 } etc) take effect.
+    page.classList.add('heritage-page--js');
+
+    // ---- Build the top progress bar ----
+    const progress = document.createElement('div');
+    progress.className = 'heritage-progress';
+    progress.setAttribute('aria-hidden', 'true');
+    const progressFill = document.createElement('div');
+    progressFill.className = 'heritage-progress__fill';
+    progress.appendChild(progressFill);
+    document.body.appendChild(progress);
+
+    // ---- Build the vertical TOC ----
+    // We read the line title's text content for each TOC item. Hash
+    // links use the section's id attribute (already set in PHP).
+    const toc = document.createElement('nav');
+    toc.className = 'heritage-toc';
+    toc.setAttribute('aria-label', 'Family lines');
+    const tocList = document.createElement('ul');
+
+    const lineMeta = lines.map(function (line) {
+        const titleEl = line.querySelector('.heritage-line__title');
+        const titleText = titleEl ? titleEl.textContent.trim() : '';
+        const id = line.id || '';
+        const accent = getComputedStyle(line).getPropertyValue('--line-color').trim()
+                     || 'var(--primary-color)';
+        return { line, id, title: titleText, accent };
+    });
+
+    lineMeta.forEach(function (meta) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + meta.id;
+        a.dataset.lineId = meta.id;
+        a.style.setProperty('--toc-color', meta.accent);
+
+        const dot = document.createElement('span');
+        dot.className = 'heritage-toc__dot';
+        dot.setAttribute('aria-hidden', 'true');
+
+        const label = document.createElement('span');
+        label.className = 'heritage-toc__label';
+        label.textContent = meta.title;
+
+        a.appendChild(dot);
+        a.appendChild(label);
+        li.appendChild(a);
+        tocList.appendChild(li);
+    });
+
+    toc.appendChild(tocList);
+    document.body.appendChild(toc);
+
+    // Smooth-scroll on TOC click. Default anchor jumps work but feel
+    // abrupt; smooth lets the eye track which section is loading.
+    toc.addEventListener('click', function (e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const targetId = link.dataset.lineId;
+        const target = targetId ? document.getElementById(targetId) : null;
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // ---- Reveal the TOC after the user scrolls past the hero ----
+    // Hero is .page-hero on this page; when its bottom passes the top
+    // of the viewport, the TOC fades in. ScrollTrigger handles the
+    // bookkeeping cleanly.
+    const hero = page.querySelector('.page-hero');
+    if (hero && typeof ScrollTrigger !== 'undefined') {
+        ScrollTrigger.create({
+            trigger: hero,
+            start: 'bottom top',
+            onEnter: function () { toc.classList.add('heritage-toc--visible'); },
+            onLeaveBack: function () { toc.classList.remove('heritage-toc--visible'); },
+        });
+    } else {
+        // Fallback if ScrollTrigger isn't loaded for some reason.
+        toc.classList.add('heritage-toc--visible');
+    }
+
+    // ---- Progress bar fill + per-section reveals ----
+    // Update the progress bar's width on scroll. Range: 0% at the top
+    // of the .heritage-page, 100% at the bottom of the last line.
+    function updateProgress() {
+        const lastLine = lines[lines.length - 1];
+        const start = page.getBoundingClientRect().top + window.scrollY;
+        const end = lastLine.getBoundingClientRect().bottom + window.scrollY;
+        const total = end - start;
+        const scrolled = window.scrollY - start;
+        const ratio = Math.max(0, Math.min(1, scrolled / total));
+        progressFill.style.width = (ratio * 100).toFixed(2) + '%';
+    }
+
+    let scrollTicking = false;
+    window.addEventListener('scroll', function () {
+        if (!scrollTicking) {
+            window.requestAnimationFrame(function () {
+                updateProgress();
+                scrollTicking = false;
+            });
+            scrollTicking = true;
+        }
+    }, { passive: true });
+    updateProgress();
+
+    // ---- IntersectionObserver — track current line ----
+    // Use a 50%-from-top "reading band" so a section becomes "current"
+    // only when its content actually fills the reading position, not
+    // when its top edge sneaks into view.
+    const tocLinks = toc.querySelectorAll('a');
+
+    function setActive(meta) {
+        tocLinks.forEach(function (link) {
+            link.classList.toggle('is-active', link.dataset.lineId === meta.id);
+        });
+        progress.style.setProperty('--heritage-progress-color', meta.accent);
+    }
+
+    const observer = new IntersectionObserver(function (entries) {
+        // Among the entries currently intersecting, pick the one with
+        // the highest intersectionRatio. (We can't trust the order
+        // entries arrive in.)
+        let best = null;
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                if (!best || entry.intersectionRatio > best.intersectionRatio) {
+                    best = entry;
+                }
+            }
+        });
+        if (best) {
+            const meta = lineMeta.find(function (m) { return m.line === best.target; });
+            if (meta) setActive(meta);
+        }
+    }, {
+        // Reading-band threshold: top 30% is dead, 30%-70% is the
+        // band where intersection counts, bottom 30% is dead.
+        rootMargin: '-30% 0px -30% 0px',
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+    });
+
+    lines.forEach(function (line) { observer.observe(line); });
+
+    // ---- Title char splits + per-section ScrollTrigger reveals ----
+    if (typeof ScrollTrigger !== 'undefined' && !reduceMotion) {
+        lines.forEach(function (line) {
+            const title = line.querySelector('.heritage-line__title');
+            const quote = line.querySelector('.heritage-line__quote');
+
+            // Split title into chars (only if not already split — guards
+            // against re-runs).
+            let chars = [];
+            if (title && !title.dataset.split) {
+                chars = splitIntoCharSpans(title);
+                title.dataset.split = '1';
+            }
+
+            // Build a per-section timeline. Title chars first in stagger,
+            // then the pull quote slides + fades in slightly behind.
+            const tl = gsap.timeline({
+                paused: true,
+                defaults: { ease: 'power3.out' },
+            });
+
+            if (chars.length) {
+                tl.to(chars, {
+                    opacity: 1,
+                    y: '0%',
+                    duration: 0.7,
+                    stagger: 0.025,
+                });
+            }
+
+            if (quote) {
+                tl.to(quote, {
+                    opacity: 1,
+                    x: 0,
+                    duration: 0.8,
+                    ease: 'power2.out',
+                }, '-=0.4');
+            }
+
+            ScrollTrigger.create({
+                trigger: line,
+                start: 'top 75%',
+                once: true,
+                onEnter: function () { tl.play(); },
+            });
+        });
+    } else {
+        // Reduced motion (or ScrollTrigger missing) — un-hide the
+        // animated elements immediately so nothing stays invisible.
+        lines.forEach(function (line) {
+            const quote = line.querySelector('.heritage-line__quote');
+            if (quote) {
+                quote.style.opacity = '1';
+                quote.style.transform = 'none';
+            }
+        });
+    }
 }
