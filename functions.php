@@ -62,11 +62,13 @@ function tc_ventures_enqueue_scripts() {
 
     // Custom main JavaScript — depends on GSAP, ScrollTrigger, and Three.js.
     // Loaded in the footer (final arg = true) so it runs after DOM parse.
+    // Version reads from the child theme's style.css header so a single
+    // bump there cache-busts both CSS and JS in one place.
     wp_enqueue_script(
         'tc-ventures-main',
         get_stylesheet_directory_uri() . '/assets/js/main.js',
         array( 'gsap-core', 'gsap-scroll-trigger', 'three-js' ),
-        '1.0.0',
+        wp_get_theme()->get( 'Version' ),
         true
     );
 
