@@ -903,6 +903,14 @@ html.cursor-custom [contenteditable] {
      10000  Custom cursor
 */
 
+/* Registered angle for the capsule's rotating shine. Without @property
+   browsers can't smoothly interpolate angles inside a conic-gradient. */
+@property --capsule-shine-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
 .tc-capsule {
     position: fixed;
     top: 20px;
@@ -919,7 +927,10 @@ html.cursor-custom [contenteditable] {
     background: rgba(8, 10, 26, 0.55);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border: 1px solid color-mix(in srgb, var(--primary-color) 22%, transparent);
+    /* No static border — the ::before pseudo paints the rotating
+       conic-gradient ring with a built-in cyan baseline + bright shine
+       arc that sweeps around the perimeter. */
+    border: 0;
     box-shadow:
         0 12px 40px rgba(0, 0, 0, 0.45),
         0 0 0 1px rgba(255, 255, 255, 0.04) inset;
@@ -929,6 +940,40 @@ html.cursor-custom [contenteditable] {
     /* Keep above the WP admin bar (32px tall logged in, 46px on mobile). */
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
                 opacity 0.3s ease;
+}
+
+/* Glistening border: a conic-gradient with a steady cyan baseline plus
+   a single near-white highlight arc that rotates slowly around the pill.
+   Same mask-composite trick the pillar cards use — two overlapping
+   masks (content-box + full-size) combined with `exclude` leave only
+   the 1px outer ring visible, so the gradient can never bleed into the
+   capsule's body. */
+.tc-capsule::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(
+        from var(--capsule-shine-angle, 0deg),
+        rgba(34, 211, 238, 0.25) 0deg,
+        rgba(34, 211, 238, 0.25) 240deg,
+        rgba(34, 211, 238, 0.55) 280deg,
+        rgba(229, 231, 245, 0.95) 300deg,
+        rgba(34, 211, 238, 0.55) 320deg,
+        rgba(34, 211, 238, 0.25) 360deg
+    );
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: capsule-shine 9s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes capsule-shine {
+    to { --capsule-shine-angle: 360deg; }
 }
 
 /* When logged in, WP shows a 32px admin bar at the top; nudge the
@@ -1478,6 +1523,10 @@ html.tc-menu-open body {
 
 @media (prefers-reduced-motion: reduce) {
     .tc-footer__marquee-track {
+        animation: none;
+    }
+
+    .tc-capsule::before {
         animation: none;
     }
 
