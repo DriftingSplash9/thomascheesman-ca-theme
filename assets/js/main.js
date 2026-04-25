@@ -231,7 +231,7 @@ function initInkTrail() {
 
     // ----- Spark state -----
     const sparks = []; // { x, y, vx, vy, t, lifespan }
-    const SPARK_THRESHOLD = 0.18;     // px/ms; below this, no sparks
+    const SPARK_THRESHOLD = 0.12;     // px/ms; below this, no sparks
     const SPARK_MAX_PROB  = 0.45;     // ceiling on emit chance per mousemove
     const SPARK_GRAVITY   = 0.00035;  // px/ms² added to vy each frame
     let lastFrameTime = performance.now();
@@ -256,21 +256,19 @@ function initInkTrail() {
             const emitProb = Math.min(SPARK_MAX_PROB, (velocity - SPARK_THRESHOLD) / 1.6);
             if (Math.random() < emitProb) {
                 const cursorAngle = Math.atan2(dy, dx);
-                const count = 1 + Math.floor(Math.random() * 2); // 1 or 2
-                for (let i = 0; i < count; i++) {
-                    // Fly opposite cursor direction + spread of ±~70°.
-                    const spread = (Math.random() - 0.5) * (Math.PI * 0.78);
-                    const sparkAngle = cursorAngle + Math.PI + spread;
-                    const sparkSpeed = 0.06 + Math.random() * 0.18; // px/ms
-                    sparks.push({
-                        x: e.clientX,
-                        y: e.clientY,
-                        vx: Math.cos(sparkAngle) * sparkSpeed,
-                        vy: Math.sin(sparkAngle) * sparkSpeed,
-                        t: now,
-                        lifespan: 250 + Math.random() * 200, // ms
-                    });
-                }
+                // Single particle per emission — feels gentler than bursts.
+                // Fly opposite cursor direction + spread of ±~70°.
+                const spread = (Math.random() - 0.5) * (Math.PI * 0.78);
+                const sparkAngle = cursorAngle + Math.PI + spread;
+                const sparkSpeed = 0.06 + Math.random() * 0.18; // px/ms
+                sparks.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    vx: Math.cos(sparkAngle) * sparkSpeed,
+                    vy: Math.sin(sparkAngle) * sparkSpeed,
+                    t: now,
+                    lifespan: 250 + Math.random() * 200, // ms
+                });
             }
         }
     });
