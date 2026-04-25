@@ -711,22 +711,36 @@ html.cursor-custom [contenteditable] {
     height: 16px;
     border-radius: 50%;
     border: 1px solid #3B82F6;
-    background: transparent;
+    /* Semi-transparent radial fill: black core fading to cyan at the
+       edge. Same gradient shape (radial circle, 2 stops) at rest and
+       on hover so the browser can smoothly interpolate alpha between
+       them during the transition. */
+    background: radial-gradient(
+        circle,
+        rgba(0, 0, 0, 0.3) 0%,
+        rgba(34, 211, 238, 0.3) 100%
+    );
     pointer-events: none;
     z-index: 10000;
     will-change: transform, width, height, border-width, background;
+    /* Slow, buttery easing — gradient/size shift takes ~half a second
+       with an expo-out curve so it eases into place rather than snapping. */
     transition:
-        width 0.25s ease,
-        height 0.25s ease,
-        border-width 0.25s ease,
-        background 0.25s ease;
+        width 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+        height 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+        border-width 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+        background 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cursor-ring--hover {
-    width: 35px;
-    height: 35px;
-    border-width: 2px;
-    background: transparent;
+    width: 50px;
+    height: 50px;
+    border-width: 3px;
+    background: radial-gradient(
+        circle,
+        rgba(0, 0, 0, 0.5) 0%,
+        rgba(34, 211, 238, 0.5) 100%
+    );
 }
 
 /* ============================================
