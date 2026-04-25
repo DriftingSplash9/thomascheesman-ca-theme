@@ -9,8 +9,10 @@ Text Domain: tc-ventures-child
 Domain Path: /languages
 */
 
-/* Import parent theme styles */
-@import url('../astra/style.css');
+/* Parent theme styles are loaded via wp_enqueue_style() in functions.php
+   (handle: astra-parent-style). Do NOT use @import here — it's slower,
+   and loading the parent style twice causes the child rules to sometimes
+   lose specificity battles in unpredictable ways. */
 
 /* ============================================
    CUSTOM CSS VARIABLES & RESET
