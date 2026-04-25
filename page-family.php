@@ -104,15 +104,15 @@ get_header(); ?>
                     <a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Read her stories &rarr;</a>
                 </div>
 
-                <!-- Heritage — the family lines -->
+                <!-- The Families — five family lines on a single hub page -->
                 <div class="pillar-card person-card">
                     <div class="pillar-icon person-card__monogram">
-                        <span aria-hidden="true">H</span>
+                        <span aria-hidden="true">5</span>
                     </div>
-                    <h3>Heritage</h3>
-                    <p class="person-card__role">Family lines</p>
+                    <h3>The Families</h3>
+                    <p class="person-card__role">Five lines, one household</p>
                     <p>
-                        The Cheesmans, Dochertys, Rycrofts, Haistes, and Lakemans — where we came from.
+                        Cheesmans, Dochertys, Lakemans, Rycrofts, Haistes &mdash; a working map of where we came from.
                     </p>
                     <a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">Trace the lines &rarr;</a>
                 </div>
