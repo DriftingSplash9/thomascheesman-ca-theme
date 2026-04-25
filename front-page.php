@@ -68,11 +68,11 @@ get_header(); ?>
     </section>
 
     <!-- LATEST POSTS SECTION -->
-    <section class="blog-section scroll-animate" style="padding: 80px 20px; background: white;">
-        <div class="container" style="max-width: 1200px; margin: 0 auto;">
-            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 60px; color: #333;">Latest Blog Posts</h2>
-            
-            <div class="posts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;">
+    <section class="blog-section scroll-animate">
+        <div class="container">
+            <h2>Latest Blog Posts</h2>
+
+            <div class="posts-grid">
                 <?php
                 $args = array(
                     'post_type'      => 'post',
@@ -80,37 +80,37 @@ get_header(); ?>
                     'orderby'        => 'date',
                     'order'          => 'DESC',
                 );
-                
+
                 $query = new WP_Query( $args );
-                
+
                 if ( $query->have_posts() ) :
                     while ( $query->have_posts() ) : $query->the_post();
                         ?>
-                        <article class="post-card scroll-animate" style="background: #f9f9f9; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.3s ease;">
-                            
+                        <article class="post-card scroll-animate">
+
                             <?php if ( has_post_thumbnail() ) : ?>
-                                <div style="height: 220px; overflow: hidden;">
-                                    <?php the_post_thumbnail( 'medium', array( 'style' => 'width: 100%; height: 100%; object-fit: cover;' ) ); ?>
+                                <div class="post-card-thumb">
+                                    <?php the_post_thumbnail( 'medium' ); ?>
                                 </div>
                             <?php endif; ?>
-                            
-                            <div style="padding: 30px;">
-                                <div style="color: #667eea; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; margin-bottom: 10px;">
+
+                            <div class="post-card-body">
+                                <div class="post-card-meta">
                                     <?php echo get_the_date( 'F j, Y' ); ?>
                                 </div>
-                                
-                                <h3 style="margin: 0 0 15px 0; font-size: 1.35rem; line-height: 1.4;">
-                                    <a href="<?php the_permalink(); ?>" style="color: #333; text-decoration: none;">
+
+                                <h3>
+                                    <a href="<?php the_permalink(); ?>">
                                         <?php the_title(); ?>
                                     </a>
                                 </h3>
-                                
-                                <p style="color: #666; line-height: 1.6; margin: 0 0 20px 0;">
+
+                                <p>
                                     <?php echo wp_trim_words( get_the_excerpt(), 20 ); ?>
                                 </p>
-                                
-                                <a href="<?php the_permalink(); ?>" style="color: #667eea; text-decoration: none; font-weight: 600; display: inline-block;">
-                                    Read More →
+
+                                <a href="<?php the_permalink(); ?>" class="post-card-readmore">
+                                    Read More &rarr;
                                 </a>
                             </div>
                         </article>
@@ -121,24 +121,20 @@ get_header(); ?>
                 ?>
             </div>
 
-            <div style="text-align: center; margin-top: 60px;">
-                <a href="<?php echo home_url('/blog'); ?>" class="btn-primary" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.3s ease;">
-                    View All Posts
-                </a>
+            <div class="blog-section-cta">
+                <a href="<?php echo home_url('/blog'); ?>" class="btn-primary">View All Posts</a>
             </div>
         </div>
     </section>
 
     <!-- CTA SECTION -->
-    <section class="cta-section scroll-animate" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px 20px; color: white; text-align: center;">
-        <div class="container" style="max-width: 700px; margin: 0 auto;">
-            <h2 style="font-size: 2.5rem; margin: 0 0 20px 0; font-weight: 700;">Let's Connect</h2>
-            <p style="font-size: 1.1rem; margin: 0 0 30px 0; opacity: 0.95;">
+    <section class="cta-section scroll-animate">
+        <div class="container">
+            <h2>Let's Connect</h2>
+            <p>
                 Have questions? Want to chat? I'd love to hear from you. Get in touch and let's build something meaningful together.
             </p>
-            <a href="<?php echo home_url('/contact'); ?>" class="btn-secondary" style="display: inline-block; padding: 15px 40px; background: white; color: #667eea; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.3s ease; cursor: pointer;">
-                Get In Touch
-            </a>
+            <a href="<?php echo home_url('/contact'); ?>" class="btn-secondary">Get In Touch</a>
         </div>
     </section>
 

@@ -19,16 +19,35 @@ Domain Path: /languages
    ============================================ */
 
 :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --tertiary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --primary-color: #667eea;
-    --secondary-color: #764ba2;
-    --text-dark: #333333;
-    --text-light: #666666;
-    --bg-light: #f9f9f9;
-    --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.1);
+    /* Per-card icon gradients. Card 1: blue→cyan, Card 2: violet→pink (warm
+       contrast), Card 3: emerald→cyan (echoes the hero's green). Variable
+       names are kept for backwards-compatibility with the existing
+       .pillar-card:nth-child(N) .pillar-icon rules. */
+    --primary-gradient: linear-gradient(135deg, #3B82F6 0%, #22D3EE 100%);
+    --secondary-gradient: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+    --tertiary-gradient: linear-gradient(135deg, #10B981 0%, #22D3EE 100%);
+
+    /* Cyan accent — links, button outlines, focus states, post-meta dates,
+       active "where to click" signal across the whole site. */
+    --primary-color: #22D3EE;
+    --secondary-color: #67E8F9;
+
+    /* Text on dark surfaces. Variable names retained from the previous
+       light-mode iteration; values are now off-white and slate. */
+    --text-dark: #E5E7F5;
+    --text-light: #94A3B8;
+
+    /* Surface backgrounds. Three depths: body (deepest), section (slightly
+       lighter for separation), and card (lighter still, where content
+       lives). The slight steps create visual hierarchy on a near-black page. */
+    --bg-base: #040619;
+    --bg-light: #070A1F;
+    --bg-card: #0E1226;
+
+    /* Heavier shadows than light mode — they need to read against dark. */
+    --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+
     --radius: 12px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -50,6 +69,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
     color: var(--text-dark);
+    background: var(--bg-base);
 }
 
 .container {
@@ -68,11 +88,14 @@ body {
     padding: clamp(80px, 12vw, 160px) 20px;
     color: white;
     text-align: center;
+    /* Three soft radial blobs over a navy base. Indigo blob is dominant,
+       green blob is the unexpected accent, cyan haze ties the palette to
+       the rest of the site. */
     background:
-        radial-gradient(ellipse at 20% 30%, rgba(118, 75, 162, 0.85), transparent 55%),
-        radial-gradient(ellipse at 80% 70%, rgba(102, 126, 234, 0.85), transparent 55%),
-        radial-gradient(ellipse at 50% 50%, rgba(240, 147, 251, 0.4), transparent 65%),
-        linear-gradient(135deg, #5a6fd0 0%, #6a4496 100%);
+        radial-gradient(ellipse at 25% 30%, rgba(18, 6, 86, 0.9), transparent 55%),
+        radial-gradient(ellipse at 75% 70%, rgba(12, 128, 0, 0.55), transparent 50%),
+        radial-gradient(ellipse at 50% 90%, rgba(34, 211, 238, 0.18), transparent 60%),
+        linear-gradient(135deg, #030131 0%, #0a0a3a 100%);
     background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
     animation: hero-drift 22s ease-in-out infinite;
 }
@@ -168,32 +191,37 @@ body {
    rotating gradient border, link color, and hover glow — change the palette
    in one place per card and the whole vibe shifts. */
 .pillar-card:nth-child(1) {
-    --card-color-a: #667eea;
-    --card-color-b: #764ba2;
+    --card-color-a: #3B82F6;  /* blue */
+    --card-color-b: #22D3EE;  /* cyan */
 }
 
 .pillar-card:nth-child(2) {
-    --card-color-a: #f093fb;
-    --card-color-b: #f5576c;
+    --card-color-a: #8B5CF6;  /* violet */
+    --card-color-b: #EC4899;  /* pink — warm contrast vs the cool palette */
 }
 
 .pillar-card:nth-child(3) {
-    --card-color-a: #4facfe;
-    --card-color-b: #00f2fe;
+    --card-color-a: #10B981;  /* emerald — echoes the hero's green */
+    --card-color-b: #22D3EE;  /* cyan */
 }
 
 .pillar-card {
     position: relative;
+    /* Card body is dark with a 12% color-mix tint of its primary color in
+       the upper-left corner, fading to flat dark. The stronger tint (vs
+       the previous 5%) compensates for low contrast in dark mode. */
     background: linear-gradient(
         135deg,
-        color-mix(in srgb, var(--card-color-a) 5%, white) 0%,
-        white 65%
+        color-mix(in srgb, var(--card-color-a) 12%, var(--bg-card)) 0%,
+        var(--bg-card) 70%
     );
     padding: 40px;
     border-radius: var(--radius);
     box-shadow: var(--shadow-md);
     transition: var(--transition);
-    border: 1px solid transparent;
+    /* Subtle colored outline so cards have an edge even at the rotating
+       border's resting opacity. */
+    border: 1px solid color-mix(in srgb, var(--card-color-a) 18%, transparent);
 }
 
 /* Rotating conic-gradient border via mask-composite.
@@ -230,9 +258,10 @@ body {
 
 .pillar-card:hover {
     transform: translateY(-12px);
+    /* Heavier neutral shadow + stronger colored glow for dark-mode legibility. */
     box-shadow:
-        0 18px 40px rgba(0, 0, 0, 0.12),
-        0 12px 32px color-mix(in srgb, var(--card-color-a) 35%, transparent);
+        0 18px 40px rgba(0, 0, 0, 0.5),
+        0 12px 32px color-mix(in srgb, var(--card-color-a) 50%, transparent);
 }
 
 .pillar-card:hover::before {
@@ -302,8 +331,26 @@ body {
 }
 
 /* ============================================
-   BLOG GRID & CARDS
+   BLOG / LATEST POSTS SECTION
    ============================================ */
+
+.blog-section {
+    padding: clamp(60px, 9vw, 100px) 20px;
+    background: var(--bg-base);
+}
+
+.blog-section h2 {
+    text-align: center;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    font-weight: 700;
+    margin: 0 0 60px 0;
+    color: var(--text-dark);
+}
+
+.blog-section-cta {
+    text-align: center;
+    margin-top: 60px;
+}
 
 .posts-grid {
     display: grid;
@@ -312,23 +359,33 @@ body {
 }
 
 .post-card {
-    background: var(--bg-light);
+    background: var(--bg-card);
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow-sm);
     transition: var(--transition);
     display: flex;
     flex-direction: column;
+    /* Subtle cyan-tinted outline so cards register as a discrete surface
+       on the near-black section background. */
+    border: 1px solid color-mix(in srgb, var(--primary-color) 8%, transparent);
 }
 
 .post-card:hover {
     transform: translateY(-6px);
-    box-shadow: var(--shadow-md);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.5),
+        0 8px 20px color-mix(in srgb, var(--primary-color) 25%, transparent);
+}
+
+.post-card-thumb {
+    height: 220px;
+    overflow: hidden;
 }
 
 .post-card img {
     width: 100%;
-    height: 220px;
+    height: 100%;
     object-fit: cover;
     transition: transform 0.5s ease;
 }
@@ -337,14 +394,14 @@ body {
     transform: scale(1.05);
 }
 
-.post-card > div {
+.post-card-body {
     padding: 30px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
 
-.post-card .post-date {
+.post-card-meta {
     color: var(--primary-color);
     font-size: 0.9rem;
     font-weight: 600;
@@ -375,8 +432,7 @@ body {
     flex-grow: 1;
 }
 
-.post-card a[href*="read-more"],
-.post-card a[href*="hello-world"] {
+.post-card-readmore {
     color: var(--primary-color);
     text-decoration: none;
     font-weight: 600;
@@ -384,9 +440,9 @@ body {
     transition: var(--transition);
 }
 
-.post-card a[href*="read-more"]:hover,
-.post-card a[href*="hello-world"]:hover {
+.post-card-readmore:hover {
     transform: translateX(5px);
+    color: var(--secondary-color);
 }
 
 /* ============================================
@@ -413,17 +469,20 @@ body {
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 10px 25px color-mix(in srgb, var(--primary-color) 45%, transparent);
 }
 
 .btn-secondary {
-    background: white;
+    background: transparent;
     color: var(--primary-color);
+    border: 2px solid var(--primary-color);
 }
 
 .btn-secondary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    background: var(--primary-color);
+    color: var(--bg-base);
+    box-shadow: 0 10px 25px color-mix(in srgb, var(--primary-color) 40%, transparent);
 }
 
 /* ============================================
@@ -433,6 +492,23 @@ body {
 .cta-section {
     position: relative;
     overflow: hidden;
+    padding: clamp(60px, 9vw, 100px) 20px;
+    color: white;
+    text-align: center;
+    /* Hero-cousin gradient: same palette, flipped layout, slower drift,
+       reverse direction. Reads as a related bookend without being a copy. */
+    background:
+        radial-gradient(ellipse at 30% 40%, rgba(18, 6, 86, 0.85), transparent 55%),
+        radial-gradient(ellipse at 70% 60%, rgba(12, 128, 0, 0.5), transparent 55%),
+        linear-gradient(135deg, #030131 0%, #0a0a3a 100%);
+    background-size: 200% 200%, 200% 200%, 100% 100%;
+    animation: hero-drift 28s ease-in-out infinite reverse;
+}
+
+.cta-section .container {
+    max-width: 700px;
+    position: relative;
+    z-index: 2;
 }
 
 .cta-section::before {
@@ -442,24 +518,22 @@ body {
     right: -50%;
     width: 500px;
     height: 500px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.04);
     border-radius: 50%;
     animation: float 20s ease-in-out infinite;
-}
-
-.cta-section > * {
-    position: relative;
-    z-index: 2;
+    z-index: 1;
 }
 
 .cta-section h2 {
-    font-size: 2.5rem;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
     margin: 0 0 20px 0;
+    font-weight: 700;
 }
 
 .cta-section p {
     font-size: 1.1rem;
     margin: 0 0 30px 0;
+    opacity: 0.95;
 }
 
 /* ============================================
@@ -522,7 +596,12 @@ body {
    short-circuits when this is set (see main.js). */
 
 @media (prefers-reduced-motion: reduce) {
-    .hero-section {
+    .hero-section,
+    .cta-section {
+        animation: none;
+    }
+
+    .cta-section::before {
         animation: none;
     }
 
@@ -565,20 +644,12 @@ body {
         padding: 25px;
     }
 
-    .cta-section {
-        padding: 60px 20px !important;
-    }
-
     .cta-section h2 {
         font-size: 1.8rem;
     }
 }
 
 @media (max-width: 480px) {
-    .hero-section {
-        padding: 80px 0 !important;
-    }
-
     .pillars-grid {
         grid-template-columns: 1fr;
     }
