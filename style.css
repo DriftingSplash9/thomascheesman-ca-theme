@@ -170,7 +170,7 @@ body {
 
 .pillars-section {
     padding: clamp(60px, 9vw, 100px) 20px;
-    background: #f9f9f9;
+    background: var(--bg-light);
 }
 
 .pillars-heading {
