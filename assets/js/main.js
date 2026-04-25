@@ -141,34 +141,29 @@ function initPillarReveal() {
 
     if (cards.length === 0) return;
 
-    // Pre-split the heading so chars exist before the scroll trigger fires.
+    // Pre-split the heading so chars exist before the trigger fires.
     let headingChars = [];
     if (heading) {
         headingChars = splitIntoCharSpans(heading);
     }
 
-    // Pre-set card initial states. Each card tilts at a different angle so
-    // they don't all arrive in formation. The center card stays straight.
+    // Per-card initial rotation. Asymmetric so they don't arrive in formation.
+    const cardRotations = [-9, 3, 12];
+
     cards.forEach((card, i) => {
-        const rotation = i === 0 ? -6 : (i === 2 ? 6 : 0);
         gsap.set(card, {
             opacity: 0,
             y: 80,
             scale: 0.9,
-            rotation,
+            rotation: cardRotations[i] !== undefined ? cardRotations[i] : 0,
         });
     });
 
-    // Pre-set icon initial states.
     gsap.set(icons, { scale: 0, rotation: -120 });
 
-    const tl = gsap.timeline({
-        scrollTrigger: {
-            trigger: section,
-            start: 'top 75%',
-            toggleActions: 'play none none none',
-        },
-    });
+    // Build the timeline as paused so we can decide WHEN to play it
+    // (immediate if section is already in view on load, or via scroll trigger).
+    const tl = gsap.timeline({ paused: true });
 
     if (headingChars.length) {
         tl.to(headingChars, {
@@ -185,18 +180,56 @@ function initPillarReveal() {
         y: 0,
         scale: 1,
         rotation: 0,
-        duration: 0.9,
-        stagger: 0.15,
-        ease: 'back.out(1.3)',
-    }, '-=0.3'); // start before heading finishes
+        duration: 0.95,
+        stagger: 0.25,
+        ease: 'back.out(1.4)',
+    }, '-=0.3');
 
+    // Icon "wobble" — three back-easing phases overlapped into one continuous
+    // motion. Phase 1 springs in past the target, phase 2 pulls back slightly,
+    // phase 3 settles. Reads as a single damped oscillation, not three steps.
     tl.to(icons, {
         scale: 1,
         rotation: 0,
         duration: 0.55,
         stagger: 0.12,
-        ease: 'back.out(2)',
-    }, '-=0.5'); // start while cards are still landing
+        ease: 'back.out(2.25)',
+    }, '-=0.5');
+
+    tl.to(icons, {
+        scale: 0.94,
+        rotation: 8,
+        duration: 0.22,
+        stagger: 0.12,
+        ease: 'back.in(1.75)',
+    }, '-=0.15');
+
+    tl.to(icons, {
+        scale: 1,
+        rotation: 0,
+        duration: 0.28,
+        stagger: 0.12,
+        ease: 'back.out(1.25)',
+    }, '-=0.08');
+
+    // Trigger logic.
+    //   - On page load: if the section's top is already within 75% of viewport
+    //     (i.e., visible enough to be worth animating right away), fire now.
+    //   - Otherwise: wait for the user to scroll until the section's top
+    //     passes 60% of viewport, then fire. once: true means it never re-runs.
+    const rect = section.getBoundingClientRect();
+    const visibleOnLoad = rect.top < window.innerHeight * 0.75;
+
+    if (visibleOnLoad) {
+        tl.play();
+    } else {
+        ScrollTrigger.create({
+            trigger: section,
+            start: 'top 60%',
+            once: true,
+            onEnter: () => tl.play(),
+        });
+    }
 }
 
 /**
