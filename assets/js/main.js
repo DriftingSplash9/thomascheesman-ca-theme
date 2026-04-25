@@ -15,6 +15,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     initKineticHero();
     initPillarReveal();
+    initBlogReveal();
     initScrollReveals();
     initInkTrail();
 });
@@ -240,6 +241,79 @@ function initPillarReveal() {
         ScrollTrigger.create({
             trigger: section,
             start: 'top 40%',
+            once: true,
+            onEnter: () => tl.play(),
+        });
+    }
+}
+
+/**
+ * Decelerated tumble reveal for the blog section's post cards.
+ *
+ * Each card rises 100px from below while rotating from -10° back to 0°,
+ * with a power4.out easing curve — most of the motion happens in the
+ * first ~25% of the duration, then the rotation eases gently into place.
+ * Reads as "tumble-in then settle".
+ *
+ * Sequence: card 2, card 3, card 1 (not document order). We reorder the
+ * targets array so GSAP's stagger applies to the reordered list. If there
+ * are fewer than 3 posts, we fall back gracefully.
+ *
+ * Same trigger logic as the pillar reveal (immediate on load if visible,
+ * otherwise scroll-triggered). onComplete clears inline transforms so the
+ * CSS hover lift on .post-card works after the reveal finishes.
+ */
+function initBlogReveal() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const section = document.querySelector('.blog-section');
+    if (!section) return;
+
+    const cards = section.querySelectorAll('.post-card');
+    if (cards.length === 0) return;
+
+    gsap.set(cards, {
+        opacity: 0,
+        y: 100,
+        rotation: -10,
+    });
+
+    // Reorder so the stagger goes 2nd, 3rd, 1st. Fallbacks handle <3 cards
+    // (which shouldn't happen in this layout, but defensive code is cheap).
+    let ordered;
+    if (cards.length >= 3) {
+        ordered = [cards[1], cards[2], cards[0]];
+    } else if (cards.length === 2) {
+        ordered = [cards[1], cards[0]];
+    } else {
+        ordered = [cards[0]];
+    }
+
+    const tl = gsap.timeline({
+        paused: true,
+        onComplete: () => {
+            gsap.set(cards, { clearProps: 'transform' });
+        },
+    });
+
+    tl.to(ordered, {
+        opacity: 1,
+        y: 0,
+        rotation: 0,
+        duration: 0.95,
+        stagger: 0.18,
+        ease: 'power4.out',
+    });
+
+    const rect = section.getBoundingClientRect();
+    const visibleOnLoad = rect.top < window.innerHeight * 0.75;
+
+    if (visibleOnLoad) {
+        tl.play();
+    } else {
+        ScrollTrigger.create({
+            trigger: section,
+            start: 'top 60%',
             once: true,
             onEnter: () => tl.play(),
         });

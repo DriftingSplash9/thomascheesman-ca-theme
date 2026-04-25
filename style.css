@@ -610,7 +610,8 @@ body {
     .kinetic-fade,
     .scroll-animate,
     .pillar-card,
-    .pillar-icon {
+    .pillar-icon,
+    .post-card {
         opacity: 1;
         transform: none;
     }

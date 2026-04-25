@@ -86,7 +86,7 @@ get_header(); ?>
                 if ( $query->have_posts() ) :
                     while ( $query->have_posts() ) : $query->the_post();
                         ?>
-                        <article class="post-card scroll-animate">
+                        <article class="post-card">
 
                             <?php if ( has_post_thumbnail() ) : ?>
                                 <div class="post-card-thumb">
