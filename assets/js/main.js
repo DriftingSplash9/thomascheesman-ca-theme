@@ -362,31 +362,37 @@ function initScrollReveals() {
 }
 
 /**
- * Drifting particle field with mouse magnetism + proximity connections.
+ * Layered drifting particle field with cursor magnetism, scroll parallax,
+ * and oscillating temporary connections.
  *
- * What you see:
- *   - ~80 tiny near-invisible specs drifting slowly across the viewport.
- *   - When two specs are within CONNECT_DISTANCE pixels, a thin line is
- *     drawn between them with alpha proportional to inverse distance —
- *     close pairs are most visible, far pairs fade out completely.
- *   - When the cursor enters ATTRACT_RADIUS of a spec, the spec is
- *     pulled toward the cursor (force scales with proximity). Multiple
- *     nearby specs all accelerate toward the same point, so their
- *     velocities become parallel — that's what produces the "magnetic
- *     filings into bands" alignment effect. Nothing special-cases it;
- *     it falls out of basic physics.
+ * Architecture: three independent layers, each with 40 particles.
+ *   Layer 0 (back):  slow / dim / small / scrolls at 0.2x
+ *   Layer 1 (mid):   medium / medium / medium / scrolls at 0.5x
+ *   Layer 2 (front): fast / bright / large / scrolls at 0.8x
  *
- * Why these defaults:
- *   - PARTICLE_COUNT = 80: dense enough to feel populated, sparse
- *     enough that a single particle has 0-1 connections most of the
- *     time. The "occasionally 2 connections" emerges from clusters.
- *   - DAMPING = 0.96: prevents runaway acceleration; particles return
- *     to gentle drift after the cursor leaves.
- *   - MAX_VEL = 1.6: caps speed so they don't streak across the screen.
+ * Each layer has:
+ *   - its own particle array
+ *   - its own global "drift wind" force that picks a new random direction
+ *     every 60-90 seconds and smoothly lerps over ~8 seconds. Particles
+ *     accumulate this drift in addition to mouse attraction and damping.
+ *   - its own velocity cap and parallax scroll factor.
  *
- * z-index:1 puts the canvas above content but below the ink trail
- * (9999) and cursor (10000). Sets pointer-events:none so it doesn't
- * intercept clicks.
+ * Connections are drawn WITHIN each layer (never cross-layer) — so the
+ * layered depth illusion is preserved. Each particle picks its 1 nearest
+ * neighbor in range, OR its 2 nearest if its phase oscillator says so
+ * this frame. Phase: `sin(now * 0.000314 + p.phase) > 0.7`, which gives
+ * a ~20s period and means any given particle drifts in and out of "2
+ * connections" naturally over time. Sorting candidates by distance and
+ * taking N closest means even when 2 are wanted, they're the closest 2.
+ *
+ * Scroll parallax: each layer applies a render-time Y offset of
+ * `scrollY * scrollFactor`, with modulo wrap so particles always remain
+ * visible somewhere in the viewport. Magnetism uses render position
+ * (not raw p.y) so attraction tracks what the user actually sees.
+ *
+ * z-index: -1 puts the canvas BEHIND content. The WebGL background
+ * canvas is also at z:-1 but appears earlier in DOM (added in
+ * initWebGLBackground), so the particle canvas paints over it.
  */
 function initParticleField() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -400,7 +406,7 @@ function initParticleField() {
         left: '0',
         width: '100%',
         height: '100%',
-        zIndex: '1',
+        zIndex: '-1',
         pointerEvents: 'none',
     });
     document.body.appendChild(canvas);
@@ -416,23 +422,44 @@ function initParticleField() {
     resize();
     window.addEventListener('resize', resize);
 
-    const PARTICLE_COUNT     = 80;
-    const ATTRACT_RADIUS     = 180;
-    const ATTRACT_STRENGTH   = 0.05;
-    const CONNECT_DISTANCE   = 100;
-    const PARTICLE_SIZE      = 1.1;
-    const DAMPING            = 0.96;
-    const MAX_VEL            = 1.6;
+    // ---- Constants shared across layers ----
+    const ATTRACT_RADIUS   = 180;
+    const ATTRACT_STRENGTH = 0.05;
+    const CONNECT_DISTANCE = 180;
+    const DAMPING          = 0.97;
+    const MAX_VEL_BASE     = 2.5;
+    const DRIFT_FORCE      = 0.012;
+    const CONN_PHASE_FREQ  = 0.000314; // ~20s period
+    const CONN_PHASE_GATE  = 0.7;      // sin > 0.7 → wants 2 connections
 
-    const particles = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particles.push({
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            vx: (Math.random() - 0.5) * 0.3,
-            vy: (Math.random() - 0.5) * 0.3,
-        });
-    }
+    // ---- Per-layer config ----
+    const LAYERS = [
+        { count: 40, speed: 0.6, scrollFactor: 0.2, size: 0.8, pAlpha: 0.18, lAlpha: 0.07 },
+        { count: 40, speed: 1.0, scrollFactor: 0.5, size: 1.0, pAlpha: 0.28, lAlpha: 0.10 },
+        { count: 40, speed: 1.5, scrollFactor: 0.8, size: 1.4, pAlpha: 0.38, lAlpha: 0.13 },
+    ];
+
+    LAYERS.forEach(function (layer) {
+        layer.particles = [];
+        for (let i = 0; i < layer.count; i++) {
+            layer.particles.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                vx: (Math.random() - 0.5) * 0.3 * layer.speed,
+                vy: (Math.random() - 0.5) * 0.3 * layer.speed,
+                phase: Math.random() * Math.PI * 2,
+            });
+        }
+        // Drift state
+        layer.drift = { x: 0, y: 0 };
+        const angle = Math.random() * Math.PI * 2;
+        const mag = (0.4 + Math.random() * 0.6) * layer.speed;
+        layer.targetDrift = {
+            x: Math.cos(angle) * mag,
+            y: Math.sin(angle) * mag,
+        };
+        layer.driftChangeTime = performance.now() + 60000 + Math.random() * 30000;
+    });
 
     let mouseX = -10000, mouseY = -10000;
     document.addEventListener('mousemove', function (e) {
@@ -440,72 +467,115 @@ function initParticleField() {
         mouseY = e.clientY;
     });
 
+    let scrollY = window.scrollY;
+    window.addEventListener('scroll', function () {
+        scrollY = window.scrollY;
+    }, { passive: true });
+
     function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const w = window.innerWidth;
         const h = window.innerHeight;
+        const now = performance.now();
 
-        // ---- Physics: attract toward mouse, damp, cap, integrate ----
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
+        for (let li = 0; li < LAYERS.length; li++) {
+            const layer = LAYERS[li];
 
-            const dx = mouseX - p.x;
-            const dy = mouseY - p.y;
-            const dist = Math.hypot(dx, dy);
+            // --- Update layer's global drift wind ---
+            if (now > layer.driftChangeTime) {
+                const angle = Math.random() * Math.PI * 2;
+                const mag = (0.4 + Math.random() * 0.6) * layer.speed;
+                layer.targetDrift.x = Math.cos(angle) * mag;
+                layer.targetDrift.y = Math.sin(angle) * mag;
+                layer.driftChangeTime = now + 60000 + Math.random() * 30000;
+            }
+            layer.drift.x += (layer.targetDrift.x - layer.drift.x) * 0.002;
+            layer.drift.y += (layer.targetDrift.y - layer.drift.y) * 0.002;
 
-            if (dist < ATTRACT_RADIUS && dist > 0.1) {
-                const factor = (1 - dist / ATTRACT_RADIUS) * ATTRACT_STRENGTH;
-                p.vx += (dx / dist) * factor;
-                p.vy += (dy / dist) * factor;
+            const offsetY = scrollY * layer.scrollFactor;
+            const layerMaxVel = MAX_VEL_BASE * layer.speed;
+
+            // --- Physics for this layer's particles ---
+            for (let i = 0; i < layer.particles.length; i++) {
+                const p = layer.particles[i];
+                const renderY = ((p.y - offsetY) % h + h) % h;
+
+                const dx = mouseX - p.x;
+                const dy = mouseY - renderY;
+                const dist = Math.hypot(dx, dy);
+                if (dist < ATTRACT_RADIUS && dist > 0.1) {
+                    const factor = (1 - dist / ATTRACT_RADIUS) * ATTRACT_STRENGTH;
+                    p.vx += (dx / dist) * factor;
+                    p.vy += (dy / dist) * factor;
+                }
+
+                p.vx += layer.drift.x * DRIFT_FORCE;
+                p.vy += layer.drift.y * DRIFT_FORCE;
+
+                p.vx *= DAMPING;
+                p.vy *= DAMPING;
+
+                const speed = Math.hypot(p.vx, p.vy);
+                if (speed > layerMaxVel) {
+                    p.vx = (p.vx / speed) * layerMaxVel;
+                    p.vy = (p.vy / speed) * layerMaxVel;
+                }
+
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0) p.x += w;
+                if (p.x > w) p.x -= w;
+                if (p.y < 0) p.y += h;
+                if (p.y > h) p.y -= h;
             }
 
-            p.vx *= DAMPING;
-            p.vy *= DAMPING;
+            // --- Connections within layer (1 nearest, occasionally 2) ---
+            ctx.lineWidth = 0.7;
+            for (let i = 0; i < layer.particles.length; i++) {
+                const p = layer.particles[i];
+                const pRenderY = ((p.y - offsetY) % h + h) % h;
 
-            const speed = Math.hypot(p.vx, p.vy);
-            if (speed > MAX_VEL) {
-                p.vx = (p.vx / speed) * MAX_VEL;
-                p.vy = (p.vy / speed) * MAX_VEL;
-            }
+                const wantsTwo = Math.sin(now * CONN_PHASE_FREQ + p.phase) > CONN_PHASE_GATE;
+                const maxN = wantsTwo ? 2 : 1;
 
-            p.x += p.vx;
-            p.y += p.vy;
+                // Find candidates within range, sorted by distance.
+                const candidates = [];
+                for (let j = 0; j < layer.particles.length; j++) {
+                    if (j === i) continue;
+                    const q = layer.particles[j];
+                    const qRenderY = ((q.y - offsetY) % h + h) % h;
+                    const cdx = q.x - p.x;
+                    const cdy = qRenderY - pRenderY;
+                    const cd = Math.hypot(cdx, cdy);
+                    if (cd < CONNECT_DISTANCE) {
+                        candidates.push({ x: q.x, y: qRenderY, d: cd });
+                    }
+                }
+                candidates.sort(function (a, b) { return a.d - b.d; });
 
-            // Wrap at edges so particles drift continuously.
-            if (p.x < 0) p.x += w;
-            if (p.x > w) p.x -= w;
-            if (p.y < 0) p.y += h;
-            if (p.y > h) p.y -= h;
-        }
-
-        // ---- Connections: all pairs within CONNECT_DISTANCE ----
-        ctx.lineWidth = 0.7;
-        for (let i = 0; i < particles.length; i++) {
-            for (let j = i + 1; j < particles.length; j++) {
-                const a = particles[i];
-                const b = particles[j];
-                const dx = b.x - a.x;
-                const dy = b.y - a.y;
-                const d = Math.hypot(dx, dy);
-                if (d < CONNECT_DISTANCE) {
-                    const alpha = (1 - d / CONNECT_DISTANCE) * 0.18;
+                const lineCount = Math.min(candidates.length, maxN);
+                for (let k = 0; k < lineCount; k++) {
+                    const c = candidates[k];
+                    const alpha = (1 - c.d / CONNECT_DISTANCE) * layer.lAlpha;
                     ctx.strokeStyle = 'rgba(200, 220, 255, ' + alpha + ')';
                     ctx.beginPath();
-                    ctx.moveTo(a.x, a.y);
-                    ctx.lineTo(b.x, b.y);
+                    ctx.moveTo(p.x, pRenderY);
+                    ctx.lineTo(c.x, c.y);
                     ctx.stroke();
                 }
             }
-        }
 
-        // ---- Particles ----
-        ctx.fillStyle = 'rgba(220, 230, 255, 0.5)';
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, PARTICLE_SIZE, 0, Math.PI * 2);
-            ctx.fill();
+            // --- Particles ---
+            ctx.fillStyle = 'rgba(220, 230, 255, ' + layer.pAlpha + ')';
+            for (let i = 0; i < layer.particles.length; i++) {
+                const p = layer.particles[i];
+                const pRenderY = ((p.y - offsetY) % h + h) % h;
+                ctx.beginPath();
+                ctx.arc(p.x, pRenderY, layer.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
         requestAnimationFrame(render);
