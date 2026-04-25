@@ -13,6 +13,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
+    initWebGLBackground();
     initKineticHero();
     initPillarReveal();
     initBlogReveal();
@@ -355,6 +356,210 @@ function initScrollReveals() {
             ease: 'power2.out',
         });
     });
+}
+
+/**
+ * WebGL background — drifting noise gradient + cursor-reactive ambient glow.
+ *
+ * Architecture: one Three.js scene with an orthographic camera and a
+ * fullscreen PlaneGeometry (2x2 in NDC space — covers the entire camera
+ * view). The plane uses a custom ShaderMaterial:
+ *
+ *   - Vertex shader: pass-through; just outputs the geometry's NDC coords.
+ *   - Fragment shader: per-pixel work. Reads UV coords + uTime + uMouse +
+ *     uResolution uniforms. Combines:
+ *       * Multi-octave 2D simplex noise that morphs over time → organic
+ *         drifting blobs in indigo / cyan against a deep navy base.
+ *       * Cursor-reactive radial glow: exponential falloff from uMouse
+ *         in cyan, additively blended on top.
+ *       * Subtle vignette: edges darken slightly for cinematic depth.
+ *
+ * Mouse handling uses lerp smoothing (each frame, the rendered uMouse is
+ * pulled toward the target mouse position by 6%). Without this, the glow
+ * teleports every mouse event; with it, the glow has a slight lag that
+ * reads as "physical."
+ *
+ * The canvas is fixed-position at z-index: -1 so it sits behind every
+ * section. Sections that have their own gradient (hero, CTA) cover it
+ * locally; sections that are transparent (pillars, blog) let it show
+ * through.
+ *
+ * Sit-out conditions:
+ *   - prefers-reduced-motion → skip; static body background remains.
+ *   - THREE undefined → skip silently (script load failure).
+ *   - WebGL context creation fails → skip silently (very old GPU).
+ */
+function initWebGLBackground() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (typeof THREE === 'undefined') return;
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'webgl-bg-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    Object.assign(canvas.style, {
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        zIndex: '-1',
+        pointerEvents: 'none',
+    });
+    document.body.appendChild(canvas);
+
+    let renderer;
+    try {
+        renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: false,
+            alpha: false,
+            powerPreference: 'low-power',
+        });
+    } catch (err) {
+        // No WebGL context available; bail silently. The body's solid
+        // bg-base color remains the fallback.
+        canvas.remove();
+        return;
+    }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    const uniforms = {
+        uTime: { value: 0 },
+        uResolution: { value: new THREE.Vector2() },
+        uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+    };
+
+    const vertexShader = `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = vec4(position, 1.0);
+        }
+    `;
+
+    // Stefan Gustavson 2D simplex noise — well-tested public-domain
+    // implementation. Returns a value approximately in [-1, 1].
+    const fragmentShader = `
+        precision highp float;
+
+        uniform float uTime;
+        uniform vec2 uResolution;
+        uniform vec2 uMouse;
+        varying vec2 vUv;
+
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x * 34.0) + 1.0) * x); }
+
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                                -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy));
+            vec2 x0 = v - i + dot(i, C.xx);
+            vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
+                          + i.x + vec3(0.0, i1.x, 1.0));
+            vec3 m = max(0.5 - vec3(dot(x0, x0),
+                                    dot(x12.xy, x12.xy),
+                                    dot(x12.zw, x12.zw)), 0.0);
+            m = m * m;
+            m = m * m;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
+            vec3 g;
+            g.x = a0.x * x0.x + h.x * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec2 uv = vUv;
+            float aspect = uResolution.x / max(uResolution.y, 1.0);
+            // Aspect-corrected coords so the noise blobs aren't stretched.
+            vec2 p = vec2(uv.x * aspect, uv.y);
+
+            float t = uTime * 0.04;
+
+            // Two octaves of noise. Low frequency = big organic blobs;
+            // mid frequency = subtle texture on top.
+            float n1 = snoise(p * 1.5 + vec2(t, t * 0.7));
+            float n2 = snoise(p * 3.0 + vec2(-t * 0.5, t * 0.4)) * 0.5;
+            float n  = (n1 + n2) * 0.5;
+
+            // Base near-black navy (matches --bg-base #040619).
+            vec3 color = vec3(0.0156, 0.0235, 0.098);
+
+            // Indigo wash where noise is positive — drifts organically.
+            vec3 indigo = vec3(0.07, 0.024, 0.337);   // #120656
+            color = mix(color, indigo, smoothstep(-0.2, 0.4, n) * 0.55);
+
+            // Cyan accent in the brighter noise regions.
+            vec3 cyan = vec3(0.133, 0.827, 0.933);    // #22D3EE
+            color = mix(color, cyan, smoothstep(0.15, 0.5, n) * 0.18);
+
+            // Cursor-reactive ambient glow. uMouse is in [0,1] in screen
+            // space; convert to aspect-corrected p-space before computing
+            // distance so the glow is a circle, not an ellipse.
+            vec2 mp = vec2(uMouse.x * aspect, uMouse.y);
+            float d = distance(p, mp);
+            float glow = exp(-d * 4.5);
+            color += cyan * glow * 0.35;
+
+            // Subtle vignette — edges fall off ~15%.
+            vec2 vc = uv - 0.5;
+            float vignette = 1.0 - smoothstep(0.5, 1.0, length(vc));
+            color *= mix(0.85, 1.0, vignette);
+
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `;
+
+    const material = new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader,
+        fragmentShader,
+    });
+
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        renderer.setPixelRatio(dpr);
+        renderer.setSize(w, h, false);
+        uniforms.uResolution.value.set(w * dpr, h * dpr);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const targetMouse = new THREE.Vector2(0.5, 0.5);
+    document.addEventListener('mousemove', function (e) {
+        targetMouse.set(
+            e.clientX / window.innerWidth,
+            1 - (e.clientY / window.innerHeight)
+        );
+    });
+
+    function render() {
+        // Lerp the rendered mouse toward the target — gives the glow a
+        // slight smoothed lag that reads as physical.
+        uniforms.uMouse.value.lerp(targetMouse, 0.06);
+        uniforms.uTime.value = performance.now() * 0.001;
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
 }
 
 /**

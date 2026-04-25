@@ -48,12 +48,22 @@ function tc_ventures_enqueue_scripts() {
         false
     );
 
-    // Custom main JavaScript — depends on GSAP core + ScrollTrigger.
+    // Three.js (UMD build) — used by main.js to drive the WebGL background
+    // (drifting noise gradient + cursor-reactive ambient glow).
+    wp_enqueue_script(
+        'three-js',
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js',
+        array(),
+        'r158',
+        true
+    );
+
+    // Custom main JavaScript — depends on GSAP, ScrollTrigger, and Three.js.
     // Loaded in the footer (final arg = true) so it runs after DOM parse.
     wp_enqueue_script(
         'tc-ventures-main',
         get_stylesheet_directory_uri() . '/assets/js/main.js',
-        array( 'gsap-core', 'gsap-scroll-trigger' ),
+        array( 'gsap-core', 'gsap-scroll-trigger', 'three-js' ),
         '1.0.0',
         true
     );

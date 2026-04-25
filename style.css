@@ -170,7 +170,12 @@ body {
 
 .pillars-section {
     padding: clamp(60px, 9vw, 100px) 20px;
-    background: var(--bg-light);
+    /* Transparent so the WebGL canvas behind <body> shows through. The
+       fallback below kicks in if WebGL fails or JS is disabled — site is
+       still readable, just without the live background. */
+    background: transparent;
+    background-color: var(--bg-light);
+    background-color: color-mix(in srgb, var(--bg-light) 0%, transparent);
 }
 
 .pillars-heading {
@@ -336,7 +341,8 @@ body {
 
 .blog-section {
     padding: clamp(60px, 9vw, 100px) 20px;
-    background: var(--bg-base);
+    /* Transparent so the WebGL canvas behind <body> shows through. */
+    background: transparent;
 }
 
 .blog-section h2 {
