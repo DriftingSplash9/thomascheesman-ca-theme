@@ -885,3 +885,508 @@ html.cursor-custom [contenteditable] {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* ============================================
+   SITE CHROME — FLOATING CAPSULE + OVERLAY MENU
+   ============================================
+   Replaces Astra's header entirely. The capsule is fixed top-right and
+   always visible. Clicking the trigger opens a fullscreen overlay menu;
+   the trigger itself morphs into a close (✕) while open.
+
+   z-index plan (bottom → top):
+     -1     WebGL background canvas
+     -1     Particle field canvas (paints over WebGL because it's added later)
+      0–1   Page content
+      9000  Menu overlay (when open)
+      9500  Capsule (always above the overlay so the trigger stays clickable)
+      9999  Ink trail
+     10000  Custom cursor
+*/
+
+.tc-capsule {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9500;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 8px 8px 18px;
+    border-radius: 999px;
+    /* Frosted-glass effect: translucent dark fill + heavy backdrop blur.
+       The blur is what makes content behind the capsule (WebGL noise,
+       particles, copy) read as dreamy/distant rather than just covered. */
+    background: rgba(8, 10, 26, 0.55);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 22%, transparent);
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    color: var(--text-dark);
+    font-size: 13px;
+    line-height: 1;
+    /* Keep above the WP admin bar (32px tall logged in, 46px on mobile). */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.3s ease;
+}
+
+/* When logged in, WP shows a 32px admin bar at the top; nudge the
+   capsule down so it doesn't overlap. */
+body.admin-bar .tc-capsule {
+    top: calc(20px + 32px);
+}
+
+@media (max-width: 782px) {
+    body.admin-bar .tc-capsule {
+        top: calc(20px + 46px);
+    }
+}
+
+.tc-capsule__brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    transition: color 0.3s ease;
+}
+
+.tc-capsule__brand:hover {
+    color: var(--primary-color);
+}
+
+.tc-capsule__brand-mark {
+    font-size: 14px;
+}
+
+.tc-capsule__brand-tail {
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.tc-capsule__divider {
+    width: 1px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.tc-capsule__clock {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-light);
+}
+
+.tc-capsule__clock-time {
+    font-weight: 600;
+    color: var(--text-dark);
+    letter-spacing: 0.04em;
+}
+
+.tc-capsule__clock-zone {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* Menu trigger — a pill-within-the-pill. Two stacked bars on the right
+   morph into an X when html.tc-menu-open is set. */
+.tc-capsule__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 16px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--primary-color) 35%, transparent);
+    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+    color: var(--text-dark);
+    font: inherit;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.tc-capsule__trigger:hover {
+    background: color-mix(in srgb, var(--primary-color) 22%, transparent);
+    border-color: var(--primary-color);
+}
+
+.tc-capsule__trigger:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 3px;
+}
+
+.tc-capsule__trigger-bars {
+    position: relative;
+    width: 16px;
+    height: 10px;
+    /* Bars are absolutely positioned children so we can rotate them
+       around the same center to form an X. */
+}
+
+.tc-capsule__trigger-bars span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    border-radius: 1px;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tc-capsule__trigger-bars span:nth-child(1) { top: 2px; }
+.tc-capsule__trigger-bars span:nth-child(2) { top: 7px; }
+
+/* Open state: both bars converge to the middle and rotate to ✕. */
+html.tc-menu-open .tc-capsule__trigger-bars span:nth-child(1) {
+    top: 4.25px;
+    transform: rotate(45deg);
+}
+
+html.tc-menu-open .tc-capsule__trigger-bars span:nth-child(2) {
+    top: 4.25px;
+    transform: rotate(-45deg);
+}
+
+/* While the menu is open, swap the trigger's color emphasis subtly. */
+html.tc-menu-open .tc-capsule__trigger {
+    border-color: var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 25%, transparent);
+}
+
+/* Mobile: drop the clock and brand tail to reclaim space. */
+@media (max-width: 600px) {
+    .tc-capsule {
+        gap: 10px;
+        padding: 6px 6px 6px 14px;
+    }
+
+    .tc-capsule__brand-tail,
+    .tc-capsule__divider,
+    .tc-capsule__clock {
+        display: none;
+    }
+
+    .tc-capsule__trigger-label {
+        display: none;
+    }
+}
+
+/* ---- OVERLAY MENU ---- */
+
+.tc-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    /* Hidden by default. JS toggles html.tc-menu-open which flips
+       these to visible/active. */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+}
+
+html.tc-menu-open .tc-menu {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+.tc-menu__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 6, 25, 0.78);
+    /* Heavy blur so the WebGL noise + particles are still visible
+       as a dreamy fog behind the menu, but content is illegible. */
+    backdrop-filter: blur(28px) saturate(120%);
+    -webkit-backdrop-filter: blur(28px) saturate(120%);
+}
+
+.tc-menu__inner {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 40px;
+    padding: clamp(80px, 14vh, 160px) clamp(24px, 6vw, 96px) clamp(40px, 6vh, 80px);
+    /* Slight upward translation while closed; settles to 0 on open.
+       Combined with the opacity transition, gives the panel a subtle
+       rise into place rather than a hard show. */
+    transform: translateY(24px);
+    transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html.tc-menu-open .tc-menu__inner {
+    transform: translateY(0);
+}
+
+.tc-menu__nav {
+    display: flex;
+    align-items: flex-end;
+}
+
+.tc-menu__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.tc-menu__list li {
+    margin: 0;
+    /* Each link line gets its own block; the per-line under-mask
+       below clips the chars when they slide up out of view. */
+    overflow: hidden;
+}
+
+.tc-menu__list a {
+    display: inline-block;
+    padding: clamp(4px, 1vh, 10px) 0;
+    text-decoration: none;
+    color: var(--text-dark);
+    font-size: clamp(2.5rem, 9vw, 6.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    transition: color 0.3s ease, transform 0.3s ease;
+    /* Each char span (added by JS) starts hidden and below its line.
+       The animation slides it up into view in stagger. */
+}
+
+.tc-menu__list a:hover {
+    color: var(--primary-color);
+    /* Tiny lateral push on hover — picks up the magnetic feel from
+       the rest of the site without needing the full magnet rig. */
+    transform: translateX(8px);
+}
+
+/* Initial state for the per-character spans inserted by main.js. */
+.tc-menu__list a .char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(110%);
+    will-change: transform, opacity;
+}
+
+.tc-menu__list a .word {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+/* Meta block — small links at the bottom of the overlay (Elsewhere,
+   Contact). Uses a 2-column grid that collapses on narrow screens. */
+.tc-menu__meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 32px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease 0.25s,
+                transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.25s;
+}
+
+html.tc-menu-open .tc-menu__meta {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tc-menu__meta-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-light);
+    margin-bottom: 12px;
+}
+
+.tc-menu__meta-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tc-menu__meta-list a {
+    color: var(--text-dark);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.tc-menu__meta-list a:hover {
+    color: var(--primary-color);
+}
+
+/* When the menu is open, lock the body so the page behind doesn't scroll. */
+html.tc-menu-open,
+html.tc-menu-open body {
+    overflow: hidden;
+}
+
+/* ============================================
+   FOOTER — WORDMARK MARQUEE + COLOPHON
+   ============================================ */
+
+.tc-footer {
+    position: relative;
+    background: transparent;  /* keep WebGL bg + particles visible */
+    padding: 40px 0 32px;
+    overflow: hidden; /* contain the marquee */
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 60px;
+}
+
+.tc-footer__marquee {
+    overflow: hidden;
+    white-space: nowrap;
+    margin-bottom: 32px;
+    /* Soft fade at the left/right edges so the marquee feels endless
+       rather than abruptly clipped against the viewport. */
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+}
+
+.tc-footer__marquee-track {
+    display: inline-flex;
+    align-items: center;
+    gap: 40px;
+    /* The track contains 2 identical sets of items. translateX(-50%)
+       brings set 2 into the position set 1 started at — seamless loop. */
+    animation: tc-marquee 38s linear infinite;
+    will-change: transform;
+}
+
+.tc-footer__marquee-item {
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    /* A semi-transparent text-fill plus a tiny white text-stroke gives
+       the marquee a "ghost" feel — it's there but doesn't compete with
+       the colophon below. */
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(229, 231, 245, 0.35);
+    line-height: 1;
+}
+
+.tc-footer__marquee-dot {
+    -webkit-text-stroke: 0;
+    color: rgba(34, 211, 238, 0.6);
+}
+
+@keyframes tc-marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Colophon row */
+.tc-footer__colophon {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1.2fr;
+    gap: 32px;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .tc-footer__colophon {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 16px;
+    }
+}
+
+.tc-footer__col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tc-footer__col--links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    justify-content: center;
+}
+
+.tc-footer__col--meta {
+    align-items: flex-end;
+    text-align: right;
+}
+
+@media (max-width: 768px) {
+    .tc-footer__col--meta {
+        align-items: center;
+        text-align: center;
+    }
+}
+
+.tc-footer__brand {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 0.01em;
+}
+
+.tc-footer__tag {
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+.tc-footer__col--links a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.3s ease;
+}
+
+.tc-footer__col--links a:hover {
+    color: var(--primary-color);
+}
+
+.tc-footer__email {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.3s ease;
+}
+
+.tc-footer__email:hover {
+    color: var(--secondary-color);
+}
+
+.tc-footer__year {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+/* ---- Reduced motion overrides for chrome ---- */
+
+@media (prefers-reduced-motion: reduce) {
+    .tc-footer__marquee-track {
+        animation: none;
+    }
+
+    .tc-menu,
+    .tc-menu__inner,
+    .tc-menu__meta {
+        transition: none;
+    }
+
+    .tc-menu__list a .char {
+        opacity: 1;
+        transform: none;
+    }
+}

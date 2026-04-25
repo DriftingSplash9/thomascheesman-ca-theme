@@ -14,6 +14,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     initWebGLBackground();
+    initSiteChrome();
     initKineticHero();
     initHeroScrollOut();
     initPillarReveal();
@@ -1208,4 +1209,176 @@ function initInkTrail() {
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
+}
+
+/**
+ * Site chrome — the floating glass capsule + fullscreen overlay menu.
+ *
+ * Three concerns are bundled here so a single init owns the chrome state:
+ *
+ *   1. Live clock — updates HH:MM and the IANA-zone short name once per
+ *      minute. Uses Intl.DateTimeFormat so it respects the user's locale
+ *      and timezone automatically.
+ *
+ *   2. Menu open/close — driven by a single class on <html>:
+ *      `html.tc-menu-open`. CSS handles the visibility, blur, and the
+ *      ☰→✕ trigger morph. JS handles:
+ *        - Splitting each menu link's text into per-character spans on
+ *          first open (cached after that), so we can stagger them in.
+ *        - Running a GSAP timeline that overlaps the panel rise with
+ *          the per-link char waterfall.
+ *        - Aria state, scroll lock (CSS), focus management.
+ *        - Escape key + backdrop click + trigger click all close.
+ *
+ *   3. Reduced motion — animation is short-circuited; the menu still
+ *      opens and closes, but instantly. The capsule clock still runs.
+ */
+function initSiteChrome() {
+    const html = document.documentElement;
+    const trigger = document.querySelector('[data-menu-trigger]');
+    const menu = document.getElementById('tc-menu');
+    const backdrop = document.querySelector('[data-menu-backdrop]');
+    const triggerLabel = document.querySelector('[data-trigger-label]');
+    const clockTime = document.querySelector('[data-clock-time]');
+    const clockZone = document.querySelector('[data-clock-zone]');
+
+    // ---- Clock ticker ----
+    // Update on init and again at the top of every minute. We compute the
+    // ms until the next minute boundary so the first tick happens precisely
+    // when the displayed minute would change, not on a 60s interval drift.
+    if (clockTime) {
+        function renderClock() {
+            const now = new Date();
+            try {
+                const time = new Intl.DateTimeFormat([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                }).format(now);
+                clockTime.textContent = time;
+
+                if (clockZone) {
+                    // timeZoneName: 'short' gives us things like "PDT", "MST", "GMT+1".
+                    const parts = new Intl.DateTimeFormat([], {
+                        timeZoneName: 'short',
+                    }).formatToParts(now);
+                    const zone = parts.find(function (p) { return p.type === 'timeZoneName'; });
+                    if (zone) clockZone.textContent = zone.value;
+                }
+            } catch (err) {
+                // Some old engines reject empty locale arrays. Fallback:
+                clockTime.textContent = now.toTimeString().slice(0, 5);
+            }
+        }
+        renderClock();
+        // First scheduled tick: align to the next minute boundary, then
+        // every 60s after that.
+        const msToNextMinute = (60 - new Date().getSeconds()) * 1000;
+        setTimeout(function tick() {
+            renderClock();
+            setInterval(renderClock, 60000);
+        }, msToNextMinute);
+    }
+
+    // If the menu DOM isn't on this page, bail after starting the clock.
+    if (!trigger || !menu) return;
+
+    // ---- Menu state + helpers ----
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let isOpen = false;
+    let charsSplit = false; // cache: only split links once
+
+    // Split every menu link's text into char spans so we can stagger
+    // them in. Reuses the existing splitIntoCharSpans helper.
+    function ensureCharsSplit() {
+        if (charsSplit) return;
+        const links = menu.querySelectorAll('.tc-menu__list a');
+        links.forEach(function (link) { splitIntoCharSpans(link); });
+        charsSplit = true;
+    }
+
+    function openMenu() {
+        if (isOpen) return;
+        isOpen = true;
+
+        ensureCharsSplit();
+
+        html.classList.add('tc-menu-open');
+        menu.setAttribute('aria-hidden', 'false');
+        trigger.setAttribute('aria-expanded', 'true');
+        trigger.setAttribute('aria-label', 'Close menu');
+        if (triggerLabel) triggerLabel.textContent = 'Close';
+
+        if (reduceMotion) {
+            // Snap-on. CSS reduced-motion rules already make .char visible.
+            return;
+        }
+
+        // Animate each char into view. Reset state in case we're reopening.
+        const chars = menu.querySelectorAll('.tc-menu__list a .char');
+        gsap.set(chars, { opacity: 0, y: '110%' });
+        const meta = menu.querySelectorAll('.tc-menu__meta-list a, .tc-menu__meta-label');
+        gsap.set(meta, { opacity: 0, y: 12 });
+
+        const tl = gsap.timeline();
+
+        tl.to(chars, {
+            opacity: 1,
+            y: '0%',
+            duration: 0.7,
+            stagger: 0.018,
+            ease: 'power3.out',
+        }, 0.15);
+
+        tl.to(meta, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            stagger: 0.05,
+            ease: 'power2.out',
+        }, '-=0.3');
+
+        // Move keyboard focus to the first menu link so tab order makes
+        // sense for keyboard users.
+        const firstLink = menu.querySelector('.tc-menu__list a');
+        if (firstLink) firstLink.focus({ preventScroll: true });
+    }
+
+    function closeMenu() {
+        if (!isOpen) return;
+        isOpen = false;
+
+        html.classList.remove('tc-menu-open');
+        menu.setAttribute('aria-hidden', 'true');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.setAttribute('aria-label', 'Open menu');
+        if (triggerLabel) triggerLabel.textContent = 'Menu';
+
+        // Return focus to the trigger so the user keeps their place.
+        trigger.focus({ preventScroll: true });
+    }
+
+    function toggleMenu() {
+        if (isOpen) closeMenu(); else openMenu();
+    }
+
+    // ---- Bindings ----
+    trigger.addEventListener('click', toggleMenu);
+
+    if (backdrop) {
+        backdrop.addEventListener('click', closeMenu);
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isOpen) closeMenu();
+    });
+
+    // Clicking any in-menu link should close the menu before navigation.
+    // Same-page anchor links (#section) would otherwise leave the menu
+    // hanging; off-site links close visually before the page unloads.
+    menu.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            closeMenu();
+        });
+    });
 }
