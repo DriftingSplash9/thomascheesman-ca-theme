@@ -20,27 +20,25 @@
 <footer class="tc-footer" role="contentinfo">
 
     <!-- Wordmark marquee. aria-hidden because it's purely decorative —
-         screen readers shouldn't read "TC 'ventures · TC 'ventures" repeatedly. -->
+         screen readers shouldn't read the tagline phrase repeatedly.
+         Content is one continuous prose phrase repeated with a decorative
+         glyph between repetitions. Single-phrase prose reads as ambient
+         banner text, not a list of clickable nav items (which the previous
+         "TC 'ventures · Life · Family · …" structure was getting confused
+         for). -->
     <div class="tc-footer__marquee" aria-hidden="true">
         <div class="tc-footer__marquee-track">
             <!-- Set 1 -->
-            <span class="tc-footer__marquee-item">TC 'ventures</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-dot">·</span>
-            <span class="tc-footer__marquee-item">Life · Family · Things that matter</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-dot">·</span>
-            <span class="tc-footer__marquee-item">TC 'ventures</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-dot">·</span>
-            <span class="tc-footer__marquee-item">Life · Family · Things that matter</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-dot">·</span>
-            <!-- Set 2 (duplicate, makes -50% loop seamless) -->
-            <span class="tc-footer__marquee-item">TC 'ventures</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-dot">·</span>
-            <span class="tc-footer__marquee-item">Life · Family · Things that matter</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-dot">·</span>
-            <span class="tc-footer__marquee-item">TC 'ventures</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-dot">·</span>
-            <span class="tc-footer__marquee-item">Life · Family · Things that matter</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-dot">·</span>
+            <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
+            <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
+            <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
+            <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
+            <!-- Set 2 (duplicate, makes the -50% turnaround position
+                 identical to the 0% start position — sway loops cleanly) -->
+            <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
+            <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
+            <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
+            <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
         </div>
     </div>
 

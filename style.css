@@ -1338,33 +1338,41 @@ html.tc-menu-open body {
 .tc-footer__marquee-track {
     display: inline-flex;
     align-items: center;
-    gap: 40px;
-    /* The track contains 2 identical sets of items. translateX(-50%)
-       brings set 2 into the position set 1 started at — seamless loop. */
-    animation: tc-marquee 38s linear infinite;
+    gap: 56px;
+    /* Oscillating sway: drift left to -50% (the seamless mid-loop
+       position thanks to the duplicate item set), then drift back to
+       the start. Combined with ease-in-out, the motion slows at both
+       turnaround points so it reads as a gentle tide rather than
+       continuous one-direction scroll — much calmer underneath the
+       moving particle field. */
+    animation: tc-marquee 60s ease-in-out infinite;
     will-change: transform;
 }
 
 .tc-footer__marquee-item {
-    font-size: clamp(2.5rem, 8vw, 5rem);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    /* A semi-transparent text-fill plus a tiny white text-stroke gives
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    /* A semi-transparent text-fill plus a faint white text-stroke gives
        the marquee a "ghost" feel — it's there but doesn't compete with
        the colophon below. */
     color: transparent;
-    -webkit-text-stroke: 1px rgba(229, 231, 245, 0.35);
+    -webkit-text-stroke: 1px rgba(229, 231, 245, 0.3);
     line-height: 1;
 }
 
-.tc-footer__marquee-dot {
+/* Decorative glyph between phrase repetitions. Filled cyan instead of
+   stroked, so it punctuates the sway without reading as a list separator. */
+.tc-footer__marquee-glyph {
     -webkit-text-stroke: 0;
-    color: rgba(34, 211, 238, 0.6);
+    color: rgba(34, 211, 238, 0.55);
+    font-size: clamp(1.4rem, 4vw, 2.6rem);
 }
 
 @keyframes tc-marquee {
-    from { transform: translate3d(0, 0, 0); }
-    to   { transform: translate3d(-50%, 0, 0); }
+    0%   { transform: translate3d(0, 0, 0); }
+    50%  { transform: translate3d(-50%, 0, 0); }
+    100% { transform: translate3d(0, 0, 0); }
 }
 
 /* Colophon row */
