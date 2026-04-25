@@ -250,18 +250,19 @@ function initPillarReveal() {
 /**
  * Decelerated tumble reveal for the blog section's post cards.
  *
- * Each card rises 100px from below while rotating from -10° back to 0°,
- * with a power4.out easing curve — most of the motion happens in the
- * first ~25% of the duration, then the rotation eases gently into place.
- * Reads as "tumble-in then settle".
+ * Each card rises 100px from below + rotates back to 0° from a random
+ * starting angle in [-18°, +18°]. Per-card random angles mean no two
+ * tumbles look identical — every load has a different shape.
  *
- * Sequence: card 2, card 3, card 1 (not document order). We reorder the
- * targets array so GSAP's stagger applies to the reordered list. If there
- * are fewer than 3 posts, we fall back gracefully.
+ * Sequence is also randomized per load (Fisher-Yates shuffle) so the
+ * reveal order surprises on every visit.
+ *
+ * Easing: power3.out — fast at first, gentle settle. Less dramatic than
+ * power4.out so the tumble has more time to read.
  *
  * Same trigger logic as the pillar reveal (immediate on load if visible,
- * otherwise scroll-triggered). onComplete clears inline transforms so the
- * CSS hover lift on .post-card works after the reveal finishes.
+ * otherwise scroll-triggered). onComplete clears inline transforms so
+ * the CSS hover lift on .post-card works after the reveal finishes.
  */
 function initBlogReveal() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -272,21 +273,23 @@ function initBlogReveal() {
     const cards = section.querySelectorAll('.post-card');
     if (cards.length === 0) return;
 
-    gsap.set(cards, {
-        opacity: 0,
-        y: 100,
-        rotation: -10,
+    // Each card gets its own random starting angle in [-18°, +18°].
+    cards.forEach((card) => {
+        const rotation = (Math.random() - 0.5) * 36;
+        gsap.set(card, {
+            opacity: 0,
+            y: 100,
+            rotation,
+        });
     });
 
-    // Reorder so the stagger goes 2nd, 3rd, 1st. Fallbacks handle <3 cards
-    // (which shouldn't happen in this layout, but defensive code is cheap).
-    let ordered;
-    if (cards.length >= 3) {
-        ordered = [cards[1], cards[2], cards[0]];
-    } else if (cards.length === 2) {
-        ordered = [cards[1], cards[0]];
-    } else {
-        ordered = [cards[0]];
+    // Fisher-Yates shuffle for a uniformly random reveal order. Sort with
+    // a random comparator works visually for small N but is biased; this
+    // is the same number of lines and unbiased.
+    const ordered = Array.from(cards);
+    for (let i = ordered.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [ordered[i], ordered[j]] = [ordered[j], ordered[i]];
     }
 
     const tl = gsap.timeline({
@@ -301,8 +304,8 @@ function initBlogReveal() {
         y: 0,
         rotation: 0,
         duration: 0.95,
-        stagger: 0.18,
-        ease: 'power4.out',
+        stagger: 0.25,
+        ease: 'power3.out',
     });
 
     const rect = section.getBoundingClientRect();
