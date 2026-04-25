@@ -723,10 +723,10 @@ html.cursor-custom [contenteditable] {
 }
 
 .cursor-ring--hover {
-    width: 28px;
-    height: 28px;
+    width: 35px;
+    height: 35px;
     border-width: 2px;
-    background: color-mix(in srgb, #3B82F6 12%, transparent);
+    background: transparent;
 }
 
 /* ============================================
