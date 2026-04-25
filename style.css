@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.6
+Version: 1.0.7
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1752,13 +1752,21 @@ html.tc-menu-open body {
    HERITAGE PAGE — THE FAMILIES
    ============================================
    Long-form genealogy hub at /family/heritage. Five family lines
-   stacked vertically with strong typographic hierarchy:
-     - Number prefix (01–05) as eyebrow above each title
-     - Big H2 title
-     - Italic subtitle
-     - Narrow reading column (~720px) with generous line-height
-     - Subtle gradient dividers between sections
-     - Pull-quote-style callout for invitations to reach out
+   stacked vertically; each line is dressed up so the page reads as
+   "presented" editorial rather than a wall of plain text.
+
+   Per-line treatments:
+     - Per-section accent color (--line-color) varied by :nth-of-type
+     - GIANT ghost numeral floating in the section corner (CSS counter
+       + transparent text-stroke watermark)
+     - Drop cap on the first body paragraph in the line's accent color
+     - Pull quotes mid-section (aside.heritage-line__quote) — large
+       italic with accent left-border
+     - Number eyebrow + title + italic subtitle + narrow 720px body
+
+   The accent colors are pulled from the same palette family as the
+   pillar cards on /family so the visual language stays consistent
+   across the site.
 */
 
 /* "Back to Family" breadcrumb at the top of the hero. Sits above the
@@ -1814,23 +1822,80 @@ html.tc-menu-open body {
 
 .heritage-lines {
     padding: 0 20px;
+    /* CSS counter — auto-numbered 1, 2, 3, … which we format with
+       decimal-leading-zero in the ::before content for the giant
+       ghost numeral behind each section. */
+    counter-reset: heritage-line;
+    /* Default accent color used by the lines if their nth-of-type
+       palette below doesn't override it. */
+    --line-color: var(--primary-color);
 }
 
 .heritage-line {
-    margin: clamp(60px, 10vh, 120px) 0;
+    position: relative;
+    margin: clamp(80px, 14vh, 160px) 0;
+    counter-increment: heritage-line;
+    /* Stacking context so the giant ghost numeral (::before) can sit
+       behind the body content without escaping the section. */
+    isolation: isolate;
 }
 
-/* Number prefix as a small uppercase eyebrow above the title. Keeps the
-   reading flow simple — easier to scan than a giant floating numeral
-   and matches the eyebrow pattern from the page-hero. */
+/* Per-section accent palette — each family line gets its own color.
+   Cheesmans (cyan), Dochertys (pink), Lakemans (emerald), Rycrofts
+   (amber), Haistes (indigo). The variable is then pulled by the
+   number eyebrow, drop cap, pull-quote border, divider gradient
+   accents, and the giant ghost numeral. */
+.heritage-line:nth-of-type(1) { --line-color: #22D3EE; }  /* Cheesmans */
+.heritage-line:nth-of-type(2) { --line-color: #EC4899; }  /* Dochertys */
+.heritage-line:nth-of-type(3) { --line-color: #10B981; }  /* Lakemans */
+.heritage-line:nth-of-type(4) { --line-color: #F59E0B; }  /* Rycrofts */
+.heritage-line:nth-of-type(5) { --line-color: #6366F1; }  /* Haistes */
+
+/* GIANT ghost numeral floating behind each section — the watermark.
+   Renders the CSS counter as decimal-leading-zero ("01" → "05"), sized
+   massive (up to 18vw), positioned top-right, transparent fill with a
+   thin accent-colored stroke at low alpha. Doesn't fight the body text
+   because it's z-index:-1 within the section's stacking context. */
+.heritage-line::before {
+    content: counter(heritage-line, decimal-leading-zero);
+    position: absolute;
+    top: -0.15em;
+    right: -0.05em;
+    font-size: clamp(7rem, 18vw, 14rem);
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    color: transparent;
+    -webkit-text-stroke: 1px color-mix(in srgb, var(--line-color) 35%, transparent);
+    z-index: -1;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Small uppercase number eyebrow — the reliable, always-visible label
+   that pairs with the giant ghost behind. Uses the line's accent color. */
 .heritage-line__number {
     display: block;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: var(--primary-color);
+    color: var(--line-color);
     margin-bottom: 14px;
+    /* Positioning context for the small accent stripe before the title. */
+    position: relative;
+}
+
+/* Accent stripe just before the title — a 60px gradient sliver of the
+   line color that fades to transparent. Visually separates the eyebrow
+   from the H2 and ties the accent palette into the typographic block. */
+.heritage-line__number::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--line-color) 0%, transparent 100%);
+    margin-top: 14px;
 }
 
 .heritage-line__title {
@@ -1838,7 +1903,7 @@ html.tc-menu-open body {
     font-weight: 700;
     line-height: 1.05;
     letter-spacing: -0.02em;
-    margin: 0 0 10px 0;
+    margin: 14px 0 10px 0;
     color: var(--text-dark);
 }
 
@@ -1859,12 +1924,31 @@ html.tc-menu-open body {
     margin: 0 0 1.4em 0;
 }
 
-/* Sub-heads inside a body — cyan, slightly smaller than the line title,
-   used to mark named subjects like "Grampa Docherty" / "Ganny Docherty". */
+/* DROP CAP — the first letter of the first paragraph in each line's
+   body becomes a giant illuminated initial in the line's accent color.
+   Floated left so subsequent text wraps around. line-height tuned so
+   the cap aligns with the cap-height of the first ~3 lines. */
+.heritage-line__body > p:first-of-type::first-letter {
+    float: left;
+    font-size: 4.2em;
+    font-weight: 800;
+    line-height: 0.85;
+    color: var(--line-color);
+    margin: 6px 14px 0 0;
+    padding: 0;
+    /* Subtle shadow so the cap reads against any underlying gradient
+       drift from the WebGL bg. */
+    text-shadow: 0 2px 14px color-mix(in srgb, var(--line-color) 45%, transparent);
+    letter-spacing: -0.02em;
+}
+
+/* Sub-heads inside a body — use the line color so each section's
+   subjects (Grampa Docherty, Ganny Docherty, etc.) read as part of
+   that line's family. */
 .heritage-line__body h3 {
     font-size: clamp(1.2rem, 2vw, 1.45rem);
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--line-color);
     margin: 2em 0 0.5em 0;
     letter-spacing: -0.01em;
 }
@@ -1879,12 +1963,36 @@ html.tc-menu-open body {
     font-style: italic;
 }
 
-/* Pull-quote-style callout — used for the "if you're family on this
-   side and you're reading this" invitations. Left-border accent +
-   slightly more spacing makes it visually distinct without being a
-   loud blockquote. */
+/* PULL QUOTE — large italic display type that breaks up the body and
+   highlights one memorable line per section. aria-hidden in the
+   markup since the quote text already appears verbatim in the body
+   prose; this is purely visual emphasis. Left-border + extra padding
+   set it off without a heavy blockquote treatment. */
+.heritage-line__quote {
+    margin: 2.2em 0 2.4em 0;
+    padding: 12px 0 12px 28px;
+    border-left: 3px solid var(--line-color);
+    font-size: clamp(1.4rem, 2.6vw, 2rem);
+    font-style: italic;
+    line-height: 1.35;
+    color: var(--text-dark);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    /* Position relative so the giant ghost numeral behind doesn't
+       absorb the visual weight here. */
+    position: relative;
+    z-index: 1;
+}
+
+.heritage-line__quote p {
+    margin: 0;
+}
+
+/* Existing pull-quote callout (the "reach out to me" invitations).
+   Distinct from the new __quote: smaller, slate-colored, used as a
+   sign-off rather than a display element. */
 .heritage-line__callout {
-    border-left: 2px solid var(--primary-color);
+    border-left: 2px solid var(--line-color);
     padding: 4px 0 4px 20px;
     margin: 2em 0 0 0 !important;
     font-style: italic;
@@ -1892,9 +2000,9 @@ html.tc-menu-open body {
     font-size: clamp(0.98rem, 1.25vw, 1.08rem);
 }
 
-/* Section divider between family lines — a soft horizontal gradient
-   that fades to transparent at both ends. Less harsh than a flat rule
-   on a dark bg. */
+/* Section divider between family lines — gradient now keys to the
+   *next* line's accent isn't possible in CSS, so we keep a neutral
+   fade. Provides a quiet visual breath between heavy sections. */
 .heritage-line__divider {
     border: 0;
     height: 1px;
@@ -1906,6 +2014,22 @@ html.tc-menu-open body {
     );
     margin: 0;
 }
+
+/* Mobile tightening: drop caps and giant numerals scale down so they
+   don't overwhelm narrow screens. */
+@media (max-width: 600px) {
+    .heritage-line::before {
+        font-size: clamp(5rem, 24vw, 8rem);
+        right: -0.02em;
+    }
+    .heritage-line__body > p:first-of-type::first-letter {
+        font-size: 3.4em;
+        margin: 4px 10px 0 0;
+    }
+}
+
+/* Reduced-motion fallback: no scroll-reveal stagger, but the
+   typographic treatments are static so they don't need disabling. */
 
 /* ---- Coda — closing "A note on names" ---- */
 

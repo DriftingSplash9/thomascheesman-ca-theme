@@ -83,6 +83,10 @@ get_header(); ?>
 
                     <p>The grandparents on this side were John and Sandra Cheesman. John passed away from cancer. Sandy is still with us, though pain and limited mobility keep her close to home. The Cheesmans tend to keep a tight circle &mdash; for years it was really just John, Sandy, the two boys, and Sandy's mother. It must be a Cheesman thing.</p>
 
+                    <aside class="heritage-line__quote" aria-hidden="true">
+                        <p>The Cheesman name is the one I carry, and the one my kids carry now.</p>
+                    </aside>
+
                     <p>Brian is my stepfather. My biological father is Martin Lakeman, which is its own family line further down this page. Both men are part of how I got here. The Cheesman name is the one I carry, and the one my kids carry now.</p>
 
                     <p>For a long stretch &mdash; roughly 1990 to 2013 &mdash; the Cheesman side stayed small and close. Mostly just my immediate family and a handful of relatives. I'd love more group photos of the cousins and their families now. If you have them, send them. It's been long enough. Time to put everyone in the same frame again.</p>
@@ -105,6 +109,10 @@ get_header(); ?>
                     <h3>Grampa Docherty</h3>
                     <p>Thomas Richard Docherty was born January 16, 1914, in Alix, Alberta, and died March 20, 1977, in Calgary at 63. He served as an anti-aircraft gunner during the Second World War, stationed around Prince Rupert. Before that, in the 1930s, he was a Golden Gloves boxer who took prize fights for the purse &mdash; and there's a family story that he once found himself stranded in California without money and prize-fought his way back to Canada one bout at a time. The Dochertys came over from Scotland &mdash; Hamilton, Lanarkshire &mdash; and migrated through the eastern United States before settling in Alix. Presbyterian, the lot of them. His funeral was at &ldquo;The Little Chapel on The Corner&rdquo; with Rev. J.L. Pottruff officiating.</p>
 
+                    <aside class="heritage-line__quote" aria-hidden="true">
+                        <p>He prize-fought his way back to Canada one bout at a time.</p>
+                    </aside>
+
                     <p>His siblings included his brother Abraham Lincoln &ldquo;Abe&rdquo; Docherty (born February 9, 1916, in Alix), his older sister Catharina Grace Docherty (born May 16, 1909, in Preemption, Mercer County, Illinois &mdash; yes, Illinois &mdash; and died May 20, 1968, in Calgary; she married Herbert Nelson McKay), and a half-sister, Lena Sullivan. Family record holds that Lena was a niece of John L. Sullivan, the bare-knuckle boxing champion. That one's family lore worth chasing down before I'd swear to it, but it's the story that got handed down &mdash; and it does fit the boxing thread on this side.</p>
 
                     <h3>Ganny Docherty</h3>
@@ -126,6 +134,10 @@ get_header(); ?>
 
                 <div class="heritage-line__body">
                     <p>The Lakemans are my biological father's side, and they carry a story that ranges from the Dutch East Indies through five continents to a Calgary taxi dispatch office. Most of what follows comes straight from a long email my dad Martin wrote me &mdash; it's his story to tell, and he told it well.</p>
+
+                    <aside class="heritage-line__quote" aria-hidden="true">
+                        <p>The Dutch East Indies through five continents to a Calgary taxi dispatch office.</p>
+                    </aside>
 
                     <p>My biological father is <strong>Martin Gerard Lakeman</strong>, born March 30, 1957, at the Holy Cross Hospital in Calgary. The newspaper announcement that ran a few days later read: <em>&ldquo;Dr. and Mrs. R. Lakeman announce the birth of their son Martin Gerard on March 30th at Holy Cross Hospital.&rdquo;</em> Martin has two older brothers, <strong>Rienk Jr.</strong> and <strong>Alexander &ldquo;Lex&rdquo; Lakeman</strong>, both born outside Canada. Martin was the first of the three sons to be born on Canadian soil.</p>
 
@@ -164,6 +176,10 @@ get_header(); ?>
 
                     <p>In 1920, when the area split off from Spirit River and needed a name, four pioneers &mdash; R.H. Rycroft, W.S.O. &ldquo;Billy&rdquo; English, H.E. &ldquo;Doc&rdquo; Calkin, and George Garnett &mdash; wrote their names on slips of paper, dropped them in a hat, and pulled one out. The slip said Rycroft. (For about fourteen years afterward the local post office got it wrong and called itself &ldquo;Roycroft,&rdquo; until the Board of Trade finally got the spelling fixed in 1934 to match what the railway had used since 1916.)</p>
 
+                    <aside class="heritage-line__quote" aria-hidden="true">
+                        <p>The slip said Rycroft.</p>
+                    </aside>
+
                     <p>R.H. and Helene hosted the first meeting of the Spirit River Rural Municipality in their home in January 1917. He served as the municipality's secretary-treasurer, sat on the school board, and was a Justice of the Peace for many years.</p>
 
                     <p>Their son <strong>Eric Jarmann Rycroft</strong> was born January 30, 1909, in Honolulu and came to Vancouver as a small child in 1912. He married <strong>Laureta Maud Jennie Clark</strong> on November 26, 1933, in Teepee Creek, Alberta. Eric died January 4, 1993, at 83 and is buried in Teepee Creek.</p>
@@ -186,6 +202,10 @@ get_header(); ?>
 
                 <div class="heritage-line__body">
                     <p>The Haistes are my wife Melanie's father's side, and they came a long way to get here. The trail runs from a registration district in Yorkshire to a homestead in the Saskatchewan prairie to a life in Edmonton &mdash; three generations and an ocean.</p>
+
+                    <aside class="heritage-line__quote" aria-hidden="true">
+                        <p>Three generations and an ocean.</p>
+                    </aside>
 
                     <p>The earliest confirmed Haiste in Melanie's direct line is <strong>John Haiste</strong>, born around 1840 in Yorkshire, who married <strong>Jessy Hobson</strong> in late 1866 in the Wharfedale registration district, near Otley. They had nine children. One of those children was <strong>Ernest Haiste</strong>, born October 16, 1881, in Pontefract, Yorkshire &mdash; a working-class family in industrial Yorkshire when the textile mills and coal mines were running flat-out.</p>
 
