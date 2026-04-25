@@ -142,6 +142,59 @@ function tc_ventures_redirect_attachment_to_file() {
 add_action( 'template_redirect', 'tc_ventures_redirect_attachment_to_file' );
 
 /**
+ * Allow pages and posts to reclaim slugs that are "taken" by attachments.
+ *
+ * WordPress enforces slug uniqueness across ALL post types — so even
+ * after we've disabled attachment URLs above, the slug records in the
+ * database still count as taken. Result: trying to publish a page named
+ * "Family" with a family.jpg attachment present will auto-rename the
+ * page slug to "family-2", "family-3", etc.
+ *
+ * This filter looks at the slug WP wants to use (the modified one) and
+ * the original slug the user requested. If the only conflict for the
+ * original slug is with an attachment, we hand back the original — the
+ * attachment's slug doesn't matter anymore because attachment URLs no
+ * longer route. Pages and other posts are still checked normally, so
+ * two real pages can't ever share a slug.
+ *
+ * Filter signature ref: WP core's `wp_unique_post_slug`.
+ */
+function tc_ventures_allow_page_slug_over_attachment( $slug, $post_id, $post_status, $post_type, $post_parent, $original_slug ) {
+    // Only relevant when WP changed the slug (collision detected) and
+    // the post being saved is a page or a regular post.
+    if ( $slug === $original_slug ) {
+        return $slug;
+    }
+    if ( ! in_array( $post_type, array( 'page', 'post' ), true ) ) {
+        return $slug;
+    }
+
+    global $wpdb;
+
+    // Direct DB check: is there any *non-attachment* post with this
+    // slug, excluding the current one and excluding trashed / auto-draft
+    // entries? If not, the conflict was only with attachments — safe to
+    // reuse the original slug.
+    $conflict = $wpdb->get_var( $wpdb->prepare(
+        "SELECT ID FROM {$wpdb->posts}
+         WHERE post_name = %s
+           AND post_type != 'attachment'
+           AND post_status NOT IN ('trash', 'auto-draft')
+           AND ID != %d
+         LIMIT 1",
+        $original_slug,
+        $post_id
+    ) );
+
+    if ( ! $conflict ) {
+        return $original_slug;
+    }
+
+    return $slug;
+}
+add_filter( 'wp_unique_post_slug', 'tc_ventures_allow_page_slug_over_attachment', 10, 6 );
+
+/**
  * Placeholders — uncomment when ready.
  */
 
