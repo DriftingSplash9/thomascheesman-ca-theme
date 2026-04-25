@@ -707,10 +707,10 @@ html.cursor-custom [contenteditable] {
     position: fixed;
     top: 0;
     left: 0;
-    width: 32px;
-    height: 32px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    border: 1px solid var(--primary-color);
+    border: 1px solid #3B82F6;
     background: transparent;
     pointer-events: none;
     z-index: 10000;
@@ -723,10 +723,10 @@ html.cursor-custom [contenteditable] {
 }
 
 .cursor-ring--hover {
-    width: 56px;
-    height: 56px;
+    width: 28px;
+    height: 28px;
     border-width: 2px;
-    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    background: color-mix(in srgb, #3B82F6 12%, transparent);
 }
 
 /* ============================================
