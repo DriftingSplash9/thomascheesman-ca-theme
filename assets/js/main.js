@@ -144,28 +144,40 @@ function initScrollReveals() {
 }
 
 /**
- * Pressure-sensitive ink-trail cursor effect.
+ * Pressure-sensitive ink-trail cursor with flint-style sparks.
  *
- * What you see: a soft glowing trail follows the cursor; slow movements
- * draw thicker (like pressing harder with a pen), fast flicks draw thin
- * and wispy. Each stroke fades to transparent over ~700ms.
+ * What you see:
+ *   - A soft white trail follows the cursor; slow movements draw thicker
+ *     (like pressing harder with a pen), fast flicks draw thin and wispy.
+ *     Each stroke fades to transparent over MAX_AGE (~850ms).
+ *   - Above a velocity threshold, warm amber sparks spit off the cursor in
+ *     random directions, fall slightly under gravity, and burn out within
+ *     ~250–450ms. Subtle — meant to evoke flint on stone, not fireworks.
  *
- * How it works:
+ * How the trail works:
  *   1. We append a transparent <canvas> to <body> sized to the viewport.
  *      It's pointer-events:none so it doesn't intercept clicks.
  *   2. mousemove samples the cursor position with a timestamp and
  *      computed velocity (pixels per millisecond from the previous sample).
- *   3. A requestAnimationFrame loop:
- *        - drops samples older than MAX_AGE
- *        - for each remaining segment, draws four stacked strokes:
- *            outer: wide + faint (the soft-edge halo)
- *            ...
- *            inner: thin + bright (the dark center line)
- *      Width per segment scales inversely with velocity (slow = thick),
- *      and alpha scales with how fresh the segment is.
- *   4. The canvas uses mix-blend-mode: difference so the trail color
- *      adapts to whatever's behind it — black-ish on white sections,
- *      light on the purple hero. Always visible, never tuned by hand.
+ *   3. A requestAnimationFrame loop drops expired samples, then for each
+ *      remaining segment draws four stacked strokes (outer wide+faint to
+ *      inner thin+bright) — the soft-edged ink look. Width per segment
+ *      scales inversely with velocity (slow = thick), and alpha scales
+ *      with how fresh the segment is.
+ *
+ * How the sparks work:
+ *   - On every mousemove, if speed > SPARK_THRESHOLD, we roll a probability
+ *     that scales with speed. Pass = emit 1–2 spark particles seeded with a
+ *     velocity opposite-ish to cursor motion (so they trail behind) plus a
+ *     random angular spread. Each particle has its own lifespan and gravity
+ *     accumulates on its vertical velocity each frame.
+ *
+ * Color choice:
+ *   - Trail is plain white (we removed mix-blend-mode). Reads great on the
+ *     dark hero; will read weak on the current white pillar/posts sections
+ *     until those sections get dark-mode treatment.
+ *   - Sparks are warm amber (#ffb060) — high contrast against the cool
+ *     trail and against any dark background.
  *
  * Sit-out conditions:
  *   - prefers-reduced-motion → skip entirely (the loop never starts).
@@ -186,7 +198,6 @@ function initInkTrail() {
         height: '100%',
         pointerEvents: 'none',
         zIndex: '9999',
-        mixBlendMode: 'difference',
     });
     document.body.appendChild(canvas);
 
@@ -204,9 +215,9 @@ function initInkTrail() {
     resize();
     window.addEventListener('resize', resize);
 
-    // Sampled cursor positions. Each entry: { x, y, t (ms), v (px/ms) }.
-    const points = [];
-    const MAX_AGE = 700; // ms before a sample expires
+    // ----- Trail state -----
+    const points = []; // { x, y, t (ms), v (px/ms) }
+    const MAX_AGE = 850; // ms before a sample expires
 
     // Stacked stroke layers, outer-to-inner. Width is the BASE that gets
     // multiplied by velocity-factor and age-factor per segment. Alpha is
@@ -218,23 +229,60 @@ function initInkTrail() {
         { width: 1,  alpha: 0.95 },
     ];
 
+    // ----- Spark state -----
+    const sparks = []; // { x, y, vx, vy, t, lifespan }
+    const SPARK_THRESHOLD = 0.18;     // px/ms; below this, no sparks
+    const SPARK_MAX_PROB  = 0.45;     // ceiling on emit chance per mousemove
+    const SPARK_GRAVITY   = 0.00035;  // px/ms² added to vy each frame
+    let lastFrameTime = performance.now();
+
     document.addEventListener('mousemove', function (e) {
         const now = performance.now();
         const last = points[points.length - 1];
+
         let velocity = 0;
+        let dx = 0, dy = 0;
         if (last) {
             const dt = Math.max(1, now - last.t);
-            const dx = e.clientX - last.x;
-            const dy = e.clientY - last.y;
+            dx = e.clientX - last.x;
+            dy = e.clientY - last.y;
             velocity = Math.hypot(dx, dy) / dt; // px/ms
         }
         points.push({ x: e.clientX, y: e.clientY, t: now, v: velocity });
+
+        // Spark emission. Probability ramps from 0 at threshold to
+        // SPARK_MAX_PROB by ~speed=0.9. Subtle by design.
+        if (velocity > SPARK_THRESHOLD) {
+            const emitProb = Math.min(SPARK_MAX_PROB, (velocity - SPARK_THRESHOLD) / 1.6);
+            if (Math.random() < emitProb) {
+                const cursorAngle = Math.atan2(dy, dx);
+                const count = 1 + Math.floor(Math.random() * 2); // 1 or 2
+                for (let i = 0; i < count; i++) {
+                    // Fly opposite cursor direction + spread of ±~70°.
+                    const spread = (Math.random() - 0.5) * (Math.PI * 0.78);
+                    const sparkAngle = cursorAngle + Math.PI + spread;
+                    const sparkSpeed = 0.06 + Math.random() * 0.18; // px/ms
+                    sparks.push({
+                        x: e.clientX,
+                        y: e.clientY,
+                        vx: Math.cos(sparkAngle) * sparkSpeed,
+                        vy: Math.sin(sparkAngle) * sparkSpeed,
+                        t: now,
+                        lifespan: 250 + Math.random() * 200, // ms
+                    });
+                }
+            }
+        }
     });
 
     function render() {
         const now = performance.now();
+        const dt = Math.max(1, now - lastFrameTime); // ms since last frame
+        lastFrameTime = now;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // ---- Trail pass ----
         // Drop expired samples from the head of the queue.
         while (points.length && now - points[0].t > MAX_AGE) {
             points.shift();
@@ -243,7 +291,7 @@ function initInkTrail() {
         if (points.length >= 2) {
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            ctx.strokeStyle = '#ffffff'; // mix-blend-mode does the contrast work
+            ctx.strokeStyle = '#ffffff';
 
             for (const layer of LAYERS) {
                 for (let i = 1; i < points.length; i++) {
@@ -256,7 +304,7 @@ function initInkTrail() {
 
                     // Slow movement → thick (more "pressure"). Cap at 0.25 so
                     // even very fast flicks leave a visible thread.
-                    const velocityFactor = Math.max(0.25, 1 - Math.min(1, b.v / 1.5));
+                    const velocityFactor = Math.max(0.25, 1 - Math.min(1, b.v / 1.25));
 
                     ctx.lineWidth = Math.max(0.1, layer.width * velocityFactor * ageFactor);
                     ctx.globalAlpha = layer.alpha * ageFactor;
@@ -270,6 +318,35 @@ function initInkTrail() {
 
             ctx.globalAlpha = 1;
         }
+
+        // ---- Sparks pass ----
+        // Iterate backwards so we can splice expired particles in place.
+        for (let i = sparks.length - 1; i >= 0; i--) {
+            const s = sparks[i];
+            const age = now - s.t;
+
+            if (age > s.lifespan) {
+                sparks.splice(i, 1);
+                continue;
+            }
+
+            // Integrate position. dt is in ms, vx/vy are px/ms.
+            s.x += s.vx * dt;
+            s.y += s.vy * dt;
+            s.vy += SPARK_GRAVITY * dt;
+
+            const lifeRatio = age / s.lifespan;
+            const alpha = 1 - lifeRatio;
+            // Slight shrink as the spark cools.
+            const radius = 1.6 * (1 - lifeRatio * 0.6);
+
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = '#ffb060';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
 
         requestAnimationFrame(render);
     }
