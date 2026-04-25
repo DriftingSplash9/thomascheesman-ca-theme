@@ -469,10 +469,13 @@ body {
 .btn-primary {
     background: var(--primary-gradient);
     color: white;
+    /* Magnet variables drive the resting transform; CSS hover composes
+       on top via calc() so both effects layer cleanly. */
+    transform: translate(var(--magnet-x, 0), var(--magnet-y, 0));
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
+    transform: translate(var(--magnet-x, 0), calc(var(--magnet-y, 0) - 2px));
     box-shadow: 0 10px 25px color-mix(in srgb, var(--primary-color) 45%, transparent);
 }
 
@@ -480,10 +483,11 @@ body {
     background: transparent;
     color: var(--primary-color);
     border: 2px solid var(--primary-color);
+    transform: translate(var(--magnet-x, 0), var(--magnet-y, 0));
 }
 
 .btn-secondary:hover {
-    transform: translateY(-2px);
+    transform: translate(var(--magnet-x, 0), calc(var(--magnet-y, 0) - 2px));
     background: var(--primary-color);
     color: var(--bg-base);
     box-shadow: 0 10px 25px color-mix(in srgb, var(--primary-color) 40%, transparent);
@@ -664,6 +668,65 @@ body {
         width: 100%;
         text-align: center;
     }
+}
+
+/* ============================================
+   CUSTOM CURSOR
+   ============================================
+   Two-layer cursor: sharp inner dot + slow outer ring. JS positions
+   them every frame via transform. The ::hover variant of the ring
+   fires when the cursor is over interactive elements. */
+
+html.cursor-custom,
+html.cursor-custom * {
+    cursor: none;
+}
+
+/* Restore native text cursor on form fields so typing still feels normal. */
+html.cursor-custom input,
+html.cursor-custom textarea,
+html.cursor-custom select,
+html.cursor-custom [contenteditable] {
+    cursor: text;
+}
+
+.cursor-dot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-dark);
+    pointer-events: none;
+    z-index: 10000;
+    will-change: transform;
+}
+
+.cursor-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--primary-color);
+    background: transparent;
+    pointer-events: none;
+    z-index: 10000;
+    will-change: transform, width, height, border-width, background;
+    transition:
+        width 0.25s ease,
+        height 0.25s ease,
+        border-width 0.25s ease,
+        background 0.25s ease;
+}
+
+.cursor-ring--hover {
+    width: 56px;
+    height: 56px;
+    border-width: 2px;
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
 }
 
 /* ============================================

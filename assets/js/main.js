@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', function () {
     initBlogReveal();
     initScrollReveals();
     initInkTrail();
+    initCustomCursor();
+    initMagneticElements();
 });
 
 /**
@@ -356,6 +358,151 @@ function initScrollReveals() {
             ease: 'power2.out',
         });
     });
+}
+
+/**
+ * Custom cursor — two layers: a sharp inner dot that follows tightly and
+ * a slower outer ring that trails behind. On hover of any interactive
+ * element the ring expands and gets a subtle fill.
+ *
+ * The OS cursor is hidden site-wide via the `cursor-custom` class on the
+ * <html> element (toggled here). Inputs/textareas restore their text
+ * cursor via a CSS override so typing still feels normal.
+ *
+ * Both dot and ring are positioned via `transform: translate(x, y)` plus
+ * a `translate(-50%, -50%)` to center on the cursor point. Uses one rAF
+ * loop for both layers so we're not running multiple loops in parallel.
+ *
+ * Sit-out conditions: prefers-reduced-motion or coarse pointer (touch).
+ */
+function initCustomCursor() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+
+    document.documentElement.classList.add('cursor-custom');
+
+    const dot = document.createElement('div');
+    dot.className = 'cursor-dot';
+    dot.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(dot);
+
+    const ring = document.createElement('div');
+    ring.className = 'cursor-ring';
+    ring.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(ring);
+
+    const target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    const dotPos = { x: target.x, y: target.y };
+    const ringPos = { x: target.x, y: target.y };
+
+    document.addEventListener('mousemove', function (e) {
+        target.x = e.clientX;
+        target.y = e.clientY;
+    });
+
+    // Hover detection. mouseover/mouseout are used (not mouseenter) so we
+    // get a single bubbling listener instead of one per element. The
+    // relatedTarget check prevents flicker when the cursor moves between
+    // adjacent interactive elements.
+    const hoverSelector = 'a, button, .magnetic, [data-magnetic], .btn-primary, .btn-secondary';
+
+    document.addEventListener('mouseover', function (e) {
+        if (e.target.closest && e.target.closest(hoverSelector)) {
+            ring.classList.add('cursor-ring--hover');
+        }
+    });
+
+    document.addEventListener('mouseout', function (e) {
+        if (!e.target.closest || !e.target.closest(hoverSelector)) return;
+        const movingTo = e.relatedTarget && e.relatedTarget.closest
+            ? e.relatedTarget.closest(hoverSelector)
+            : null;
+        if (!movingTo) ring.classList.remove('cursor-ring--hover');
+    });
+
+    function update() {
+        // Tight lerp on the dot — sharp follow.
+        dotPos.x += (target.x - dotPos.x) * 0.5;
+        dotPos.y += (target.y - dotPos.y) * 0.5;
+        // Slow lerp on the ring — visible lag.
+        ringPos.x += (target.x - ringPos.x) * 0.15;
+        ringPos.y += (target.y - ringPos.y) * 0.15;
+
+        dot.style.transform = 'translate(' + dotPos.x + 'px, ' + dotPos.y + 'px) translate(-50%, -50%)';
+        ring.style.transform = 'translate(' + ringPos.x + 'px, ' + ringPos.y + 'px) translate(-50%, -50%)';
+
+        requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+}
+
+/**
+ * Magnetic elements — buttons and opt-in elements with .magnetic class
+ * or data-magnetic attribute drift toward the cursor when it's within
+ * MAGNET_RADIUS pixels of their center. Falloff is linear (closer =
+ * stronger pull).
+ *
+ * Implementation note: rather than setting `transform` directly (which
+ * would override CSS :hover transforms), we set --magnet-x and --magnet-y
+ * custom properties on the element. The button's CSS rule reads these
+ * vars inside `transform: translate(...)` and combines them with the
+ * hover lift via calc(). This way the magnet AND the hover translate
+ * apply at the same time without fighting each other.
+ *
+ * One global mousemove listener + one rAF loop, not per-element. We
+ * call getBoundingClientRect every frame which isn't free, but at this
+ * scale (~5 elements) it's a non-issue.
+ */
+function initMagneticElements() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+
+    const selector = '.btn-primary, .btn-secondary, .magnetic, [data-magnetic]';
+    const elements = document.querySelectorAll(selector);
+    if (elements.length === 0) return;
+
+    const MAGNET_RADIUS = 90;       // px
+    const MAGNET_STRENGTH = 0.35;   // multiplier on raw displacement
+    const LERP = 0.15;              // smoothing per frame
+
+    const states = Array.from(elements).map(function (el) {
+        return { el: el, x: 0, y: 0, targetX: 0, targetY: 0 };
+    });
+
+    let mouseX = -10000, mouseY = -10000;
+    document.addEventListener('mousemove', function (e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    function update() {
+        for (let i = 0; i < states.length; i++) {
+            const s = states[i];
+            const rect = s.el.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = mouseX - cx;
+            const dy = mouseY - cy;
+            const dist = Math.hypot(dx, dy);
+
+            if (dist < MAGNET_RADIUS) {
+                const factor = (1 - dist / MAGNET_RADIUS) * MAGNET_STRENGTH;
+                s.targetX = dx * factor;
+                s.targetY = dy * factor;
+            } else {
+                s.targetX = 0;
+                s.targetY = 0;
+            }
+
+            s.x += (s.targetX - s.x) * LERP;
+            s.y += (s.targetY - s.y) * LERP;
+
+            s.el.style.setProperty('--magnet-x', s.x.toFixed(2) + 'px');
+            s.el.style.setProperty('--magnet-y', s.y.toFixed(2) + 'px');
+        }
+        requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
 }
 
 /**
