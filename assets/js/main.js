@@ -390,8 +390,14 @@ function initScrollReveals() {
  *   - WebGL context creation fails → skip silently (very old GPU).
  */
 function initWebGLBackground() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (typeof THREE === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        console.info('[TC] WebGL bg skipped — prefers-reduced-motion is set');
+        return;
+    }
+    if (typeof THREE === 'undefined') {
+        console.warn('[TC] WebGL bg skipped — Three.js did not load');
+        return;
+    }
 
     const canvas = document.createElement('canvas');
     canvas.className = 'webgl-bg-canvas';
@@ -418,9 +424,11 @@ function initWebGLBackground() {
     } catch (err) {
         // No WebGL context available; bail silently. The body's solid
         // bg-base color remains the fallback.
+        console.warn('[TC] WebGL bg skipped — WebGLRenderer threw:', err);
         canvas.remove();
         return;
     }
+    console.info('[TC] WebGL bg initialized — Three.js r' + THREE.REVISION);
 
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);

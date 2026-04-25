@@ -48,13 +48,15 @@ function tc_ventures_enqueue_scripts() {
         false
     );
 
-    // Three.js (UMD build) — used by main.js to drive the WebGL background
-    // (drifting noise gradient + cursor-reactive ambient glow).
+    // Three.js (UMD build) — used by main.js to drive the WebGL background.
+    // Pinned to r128 because it's widely cached on cdnjs and definitively
+    // has the UMD `three.min.js` artifact. Newer releases (r150+) shifted
+    // to ES modules and the UMD path is unreliable across CDNs.
     wp_enqueue_script(
         'three-js',
-        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
         array(),
-        'r158',
+        'r128',
         true
     );
 
