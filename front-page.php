@@ -9,12 +9,12 @@ get_header(); ?>
 <main id="primary" class="site-main">
     
     <!-- HERO SECTION -->
-    <section class="hero-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 120px 0; text-align: center; color: white;">
-        <div class="container" style="max-width: 900px; margin: 0 auto; padding: 0 20px;">
-            <h1 class="hero-title" style="font-size: 3.5rem; margin: 0 0 20px 0; font-weight: 700; line-height: 1.2;">
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title kinetic-text" aria-label="Welcome to TC 'ventures">
                 Welcome to TC 'ventures
             </h1>
-            <p class="hero-subtitle" style="font-size: 1.25rem; margin: 0; opacity: 0.95; font-weight: 300;">
+            <p class="hero-subtitle kinetic-fade">
                 Exploring life, family, and what matters most
             </p>
         </div>

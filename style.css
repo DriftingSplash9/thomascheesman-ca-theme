@@ -56,6 +56,20 @@ body {
 .hero-section {
     position: relative;
     overflow: hidden;
+    padding: clamp(80px, 12vw, 160px) 20px;
+    color: white;
+    text-align: center;
+    background:
+        radial-gradient(ellipse at 20% 30%, rgba(118, 75, 162, 0.85), transparent 55%),
+        radial-gradient(ellipse at 80% 70%, rgba(102, 126, 234, 0.85), transparent 55%),
+        radial-gradient(ellipse at 50% 50%, rgba(240, 147, 251, 0.4), transparent 65%),
+        linear-gradient(135deg, #5a6fd0 0%, #6a4496 100%);
+    background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+    animation: hero-drift 22s ease-in-out infinite;
+}
+
+.hero-section .container {
+    max-width: 900px;
 }
 
 .hero-section::before {
@@ -88,6 +102,32 @@ body {
     font-weight: 300;
     margin: 0;
     opacity: 0.95;
+}
+
+/* ============================================
+   KINETIC TEXT (per-character hero animation)
+   ============================================
+   The H1 is split at runtime into <span class="char"> elements wrapped
+   in <span class="word"> containers. Words use white-space: nowrap so
+   they wrap as units; chars within a word stay together. Initial state
+   below is what GSAP animates AWAY FROM. */
+
+.kinetic-text .word {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.kinetic-text .char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(60px);
+    will-change: opacity, transform;
+}
+
+.kinetic-fade {
+    opacity: 0;
+    transform: translateY(20px);
+    will-change: opacity, transform;
 }
 
 /* ============================================
@@ -366,6 +406,39 @@ body {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes hero-drift {
+    0%, 100% {
+        background-position: 0% 0%, 100% 100%, 50% 50%, 0% 0%;
+    }
+    33% {
+        background-position: 100% 50%, 0% 50%, 70% 30%, 0% 0%;
+    }
+    66% {
+        background-position: 50% 100%, 50% 0%, 30% 70%, 0% 0%;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================
+   Honor users who've turned motion down at the OS level. We disable
+   the animated gradient drift and skip the kinetic intro entirely —
+   chars are shown in their final state. The scroll-reveal init also
+   short-circuits when this is set (see main.js). */
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-section {
+        animation: none;
+    }
+
+    .kinetic-text .char,
+    .kinetic-fade,
+    .scroll-animate {
+        opacity: 1;
+        transform: none;
     }
 }
 
