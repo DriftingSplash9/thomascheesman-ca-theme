@@ -163,7 +163,18 @@ function initPillarReveal() {
 
     // Build the timeline as paused so we can decide WHEN to play it
     // (immediate if section is already in view on load, or via scroll trigger).
-    const tl = gsap.timeline({ paused: true });
+    //
+    // onComplete clears the inline transform GSAP leaves on each card/icon
+    // after animating. Without this, CSS :hover { transform: translateY(-12px) }
+    // can't override the inline `transform: translate(0,0) scale(1) rotate(0)`
+    // and the lift-on-hover effect doesn't fire.
+    const tl = gsap.timeline({
+        paused: true,
+        onComplete: () => {
+            gsap.set(cards, { clearProps: 'transform' });
+            gsap.set(icons, { clearProps: 'transform' });
+        },
+    });
 
     if (headingChars.length) {
         tl.to(headingChars, {
@@ -186,15 +197,17 @@ function initPillarReveal() {
     }, '-=0.3');
 
     // Icon "wobble" — three back-easing phases overlapped into one continuous
-    // motion. Phase 1 springs in past the target, phase 2 pulls back slightly,
-    // phase 3 settles. Reads as a single damped oscillation, not three steps.
+    // motion. Phase 1 springs in past target, phase 2 pulls back slightly,
+    // phase 3 settles. Position '+=0.15' on the first phase makes icons wait
+    // a clear beat AFTER the last card finishes settling, so the two
+    // movements read as sequential rather than concurrent.
     tl.to(icons, {
         scale: 1,
         rotation: 0,
         duration: 0.55,
         stagger: 0.12,
         ease: 'back.out(2.25)',
-    }, '-=0.5');
+    }, '+=0.15');
 
     tl.to(icons, {
         scale: 0.94,
@@ -214,9 +227,10 @@ function initPillarReveal() {
 
     // Trigger logic.
     //   - On page load: if the section's top is already within 75% of viewport
-    //     (i.e., visible enough to be worth animating right away), fire now.
+    //     (visible enough to be worth animating right away), fire now.
     //   - Otherwise: wait for the user to scroll until the section's top
-    //     passes 60% of viewport, then fire. once: true means it never re-runs.
+    //     passes 40% of viewport. The previous 60% threshold fired before
+    //     the user had time to look at the section.
     const rect = section.getBoundingClientRect();
     const visibleOnLoad = rect.top < window.innerHeight * 0.75;
 
@@ -225,7 +239,7 @@ function initPillarReveal() {
     } else {
         ScrollTrigger.create({
             trigger: section,
-            start: 'top 60%',
+            start: 'top 40%',
             once: true,
             onEnter: () => tl.play(),
         });
