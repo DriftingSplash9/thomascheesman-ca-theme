@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.0
+Version: 1.0.1
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -135,6 +135,35 @@ body {
        transform takes over. */
     transform: translateX(-50%);
     animation: hero-horizon-breathe 9s ease-in-out infinite;
+}
+
+/* Horizon LINE at the very bottom edge — thin cyan band that tapers
+   to transparent at the corners, with a multi-layer halo box-shadow
+   that bleeds upward into the hero. Pairs with the ::before bloom
+   above it: line gives the seam crisp definition, bloom gives it
+   atmosphere. Mirrors the footer's top-edge ::before treatment so
+   the page reads as "lit" at both major section boundaries. */
+.hero-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(34, 211, 238, 0.5) 25%,
+        rgba(34, 211, 238, 0.9) 50%,
+        rgba(34, 211, 238, 0.5) 75%,
+        transparent 100%
+    );
+    box-shadow:
+        0 -1px 8px rgba(34, 211, 238, 0.6),
+        0 -1px 24px rgba(34, 211, 238, 0.35),
+        0 -1px 56px rgba(34, 211, 238, 0.18);
+    z-index: 1;
+    pointer-events: none;
 }
 
 .hero-section > * {
