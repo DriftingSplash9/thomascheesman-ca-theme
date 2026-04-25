@@ -744,6 +744,135 @@ html.cursor-custom [contenteditable] {
 }
 
 /* ============================================
+   ASTRA PARENT THEME OVERRIDES
+   ============================================
+   The Astra parent theme styles its own header and footer with class
+   names like .site-header, .site-footer, and .ast-builder-grid-row-*.
+   The user's Customizer-side cleanup got us partway, but Astra falls
+   back to ~30px padding on each Builder row by default, which can
+   compound to ~90px of unwanted space across the top/middle/bottom
+   rows of the header and footer.
+   We override aggressively with !important here because Astra often
+   emits inline styles or high-specificity rules that ordinary cascade
+   loses to. */
+
+/* --- Header strip --- */
+.site-header,
+.ast-primary-header-bar,
+.main-header-bar,
+.ast-above-header,
+.ast-below-header,
+.ast-above-header-wrap,
+.ast-below-header-wrap,
+.site-header-primary-section-left,
+.site-header-primary-section-right,
+.site-header-primary-section-center,
+.ast-builder-grid-row-container,
+.ast-builder-grid-row,
+.ast-builder-grid-row-tablet,
+.ast-builder-grid-row-mobile,
+[class*='ast-builder-header-grid-row'],
+[class*='ast-builder-grid-row-1'],
+[class*='ast-builder-grid-row-2'],
+[class*='ast-builder-grid-row-3'] {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+/* Zero out the padding on every Builder header row variant. */
+.ast-above-header-wrap,
+.ast-primary-header-bar,
+.ast-below-header-wrap,
+.site-above-header-wrap,
+.site-below-header-wrap,
+.ast-above-header,
+.ast-below-header {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Header text + nav links inherit the dark-mode palette. */
+.site-header,
+.site-header * {
+    color: var(--text-dark);
+}
+
+.main-navigation a,
+.main-header-menu a,
+.ast-builder-menu-1 a,
+.ast-builder-menu-2 a,
+.site-header a {
+    color: var(--text-dark) !important;
+    transition: color 0.3s ease;
+}
+
+.main-navigation a:hover,
+.main-header-menu a:hover,
+.site-header a:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Site title fallback (if logo is text). */
+.site-title,
+.site-title a,
+.site-description {
+    color: var(--text-dark) !important;
+}
+
+/* --- Footer strip --- */
+.site-footer,
+.site-above-footer-wrap,
+.site-primary-footer-wrap,
+.site-below-footer-wrap,
+.site-footer-section-1,
+.site-footer-section-2,
+.site-footer-section-3,
+[class*='site-footer-section'],
+[class*='ast-builder-footer-grid-row'],
+.footer-widget-area,
+.ast-footer-copyright {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.site-above-footer-wrap,
+.site-primary-footer-wrap,
+.site-below-footer-wrap {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.site-footer,
+.site-footer * {
+    color: var(--text-light);
+}
+
+.site-footer a,
+.ast-footer-copyright a {
+    color: var(--primary-color) !important;
+    transition: color 0.3s ease;
+}
+
+.site-footer a:hover {
+    color: var(--secondary-color) !important;
+}
+
+/* Astra sometimes adds a top border on the footer. Kill it. */
+.site-footer,
+.footer-widget-area,
+.site-below-footer-wrap {
+    border-top: 0 !important;
+}
+
+/* ============================================
    UTILITY CLASSES
    ============================================ */
 
