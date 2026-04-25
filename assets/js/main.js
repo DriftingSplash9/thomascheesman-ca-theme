@@ -15,6 +15,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     initWebGLBackground();
     initKineticHero();
+    initHeroScrollOut();
     initPillarReveal();
     initBlogReveal();
     initScrollReveals();
@@ -113,6 +114,48 @@ function splitIntoCharSpans(element) {
     }
 
     return chars;
+}
+
+/**
+ * Hero scroll-out — as the user scrolls past the hero, the whole section
+ * scales up to 1.2 and fades to opacity 0. Scrub-tied to scroll position
+ * so the effect is interactive (reverses if you scroll back up).
+ *
+ * Visual intent: feels like you're zooming through the hero into the
+ * world below. Because the WebGL background and particle field are
+ * fixed at z-index:-1, they persist during the fade — what disappears
+ * is the hero's gradient + kinetic title, while the living backdrop
+ * stays put. The cursor and ink trail (z-index:9999+) also persist on
+ * top throughout.
+ *
+ * Range: 'top top' (hero's top reaches viewport top) to 'bottom top'
+ * (hero's bottom reaches viewport top) — i.e., the duration of one
+ * full hero height of scrolling. ease: 'power2.in' makes the fade
+ * slow at first then accelerate, so the "punching through" moment
+ * feels decisive at the end.
+ *
+ * scrub: 1 = 1-second smoothing buffer between scroll input and
+ * animation output, so fast scrolls don't snap.
+ *
+ * Sit-out condition: prefers-reduced-motion or no .hero-section.
+ */
+function initHeroScrollOut() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const hero = document.querySelector('.hero-section');
+    if (!hero) return;
+
+    gsap.to(hero, {
+        scale: 1.2,
+        opacity: 0,
+        ease: 'power2.in',
+        scrollTrigger: {
+            trigger: hero,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 1,
+        },
+    });
 }
 
 /**
