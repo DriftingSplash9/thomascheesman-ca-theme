@@ -98,6 +98,50 @@ function tc_ventures_setup() {
 add_action( 'after_setup_theme', 'tc_ventures_setup' );
 
 /**
+ * Disable WordPress attachment pages.
+ *
+ * Every file uploaded to the Media Library gets a public "attachment page"
+ * at /<slug>/ that mirrors the file. They:
+ *   - Have no value to visitors (the actual file URL already serves the file)
+ *   - Hijack slugs we want for real pages — uploading family.jpg made
+ *     /family/ permanently route to the JPEG, blocking the Family page
+ *   - Often get indexed as duplicate/thin content by search engines
+ *
+ * This filter marks the `attachment` post type as not publicly queryable
+ * and removes its rewrite rule. Attachment URLs return 404 (or, via the
+ * belt-and-suspenders redirect below, send visitors to the file itself).
+ *
+ * IMPORTANT — after deploying this, visit `Settings → Permalinks` in WP
+ * admin and click `Save Changes` (no fields need to be touched). That
+ * flushes the cached rewrite rules so the change actually takes effect.
+ */
+function tc_ventures_disable_attachment_pages( $args, $post_type ) {
+    if ( 'attachment' === $post_type ) {
+        $args['publicly_queryable'] = false;
+        $args['rewrite']            = false;
+    }
+    return $args;
+}
+add_filter( 'register_post_type_args', 'tc_ventures_disable_attachment_pages', 10, 2 );
+
+/**
+ * Belt-and-suspenders: if a stale link or external referrer still hits
+ * an attachment URL after the filter above, redirect to the file's
+ * direct URL (under /wp-content/uploads/...) so we don't break inbound
+ * links to images during the transition.
+ */
+function tc_ventures_redirect_attachment_to_file() {
+    if ( is_attachment() ) {
+        $file_url = wp_get_attachment_url( get_queried_object_id() );
+        if ( $file_url ) {
+            wp_safe_redirect( $file_url, 301 );
+            exit;
+        }
+    }
+}
+add_action( 'template_redirect', 'tc_ventures_redirect_attachment_to_file' );
+
+/**
  * Placeholders — uncomment when ready.
  */
 
