@@ -88,14 +88,17 @@ body {
     padding: clamp(80px, 12vw, 160px) 20px;
     color: white;
     text-align: center;
-    /* Three soft radial blobs over a navy base. Indigo blob is dominant,
-       green blob is the unexpected accent, cyan haze ties the palette to
-       the rest of the site. */
+    /* Three soft radial blobs over a translucent navy base. The linear
+       gradient (last layer = back) is now ~0.82 alpha so the WebGL
+       noise behind the page peeks through at 18% — adds atmospheric
+       depth without breaking the kinetic title's contrast. The radial
+       blobs (top layers) keep their original alphas, so the indigo +
+       green focal regions stay rich. */
     background:
         radial-gradient(ellipse at 25% 30%, rgba(18, 6, 86, 0.9), transparent 55%),
         radial-gradient(ellipse at 75% 70%, rgba(12, 128, 0, 0.55), transparent 50%),
         radial-gradient(ellipse at 50% 90%, rgba(34, 211, 238, 0.18), transparent 60%),
-        linear-gradient(135deg, #030131 0%, #0a0a3a 100%);
+        linear-gradient(135deg, rgba(3, 1, 49, 0.82) 0%, rgba(10, 10, 58, 0.82) 100%);
     background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
     animation: hero-drift 22s ease-in-out infinite;
 }
@@ -104,21 +107,50 @@ body {
     max-width: 900px;
 }
 
+/* Horizon glow at the hero's bottom edge — soft cyan ellipse blooming
+   upward from the bottom, blurred. Reads as atmospheric scattering, like
+   distant light spilling up over a horizon line. The slow 9s "breathe"
+   keyframe makes it gently pulse so the hero never feels static even
+   when the user isn't moving. (Replaces the old SVG plus-dot overlay,
+   which was competing visually with the particle field.) */
 .hero-section::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><path d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/></g></g></svg>');
-    opacity: 0.1;
+    left: 50%;
+    width: 90%;
+    height: 260px;
+    background: radial-gradient(
+        ellipse at bottom,
+        rgba(34, 211, 238, 0.32) 0%,
+        rgba(34, 211, 238, 0.14) 30%,
+        transparent 65%
+    );
+    filter: blur(22px);
+    pointer-events: none;
     z-index: 1;
+    /* Base transform for centering. The keyframe re-applies translateX
+       so it can layer scaleY on top during the breathe; under
+       prefers-reduced-motion the animation is killed and this base
+       transform takes over. */
+    transform: translateX(-50%);
+    animation: hero-horizon-breathe 9s ease-in-out infinite;
 }
 
 .hero-section > * {
     position: relative;
     z-index: 2;
+}
+
+@keyframes hero-horizon-breathe {
+    0%, 100% {
+        opacity: 0.85;
+        transform: translateX(-50%) scaleY(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(-50%) scaleY(1.12);
+    }
 }
 
 .hero-title {
@@ -609,6 +641,7 @@ body {
         animation: none;
     }
 
+    .hero-section::before,
     .cta-section::before {
         animation: none;
     }
