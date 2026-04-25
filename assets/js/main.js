@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initBlogReveal();
     initScrollReveals();
     initInkTrail();
+    initParticleField();
     initCustomCursor();
     initMagneticElements();
 });
@@ -358,6 +359,158 @@ function initScrollReveals() {
             ease: 'power2.out',
         });
     });
+}
+
+/**
+ * Drifting particle field with mouse magnetism + proximity connections.
+ *
+ * What you see:
+ *   - ~80 tiny near-invisible specs drifting slowly across the viewport.
+ *   - When two specs are within CONNECT_DISTANCE pixels, a thin line is
+ *     drawn between them with alpha proportional to inverse distance —
+ *     close pairs are most visible, far pairs fade out completely.
+ *   - When the cursor enters ATTRACT_RADIUS of a spec, the spec is
+ *     pulled toward the cursor (force scales with proximity). Multiple
+ *     nearby specs all accelerate toward the same point, so their
+ *     velocities become parallel — that's what produces the "magnetic
+ *     filings into bands" alignment effect. Nothing special-cases it;
+ *     it falls out of basic physics.
+ *
+ * Why these defaults:
+ *   - PARTICLE_COUNT = 80: dense enough to feel populated, sparse
+ *     enough that a single particle has 0-1 connections most of the
+ *     time. The "occasionally 2 connections" emerges from clusters.
+ *   - DAMPING = 0.96: prevents runaway acceleration; particles return
+ *     to gentle drift after the cursor leaves.
+ *   - MAX_VEL = 1.6: caps speed so they don't streak across the screen.
+ *
+ * z-index:1 puts the canvas above content but below the ink trail
+ * (9999) and cursor (10000). Sets pointer-events:none so it doesn't
+ * intercept clicks.
+ */
+function initParticleField() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'particle-field-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    Object.assign(canvas.style, {
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        zIndex: '1',
+        pointerEvents: 'none',
+    });
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const PARTICLE_COUNT     = 80;
+    const ATTRACT_RADIUS     = 180;
+    const ATTRACT_STRENGTH   = 0.05;
+    const CONNECT_DISTANCE   = 100;
+    const PARTICLE_SIZE      = 1.1;
+    const DAMPING            = 0.96;
+    const MAX_VEL            = 1.6;
+
+    const particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        particles.push({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+        });
+    }
+
+    let mouseX = -10000, mouseY = -10000;
+    document.addEventListener('mousemove', function (e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        // ---- Physics: attract toward mouse, damp, cap, integrate ----
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+
+            const dx = mouseX - p.x;
+            const dy = mouseY - p.y;
+            const dist = Math.hypot(dx, dy);
+
+            if (dist < ATTRACT_RADIUS && dist > 0.1) {
+                const factor = (1 - dist / ATTRACT_RADIUS) * ATTRACT_STRENGTH;
+                p.vx += (dx / dist) * factor;
+                p.vy += (dy / dist) * factor;
+            }
+
+            p.vx *= DAMPING;
+            p.vy *= DAMPING;
+
+            const speed = Math.hypot(p.vx, p.vy);
+            if (speed > MAX_VEL) {
+                p.vx = (p.vx / speed) * MAX_VEL;
+                p.vy = (p.vy / speed) * MAX_VEL;
+            }
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // Wrap at edges so particles drift continuously.
+            if (p.x < 0) p.x += w;
+            if (p.x > w) p.x -= w;
+            if (p.y < 0) p.y += h;
+            if (p.y > h) p.y -= h;
+        }
+
+        // ---- Connections: all pairs within CONNECT_DISTANCE ----
+        ctx.lineWidth = 0.7;
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const a = particles[i];
+                const b = particles[j];
+                const dx = b.x - a.x;
+                const dy = b.y - a.y;
+                const d = Math.hypot(dx, dy);
+                if (d < CONNECT_DISTANCE) {
+                    const alpha = (1 - d / CONNECT_DISTANCE) * 0.18;
+                    ctx.strokeStyle = 'rgba(200, 220, 255, ' + alpha + ')';
+                    ctx.beginPath();
+                    ctx.moveTo(a.x, a.y);
+                    ctx.lineTo(b.x, b.y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // ---- Particles ----
+        ctx.fillStyle = 'rgba(220, 230, 255, 0.5)';
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, PARTICLE_SIZE, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
 }
 
 /**
