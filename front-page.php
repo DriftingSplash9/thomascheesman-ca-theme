@@ -21,52 +21,46 @@ get_header(); ?>
     </section>
 
     <!-- THREE PILLARS SECTION -->
-    <section class="pillars-section scroll-animate" style="padding: 80px 20px; background: #f9f9f9;">
-        <div class="container" style="max-width: 1200px; margin: 0 auto;">
-            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 60px; color: #333;">What Defines TC 'ventures</h2>
-            
-            <div class="pillars-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px;">
-                
+    <section class="pillars-section">
+        <div class="container">
+            <h2 class="pillars-heading kinetic-text-scroll" aria-label="What Defines TC 'ventures">What Defines TC 'ventures</h2>
+
+            <div class="pillars-grid">
+
                 <!-- PILLAR 1: FAMILY -->
-                <div class="pillar-card scroll-animate" style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
-                    <div class="pillar-icon" style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                        <span style="font-size: 30px;">👨‍👩‍👧‍👦</span>
+                <div class="pillar-card">
+                    <div class="pillar-icon">
+                        <span>👨‍👩‍👧‍👦</span>
                     </div>
-                    <h3 style="font-size: 1.5rem; margin: 0 0 15px 0; color: #333;">Family & Stories</h3>
-                    <p style="color: #666; line-height: 1.6; margin: 0;">
+                    <h3>Family &amp; Stories</h3>
+                    <p>
                         Life's greatest joy comes from the people we love. Discover the stories of Patience, Daniel, Faith, and the extended family that makes us whole.
                     </p>
-                    <a href="<?php echo home_url('/family'); ?>" style="display: inline-block; margin-top: 15px; color: #667eea; text-decoration: none; font-weight: 600;">
-                        Explore Family Stories →
-                    </a>
+                    <a href="<?php echo home_url('/family'); ?>">Explore Family Stories &rarr;</a>
                 </div>
 
                 <!-- PILLAR 2: KNOWLEDGE & HCS -->
-                <div class="pillar-card scroll-animate" style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
-                    <div class="pillar-icon" style="width: 60px; height: 60px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                        <span style="font-size: 30px;">🔬</span>
+                <div class="pillar-card">
+                    <div class="pillar-icon">
+                        <span>🔬</span>
                     </div>
-                    <h3 style="font-size: 1.5rem; margin: 0 0 15px 0; color: #333;">Knowledge & HCS</h3>
-                    <p style="color: #666; line-height: 1.6; margin: 0;">
+                    <h3>Knowledge &amp; HCS</h3>
+                    <p>
                         Living with Hajdu-Cheney Syndrome means learning to adapt. I share insights, research, and personal experiences about HCS.
                     </p>
-                    <a href="https://buildingyourrare.com" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 15px; color: #f5576c; text-decoration: none; font-weight: 600;">
-                        Learn More at BYR →
-                    </a>
+                    <a href="https://buildingyourrare.com" target="_blank" rel="noopener noreferrer">Learn More at BYR &rarr;</a>
                 </div>
 
                 <!-- PILLAR 3: COMMUNITY -->
-                <div class="pillar-card scroll-animate" style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
-                    <div class="pillar-icon" style="width: 60px; height: 60px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                        <span style="font-size: 30px;">🤝</span>
+                <div class="pillar-card">
+                    <div class="pillar-icon">
+                        <span>🤝</span>
                     </div>
-                    <h3 style="font-size: 1.5rem; margin: 0 0 15px 0; color: #333;">Community & Service</h3>
-                    <p style="color: #666; line-height: 1.6; margin: 0;">
+                    <h3>Community &amp; Service</h3>
+                    <p>
                         Giving back matters. I volunteer with Grande Prairie Residential Society to provide accessible housing in our community.
                     </p>
-                    <a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 15px; color: #00f2fe; text-decoration: none; font-weight: 600;">
-                        Visit GPRS →
-                    </a>
+                    <a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">Visit GPRS &rarr;</a>
                 </div>
 
             </div>

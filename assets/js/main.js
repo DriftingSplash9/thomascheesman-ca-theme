@@ -14,6 +14,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     initKineticHero();
+    initPillarReveal();
     initScrollReveals();
     initInkTrail();
 });
@@ -107,6 +108,95 @@ function splitIntoCharSpans(element) {
     }
 
     return chars;
+}
+
+/**
+ * Choreographed reveal for the pillars section.
+ *
+ * Three overlapping waves trigger when the section enters the viewport:
+ *   1. The H2 splits per-character and cascades in (same helper as the
+ *      hero, but driven by ScrollTrigger instead of on load).
+ *   2. The three pillar cards slide up + scale in, each tilted at a
+ *      slightly different angle (-6° / 0° / +6°) so they read as
+ *      choreographed instead of synchronous. Stagger of 150ms.
+ *   3. The circular gradient icons pop last with a back-out overshoot
+ *      from scale(0) + rotate(-120°). Stagger of 120ms.
+ *
+ * Timeline overlap is set with negative position offsets ('-=0.3', '-=0.5')
+ * so each wave starts before the previous finishes. Total reveal ~1.6s.
+ *
+ * Pre-set initial states are applied via gsap.set() outside the timeline
+ * so they're in place at script execution. The ScrollTrigger then plays
+ * the timeline once when the section's top crosses 75% of viewport height.
+ */
+function initPillarReveal() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const section = document.querySelector('.pillars-section');
+    if (!section) return;
+
+    const heading = section.querySelector('.kinetic-text-scroll');
+    const cards = section.querySelectorAll('.pillar-card');
+    const icons = section.querySelectorAll('.pillar-icon');
+
+    if (cards.length === 0) return;
+
+    // Pre-split the heading so chars exist before the scroll trigger fires.
+    let headingChars = [];
+    if (heading) {
+        headingChars = splitIntoCharSpans(heading);
+    }
+
+    // Pre-set card initial states. Each card tilts at a different angle so
+    // they don't all arrive in formation. The center card stays straight.
+    cards.forEach((card, i) => {
+        const rotation = i === 0 ? -6 : (i === 2 ? 6 : 0);
+        gsap.set(card, {
+            opacity: 0,
+            y: 80,
+            scale: 0.9,
+            rotation,
+        });
+    });
+
+    // Pre-set icon initial states.
+    gsap.set(icons, { scale: 0, rotation: -120 });
+
+    const tl = gsap.timeline({
+        scrollTrigger: {
+            trigger: section,
+            start: 'top 75%',
+            toggleActions: 'play none none none',
+        },
+    });
+
+    if (headingChars.length) {
+        tl.to(headingChars, {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.025,
+            ease: 'power3.out',
+        });
+    }
+
+    tl.to(cards, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotation: 0,
+        duration: 0.9,
+        stagger: 0.15,
+        ease: 'back.out(1.3)',
+    }, '-=0.3'); // start before heading finishes
+
+    tl.to(icons, {
+        scale: 1,
+        rotation: 0,
+        duration: 0.55,
+        stagger: 0.12,
+        ease: 'back.out(2)',
+    }, '-=0.5'); // start while cards are still landing
 }
 
 /**

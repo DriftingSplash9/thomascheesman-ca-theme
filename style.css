@@ -112,12 +112,14 @@ body {
    they wrap as units; chars within a word stay together. Initial state
    below is what GSAP animates AWAY FROM. */
 
-.kinetic-text .word {
+.kinetic-text .word,
+.kinetic-text-scroll .word {
     display: inline-block;
     white-space: nowrap;
 }
 
-.kinetic-text .char {
+.kinetic-text .char,
+.kinetic-text-scroll .char {
     display: inline-block;
     opacity: 0;
     transform: translateY(60px);
@@ -131,8 +133,21 @@ body {
 }
 
 /* ============================================
-   PILLAR CARDS & GRID
+   PILLARS SECTION
    ============================================ */
+
+.pillars-section {
+    padding: clamp(60px, 9vw, 100px) 20px;
+    background: #f9f9f9;
+}
+
+.pillars-heading {
+    text-align: center;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    font-weight: 700;
+    margin: 0 0 60px 0;
+    color: var(--text-dark);
+}
 
 .pillars-grid {
     display: grid;
@@ -198,6 +213,18 @@ body {
     font-weight: 600;
     transition: var(--transition);
     position: relative;
+}
+
+.pillar-card:nth-child(1) a {
+    color: var(--primary-color);
+}
+
+.pillar-card:nth-child(2) a {
+    color: #f5576c;
+}
+
+.pillar-card:nth-child(3) a {
+    color: #00f2fe;
 }
 
 .pillar-card a::after {
@@ -435,8 +462,11 @@ body {
     }
 
     .kinetic-text .char,
+    .kinetic-text-scroll .char,
     .kinetic-fade,
-    .scroll-animate {
+    .scroll-animate,
+    .pillar-card,
+    .pillar-icon {
         opacity: 1;
         transform: none;
     }
