@@ -424,19 +424,20 @@ function initParticleField() {
 
     // ---- Constants shared across layers ----
     const ATTRACT_RADIUS   = 180;
-    const ATTRACT_STRENGTH = 0.05;
+    const ATTRACT_STRENGTH = 0.025;    // halved per request
     const CONNECT_DISTANCE = 180;
     const DAMPING          = 0.97;
-    const MAX_VEL_BASE     = 2.5;
-    const DRIFT_FORCE      = 0.012;
+    const MAX_VEL_BASE     = 1.6;      // ~35% reduction
+    const DRIFT_FORCE      = 0.006;    // halved so layer wind doesn't dominate
+    const NOISE_FORCE      = 0.08;     // per-frame Brownian kick (new)
     const CONN_PHASE_FREQ  = 0.000314; // ~20s period
     const CONN_PHASE_GATE  = 0.7;      // sin > 0.7 → wants 2 connections
 
-    // ---- Per-layer config ----
+    // ---- Per-layer config (count cut 25%, alphas reduced) ----
     const LAYERS = [
-        { count: 40, speed: 0.6, scrollFactor: 0.2, size: 0.8, pAlpha: 0.18, lAlpha: 0.07 },
-        { count: 40, speed: 1.0, scrollFactor: 0.5, size: 1.0, pAlpha: 0.28, lAlpha: 0.10 },
-        { count: 40, speed: 1.5, scrollFactor: 0.8, size: 1.4, pAlpha: 0.38, lAlpha: 0.13 },
+        { count: 30, speed: 0.6, scrollFactor: 0.2, size: 0.8, pAlpha: 0.12, lAlpha: 0.05 },
+        { count: 30, speed: 1.0, scrollFactor: 0.5, size: 1.0, pAlpha: 0.18, lAlpha: 0.07 },
+        { count: 30, speed: 1.5, scrollFactor: 0.8, size: 1.4, pAlpha: 0.25, lAlpha: 0.09 },
     ];
 
     LAYERS.forEach(function (layer) {
@@ -448,6 +449,14 @@ function initParticleField() {
                 vx: (Math.random() - 0.5) * 0.3 * layer.speed,
                 vy: (Math.random() - 0.5) * 0.3 * layer.speed,
                 phase: Math.random() * Math.PI * 2,
+                // Per-particle individuality. driftSensitivity controls how
+                // much the layer's global wind pushes this particle (0.3
+                // = barely affected, 1.5 = strongly blown around). speedFactor
+                // multiplies both this particle's max velocity and its
+                // Brownian noise amplitude. Together they break up the
+                // lockstep "all particles drifting the same way" effect.
+                driftSensitivity: 0.3 + Math.random() * 1.2,
+                speedFactor:      0.6 + Math.random() * 0.8,
             });
         }
         // Drift state
@@ -494,7 +503,7 @@ function initParticleField() {
             layer.drift.y += (layer.targetDrift.y - layer.drift.y) * 0.002;
 
             const offsetY = scrollY * layer.scrollFactor;
-            const layerMaxVel = MAX_VEL_BASE * layer.speed;
+            const layerMaxBase = MAX_VEL_BASE * layer.speed;
 
             // --- Physics for this layer's particles ---
             for (let i = 0; i < layer.particles.length; i++) {
@@ -510,12 +519,22 @@ function initParticleField() {
                     p.vy += (dy / dist) * factor;
                 }
 
-                p.vx += layer.drift.x * DRIFT_FORCE;
-                p.vy += layer.drift.y * DRIFT_FORCE;
+                // Layer-wide drift wind, scaled by this particle's sensitivity.
+                p.vx += layer.drift.x * DRIFT_FORCE * p.driftSensitivity;
+                p.vy += layer.drift.y * DRIFT_FORCE * p.driftSensitivity;
+
+                // Brownian noise — independent random kick per particle per
+                // frame. Makes individual particles meander rather than
+                // marching in formation with the layer wind.
+                p.vx += (Math.random() - 0.5) * NOISE_FORCE * p.speedFactor;
+                p.vy += (Math.random() - 0.5) * NOISE_FORCE * p.speedFactor;
 
                 p.vx *= DAMPING;
                 p.vy *= DAMPING;
 
+                // Cap velocity by per-particle speedFactor so some particles
+                // can move faster than others under the same forces.
+                const layerMaxVel = layerMaxBase * p.speedFactor;
                 const speed = Math.hypot(p.vx, p.vy);
                 if (speed > layerMaxVel) {
                     p.vx = (p.vx / speed) * layerMaxVel;
