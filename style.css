@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.12
+Version: 1.0.13
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2413,4 +2413,209 @@ body.admin-bar .heritage-progress {
     color: var(--text-light);
     max-width: 640px;
     margin: 0 auto;
+}
+
+/* ============================================
+   HERITAGE HUB — FIVE-LINE CARD GRID
+   ============================================
+   The hub at /family/heritage no longer holds the long-form prose
+   for all five lines (that lives on the per-line spoke pages now).
+   It's a card grid where each card represents one family line and
+   links to its spoke. Cards are visual-led: photo at top, body
+   underneath with a per-card accent color matching the line palette
+   used in the .heritage-line :nth-of-type rules above.
+*/
+
+.heritage-cards-section {
+    padding: clamp(40px, 6vh, 80px) 20px clamp(60px, 10vh, 120px);
+}
+
+.heritage-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: clamp(20px, 3vw, 32px);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.heritage-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    background: rgba(8, 10, 26, 0.55);
+    backdrop-filter: blur(10px) saturate(125%);
+    -webkit-backdrop-filter: blur(10px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s ease,
+                border-color 0.4s ease;
+    position: relative;
+}
+
+.heritage-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    border-color: color-mix(in srgb, var(--card-color, #fff) 30%, transparent);
+}
+
+/* Per-card accent color matching the .heritage-line palette so the
+   hub and the spoke share visual DNA. */
+.heritage-cards .heritage-card:nth-child(1) { --card-color: #22D3EE; }  /* Cheesmans */
+.heritage-cards .heritage-card:nth-child(2) { --card-color: #EC4899; }  /* Dochertys */
+.heritage-cards .heritage-card:nth-child(3) { --card-color: #10B981; }  /* Lakemans */
+.heritage-cards .heritage-card:nth-child(4) { --card-color: #F59E0B; }  /* Rycrofts */
+.heritage-cards .heritage-card:nth-child(5) { --card-color: #6366F1; }  /* Haistes */
+
+.heritage-card__image {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.heritage-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heritage-card:hover .heritage-card__image img {
+    transform: scale(1.04);
+}
+
+.heritage-card__body {
+    padding: clamp(20px, 3vw, 28px);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.heritage-card__number {
+    font-family: 'Times New Roman', Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--card-color);
+    margin-bottom: 6px;
+    opacity: 0.85;
+}
+
+.heritage-card__title {
+    font-size: clamp(1.4rem, 2.6vw, 1.7rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-dark);
+    margin: 0 0 6px 0;
+}
+
+.heritage-card__subtitle {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--card-color);
+    margin: 0 0 14px 0;
+    font-weight: 600;
+}
+
+.heritage-card__blurb {
+    font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+    line-height: 1.6;
+    color: var(--text-light);
+    margin: 0 0 18px 0;
+    flex: 1;
+}
+
+.heritage-card__cta {
+    color: var(--card-color);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    transition: transform 0.3s ease;
+    align-self: flex-start;
+    display: inline-block;
+}
+
+.heritage-card:hover .heritage-card__cta {
+    transform: translateX(4px);
+}
+
+/* ============================================
+   HERITAGE SPOKE PAGES
+   ============================================
+   Each spoke (Cheesmans, Dochertys, Lakemans, Rycrofts, Haistes) is
+   a single .heritage-line on its own page. Most of the existing
+   .heritage-line styling above carries over directly — the frosted
+   plate, the body typography, the quote and callout styles. Below
+   are the spoke-specific overrides.
+*/
+
+/* The multi-section progress bar and 5-dot TOC are tied to the old
+   long-scroll layout where five lines lived on one page. On the hub
+   (now a card grid, no long scroll) and on the spokes (only one
+   section each), they have nothing to track — hide them. main.js
+   still creates the elements via initHeritagePage(); this just keeps
+   them visually absent until that JS gets a follow-up cleanup. */
+.heritage-page--hub .heritage-progress,
+.heritage-page--hub .heritage-toc,
+.heritage-spoke .heritage-progress,
+.heritage-spoke .heritage-toc {
+    display: none !important;
+}
+
+/* Per-line color identity. The original .heritage-line:nth-of-type(N)
+   rules above only fire when 5 lines sit on one page; on a spoke,
+   only :nth-of-type(1) ever matches and every spoke would default to
+   cyan. Re-assign --line-color from the spoke modifier so each spoke
+   keeps its own accent (cyan/pink/emerald/amber/indigo, in order). */
+.heritage-spoke--cheesmans .heritage-line { --line-color: #22D3EE; }
+.heritage-spoke--dochertys .heritage-line { --line-color: #EC4899; }
+.heritage-spoke--lakemans  .heritage-line { --line-color: #10B981; }
+.heritage-spoke--rycrofts  .heritage-line { --line-color: #F59E0B; }
+.heritage-spoke--haistes   .heritage-line { --line-color: #6366F1; }
+
+/* The giant ghost numeral that bleeds out of the top-right corner of
+   each line was tied to the "01 → 05" sequence on the old long page.
+   A spoke has no sequence to imply (the page-hero already names the
+   line), so suppress the numeral on spoke pages. */
+.heritage-line--spoke::before {
+    display: none;
+}
+
+/* Inline figures within spoke prose. Centered, rounded corners, soft
+   shadow matching the rest of the chrome. Caption below in italic
+   muted type. The --bw modifier adds a slight grayscale + contrast
+   bump for black-and-white photos so they don't feel washed out
+   against the dark frosted plate. */
+.heritage-line__figure {
+    margin: clamp(28px, 4vw, 40px) auto;
+    max-width: 100%;
+}
+
+.heritage-line__figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 12px 36px -18px rgba(0, 0, 0, 0.55);
+}
+
+.heritage-line__figure figcaption {
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-light);
+    font-style: italic;
+    opacity: 0.85;
+    text-align: center;
+}
+
+.heritage-line__figure--bw img {
+    filter: grayscale(0.2) contrast(1.05);
 }
