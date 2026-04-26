@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.10
+Version: 1.0.11
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1842,6 +1842,20 @@ html.tc-menu-open body {
     /* Stacking context so the giant ghost numeral (::before) can sit
        behind the body content without escaping the section. */
     isolation: isolate;
+    /* Frosted-glass plate. Particle field drifting behind .heritage-page
+       gets blurred through the translucent dark fill, so the long-form
+       prose reads cleanly without the particles feeling absent. The
+       ghost numeral (::before) keeps its negative-offset bleed past
+       the corner — that part shows un-blurred particles while the
+       rest of the section's interior is the frosted plate. Subtle
+       inner border + outer shadow to anchor the plate against the bg. */
+    background: rgba(8, 10, 26, 0.55);
+    backdrop-filter: blur(10px) saturate(125%);
+    -webkit-backdrop-filter: blur(10px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 18px;
+    padding: clamp(36px, 5vw, 56px) clamp(28px, 4vw, 48px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
 }
 
 /* Per-section accent palette — each family line gets its own color.
@@ -2051,28 +2065,28 @@ html.tc-menu-open body {
 }
 
 /* Atmospheric color wash per section — a soft radial bloom in the
-   line's accent color, sitting behind everything. Tints the section's
-   immediate surroundings so each family line has its own ambient hue
-   pulling through the WebGL bg. Position varies per :nth-of-type so
-   the washes don't all bloom from the same corner. */
+   line's accent color, sitting on top of the frosted plate but below
+   the body content. Inset 0 + matching border-radius keeps the wash
+   contained inside the plate's rounded corners. Position varies per
+   :nth-of-type so the washes don't all bloom from the same corner. */
 .heritage-line::after {
     content: '';
     position: absolute;
-    inset: -10% -20%;
+    inset: 0;
+    border-radius: 18px;
     z-index: -2;
     pointer-events: none;
     background: radial-gradient(
         ellipse at 30% 50%,
-        color-mix(in srgb, var(--line-color) 10%, transparent) 0%,
+        color-mix(in srgb, var(--line-color) 14%, transparent) 0%,
         transparent 65%
     );
-    opacity: 0.85;
 }
 
 .heritage-line:nth-of-type(2)::after {
     background: radial-gradient(
         ellipse at 70% 40%,
-        color-mix(in srgb, var(--line-color) 10%, transparent) 0%,
+        color-mix(in srgb, var(--line-color) 14%, transparent) 0%,
         transparent 65%
     );
 }
@@ -2080,7 +2094,7 @@ html.tc-menu-open body {
 .heritage-line:nth-of-type(3)::after {
     background: radial-gradient(
         ellipse at 25% 65%,
-        color-mix(in srgb, var(--line-color) 10%, transparent) 0%,
+        color-mix(in srgb, var(--line-color) 14%, transparent) 0%,
         transparent 65%
     );
 }
@@ -2088,7 +2102,7 @@ html.tc-menu-open body {
 .heritage-line:nth-of-type(4)::after {
     background: radial-gradient(
         ellipse at 75% 30%,
-        color-mix(in srgb, var(--line-color) 10%, transparent) 0%,
+        color-mix(in srgb, var(--line-color) 14%, transparent) 0%,
         transparent 65%
     );
 }
@@ -2096,9 +2110,25 @@ html.tc-menu-open body {
 .heritage-line:nth-of-type(5)::after {
     background: radial-gradient(
         ellipse at 35% 35%,
-        color-mix(in srgb, var(--line-color) 10%, transparent) 0%,
+        color-mix(in srgb, var(--line-color) 14%, transparent) 0%,
         transparent 65%
     );
+}
+
+/* Same frosted-plate treatment for the intro lead and the closing coda
+   so all reading regions get the same readability backdrop. The plate
+   is applied to the inner .container--narrow rather than the outer
+   section so the surrounding gaps still show un-frosted particles
+   (preserves the "stepping-stone plates over a particle field" feel). */
+.heritage-intro .container--narrow,
+.heritage-coda .container--narrow {
+    background: rgba(8, 10, 26, 0.55);
+    backdrop-filter: blur(10px) saturate(125%);
+    -webkit-backdrop-filter: blur(10px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 18px;
+    padding: clamp(36px, 5vw, 56px) clamp(28px, 4vw, 48px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
 }
 
 /* ============================================
