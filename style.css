@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.11
+Version: 1.0.12
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1741,6 +1741,55 @@ html.tc-menu-open body {
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 13px;
+}
+
+/* ---- Editorial figures within page templates ----
+   Two variants:
+     .page-figure--hero    : sits directly under the page-hero band,
+                             slightly wider than the text columns to
+                             read as a "cover" image for the page.
+     .page-figure--inline  : a smaller image that breaks up the flow
+                             between sections (e.g. between the lead
+                             and the first content block).
+   The shared base .page-figure handles centering, max-width, rounded
+   corners, and a soft shadow that matches the rest of the chrome. */
+.page-figure {
+    margin: 0 auto;
+    padding: 0 20px;
+    max-width: 1100px;
+}
+
+.page-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 14px;
+    box-shadow: 0 18px 50px -28px rgba(0, 0, 0, 0.55);
+}
+
+.page-figure--hero {
+    /* Lifts the photo slightly into the page-hero space so the
+       transition from title to image feels intentional. */
+    margin-top: clamp(-40px, -4vh, -20px);
+    margin-bottom: clamp(40px, 8vh, 80px);
+}
+
+.page-figure--inline {
+    max-width: 760px;  /* matches .page-intro .container for visual rhythm */
+    margin-top: clamp(20px, 4vh, 40px);
+    margin-bottom: clamp(40px, 8vh, 80px);
+}
+
+/* ---- Photo-credit colophon ---- */
+.page-credit {
+    max-width: 760px;
+    margin: clamp(40px, 8vh, 80px) auto clamp(60px, 10vh, 120px);
+    padding: 0 20px;
+    text-align: center;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--text-light);
+    opacity: 0.8;
 }
 
 /* Reduced-motion fallback for the eyebrow keyframe. */

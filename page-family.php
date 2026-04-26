@@ -39,16 +39,43 @@ get_header(); ?>
     </section>
 
     <!-- ==============================================================
+         HERO FIGURE
+         Wide editorial photo that sits under the page-hero band.
+         Group photo, summer 2024. Uses home_url() so the image URL
+         stays correct after the site moves from staging to production.
+         ============================================================== -->
+    <figure class="page-figure page-figure--hero">
+        <img
+            src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_9320.jpg' ) ); ?>"
+            alt="<?php esc_attr_e( 'Extended-family group photo, summer 2024', 'tc-ventures-child' ); ?>"
+            loading="eager"
+        />
+    </figure>
+
+    <!-- ==============================================================
          PAGE INTRO
          A single lead paragraph. Sets the voice for the page.
          ============================================================== -->
     <section class="page-intro">
         <div class="container">
             <p class="page-intro__lead">
-                This is where I keep the stories of the people who matter most — my children Patience, Daniel, and Faith, the extended family that holds us up, and the family lines that stretch back generations behind us. Some entries are small moments. Some are the long ones I keep coming back to.
+                This part of the site is about my kids and the families they came from. Patience, Daniel, and Faith are the reason I'm here &mdash; three kids I never thought I'd have, given the Hajdu-Cheney Syndrome that I figured I would never take that risk on. Around the three of them are the rest of it: Cheesmans, Dochertys, McIvers, Rycrofts, Haistes, Lakemans. Five family lines, a handful of stories, and the things I want my kids to be able to find later if they go looking.
             </p>
         </div>
     </section>
+
+    <!-- ==============================================================
+         SECONDARY FIGURE
+         The three kids together — sits between the lead and the
+         four-card people-grid as a visual transition.
+         ============================================================== -->
+    <figure class="page-figure page-figure--inline">
+        <img
+            src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/fall-leaves-scaled.jpg' ) ); ?>"
+            alt="<?php esc_attr_e( 'The three kids together', 'tc-ventures-child' ); ?>"
+            loading="lazy"
+        />
+    </figure>
 
     <!-- ==============================================================
          PEOPLE GRID
@@ -73,7 +100,7 @@ get_header(); ?>
                     <h3>Patience</h3>
                     <p class="person-card__role">Daughter</p>
                     <p>
-                        Notes, photos, and the quiet moments that fill out who she is.
+                        My oldest. Arrived 10 days late on the same day I started as Head Chef at Ric's Grill. Natural leader, big-sister boss, dimples she tries to hide when she grins.
                     </p>
                     <a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Read her stories &rarr;</a>
                 </div>
@@ -86,7 +113,7 @@ get_header(); ?>
                     <h3>Daniel</h3>
                     <p class="person-card__role">Son</p>
                     <p>
-                        The chapters of his story so far — and the ones still being written.
+                        Born June 30, 2015. Uncle Vance nicknamed him Charlie Brown for the bald head. Never crawled &mdash; just butt-scootched. A silent observer who pays attention more than he says.
                     </p>
                     <a href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Read his stories &rarr;</a>
                 </div>
@@ -99,7 +126,7 @@ get_header(); ?>
                     <h3>Faith</h3>
                     <p class="person-card__role">Daughter</p>
                     <p>
-                        Memories large and small, and the things I want her to know.
+                        Born March 29, 2017. Her name came to me in a dream at 3 a.m. We weren't sure of it until she choked while still in the hospital and got rushed to the NICU &mdash; then we knew.
                     </p>
                     <a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Read her stories &rarr;</a>
                 </div>
@@ -112,7 +139,7 @@ get_header(); ?>
                     <h3>The Families</h3>
                     <p class="person-card__role">Five lines, one household</p>
                     <p>
-                        Cheesmans, Dochertys, Lakemans, Rycrofts, Haistes &mdash; a working map of where we came from.
+                        Five family lines: Cheesmans, Dochertys and McIvers, Rycrofts, Haistes, and Lakemans. Some I know well, some I'm still piecing together. This is where I keep what I've found &mdash; and what's still missing.
                     </p>
                     <a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">Trace the lines &rarr;</a>
                 </div>
@@ -189,6 +216,15 @@ get_header(); ?>
             </div>
         </div>
     </section>
+
+    <!-- ==============================================================
+         PHOTO CREDIT
+         Small italic colophon line at the bottom of the page,
+         crediting the photographer for the recent family photos.
+         ============================================================== -->
+    <p class="page-credit">
+        Most of the recent family photos on these pages were taken by my good friend Dalyn Echo in summer 2024. Thanks Dalyn.
+    </p>
 
 </main>
 
