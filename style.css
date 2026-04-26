@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.9
+Version: 1.0.10
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1947,7 +1947,7 @@ html.tc-menu-open body {
 }
 
 /* Sub-heads inside a body — use the line color so each section's
-   subjects (Grampa Docherty, Ganny Docherty, etc.) read as part of
+   subjects (Grampa Docherty, Granny Docherty, etc.) read as part of
    that line's family. */
 .heritage-line__body h3 {
     font-size: clamp(1.2rem, 2vw, 1.45rem);
@@ -2152,8 +2152,8 @@ html.tc-menu-open body {
     transition: box-shadow 0.6s ease;
 }
 
-/* Shimmer overlay — a bright streak that travels left-to-right across
-   the fill on a continuous 2.4s loop. mix-blend-mode: screen brightens
+/* Shimmer overlay — a soft highlight that travels left-to-right across
+   the fill on a continuous 5s loop. mix-blend-mode: screen brightens
    whatever rainbow stop the streak is currently passing over without
    washing the color out. */
 .heritage-progress__fill::before {
@@ -2163,22 +2163,22 @@ html.tc-menu-open body {
     background: linear-gradient(
         90deg,
         transparent 0%,
-        transparent 30%,
-        rgba(255, 255, 255, 0.65) 50%,
-        transparent 70%,
+        transparent 35%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 65%,
         transparent 100%
     );
-    background-size: 50vw 100%;
+    background-size: 75vw 100%;
     background-attachment: fixed;
     background-repeat: no-repeat;
-    background-position: -50vw 0;
-    animation: heritage-shimmer 2.4s linear infinite;
+    background-position: -75vw 0;
+    animation: heritage-shimmer 5s linear infinite;
     pointer-events: none;
     mix-blend-mode: screen;
 }
 
 @keyframes heritage-shimmer {
-    0%   { background-position: -50vw 0; }
+    0%   { background-position: -75vw 0; }
     100% { background-position: 100vw 0; }
 }
 
