@@ -94,7 +94,7 @@ get_header(); ?>
                 <div class="family-tree__core" aria-hidden="true">
                     <img
                         class="family-tree__image"
-                        src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/family-tree.png' ); ?>"
+                        src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/family-tree.webp' ); ?>"
                         alt=""
                         aria-hidden="true"
                         loading="lazy"
