@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.18
+Version: 1.0.19
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2745,7 +2745,14 @@ body.admin-bar .heritage-progress {
     text-align: center;
     text-decoration: none;
     color: var(--text-dark);
-    background: rgba(8, 10, 26, 0.82);
+    /* Flag artwork lives in background-image (set per-chip); the dark
+       linear-gradient overlay riding on top in the same property
+       knocks the flag back to ~30% visibility. background-color is the
+       fallback for chips without a flag image set. */
+    background-color: rgba(8, 10, 26, 0.82);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     backdrop-filter: blur(10px) saturate(125%);
     -webkit-backdrop-filter: blur(10px) saturate(125%);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -2808,15 +2815,74 @@ body.admin-bar .heritage-progress {
    kid-specific and distinct from the line palette so the tree
    reads as two layers (lines above, kids below). */
 
-.tree-chip--cheesmans { left: 16%; top: 34%; --chip-color: #22D3EE; }
-.tree-chip--dochertys { left: 28%; top: 16%; --chip-color: #EC4899; }
-.tree-chip--lakemans  { left: 50%; top: 12%; --chip-color: #10B981; }
-.tree-chip--rycrofts  { left: 72%; top: 16%; --chip-color: #F59E0B; }
-.tree-chip--haistes   { left: 84%; top: 34%; --chip-color: #6366F1; }
+/* Per-chip flag backgrounds. The two-layer background-image stacks
+   a flat dark overlay (rgba 0.7) over the flag SVG, knocking the
+   flag's visibility down to ~30% so it reads as a tint, not a
+   billboard. Flag SVGs live in assets/img/flags/. */
 
-.tree-chip--patience  { left: 28%; top: 79%; --chip-color: #A78BFA; }
-.tree-chip--daniel    { left: 50%; top: 84%; --chip-color: #38BDF8; }
-.tree-chip--faith     { left: 72%; top: 79%; --chip-color: #F472B6; }
+.tree-chip--cheesmans {
+    left: 16%; top: 34%;
+    --chip-color: #22D3EE;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, 0.7), rgba(8, 10, 26, 0.7)),
+        url('assets/img/flags/gb.svg');
+}
+
+.tree-chip--dochertys {
+    left: 28%; top: 16%;
+    --chip-color: #EC4899;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, 0.7), rgba(8, 10, 26, 0.7)),
+        url('assets/img/flags/ie.svg');
+}
+
+.tree-chip--lakemans {
+    left: 50%; top: 12%;
+    --chip-color: #10B981;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, 0.7), rgba(8, 10, 26, 0.7)),
+        url('assets/img/flags/nl.svg');
+}
+
+.tree-chip--rycrofts {
+    left: 72%; top: 16%;
+    --chip-color: #F59E0B;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, 0.7), rgba(8, 10, 26, 0.7)),
+        url('assets/img/flags/ca.svg');
+}
+
+.tree-chip--haistes {
+    left: 84%; top: 34%;
+    --chip-color: #6366F1;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, 0.7), rgba(8, 10, 26, 0.7)),
+        url('assets/img/flags/gb.svg');
+}
+
+.tree-chip--patience {
+    left: 28%; top: 79%;
+    --chip-color: #A78BFA;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, 0.7), rgba(8, 10, 26, 0.7)),
+        url('assets/img/flags/ca.svg');
+}
+
+.tree-chip--daniel {
+    left: 50%; top: 84%;
+    --chip-color: #38BDF8;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, 0.7), rgba(8, 10, 26, 0.7)),
+        url('assets/img/flags/ca.svg');
+}
+
+.tree-chip--faith {
+    left: 72%; top: 79%;
+    --chip-color: #F472B6;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, 0.7), rgba(8, 10, 26, 0.7)),
+        url('assets/img/flags/ca.svg');
+}
 
 /* Mobile fallback: tree disappears, chips stack as a list with a
    visual separator between branches and roots. */
