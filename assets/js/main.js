@@ -1415,6 +1415,13 @@ function initWebGLBackground() {
             float vignette = 1.0 - smoothstep(0.5, 1.0, length(vc));
             color *= mix(0.85, 1.0, vignette);
 
+            // Per-pixel hash dither — adds +/- half a color step of
+            // pseudo-random noise so 8-bit color quantization on the
+            // smooth cursor glow falloff doesn't show as visible
+            // concentric bands. Imperceptible as noise but kills banding.
+            float dither = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5;
+            color += vec3(dither / 255.0);
+
             gl_FragColor = vec4(color, 1.0);
         }
     `;
