@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.15
+Version: 1.0.16
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2580,6 +2580,17 @@ body.admin-bar .heritage-progress {
 .heritage-spoke--rycrofts  .heritage-line { --line-color: #F59E0B; }
 .heritage-spoke--haistes   .heritage-line { --line-color: #6366F1; }
 
+/* Per-kid accent colors for the per-person spoke pages
+   (page-patience / page-daniel / page-faith). Same mechanism as the
+   heritage spokes — the body class drives --line-color on the
+   .heritage-line plate, which colors the drop cap, quote border,
+   and any other accent uses. Colors match the tree-chip palette on
+   /family so a click-through from the tree carries the same color
+   identity into the per-person page. */
+.person-spoke--patience .heritage-line { --line-color: #A78BFA; }  /* purple */
+.person-spoke--daniel   .heritage-line { --line-color: #38BDF8; }  /* sky */
+.person-spoke--faith    .heritage-line { --line-color: #F472B6; }  /* pink */
+
 /* The giant ghost numeral that bleeds out of the top-right corner of
    each line was tied to the "01 → 05" sequence on the old long page.
    A spoke has no sequence to imply (the page-hero already names the
@@ -2794,9 +2805,9 @@ body.admin-bar .heritage-progress {
 .tree-chip--rycrofts  { left: 78%; top: 8%;  --chip-color: #F59E0B; }
 .tree-chip--haistes   { left: 93%; top: 30%; --chip-color: #6366F1; }
 
-.tree-chip--patience  { left: 22%; top: 86%; --chip-color: #F472B6; }
+.tree-chip--patience  { left: 22%; top: 86%; --chip-color: #A78BFA; }
 .tree-chip--daniel    { left: 50%; top: 92%; --chip-color: #38BDF8; }
-.tree-chip--faith     { left: 78%; top: 86%; --chip-color: #A78BFA; }
+.tree-chip--faith     { left: 78%; top: 86%; --chip-color: #F472B6; }
 
 /* Mobile fallback: tree disappears, chips stack as a list with a
    visual separator between branches and roots. */
