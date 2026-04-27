@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.38
+Version: 1.0.39
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2704,23 +2704,22 @@ body.admin-bar .heritage-progress {
 
 .pswp {
     --pswp-bg: rgba(4, 6, 25, 1);
+    /* backdrop-filter MUST be on .pswp (the root), not on .pswp__bg.
+       .pswp is fixed at body level with no stacking-context parent,
+       so its "backdrop" is genuinely the page beneath. .pswp__bg is
+       a child of .pswp, and Chrome treats its backdrop as just the
+       (empty) area behind it WITHIN .pswp's stacking context — so a
+       blur there silently does nothing. */
+    backdrop-filter: blur(18px) saturate(120%);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
 }
 
-/* Backdrop: light navy tint with a strong page-blur + saturation
-   bump. The blurred page is the dominant visual — you can read where
-   you are on the site through it.
-   Overrides PhotoSwipe's defaults (will-change: opacity + transform:
-   translateZ(0)) — Chrome promotes elements with will-change: opacity
-   to their own GPU buffer, and that buffer doesn't sample page content
-   for backdrop-filter. Stripping both lets the blur actually render.
-   Trade-off: the bg fade-in is no longer GPU-accelerated, but it's
-   brief enough to be imperceptible. */
+/* Light navy tint that fades in/out via PhotoSwipe's open/close
+   animation. No backdrop-filter here — that lives on .pswp now. */
 .pswp__bg {
     background: rgba(50, 65, 110, 0.18) !important;
-    backdrop-filter: blur(18px) saturate(120%) !important;
-    -webkit-backdrop-filter: blur(18px) saturate(120%) !important;
-    will-change: auto !important;
-    transform: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
 /* Lift shadow on the displayed image — gives the photo presence
