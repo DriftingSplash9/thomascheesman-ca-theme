@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.47
+Version: 1.0.48
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1653,7 +1653,12 @@ html.tc-menu-open body {
     font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--primary-color);
+    /* Color thread: pages that set --line-color (heritage spokes, person
+       spokes) tint the eyebrow accent. Other pages fall back to the
+       site primary. Combined with view-transition-name on this element
+       (see PAGE TRANSITIONS section), the colored accent visually
+       morphs between rooms during navigation. */
+    color: var(--line-color, var(--primary-color));
     margin-bottom: 18px;
     /* Subtle reveal — the eyebrow is small enough that it can fade in
        on load without needing the full per-character treatment. */
@@ -2577,11 +2582,21 @@ body.admin-bar .heritage-progress {
    rules above only fire when 5 lines sit on one page; on a spoke,
    only :nth-of-type(1) ever matches and every spoke would default to
    cyan. Re-assign --line-color from the spoke modifier so each spoke
-   keeps its own accent (cyan/pink/emerald/amber/indigo, in order). */
+   keeps its own accent (cyan/pink/emerald/amber/indigo, in order).
+
+   Two rules per spoke: the one on the main wrapper feeds
+   .page-hero__eyebrow (above the heritage-line plate) for the
+   color-thread view transition; the one on .heritage-line beats the
+   :nth-of-type(1) cyan default on the plate itself. */
+.heritage-spoke--cheesmans,
 .heritage-spoke--cheesmans .heritage-line { --line-color: #22D3EE; }
+.heritage-spoke--dochertys,
 .heritage-spoke--dochertys .heritage-line { --line-color: #EC4899; }
+.heritage-spoke--lakemans,
 .heritage-spoke--lakemans  .heritage-line { --line-color: #10B981; }
+.heritage-spoke--rycrofts,
 .heritage-spoke--rycrofts  .heritage-line { --line-color: #F59E0B; }
+.heritage-spoke--haistes,
 .heritage-spoke--haistes   .heritage-line { --line-color: #6366F1; }
 
 /* Per-kid accent colors for the per-person spoke pages
@@ -3418,4 +3433,97 @@ body:has(.person-spoke--faith) {
 
 .tree-click-overlay--active {
     background: rgba(4, 6, 25, 0.62);
+}
+
+/* ============================================
+   PAGE TRANSITIONS — View Transitions API
+   ============================================
+   Cross-document view transitions for same-origin navigations. Three
+   layered effects, all native CSS:
+
+   1) Chip → page-hero morph. Tree chips on /family share a
+      view-transition-name with the destination page's hero title, so
+      clicking Patience's chip literally expands her chip into her
+      page title. Bidirectional — clicking back also morphs.
+
+   2) Color thread. .page-hero__eyebrow shares a transition name
+      across pages and reads --line-color (set on heritage-spoke and
+      person-spoke main wrappers). The accent threads from one page's
+      color to the next during navigation.
+
+   3) Atmosphere tint. The root cross-fade duration is tuned so the
+      destination page's body-bg wash settles in smoothly, rather
+      than snapping. Most useful on kid pages where the bg carries a
+      faint --line-color tint.
+
+   Browser support: Chrome/Edge 111+, Safari 18+. Firefox falls
+   through to instant navigation — same default as every other
+   non-VT site, graceful degradation.
+
+   prefers-reduced-motion: navigation animations disabled. */
+
+@view-transition {
+    navigation: auto;
+}
+
+/* Atmosphere tint — slow, smooth root cross-fade so the destination
+   bg "settles" rather than swaps. */
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 500ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Chip → page-hero morph. Each chip's modifier class gets a unique
+   view-transition-name; the destination page pairs that name onto
+   its .page-hero__title via the page's main-class modifier. */
+.tree-chip--cheesmans { view-transition-name: chip-cheesmans; }
+.tree-chip--dochertys { view-transition-name: chip-dochertys; }
+.tree-chip--lakemans  { view-transition-name: chip-lakemans;  }
+.tree-chip--rycrofts  { view-transition-name: chip-rycrofts;  }
+.tree-chip--haistes   { view-transition-name: chip-haistes;   }
+.tree-chip--patience  { view-transition-name: chip-patience;  }
+.tree-chip--daniel    { view-transition-name: chip-daniel;    }
+.tree-chip--faith     { view-transition-name: chip-faith;     }
+
+.heritage-spoke--cheesmans .page-hero__title { view-transition-name: chip-cheesmans; }
+.heritage-spoke--dochertys .page-hero__title { view-transition-name: chip-dochertys; }
+.heritage-spoke--lakemans  .page-hero__title { view-transition-name: chip-lakemans;  }
+.heritage-spoke--rycrofts  .page-hero__title { view-transition-name: chip-rycrofts;  }
+.heritage-spoke--haistes   .page-hero__title { view-transition-name: chip-haistes;   }
+.person-spoke--patience    .page-hero__title { view-transition-name: chip-patience;  }
+.person-spoke--daniel      .page-hero__title { view-transition-name: chip-daniel;    }
+.person-spoke--faith       .page-hero__title { view-transition-name: chip-faith;     }
+
+/* Slightly longer morph timing — the chip-to-title scale change wants
+   a touch more breath than the root cross-fade. Listed per-name
+   because CSS pseudo-element function arguments don't accept
+   wildcards reliably across engines. */
+::view-transition-group(chip-cheesmans),
+::view-transition-group(chip-dochertys),
+::view-transition-group(chip-lakemans),
+::view-transition-group(chip-rycrofts),
+::view-transition-group(chip-haistes),
+::view-transition-group(chip-patience),
+::view-transition-group(chip-daniel),
+::view-transition-group(chip-faith) {
+    animation-duration: 650ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Color thread — eyebrow morphs in place between pages. Color shifts
+   because each page's eyebrow inherits a different --line-color
+   (cyan / pink / emerald / amber / indigo / purple / forest / pink). */
+.page-hero__eyebrow { view-transition-name: page-accent-eyebrow; }
+
+::view-transition-group(page-accent-eyebrow) {
+    animation-duration: 500ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    @view-transition {
+        navigation: none;
+    }
 }
