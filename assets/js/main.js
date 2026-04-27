@@ -645,33 +645,39 @@ function initFamilyTreeLeaves() {
 /**
  * Per-page lightbox using PhotoSwipe v5.
  *
- * Each .heritage-line__figure's <img> is wrapped at runtime in an
- * <a> with data-pswp-width / -height attributes so PhotoSwipe can
- * pick it up. The gallery is scoped to the current page's <main>,
- * so prev/next cycles only through the photos on the page being
- * viewed — not site-wide.
+ * Wraps every editorial <img> inside <main> in an <a> with
+ * data-pswp-width / -height so PhotoSwipe can pick it up. Skipped:
+ *   - images already inside an <a> (heritage hub cards link to spokes —
+ *     clicking should navigate, not open a lightbox)
+ *   - .family-tree__image (UI element, not editorial)
+ *   - anything tagged .no-lightbox (escape hatch)
  *
- * PhotoSwipe core JS is dynamically imported (only fetched at init,
- * with the larger main bundle pulled in on first click). The CSS is
- * enqueued at page load via functions.php.
+ * The gallery is scoped to #primary, so prev/next cycles only through
+ * the photos on the current page — not site-wide.
  *
- * Image dimensions come from each img's naturalWidth/Height — set
- * on the wrapping <a> as soon as the image finishes loading, or
- * immediately if it's already in the cache.
+ * Editorial customization (custom UI elements registered post-init):
+ *   - tc-counter: zero-padded "01 / 08" in the editorial serif
+ *   - tc-caption: image alt text shown as a subtle italic caption
  *
- * If PhotoSwipe fails to load (network blip, CDN issue), the wrapped
- * anchors fall back to opening the image URL in a new tab — degraded
- * but not broken.
+ * PhotoSwipe core JS is dynamically imported (only fetched at init).
+ * If it fails to load (network blip, CDN issue), the wrapped anchors
+ * fall back to opening the image URL in a new tab.
  */
 function initLightbox() {
-    const figures = document.querySelectorAll('.heritage-line__figure');
-    if (figures.length === 0) return;
+    const candidates = document.querySelectorAll('main img');
+    if (candidates.length === 0) return;
 
-    figures.forEach((fig) => {
-        const img = fig.querySelector('img');
-        if (!img || (img.parentElement && img.parentElement.tagName === 'A')) return;
+    let wrappedCount = 0;
+    candidates.forEach((img) => {
+        if (img.classList.contains('no-lightbox')) return;
+        if (img.classList.contains('family-tree__image')) return;
+        // Skip if the img is anywhere inside an <a> — covers heritage hub
+        // cards (<a><div><img></div></a>) where the immediate parent is
+        // a div, not the anchor itself.
+        if (img.closest('a')) return;
 
         const a = document.createElement('a');
+        a.className = 'lightbox-link';
         a.href = img.currentSrc || img.src;
         a.setAttribute('target', '_blank');
         a.setAttribute('rel', 'noopener noreferrer');
@@ -684,23 +690,67 @@ function initLightbox() {
                 a.setAttribute('data-pswp-height', img.naturalHeight);
             }
         };
-
         if (img.complete && img.naturalWidth > 0) {
             updateDims();
         } else {
             img.addEventListener('load', updateDims, { once: true });
         }
+
+        wrappedCount += 1;
     });
+
+    if (wrappedCount === 0) return;
 
     import('https://unpkg.com/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.js')
         .then(({ default: PhotoSwipeLightbox }) => {
             const lightbox = new PhotoSwipeLightbox({
                 gallery: '#primary',
-                children: '.heritage-line__figure a[data-pswp-width]',
+                children: 'a.lightbox-link[data-pswp-width]',
                 pswpModule: () => import('https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.esm.js'),
                 bgOpacity: 0.94,
                 showHideAnimationType: 'fade',
             });
+
+            lightbox.on('uiRegister', () => {
+                // Editorial counter: "01 / 08" in the site's serif.
+                // Default counter is hidden via CSS.
+                lightbox.pswp.ui.registerElement({
+                    name: 'tc-counter',
+                    order: 5,
+                    isButton: false,
+                    appendTo: 'bar',
+                    onInit: (el, pswp) => {
+                        const update = () => {
+                            const idx = String(pswp.currIndex + 1).padStart(2, '0');
+                            const total = String(pswp.getNumItems()).padStart(2, '0');
+                            el.innerText = `${idx} / ${total}`;
+                        };
+                        pswp.on('change', update);
+                        update();
+                    },
+                });
+
+                // Caption from img alt text. Empty alt = no caption shown.
+                lightbox.pswp.ui.registerElement({
+                    name: 'tc-caption',
+                    order: 9,
+                    isButton: false,
+                    appendTo: 'root',
+                    onInit: (el, pswp) => {
+                        const update = () => {
+                            const slide = pswp.currSlide;
+                            const link = slide && slide.data && slide.data.element;
+                            const img = link && link.querySelector ? link.querySelector('img') : null;
+                            const text = ((img && img.alt) || '').trim();
+                            el.innerText = text;
+                            el.style.opacity = text ? '1' : '0';
+                        };
+                        pswp.on('change', update);
+                        update();
+                    },
+                });
+            });
+
             lightbox.init();
         })
         .catch((err) => {
