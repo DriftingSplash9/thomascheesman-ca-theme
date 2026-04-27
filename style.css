@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.43
+Version: 1.0.44
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2599,6 +2599,28 @@ body.admin-bar .heritage-progress {
 .person-spoke--daniel   { --line-color: #38BDF8; }  /* sky    */
 .person-spoke--faith    { --line-color: #F472B6; }  /* pink   */
 
+/* Per-kid page background wash. Two soft radial gradients in the kid's
+   --line-color (top-down and bottom-up), layered over the dark base.
+   color-mix gives alpha-blending against the deep navy so the wash
+   reads as a tint, not a flat color.
+
+   background-attachment: fixed pins the gradients to the viewport so
+   they don't drift as the user scrolls — the kid's "atmosphere" stays
+   present at the edges of the page while content scrolls through.
+
+   Single shared rule because the only per-kid variation is the
+   --line-color, which the .person-spoke--{name} declarations above
+   already establish. */
+.person-spoke--patience,
+.person-spoke--daniel,
+.person-spoke--faith {
+    background-image:
+        radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--line-color) 14%, transparent), transparent 55%),
+        radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--line-color) 9%, transparent), transparent 60%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
 
 /* The giant ghost numeral that bleeds out of the top-right corner of
    each line was tied to the "01 → 05" sequence on the old long page.
