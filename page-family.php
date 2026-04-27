@@ -91,13 +91,15 @@ get_header(); ?>
             <h2 class="family-tree-section__heading kinetic-text-scroll">The Family Tree</h2>
 
             <div class="family-tree" role="navigation" aria-label="<?php esc_attr_e( 'Family tree — branches and roots', 'tc-ventures-child' ); ?>">
-                <img
-                    class="family-tree__image"
-                    src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/family-tree.png' ); ?>"
-                    alt=""
-                    aria-hidden="true"
-                    loading="lazy"
-                />
+                <div class="family-tree__core" aria-hidden="true">
+                    <img
+                        class="family-tree__image"
+                        src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/family-tree.png' ); ?>"
+                        alt=""
+                        aria-hidden="true"
+                        loading="lazy"
+                    />
+                </div>
 
                 <!-- Branches — five family lines, in numbered order. -->
                 <a class="tree-chip tree-chip--branch tree-chip--cheesmans" href="<?php echo esc_url( home_url( '/family/heritage/cheesmans' ) ); ?>">

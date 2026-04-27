@@ -523,6 +523,10 @@ function initFamilyTreeLeaves() {
     overlay.className = 'tree-click-overlay';
     document.body.appendChild(overlay);
 
+    // The inner <img> has no base transform (its centering lives on
+    // .family-tree__core), so GSAP can rotate it freely for the rustle.
+    const treeImg = section.querySelector('.family-tree__image');
+
     function dropLeaf(startX, startY) {
         const slot = leaves.find((l) => !l.busy);
         if (!slot) return;
@@ -532,9 +536,9 @@ function initFamilyTreeLeaves() {
         const driftX = (Math.random() - 0.5) * 240;
         const fallY = window.innerHeight - startY + 120;
         const rotEnd = (Math.random() - 0.5) * 720;
-        const duration = 2.6 + Math.random() * 1.4;
+        const duration = 1.5 + Math.random() * 1.0;
         const color = LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)];
-        const size = 14 + Math.floor(Math.random() * 12);
+        const size = 8 + Math.floor(Math.random() * 7);
 
         leaf.style.color = color;
         leaf.style.fontSize = size + 'px';
@@ -579,9 +583,9 @@ function initFamilyTreeLeaves() {
 
         tl.to(leaf, {
             opacity: 0,
-            duration: 0.7,
+            duration: 0.4,
             ease: 'power1.in',
-        }, duration - 0.7);
+        }, duration * 0.6);
     }
 
     function dropLeavesFromCanopy(count, intervalMs) {
@@ -610,7 +614,7 @@ function initFamilyTreeLeaves() {
             const now = Date.now();
             if (now - hoverCooldown < 800) return;
             hoverCooldown = now;
-            const count = 3 + Math.floor(Math.random() * 3);
+            const count = 1 + Math.floor(Math.random() * 2);
             dropLeavesFromCanopy(count, 180);
         });
 
@@ -619,12 +623,21 @@ function initFamilyTreeLeaves() {
             const href = chip.getAttribute('href');
             if (!href) return;
 
-            dropLeavesFromCanopy(10, 60);
+            const clickCount = 5 + Math.floor(Math.random() * 3);
+            dropLeavesFromCanopy(clickCount, 60);
             overlay.classList.add('tree-click-overlay--active');
+
+            // One-beat trunk sway: ~2.5° out, settle back. Reads as
+            // "the branch you plucked is settling."
+            if (treeImg) {
+                gsap.timeline()
+                    .to(treeImg, { rotation: -2.5, duration: 0.18, ease: 'sine.out' })
+                    .to(treeImg, { rotation: 0, duration: 0.42, ease: 'sine.inOut' });
+            }
 
             setTimeout(() => {
                 window.location.href = href;
-            }, 700);
+            }, 500);
         });
     });
 }
@@ -794,6 +807,8 @@ function initScrollReveals() {
  */
 function initParticleField() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Homepage only — particles are atmosphere for the hero, not editorial chrome.
+    if (!document.body.classList.contains('home')) return;
 
     const canvas = document.createElement('canvas');
     canvas.className = 'particle-field-canvas';

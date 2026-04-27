@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.26
+Version: 1.0.27
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2816,19 +2816,26 @@ body.admin-bar .heritage-progress {
     inherits: false;
 }
 
-.family-tree__image {
-    /* Tree visually scaled to ~50% of its old footprint: 50% of the
-       container width, height auto from the image's natural aspect.
-       Centered so chips orbit it on all four sides. */
+/* Wrapper holds the centering + sizing transform so the inner <img> is
+   free for GSAP rotation (branch rustle on chip click) without colliding
+   with the centering translate. */
+.family-tree__core {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     width: 50%;
-    height: auto;
     max-height: 90%;
     pointer-events: none;
     user-select: none;
+}
+
+.family-tree__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* Pivot at the trunk base so the rustle sways like a real tree. */
+    transform-origin: 50% 100%;
 }
 
 /* ---- Chips ----
@@ -3016,7 +3023,7 @@ body.admin-bar .heritage-progress {
         padding: 20px 0;
     }
 
-    .family-tree__image {
+    .family-tree__core {
         display: none;
     }
 
