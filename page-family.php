@@ -78,7 +78,7 @@ get_header(); ?>
          chips along the canopy edge (top), 3 kid chips at the roots
          (bottom). Each chip is a link.
 
-         Tree image: assets/img/family-tree.png. Sized to a fixed
+         Tree image: assets/img/family-tree.webp. Sized to a fixed
          aspect ratio so chip percentages stay anchored to the same
          visual landmarks at every breakpoint.
 
