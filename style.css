@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.41
+Version: 1.0.42
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2599,24 +2599,30 @@ body.admin-bar .heritage-progress {
 .person-spoke--daniel   { --line-color: #38BDF8; }  /* sky    */
 .person-spoke--faith    { --line-color: #F472B6; }  /* pink   */
 
-/* Per-kid background wash — a soft top-glow + bottom-glow in the
-   kid's accent color over the dark editorial base. Subtle (14% top,
-   8% bottom) so the page feels personal without breaking the dark-mode
-   editorial feel. Single rule for all three kids since --line-color
-   comes from the modifier above. */
+/* Per-kid background — three organic radial blobs in the kid's accent
+   over a base color that's itself tinted ~5% toward that accent. The
+   blob layout mirrors .hero-section's atmospheric pattern (off-center,
+   organic positions) so it reads as part of the same visual language.
+   Single rule for all three kids since --line-color comes from the
+   modifier classes above. */
 .person-spoke {
     background:
         radial-gradient(
-            ellipse at 50% 0%,
-            color-mix(in srgb, var(--line-color) 14%, transparent),
+            ellipse at 22% 28%,
+            color-mix(in srgb, var(--line-color) 28%, transparent),
             transparent 55%
         ),
         radial-gradient(
-            ellipse at 50% 100%,
-            color-mix(in srgb, var(--line-color) 8%, transparent),
+            ellipse at 78% 62%,
+            color-mix(in srgb, var(--line-color) 22%, transparent),
+            transparent 55%
+        ),
+        radial-gradient(
+            ellipse at 50% 95%,
+            color-mix(in srgb, var(--line-color) 14%, transparent),
             transparent 60%
         ),
-        var(--bg-base);
+        color-mix(in srgb, var(--line-color) 5%, var(--bg-base));
 }
 
 /* The giant ghost numeral that bleeds out of the top-right corner of
