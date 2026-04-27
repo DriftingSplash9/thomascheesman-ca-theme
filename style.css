@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.17
+Version: 1.0.18
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2808,15 +2808,15 @@ body.admin-bar .heritage-progress {
    kid-specific and distinct from the line palette so the tree
    reads as two layers (lines above, kids below). */
 
-.tree-chip--cheesmans { left: 7%;  top: 30%; --chip-color: #22D3EE; }
-.tree-chip--dochertys { left: 22%; top: 8%;  --chip-color: #EC4899; }
-.tree-chip--lakemans  { left: 50%; top: 2%;  --chip-color: #10B981; }
-.tree-chip--rycrofts  { left: 78%; top: 8%;  --chip-color: #F59E0B; }
-.tree-chip--haistes   { left: 93%; top: 30%; --chip-color: #6366F1; }
+.tree-chip--cheesmans { left: 16%; top: 34%; --chip-color: #22D3EE; }
+.tree-chip--dochertys { left: 28%; top: 16%; --chip-color: #EC4899; }
+.tree-chip--lakemans  { left: 50%; top: 12%; --chip-color: #10B981; }
+.tree-chip--rycrofts  { left: 72%; top: 16%; --chip-color: #F59E0B; }
+.tree-chip--haistes   { left: 84%; top: 34%; --chip-color: #6366F1; }
 
-.tree-chip--patience  { left: 22%; top: 86%; --chip-color: #A78BFA; }
-.tree-chip--daniel    { left: 50%; top: 92%; --chip-color: #38BDF8; }
-.tree-chip--faith     { left: 78%; top: 86%; --chip-color: #F472B6; }
+.tree-chip--patience  { left: 28%; top: 79%; --chip-color: #A78BFA; }
+.tree-chip--daniel    { left: 50%; top: 84%; --chip-color: #38BDF8; }
+.tree-chip--faith     { left: 72%; top: 79%; --chip-color: #F472B6; }
 
 /* Mobile fallback: tree disappears, chips stack as a list with a
    visual separator between branches and roots. */

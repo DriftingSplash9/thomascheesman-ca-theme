@@ -431,6 +431,8 @@ function initFamilyTreeReveal() {
         ease: 'power1.out',
     }, 0);
 
+    // Slide-into-position runs SIMULTANEOUSLY with the fade (both
+    // anchored at t=0) — fade and settle are concurrent per chip.
     tl.to(chips, {
         xPercent: -50,
         yPercent: -50,
@@ -439,7 +441,7 @@ function initFamilyTreeReveal() {
         duration: 1.1,
         stagger: 0.15,
         ease: 'power2.out',
-    }, 0.5);
+    }, 0);
 
     const rect = section.getBoundingClientRect();
     const visibleOnLoad = rect.top < window.innerHeight * 0.75;
