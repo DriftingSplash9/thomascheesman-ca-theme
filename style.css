@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.16
+Version: 1.0.17
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2702,15 +2702,24 @@ body.admin-bar .heritage-progress {
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
-    aspect-ratio: 1051 / 768;
+    /* Compact 2:1 aspect ratio (instead of the tree image's natural
+       1051:768) so the whole 8-chip composition fits within a single
+       viewport on a 768-900px-tall window. The tree no longer fills
+       the container — see .family-tree__image below. */
+    aspect-ratio: 2 / 1;
 }
 
 .family-tree__image {
+    /* Tree visually scaled to ~50% of its old footprint: 50% of the
+       container width, height auto from the image's natural aspect.
+       Centered so chips orbit it on all four sides. */
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 50%;
+    height: auto;
+    max-height: 90%;
     pointer-events: none;
     user-select: none;
 }
