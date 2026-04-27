@@ -523,6 +523,16 @@ function initFamilyTreeLeaves() {
     overlay.className = 'tree-click-overlay';
     document.body.appendChild(overlay);
 
+    // Clear the dim overlay when the page is restored from the
+    // browser's back-forward cache. Without this, the overlay class
+    // added on a chip click stays "active" through bfcache, so
+    // navigating back to /family from a sub-page shows the family
+    // page underneath the dim wash. pageshow fires both on initial
+    // load and on bfcache restore, so a single listener handles both.
+    window.addEventListener('pageshow', () => {
+        overlay.classList.remove('tree-click-overlay--active');
+    });
+
     // The inner <img> has no base transform (its centering lives on
     // .family-tree__core), so GSAP can rotate it freely for the rustle.
     const treeImg = section.querySelector('.family-tree__image');
