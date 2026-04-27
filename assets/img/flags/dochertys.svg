@@ -22,6 +22,8 @@
         <line x1="200" y1="0"   x2="0"   y2="100" stroke="#FFFFFF" stroke-width="20"/>
     </g>
 
-    <!-- Faint divider so the diagonal reads as intentional, not a rendering artifact -->
-    <line x1="0" y1="100" x2="200" y2="0" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+    <!-- Thin dark hairline divider — neither flag uses dark, so it reads
+         as a deliberate UI split rather than competing with white-on-white
+         (Saltire cross / Irish white stripe). -->
+    <line x1="0" y1="100" x2="200" y2="0" stroke="rgba(0,0,0,0.9)" stroke-width="0.6"/>
 </svg>
