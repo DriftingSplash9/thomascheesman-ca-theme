@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.21
+Version: 1.0.22
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2707,6 +2707,20 @@ body.admin-bar .heritage-progress {
        viewport on a 768-900px-tall window. The tree no longer fills
        the container — see .family-tree__image below. */
     aspect-ratio: 2 / 1;
+    /* Open-hand cursor while the cursor is over the tree area —
+       signals "this is alive, pick something" without a click target.
+       Chip <a> elements override with their default pointer cursor. */
+    cursor: grab;
+}
+
+/* Registered custom property for the chip's flag overlay alpha.
+   Registering with @property + <number> syntax makes the value
+   transitionable, so the hover state can animate the flag from
+   ~10% visible to ~35% visible smoothly instead of jump-cutting. */
+@property --chip-overlay-alpha {
+    syntax: '<number>';
+    initial-value: 0.9;
+    inherits: false;
 }
 
 .family-tree__image {
@@ -2760,14 +2774,27 @@ body.admin-bar .heritage-progress {
     box-shadow: 0 10px 30px -16px rgba(0, 0, 0, 0.6);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
                 box-shadow 0.4s ease,
-                border-color 0.4s ease;
+                border-color 0.4s ease,
+                --chip-overlay-alpha 0.4s ease;
     z-index: 2;
+    --chip-overlay-alpha: 0.9;
 }
 
 .tree-chip:hover {
-    transform: translate(-50%, -50%) translateY(-3px);
-    border-color: color-mix(in srgb, var(--chip-color, var(--primary-color)) 50%, transparent);
-    box-shadow: 0 14px 36px -16px color-mix(in srgb, var(--chip-color, var(--primary-color)) 60%, rgba(0, 0, 0, 0.6));
+    /* Lift higher and scale up slightly for a deliberate hover read. */
+    transform: translate(-50%, -50%) translateY(-6px) scale(1.03);
+    border-color: var(--chip-color, var(--primary-color));
+    /* Three-layer shadow: drop shadow for the lift, a 1px ring at the
+       chip's accent color, and a soft outer glow that bleeds the
+       chip's color into the surrounding area. */
+    box-shadow:
+        0 22px 48px -16px color-mix(in srgb, var(--chip-color, var(--primary-color)) 65%, rgba(0, 0, 0, 0.7)),
+        0 0 0 1px color-mix(in srgb, var(--chip-color, var(--primary-color)) 40%, transparent),
+        0 0 32px -4px color-mix(in srgb, var(--chip-color, var(--primary-color)) 30%, transparent);
+    /* Flag brightens on hover — overlay drops from ~0.9 to ~0.55, so
+       the flag goes from a quiet hint to clearly visible. The
+       @property registration above makes this smooth. */
+    --chip-overlay-alpha: 0.55;
 }
 
 .tree-chip__eyebrow {
@@ -2824,7 +2851,7 @@ body.admin-bar .heritage-progress {
     left: 16%; top: 34%;
     --chip-color: #22D3EE;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/gb.svg');
 }
 
@@ -2832,7 +2859,7 @@ body.admin-bar .heritage-progress {
     left: 28%; top: 16%;
     --chip-color: #EC4899;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/ie.svg');
 }
 
@@ -2840,7 +2867,7 @@ body.admin-bar .heritage-progress {
     left: 50%; top: 12%;
     --chip-color: #10B981;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/nl.svg');
 }
 
@@ -2848,7 +2875,7 @@ body.admin-bar .heritage-progress {
     left: 72%; top: 16%;
     --chip-color: #F59E0B;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/ca.svg');
 }
 
@@ -2856,7 +2883,7 @@ body.admin-bar .heritage-progress {
     left: 84%; top: 34%;
     --chip-color: #6366F1;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/gb.svg');
 }
 
@@ -2864,7 +2891,7 @@ body.admin-bar .heritage-progress {
     left: 28%; top: 79%;
     --chip-color: #A78BFA;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/ca.svg');
 }
 
@@ -2872,7 +2899,7 @@ body.admin-bar .heritage-progress {
     left: 50%; top: 84%;
     --chip-color: #38BDF8;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/ca.svg');
 }
 
@@ -2880,7 +2907,7 @@ body.admin-bar .heritage-progress {
     left: 72%; top: 79%;
     --chip-color: #F472B6;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/ca.svg');
 }
 
