@@ -40,6 +40,15 @@ function tc_ventures_enqueue_scripts() {
         '5.4.4'
     );
 
+    // Italiana — Didone display serif used for the lightbox counter
+    // ("01 / 06"). Single weight (400) keeps the file small.
+    wp_enqueue_style(
+        'tc-italiana',
+        'https://fonts.googleapis.com/css2?family=Italiana&display=swap',
+        array(),
+        null
+    );
+
     // GSAP core library (CDN).
     wp_enqueue_script(
         'gsap-core',

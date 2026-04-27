@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.33
+Version: 1.0.34
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2736,44 +2736,59 @@ body.admin-bar .heritage-progress {
     display: none !important;
 }
 
-/* Editorial counter — "01 / 08" tracked-out small caps in the site's
-   serif, mirroring the .tree-chip__eyebrow numerals. Sits in the top
-   bar where the default counter used to live. */
+/* Editorial counter — "01 / 06" in Italiana (Didone display serif),
+   tracked-out and sized to feel like a chapter marker rather than UI
+   chrome. Tabular numerals so digits don't shift on slide change. */
 .pswp__tc-counter {
-    font-family: 'Times New Roman', Georgia, serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    color: rgba(255, 255, 255, 0.82);
-    padding: 0 14px;
+    font-family: 'Italiana', 'Iowan Old Style', Garamond, 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: 0.20em;
+    color: rgba(255, 255, 255, 0.92);
+    padding: 0 18px;
     height: 60px;
     line-height: 60px;
     pointer-events: none;
     user-select: none;
-    /* Tabular numerals so the counter doesn't reflow as digits change. */
     font-variant-numeric: tabular-nums;
 }
 
-/* Caption pulled from the active image's alt text. Italic, centered,
-   sits above the bottom edge of the lightbox. Hidden when alt is
-   empty/decorative (handled in JS). */
+/* Caption pulled from the active image's alt text. Italic serif on
+   a frosted-glass pill so it stays legible over busy/bright photos.
+   Hidden (opacity 0) when alt is empty/decorative — handled in JS. */
 .pswp__tc-caption {
     position: absolute;
     bottom: clamp(20px, 5vh, 48px);
     left: 50%;
     transform: translateX(-50%);
     max-width: min(70vw, 720px);
-    padding: 0 20px;
+    padding: 10px 22px;
     text-align: center;
     font-family: 'Times New Roman', Georgia, serif;
     font-style: italic;
     font-size: 15px;
     line-height: 1.55;
-    color: rgba(255, 255, 255, 0.78);
+    color: rgba(255, 255, 255, 0.95);
+    background: rgba(8, 10, 26, 0.5);
+    backdrop-filter: blur(10px) saturate(125%);
+    -webkit-backdrop-filter: blur(10px) saturate(125%);
+    border-radius: 8px;
+    box-shadow: 0 6px 24px -10px rgba(0, 0, 0, 0.55);
     pointer-events: none;
     user-select: none;
     transition: opacity 0.3s ease;
     z-index: 1050;
+}
+
+/* Download button is an <a>, which inherits the default link color
+   (often blue from Astra/user-agent). Force white so the icon
+   matches the close button. */
+.pswp__button--tc-download,
+.pswp__button--tc-download:link,
+.pswp__button--tc-download:visited,
+.pswp__button--tc-download:hover,
+.pswp__button--tc-download:active {
+    color: #fff;
 }
 
 .heritage-line__figure.kb-active img {

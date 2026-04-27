@@ -759,14 +759,19 @@ function initLightbox() {
 
                 // Download button — anchor element with the download
                 // attribute so the browser saves the file instead of
-                // navigating. Sits in the bar (top-right area) just
-                // before the close button (order 8 < close's 20).
+                // navigating. Uses isCustomSVG so PhotoSwipe wraps it
+                // in its standard .pswp__icn structure and the icon
+                // sits at the same size/baseline as the close button.
                 lightbox.pswp.ui.registerElement({
                     name: 'tc-download',
                     order: 8,
                     isButton: true,
                     tagName: 'a',
-                    html: '<svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><path d="M16 5 V21 M10 15 L16 21 L22 15 M8 26 H24" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                    html: {
+                        isCustomSVG: true,
+                        inner: '<path d="M16 5 V21 M10 15 L16 21 L22 15 M8 27 H24" id="pswp__icn-download" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+                        outlineID: 'pswp__icn-download',
+                    },
                     onInit: (el, pswp) => {
                         el.setAttribute('download', '');
                         el.setAttribute('target', '_blank');
