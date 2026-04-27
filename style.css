@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.44
+Version: 1.0.45
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2601,19 +2601,28 @@ body.admin-bar .heritage-progress {
 
 /* Per-kid page background wash. Two soft radial gradients in the kid's
    --line-color (top-down and bottom-up), layered over the dark base.
-   color-mix gives alpha-blending against the deep navy so the wash
-   reads as a tint, not a flat color.
 
-   background-attachment: fixed pins the gradients to the viewport so
-   they don't drift as the user scrolls — the kid's "atmosphere" stays
-   present at the edges of the page while content scrolls through.
+   Applied to <body> rather than <main> via :has() so the wash fills
+   the entire viewport — body's background propagates to the browser
+   canvas, so it always reaches edge to edge regardless of header,
+   footer, or main's box dimensions. (When the wash was on <main>
+   directly, thin un-tinted strips appeared above and below where
+   header and footer sat outside main's box.)
 
-   Single shared rule because the only per-kid variation is the
-   --line-color, which the .person-spoke--{name} declarations above
-   already establish. */
-.person-spoke--patience,
-.person-spoke--daniel,
-.person-spoke--faith {
+   :has() is supported in all modern browsers (Chrome 105+, Safari
+   15.4+, Firefox 121+). The wash needs --line-color at the body
+   level too, so the same :has() rules also set the variable on body.
+   The earlier `.person-spoke--{name} { --line-color: ... }` block
+   (above) is kept so descendants of <main> still pick up the right
+   color even on browsers without :has() support — graceful fallback. */
+
+body:has(.person-spoke--patience) { --line-color: #A78BFA; }
+body:has(.person-spoke--daniel)   { --line-color: #38BDF8; }
+body:has(.person-spoke--faith)    { --line-color: #F472B6; }
+
+body:has(.person-spoke--patience),
+body:has(.person-spoke--daniel),
+body:has(.person-spoke--faith) {
     background-image:
         radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--line-color) 14%, transparent), transparent 55%),
         radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--line-color) 9%, transparent), transparent 60%);
