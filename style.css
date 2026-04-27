@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.49
+Version: 1.0.50
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3433,6 +3433,103 @@ body:has(.person-spoke--faith) {
 
 .tree-click-overlay--active {
     background: rgba(4, 6, 25, 0.62);
+}
+
+/* ============================================
+   ABOUT PAGE
+   ============================================
+   The /about page reuses the homepage palette (cyan primary, dark
+   editorial bg) but doesn't get particles — they're already gated to
+   home + person-spoke pages in main.js. The page is a stack of
+   reading-width sections, each with a small accent stripe above its
+   H2 to echo the .heritage-line__number::after stripe used on the
+   heritage spokes. Headshot uses .heritage-line__figure for the
+   editorial chrome (border, vignette, grain, Ken Burns) — the class
+   is reused freely outside heritage-line containers, same pattern
+   the /family hero-pair already follows. */
+
+.about-body {
+    padding: 0 20px clamp(40px, 8vh, 80px);
+}
+
+.about-section {
+    margin: clamp(60px, 10vh, 110px) 0;
+}
+
+/* Pull the lead block closer to the hero — the headshot reads as a
+   continuation of the title rather than a new section. */
+.about-section--lead {
+    margin-top: clamp(20px, 4vh, 40px);
+}
+
+/* Accent stripe above each H2 — visually anchors the section break
+   without needing a divider rule. Skipped on the lead block (no H2)
+   and on the closing line (intentionally bare). */
+.about-section__heading {
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 24px 0;
+    color: var(--text-dark);
+    position: relative;
+}
+
+.about-section__heading::before {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, transparent 100%);
+    margin-bottom: 18px;
+}
+
+/* Lead paragraph — slightly larger than body copy, sits below the
+   headshot. Same editorial weight as a magazine kicker. */
+.about-lead {
+    font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+    line-height: 1.6;
+    color: var(--text-medium);
+    margin: 32px 0 0 0;
+}
+
+/* Body copy inside the about page — match the heritage-line prose
+   feel: comfortable line-height, lighter color than headings. */
+.about-section p {
+    font-size: clamp(1rem, 1.8vw, 1.1rem);
+    line-height: 1.7;
+    color: var(--text-medium);
+    margin: 0 0 1.2em 0;
+}
+
+.about-section p:last-child {
+    margin-bottom: 0;
+}
+
+.about-section a {
+    color: var(--primary-color);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.about-section a:hover {
+    color: var(--text-dark);
+    text-decoration-color: var(--primary-color);
+}
+
+/* Closing line — italic, centered, no accent stripe. The bow on the
+   page rather than another section. */
+.about-section--closing {
+    margin-top: clamp(80px, 12vh, 140px);
+    text-align: center;
+}
+
+.about-closing {
+    font-style: italic;
+    color: var(--text-light);
+    font-size: clamp(1rem, 1.8vw, 1.15rem);
 }
 
 /* ============================================
