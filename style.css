@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.50
+Version: 1.0.51
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3452,14 +3452,75 @@ body:has(.person-spoke--faith) {
     padding: 0 20px clamp(40px, 8vh, 80px);
 }
 
+/* display: flow-root makes each section its own block formatting
+   context, so floated figures inside don't bleed into the next
+   section. Modern equivalent of the clearfix hack. */
 .about-section {
     margin: clamp(60px, 10vh, 110px) 0;
+    display: flow-root;
 }
 
 /* Pull the lead block closer to the hero — the headshot reads as a
    continuation of the title rather than a new section. */
 .about-section--lead {
     margin-top: clamp(20px, 4vh, 40px);
+}
+
+/* Floating editorial figures. Each is shrunk to ~38% of column
+   width (capped at 320px) and floated left or right; surrounding
+   prose wraps. Subtle frosted plate + rounded corners + drop
+   shadow, lighter chrome than the kid-page hero figures since
+   these are inline accents, not headline images.
+
+   Mobile (<768px): float drops, figure goes full-width with
+   vertical rhythm above and below. */
+.about-figure {
+    margin: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(8, 10, 26, 0.55);
+}
+
+.about-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.about-figure figcaption {
+    padding: 8px 12px 10px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.about-figure--left {
+    float: left;
+    width: 38%;
+    max-width: 320px;
+    margin: 6px 28px 16px 0;
+    shape-outside: margin-box;
+}
+
+.about-figure--right {
+    float: right;
+    width: 38%;
+    max-width: 320px;
+    margin: 6px 0 16px 28px;
+    shape-outside: margin-box;
+}
+
+@media (max-width: 768px) {
+    .about-figure--left,
+    .about-figure--right {
+        float: none;
+        width: 100%;
+        max-width: 100%;
+        margin: 24px 0;
+    }
 }
 
 /* Accent stripe above each H2 — visually anchors the section break
@@ -3484,13 +3545,14 @@ body:has(.person-spoke--faith) {
     margin-bottom: 18px;
 }
 
-/* Lead paragraph — slightly larger than body copy, sits below the
-   headshot. Same editorial weight as a magazine kicker. */
+/* Lead paragraph — slightly larger than body copy, sits beside the
+   floated headshot rather than below. Same editorial weight as a
+   magazine kicker. */
 .about-lead {
     font-size: clamp(1.1rem, 2.2vw, 1.3rem);
     line-height: 1.6;
     color: var(--text-medium);
-    margin: 32px 0 0 0;
+    margin: 0;
 }
 
 /* Body copy inside the about page — match the heritage-line prose
