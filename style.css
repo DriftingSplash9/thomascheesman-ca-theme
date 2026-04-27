@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.27
+Version: 1.0.28
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2958,9 +2958,11 @@ body.admin-bar .heritage-progress {
 .tree-chip--dochertys {
     left: 28%; top: 16%;
     --chip-color: #EC4899;
+    /* Composite flag: Irish (Docherty / Lanarkshire) + Scottish (McIver
+       maternal line via Granny Elizabeth), split diagonally. */
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
-        url('assets/img/flags/ie.svg');
+        url('assets/img/flags/dochertys.svg');
 }
 
 .tree-chip--lakemans {

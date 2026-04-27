@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice">
+    <defs>
+        <clipPath id="dochertys-left">
+            <polygon points="0,0 200,0 0,100"/>
+        </clipPath>
+        <clipPath id="dochertys-right">
+            <polygon points="200,0 200,100 0,100"/>
+        </clipPath>
+    </defs>
+
+    <!-- Ireland (Docherty surname, Lanarkshire roots) — upper-left triangle -->
+    <g clip-path="url(#dochertys-left)">
+        <rect x="0"      y="0" width="66.67" height="100" fill="#169B62"/>
+        <rect x="66.67"  y="0" width="66.67" height="100" fill="#FFFFFF"/>
+        <rect x="133.33" y="0" width="66.67" height="100" fill="#FF883E"/>
+    </g>
+
+    <!-- Scotland (McIver maternal line via Granny Elizabeth) — lower-right triangle -->
+    <g clip-path="url(#dochertys-right)">
+        <rect x="0" y="0" width="200" height="100" fill="#0065BD"/>
+        <line x1="0"   y1="0"   x2="200" y2="100" stroke="#FFFFFF" stroke-width="20"/>
+        <line x1="200" y1="0"   x2="0"   y2="100" stroke="#FFFFFF" stroke-width="20"/>
+    </g>
+
+    <!-- Faint divider so the diagonal reads as intentional, not a rendering artifact -->
+    <line x1="0" y1="100" x2="200" y2="0" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+</svg>
