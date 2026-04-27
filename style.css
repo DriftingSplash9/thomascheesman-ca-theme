@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.34
+Version: 1.0.35
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2706,20 +2706,15 @@ body.admin-bar .heritage-progress {
     --pswp-bg: rgba(4, 6, 25, 1);
 }
 
-/* Backdrop: translucent navy tint over a blurred-page backdrop, plus
-   grain and a softer radial vignette. The backdrop-filter blur sees
-   through the rgba alpha to blur whatever's behind the lightbox. */
+/* Backdrop: light navy tint with a strong page-blur + slight
+   saturation bump. The blurred page is the dominant visual — you
+   can read where you are on the site through it. No vignette or
+   grain (they were piling extra darkness onto an already-dark page). */
 .pswp__bg {
-    background-color: rgba(20, 25, 55, 0.6);
-    background-image:
-        radial-gradient(
-            ellipse at center,
-            transparent 35%,
-            rgba(0, 0, 0, 0.35) 100%
-        ),
-        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background-color: rgba(40, 55, 95, 0.28);
+    background-image: none;
+    backdrop-filter: blur(14px) saturate(110%);
+    -webkit-backdrop-filter: blur(14px) saturate(110%);
 }
 
 /* Lift shadow on the displayed image — gives the photo presence
@@ -2736,6 +2731,57 @@ body.admin-bar .heritage-progress {
     display: none !important;
 }
 
+/* Top bar — flex with breathing room so each frosted control reads
+   as a distinct pill instead of a continuous strip. */
+.pswp__top-bar {
+    height: auto !important;
+    padding: 14px 18px !important;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Frosted-glass pill applied to every visible UI control: counter,
+   top-bar buttons (zoom / download / close), and the side nav arrows.
+   Same recipe as the alt-text caption pill so the lightbox reads as
+   one cohesive editorial layer on top of the blurred page. */
+.pswp__tc-counter,
+.pswp__button--zoom,
+.pswp__button--tc-download,
+.pswp__button--close,
+.pswp__button--arrow--prev,
+.pswp__button--arrow--next {
+    background: rgba(8, 10, 26, 0.42);
+    backdrop-filter: blur(10px) saturate(125%);
+    -webkit-backdrop-filter: blur(10px) saturate(125%);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px -8px rgba(0, 0, 0, 0.55);
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.pswp__button--zoom:hover,
+.pswp__button--tc-download:hover,
+.pswp__button--close:hover,
+.pswp__button--arrow--prev:hover,
+.pswp__button--arrow--next:hover {
+    background: rgba(8, 10, 26, 0.62);
+}
+
+/* Side nav arrows — give them breathing room from the screen edge
+   and a fixed pill size, so they don't span full screen height. */
+.pswp__button--arrow--prev,
+.pswp__button--arrow--next {
+    width: 56px !important;
+    height: 56px !important;
+    top: 50% !important;
+    transform: translateY(-50%);
+    margin: 0 18px;
+}
+
+.pswp__button--arrow--prev:hover,
+.pswp__button--arrow--next:hover {
+    transform: translateY(-50%) scale(1.05);
+}
+
 /* Editorial counter — "01 / 06" in Italiana (Didone display serif),
    tracked-out and sized to feel like a chapter marker rather than UI
    chrome. Tabular numerals so digits don't shift on slide change. */
@@ -2745,9 +2791,7 @@ body.admin-bar .heritage-progress {
     font-weight: 400;
     letter-spacing: 0.20em;
     color: rgba(255, 255, 255, 0.92);
-    padding: 0 18px;
-    height: 60px;
-    line-height: 60px;
+    padding: 8px 22px;
     pointer-events: none;
     user-select: none;
     font-variant-numeric: tabular-nums;
