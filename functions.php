@@ -21,23 +21,28 @@ function tc_ventures_enqueue_scripts() {
         wp_get_theme( 'astra' )->get( 'Version' )
     );
 
-    // Child theme stylesheet — must load AFTER the parent so it can override.
-    // get_stylesheet_uri() points to the CHILD theme's style.css.
-    wp_enqueue_style(
-        'astra-child-style',
-        get_stylesheet_uri(),
-        array( 'astra-parent-style' ),
-        wp_get_theme()->get( 'Version' )
-    );
-
     // PhotoSwipe v5 lightbox CSS (CDN). The JS for PhotoSwipe is
     // dynamically imported by main.js's initLightbox() the first time
     // the user clicks a figure — keeps the initial load light.
+    //
+    // Enqueued BEFORE the child stylesheet so the child can override
+    // PhotoSwipe's defaults (frosted pills on buttons, counter, etc.).
+    // Same-specificity selectors lose if PhotoSwipe loads later.
     wp_enqueue_style(
         'photoswipe',
         'https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.css',
         array(),
         '5.4.4'
+    );
+
+    // Child theme stylesheet — must load AFTER the parent and AFTER
+    // PhotoSwipe so it can override either. get_stylesheet_uri() points
+    // to the CHILD theme's style.css.
+    wp_enqueue_style(
+        'astra-child-style',
+        get_stylesheet_uri(),
+        array( 'astra-parent-style', 'photoswipe' ),
+        wp_get_theme()->get( 'Version' )
     );
 
     // Italiana — Didone display serif used for the lightbox counter
