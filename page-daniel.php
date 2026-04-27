@@ -38,7 +38,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Toddler Daniel, October 2016 — the bald grin that earned the nickname', 'tc-ventures-child' ); ?>"
                             loading="eager"
                         />
-                        <figcaption>The Charlie Brown image &mdash; toddler Daniel, October 2016.</figcaption>
                     </figure>
 
                     <p>Daniel was born on June 30, 2015. He's the reason Melanie and I delayed our wedding by a year &mdash; he would've shown up right when we'd planned to tie the knot, so he set the calendar instead.</p>
@@ -49,7 +48,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Daniel in vest and tie, Halloween 2017', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Daniel in vest and tie, Halloween 2017.</figcaption>
                     </figure>
 
                     <p>I figured out he was on the way during hell week opening a new restaurant, with Patience at home and a Culinary Arts class to teach on top of it. I called Melanie out of the blue and said, &ldquo;Hey, I think you're pregnant.&rdquo; She rushed out for tests and called back giddy an hour later.</p>
@@ -60,7 +58,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Recent Daniel portrait', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>A recent one.</figcaption>
                     </figure>
 
                     <p>Daniel arrived dreamy-eyed and bald enough that Uncle Vance nicknamed him Charlie Brown. He never really crawled &mdash; he butt-scootched, sitting upright and pushing himself along with one leg, then the other.</p>
@@ -71,7 +68,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Daniel in a dinosaur costume in the snow', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Dinosaur costume in the snow. Don't ask.</figcaption>
                     </figure>
 
                     <p>He's still a quiet kid. Doesn't say much, but pay attention when he does. He goes at his own pace and goes in spurts &mdash; sometimes he'll mature a bunch overnight. Who knows, maybe he'll talk your ear off one day.</p>

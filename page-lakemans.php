@@ -48,7 +48,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Martin Lakeman and Maryanne (Elizabeth) Cheesman near each other for the first time in 34 years', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>The grandparents on my side &mdash; Martin and Mom, in the same room for the first time in 34 years. They divorced in the early 90s; this picture is what it looked like the day the orbit lined up again.</figcaption>
                     </figure>
 
                     <p>Their father &mdash; my grandfather &mdash; was <strong>Dr. Rienk Lakeman</strong>, born October 1, 1918, in Soerabaja (Surabaya) in what was then the Dutch East Indies, before the locals gained their independence and became Indonesians. He earned a doctorate in geology and spent his career chasing oil. His first job out of school was with Royal Dutch Shell in Venezuela in the early 1950s. In 1955 the Venezuelan government nationalized Shell's assets and replaced all the European staff with locals &mdash; so the family packed up and moved to Calgary, along with a whole retinue of other ex-Shell employees who ended up forming their own little Dutch-Canadian community.</p>
@@ -65,7 +64,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Gramma Lakeman — Suzanna Verboom — with Melanie and baby Patience', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Gramma Lakeman &mdash; Suzanna Verboom &mdash; with Melanie and Patience. She lived to 100.</figcaption>
                     </figure>
 
                     <p>My grandmother <strong>Suzanna Verboom</strong> was born September 25, 1918, in Ter Aar, Zuid-Holland, in the Netherlands. The surname is pronounced &ldquo;ver-BOAM.&rdquo; She lived to be 100, dying in Calgary in 2018. Her father was a tailor and a barber whose shop was attached to the family home, and he taught her to sew and tailor &mdash; she became a most excellent seamstress, and she'll be remembered for her cooking, her impeccable taste, and the unmistakable Dutch accent she never lost.</p>
@@ -76,7 +74,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Gramma Suzanna Lakeman with Thomas', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Gramma Suzanna and me.</figcaption>
                     </figure>
 
                     <p>The Verbooms were a Ter Aar family. Suzanna's parents were <strong>Cornelis Verboom</strong> and <strong>Aagje Donker</strong>. Her brother Pieter Verboom married a woman named Kelly and ran a hair salon about a block south of his father's barber shop &mdash; he got around on a Vespa big enough to fit himself, his wife, and two daughters. Her other brother Jacob &ldquo;Yap&rdquo; Verboom took over the barber shop when their father retired. So somewhere in Ter Aar, the odds are good that Verboom cousins or grandchildren are still cutting hair.</p>
@@ -87,7 +84,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Daniel sharing a bite with Papa Marty Lakeman, May 2017', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Daniel sharing a bite with Papa Marty, May 2017.</figcaption>
                     </figure>
 
                     <p>Going back another generation on the Lakeman side: my great-grandfather was <strong>Pieter Karel Willem Lakeman</strong> &mdash; known in the family as P.K.W. &mdash; born January 27, 1881, in The Hague. He served as Burgemeester (mayor) in the Dutch East Indies, including postings in Magelang (1929&ndash;1934) and Malang (1933&ndash;1936). He patrolled his whole district on horseback. He retired to the Netherlands in 1933, when my grandfather was 15. They sailed back to Holland together.</p>
@@ -100,7 +96,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Martin Lakeman, Thomas, and Uncle Rienk Lakeman Jr. with his second wife', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Dad Martin, me, Uncle Rienk Jr, and his second wife &mdash; the Lakeman line as it stands now.</figcaption>
                     </figure>
 
                     <p>There's more to fill in here &mdash; the wartime years in the Indies, deeper Verboom roots in Friesland, the Timmermans line on the great-grandmother's side that traces back to baptisms in the 1700s. Material for another day.</p>

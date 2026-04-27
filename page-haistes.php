@@ -45,7 +45,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Papa Dan Haiste meeting newborn Daniel, March 2017', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Papa Dan Haiste &mdash; Melanie's father &mdash; meeting newborn Daniel, March 2017.</figcaption>
                     </figure>
 
                     <p>The earliest confirmed Haiste in Melanie's direct line is <strong>John Haiste</strong>, born around 1840 in Yorkshire, who married <strong>Jessy Hobson</strong> in late 1866 in the Wharfedale registration district, near Otley. They had nine children. One of those children was <strong>Ernest Haiste</strong>, born October 16, 1881, in Pontefract, Yorkshire &mdash; a working-class family in industrial Yorkshire when the textile mills and coal mines were running flat-out.</p>

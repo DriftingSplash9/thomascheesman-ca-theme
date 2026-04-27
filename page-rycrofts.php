@@ -40,7 +40,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Papa Sam Rycroft holding newborn Patience, February 2013', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Papa Sam &mdash; Sam Eric Rycroft, Melanie's grandfather &mdash; holding newborn Patience. February 2013, three generations from R.H. Rycroft.</figcaption>
                     </figure>
 
                     <p><strong>Robert Henry Rycroft</strong> was born in 1872 in Honolulu to English parents. He spent years running a sugar and coffee plantation, moving goods between Hawaii, Japan, and the Philippines. In 1906 he met a 21-year-old Norwegian woman, <strong>Helene Lovise Christiane Thommessen</strong>, who was visiting Honolulu. They married five years later, on June 29, 1911, in Honolulu. Their honeymoon took them through British Columbia, where they first heard about the opportunities waiting up in the Peace Country. By 1912 they had registered two parcels of land near Spirit River.</p>
@@ -61,7 +60,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Nana Bette Rycroft with Daniel as a toddler', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Nana Bette with Daniel.</figcaption>
                     </figure>
 
                     <p>Eric and Laureta had a son, <strong>Samuel Eric Rycroft</strong> &mdash; Sam &mdash; born July 14, 1935, in Grande Prairie. Sam married <strong>Bette Steinke</strong> in 1959, and together they had four children: Lana, Lance, Vance, and Clark. They also had Lorne (May 1960), and other Rycroft cousins of that generation include Dennison &ldquo;Dennis&rdquo; (1937), Lona Helen Delores (1938), Thomas Floyd &ldquo;Tommy&rdquo; (1940), and Heather Bernice (1944).</p>
@@ -72,7 +70,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Patience, Daniel, and Faith with Nana Bette Rycroft', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Nana Bette with all three of the kids &mdash; the great-grandmother chapter of the Rycroft line.</figcaption>
                     </figure>
 
                     <p>Lana Rycroft is my wife's mother. That's where I come into the picture.</p>
@@ -85,7 +82,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'The shared tombstone of Sam and Bette Rycroft', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Sam and Bette, side by side.</figcaption>
                     </figure>
 
                 </div>

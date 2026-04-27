@@ -56,7 +56,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Thomas with his brothers — the Cheesman / Lakeman boys', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>The brothers &mdash; Cheesman by name, Lakeman by half.</figcaption>
                     </figure>
 
                     <p>We became Cheesmans on July 20, 1991, when my mom Maryanne (Elizabeth) Docherty married Brian Cheesman. It was a double wedding &mdash; same day, same ceremony as Brian's older brother Dave (born July 1967) and his bride Kelly. Brian was 20 at the time. The two couples stood up together and walked out as two new families in one afternoon.</p>
@@ -67,7 +66,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Brian Cheesman', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Brian Cheesman &mdash; the name we took on.</figcaption>
                     </figure>
 
                     <p>Amber, Dave and Kelly's oldest, had already been born earlier that January. Their other two daughters, Marla and Clarisa, came later. Marla went on to marry Ryan Linson.</p>
@@ -80,7 +78,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Gramma Cheesman — Sandy', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Gramma Cheesman &mdash; Sandy.</figcaption>
                     </figure>
 
                     <aside class="heritage-line__quote" aria-hidden="true">
@@ -95,7 +92,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Brian Cheesman with his mother Sandy', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Brian and his mom &mdash; Gramma Sandy.</figcaption>
                     </figure>
 
                     <figure class="heritage-line__figure">
@@ -104,7 +100,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Christopher and Bonnie Cheesman with their sons Sebastian and Logan', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>My brother Christopher with Bonnie and their boys, Sebastian and Logan &mdash; the next generation carrying the name.</figcaption>
                     </figure>
 
                     <figure class="heritage-line__figure">
@@ -113,7 +108,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Christopher Cheesman with Gramma Sandy', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Christopher with Gramma Sandy.</figcaption>
                     </figure>
 
                     <p>For a long stretch &mdash; roughly 1990 to 2013 &mdash; the Cheesman side stayed small and close. Mostly just my immediate family and a handful of relatives. I'd love more group photos of the cousins and their families now. If you have them, send them. It's been long enough. Time to put everyone in the same frame again.</p>
@@ -124,7 +118,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Sebastian and Logan Cheesman lying on the grass on their elbows', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Sebastian and Logan, in the grass.</figcaption>
                     </figure>
 
                     <figure class="heritage-line__figure">
@@ -133,7 +126,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Logan Cheesman portrait', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Logan.</figcaption>
                     </figure>
 
                     <figure class="heritage-line__figure">
@@ -142,7 +134,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Sebastian Cheesman portrait in sunlight', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Sebastian.</figcaption>
                     </figure>
 
                 </div>

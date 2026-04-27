@@ -41,7 +41,6 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Maryanne Docherty with her brother David Docherty', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Mom with her brother &mdash; my Uncle David Docherty, the family historian on this side.</figcaption>
                     </figure>
 
                     <p>The anchor photo for this side is from around 1986: my Granny Docherty at the centre, her two sons Rick and Davey, her daughter Maryanne (my mom), her daughter-in-law Laura, and her son-in-law Martin. The grandchildren in the photo are Jonathan, Chris, me, and Levi.</p>

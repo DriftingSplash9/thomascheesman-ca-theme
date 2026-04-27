@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initPillarReveal();
     initFamilyTreeReveal();
     initFamilyTreeLeaves();
+    initFigureKenBurns();
     initBlogReveal();
     initScrollReveals();
     initHeritagePage();
@@ -625,6 +626,36 @@ function initFamilyTreeLeaves() {
             }, 700);
         });
     });
+}
+
+/**
+ * Slow Ken Burns zoom on each .heritage-line__figure when it enters
+ * the viewport. Triggers once per figure via IntersectionObserver:
+ * adds the .kb-active class, and CSS handles the rest — the
+ * transition on the registered --kb-scale variable runs the
+ * 1 → 1.04 zoom over 8s with ease-out easing.
+ *
+ * Disabled under prefers-reduced-motion.
+ */
+function initFigureKenBurns() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const figures = document.querySelectorAll('.heritage-line__figure');
+    if (figures.length === 0) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('kb-active');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.15,
+        rootMargin: '-50px 0px',
+    });
+
+    figures.forEach((figure) => observer.observe(figure));
 }
 
 /**
