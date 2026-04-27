@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.40
+Version: 1.0.41
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2591,9 +2591,33 @@ body.admin-bar .heritage-progress {
    and any other accent uses. Colors match the tree-chip palette on
    /family so a click-through from the tree carries the same color
    identity into the per-person page. */
-.person-spoke--patience .heritage-line { --line-color: #A78BFA; }  /* purple */
-.person-spoke--daniel   .heritage-line { --line-color: #38BDF8; }  /* sky */
-.person-spoke--faith    .heritage-line { --line-color: #F472B6; }  /* pink */
+/* --line-color set on the spoke root rather than only on .heritage-line.
+   CSS custom properties inherit, so the heritage-line plate still picks
+   up the right color via the cascade — and the page-wide background
+   wash below can read --line-color from this same declaration. */
+.person-spoke--patience { --line-color: #A78BFA; }  /* purple */
+.person-spoke--daniel   { --line-color: #38BDF8; }  /* sky    */
+.person-spoke--faith    { --line-color: #F472B6; }  /* pink   */
+
+/* Per-kid background wash — a soft top-glow + bottom-glow in the
+   kid's accent color over the dark editorial base. Subtle (14% top,
+   8% bottom) so the page feels personal without breaking the dark-mode
+   editorial feel. Single rule for all three kids since --line-color
+   comes from the modifier above. */
+.person-spoke {
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            color-mix(in srgb, var(--line-color) 14%, transparent),
+            transparent 55%
+        ),
+        radial-gradient(
+            ellipse at 50% 100%,
+            color-mix(in srgb, var(--line-color) 8%, transparent),
+            transparent 60%
+        ),
+        var(--bg-base);
+}
 
 /* The giant ghost numeral that bleeds out of the top-right corner of
    each line was tied to the "01 → 05" sequence on the old long page.
