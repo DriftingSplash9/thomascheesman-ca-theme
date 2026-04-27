@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.20
+Version: 1.0.21
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2824,7 +2824,7 @@ body.admin-bar .heritage-progress {
     left: 16%; top: 34%;
     --chip-color: #22D3EE;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.4), rgba(8, 10, 26, 0.4)),
+        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
         url('assets/img/flags/gb.svg');
 }
 
@@ -2832,7 +2832,7 @@ body.admin-bar .heritage-progress {
     left: 28%; top: 16%;
     --chip-color: #EC4899;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.4), rgba(8, 10, 26, 0.4)),
+        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
         url('assets/img/flags/ie.svg');
 }
 
@@ -2840,7 +2840,7 @@ body.admin-bar .heritage-progress {
     left: 50%; top: 12%;
     --chip-color: #10B981;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.4), rgba(8, 10, 26, 0.4)),
+        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
         url('assets/img/flags/nl.svg');
 }
 
@@ -2848,7 +2848,7 @@ body.admin-bar .heritage-progress {
     left: 72%; top: 16%;
     --chip-color: #F59E0B;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.4), rgba(8, 10, 26, 0.4)),
+        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
         url('assets/img/flags/ca.svg');
 }
 
@@ -2856,7 +2856,7 @@ body.admin-bar .heritage-progress {
     left: 84%; top: 34%;
     --chip-color: #6366F1;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.4), rgba(8, 10, 26, 0.4)),
+        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
         url('assets/img/flags/gb.svg');
 }
 
@@ -2864,7 +2864,7 @@ body.admin-bar .heritage-progress {
     left: 28%; top: 79%;
     --chip-color: #A78BFA;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.4), rgba(8, 10, 26, 0.4)),
+        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
         url('assets/img/flags/ca.svg');
 }
 
@@ -2872,7 +2872,7 @@ body.admin-bar .heritage-progress {
     left: 50%; top: 84%;
     --chip-color: #38BDF8;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.4), rgba(8, 10, 26, 0.4)),
+        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
         url('assets/img/flags/ca.svg');
 }
 
@@ -2880,7 +2880,7 @@ body.admin-bar .heritage-progress {
     left: 72%; top: 79%;
     --chip-color: #F472B6;
     background-image:
-        linear-gradient(rgba(8, 10, 26, 0.4), rgba(8, 10, 26, 0.4)),
+        linear-gradient(rgba(8, 10, 26, 0.9), rgba(8, 10, 26, 0.9)),
         url('assets/img/flags/ca.svg');
 }
 
