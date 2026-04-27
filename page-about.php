@@ -42,7 +42,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
             <section class="about-section about-section--lead scroll-animate">
                 <figure class="about-figure about-figure--right">
                     <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_2534-2-scaled-e1777196709673.jpg' ) ); ?>"
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_2534-2-scaled.jpg' ) ); ?>"
                         alt="<?php esc_attr_e( 'Thomas Cheesman, seated portrait', 'tc-ventures-child' ); ?>"
                         loading="eager"
                     />
@@ -112,7 +112,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
 
                 <figure class="about-figure about-figure--right">
                     <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/09/family-photos-me-as-a-kid_20230428134713018-1-scaled-e1777198573783.jpg' ) ); ?>"
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/09/family-photos-me-as-a-kid_20230428134713018-1-scaled.jpg' ) ); ?>"
                         alt="<?php esc_attr_e( 'Mom, Brian, Chris, Jonathan, and me around 2001', 'tc-ventures-child' ); ?>"
                         loading="lazy"
                     />
