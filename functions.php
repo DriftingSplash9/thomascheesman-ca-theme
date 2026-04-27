@@ -30,6 +30,16 @@ function tc_ventures_enqueue_scripts() {
         wp_get_theme()->get( 'Version' )
     );
 
+    // PhotoSwipe v5 lightbox CSS (CDN). The JS for PhotoSwipe is
+    // dynamically imported by main.js's initLightbox() the first time
+    // the user clicks a figure — keeps the initial load light.
+    wp_enqueue_style(
+        'photoswipe',
+        'https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.css',
+        array(),
+        '5.4.4'
+    );
+
     // GSAP core library (CDN).
     wp_enqueue_script(
         'gsap-core',

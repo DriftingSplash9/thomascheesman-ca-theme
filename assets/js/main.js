@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initFamilyTreeReveal();
     initFamilyTreeLeaves();
     initFigureKenBurns();
+    initLightbox();
     initBlogReveal();
     initScrollReveals();
     initHeritagePage();
@@ -626,6 +627,72 @@ function initFamilyTreeLeaves() {
             }, 700);
         });
     });
+}
+
+/**
+ * Per-page lightbox using PhotoSwipe v5.
+ *
+ * Each .heritage-line__figure's <img> is wrapped at runtime in an
+ * <a> with data-pswp-width / -height attributes so PhotoSwipe can
+ * pick it up. The gallery is scoped to the current page's <main>,
+ * so prev/next cycles only through the photos on the page being
+ * viewed — not site-wide.
+ *
+ * PhotoSwipe core JS is dynamically imported (only fetched at init,
+ * with the larger main bundle pulled in on first click). The CSS is
+ * enqueued at page load via functions.php.
+ *
+ * Image dimensions come from each img's naturalWidth/Height — set
+ * on the wrapping <a> as soon as the image finishes loading, or
+ * immediately if it's already in the cache.
+ *
+ * If PhotoSwipe fails to load (network blip, CDN issue), the wrapped
+ * anchors fall back to opening the image URL in a new tab — degraded
+ * but not broken.
+ */
+function initLightbox() {
+    const figures = document.querySelectorAll('.heritage-line__figure');
+    if (figures.length === 0) return;
+
+    figures.forEach((fig) => {
+        const img = fig.querySelector('img');
+        if (!img || (img.parentElement && img.parentElement.tagName === 'A')) return;
+
+        const a = document.createElement('a');
+        a.href = img.currentSrc || img.src;
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+        img.parentNode.insertBefore(a, img);
+        a.appendChild(img);
+
+        const updateDims = () => {
+            if (img.naturalWidth > 0) {
+                a.setAttribute('data-pswp-width', img.naturalWidth);
+                a.setAttribute('data-pswp-height', img.naturalHeight);
+            }
+        };
+
+        if (img.complete && img.naturalWidth > 0) {
+            updateDims();
+        } else {
+            img.addEventListener('load', updateDims, { once: true });
+        }
+    });
+
+    import('https://unpkg.com/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.js')
+        .then(({ default: PhotoSwipeLightbox }) => {
+            const lightbox = new PhotoSwipeLightbox({
+                gallery: '#primary',
+                children: '.heritage-line__figure a[data-pswp-width]',
+                pswpModule: () => import('https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.esm.js'),
+                bgOpacity: 0.94,
+                showHideAnimationType: 'fade',
+            });
+            lightbox.init();
+        })
+        .catch((err) => {
+            console.warn('PhotoSwipe failed to load — image clicks fall back to direct image URLs.', err);
+        });
 }
 
 /**

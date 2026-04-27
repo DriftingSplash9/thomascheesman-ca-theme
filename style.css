@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.24
+Version: 1.0.25
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2678,6 +2678,24 @@ body.admin-bar .heritage-progress {
                 border-color 0.4s ease,
                 --kb-scale 8s ease-out;
     will-change: transform, filter;
+    /* Lightbox affordance — figures are clickable to open in
+       PhotoSwipe. The cursor primes the user before they click. */
+    cursor: zoom-in;
+}
+
+/* The runtime-injected anchor wrapping each figure's image (added
+   by initLightbox()). Inherits the figure's display flow without
+   adding any visual chrome of its own. */
+.heritage-line__figure a {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+/* PhotoSwipe theme override — pull the lightbox backdrop into the
+   site's deep navy palette instead of the default near-black. */
+.pswp {
+    --pswp-bg: rgba(4, 6, 25, 1);
 }
 
 .heritage-line__figure.kb-active img {
