@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.22
+Version: 1.0.23
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3044,4 +3044,58 @@ body.admin-bar .heritage-progress {
         grid-template-columns: 1fr;
         gap: 16px;
     }
+}
+
+/* ============================================
+   FAMILY PAGE — LEAF SYSTEM
+   ============================================
+   Leaves drift down from the family tree on chip hover/click. Pool
+   container is fixed-position so leaves can fall over the entire
+   viewport regardless of where the family-tree section sits in the
+   document. Click-overlay is a separate fixed layer that dims the
+   page during the click → leaves → navigate sequence.
+
+   The leaves and the dim overlay are both injected by JS
+   (initFamilyTreeLeaves in main.js). The CSS here just defines what
+   they look like and how they layer.
+*/
+
+.tree-leaf-pool {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.tree-leaf {
+    position: absolute;
+    width: 1em;
+    height: 1.33em;
+    color: #7ba74a;
+    will-change: transform, opacity;
+    /* xPercent/yPercent set in GSAP composes with this base translate
+       so the leaf's left/top values point at its center. */
+    transform: translate(-50%, -50%);
+    line-height: 0;
+}
+
+.tree-leaf svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+.tree-click-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 6, 25, 0);
+    pointer-events: none;
+    z-index: 9998;
+    transition: background 0.65s ease;
+}
+
+.tree-click-overlay--active {
+    background: rgba(4, 6, 25, 0.62);
 }

@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initHeroScrollOut();
     initPillarReveal();
     initFamilyTreeReveal();
+    initFamilyTreeLeaves();
     initBlogReveal();
     initScrollReveals();
     initHeritagePage();
@@ -456,6 +457,174 @@ function initFamilyTreeReveal() {
             onEnter: () => tl.play(),
         });
     }
+}
+
+/**
+ * Falling-leaves system for the family tree.
+ *
+ * Two interactions:
+ *   - Hover a chip: 3-5 leaves drift down from the canopy area
+ *     (cooled down 800ms between consecutive hovers on the same chip
+ *     so frantic mouse movement doesn't spam the system).
+ *   - Click a chip: 10 leaves cascade in quick succession, the page
+ *     dims via a fixed-position overlay, and after 700ms the browser
+ *     navigates to the chip's destination. Reads as one continuous
+ *     "you plucked a branch and the tree is settling" motion.
+ *
+ * Implementation notes:
+ *   - 24-leaf pool created on init and reused. Each leaf carries a
+ *     compact teardrop SVG with a center vein, colored via inline
+ *     style so we can vary greens and a hint of autumn-yellow.
+ *   - Pool container is fixed-position covering the viewport so
+ *     leaves fall past the family-tree section's boundaries.
+ *   - GSAP timeline per leaf: fade in over 0.3s, drift down + rotate
+ *     over 2.6-4s with random X drift and rotation, fade out at the
+ *     end. force3D keeps it on the GPU.
+ *   - reduced-motion preference disables the whole system; chips
+ *     fall back to default click behaviour (instant navigation).
+ */
+function initFamilyTreeLeaves() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const section = document.querySelector('.family-tree-section');
+    if (!section) return;
+
+    const tree = section.querySelector('.family-tree');
+    const chips = section.querySelectorAll('.tree-chip');
+    if (!tree || chips.length === 0) return;
+
+    const POOL_SIZE = 24;
+    const LEAF_COLORS = ['#5a8c3e', '#6b9d3e', '#7ba74a', '#8fb850', '#9bc564', '#b58642'];
+
+    // Compact teardrop leaf with a center vein. Uses fill="currentColor"
+    // so each leaf instance can be tinted via inline style.color.
+    const LEAF_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" fill="currentColor">'
+        + '<path d="M12 2 C 6 6 3 14 5 24 C 6 27 8 29 11 28 L 12 27 L 13 28 C 16 29 18 27 19 24 C 21 14 18 6 12 2 Z"/>'
+        + '<line x1="12" y1="4" x2="12" y2="29" stroke="rgba(0,0,0,0.3)" stroke-width="0.7" stroke-linecap="round"/>'
+        + '</svg>';
+
+    const pool = document.createElement('div');
+    pool.className = 'tree-leaf-pool';
+    document.body.appendChild(pool);
+
+    const leaves = [];
+    for (let i = 0; i < POOL_SIZE; i++) {
+        const leaf = document.createElement('span');
+        leaf.className = 'tree-leaf';
+        leaf.innerHTML = LEAF_SVG;
+        leaf.style.display = 'none';
+        pool.appendChild(leaf);
+        leaves.push({ el: leaf, busy: false });
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'tree-click-overlay';
+    document.body.appendChild(overlay);
+
+    function dropLeaf(startX, startY) {
+        const slot = leaves.find((l) => !l.busy);
+        if (!slot) return;
+        slot.busy = true;
+        const leaf = slot.el;
+
+        const driftX = (Math.random() - 0.5) * 240;
+        const fallY = window.innerHeight - startY + 120;
+        const rotEnd = (Math.random() - 0.5) * 720;
+        const duration = 2.6 + Math.random() * 1.4;
+        const color = LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)];
+        const size = 14 + Math.floor(Math.random() * 12);
+
+        leaf.style.color = color;
+        leaf.style.fontSize = size + 'px';
+        leaf.style.left = startX + 'px';
+        leaf.style.top = startY + 'px';
+        leaf.style.display = 'block';
+
+        gsap.set(leaf, {
+            xPercent: -50,
+            yPercent: -50,
+            opacity: 0,
+            x: 0,
+            y: 0,
+            rotation: Math.random() * 360,
+            scale: 0.7,
+            force3D: true,
+        });
+
+        const tl = gsap.timeline({
+            onComplete: () => {
+                slot.busy = false;
+                leaf.style.display = 'none';
+            },
+        });
+
+        tl.to(leaf, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.3,
+            ease: 'power1.out',
+        });
+
+        tl.to(leaf, {
+            xPercent: -50,
+            yPercent: -50,
+            x: driftX,
+            y: fallY,
+            rotation: rotEnd,
+            duration: duration,
+            ease: 'none',
+        }, 0);
+
+        tl.to(leaf, {
+            opacity: 0,
+            duration: 0.7,
+            ease: 'power1.in',
+        }, duration - 0.7);
+    }
+
+    function dropLeavesFromCanopy(count, intervalMs) {
+        const treeRect = tree.getBoundingClientRect();
+        // Canopy zone: upper 10-55% of the tree container, with the
+        // horizontal spread roughly matching where the painted canopy
+        // sits in the tree image.
+        const canopyTop = treeRect.top + treeRect.height * 0.10;
+        const canopyHeight = treeRect.height * 0.45;
+        const canopyLeft = treeRect.left + treeRect.width * 0.20;
+        const canopyWidth = treeRect.width * 0.60;
+
+        for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+                const sx = canopyLeft + Math.random() * canopyWidth;
+                const sy = canopyTop + Math.random() * canopyHeight;
+                dropLeaf(sx, sy);
+            }, i * intervalMs);
+        }
+    }
+
+    chips.forEach((chip) => {
+        let hoverCooldown = 0;
+
+        chip.addEventListener('mouseenter', () => {
+            const now = Date.now();
+            if (now - hoverCooldown < 800) return;
+            hoverCooldown = now;
+            const count = 3 + Math.floor(Math.random() * 3);
+            dropLeavesFromCanopy(count, 180);
+        });
+
+        chip.addEventListener('click', (e) => {
+            e.preventDefault();
+            const href = chip.getAttribute('href');
+            if (!href) return;
+
+            dropLeavesFromCanopy(10, 60);
+            overlay.classList.add('tree-click-overlay--active');
+
+            setTimeout(() => {
+                window.location.href = href;
+            }, 700);
+        });
+    });
 }
 
 /**
