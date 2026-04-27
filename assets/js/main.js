@@ -894,8 +894,12 @@ function initScrollReveals() {
  */
 function initParticleField() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // Homepage only — particles are atmosphere for the hero, not editorial chrome.
-    if (!document.body.classList.contains('home')) return;
+    // Homepage and per-person pages get particles — atmosphere for the
+    // hero on the homepage, and identity layer over the WebGL tint on
+    // each kid's page. Heritage spokes and other pages stay clean.
+    const isHome = document.body.classList.contains('home');
+    const isPersonSpoke = !!document.querySelector('.person-spoke');
+    if (!isHome && !isPersonSpoke) return;
 
     const canvas = document.createElement('canvas');
     canvas.className = 'particle-field-canvas';
@@ -1326,7 +1330,28 @@ function initWebGLBackground() {
         uTime: { value: 0 },
         uResolution: { value: new THREE.Vector2() },
         uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+        // Tint color for the dominant noise wash. Defaults to the original
+        // hardcoded indigo (#120656) so the homepage and other untinted
+        // pages render exactly as before. Kid pages override via the
+        // --line-color CSS custom property — see the read below.
+        uTint: { value: new THREE.Color(0x120656) },
     };
+
+    // Per-page WebGL tint. The .person-spoke--{name} body class on each
+    // kid's page sets --line-color via :has() in style.css; we read it
+    // here and pass it to the shader. Multiplied down to ~0.4 brightness
+    // so the saturated kid accents (purple/green/pink) don't blow out
+    // the wash — the original indigo had effective brightness ~0.34.
+    const tintFromCss = getComputedStyle(document.body).getPropertyValue('--line-color').trim();
+    if (tintFromCss) {
+        try {
+            const c = new THREE.Color(tintFromCss);
+            c.multiplyScalar(0.4);
+            uniforms.uTint.value = c;
+        } catch (err) {
+            console.warn('[TC] --line-color value not parseable as a color:', tintFromCss);
+        }
+    }
 
     const vertexShader = `
         varying vec2 vUv;
@@ -1344,6 +1369,7 @@ function initWebGLBackground() {
         uniform float uTime;
         uniform vec2 uResolution;
         uniform vec2 uMouse;
+        uniform vec3 uTint;
         varying vec2 vUv;
 
         vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -1394,9 +1420,10 @@ function initWebGLBackground() {
             // Base near-black navy (matches --bg-base #040619).
             vec3 color = vec3(0.0156, 0.0235, 0.098);
 
-            // Indigo wash where noise is positive — drifts organically.
-            vec3 indigo = vec3(0.07, 0.024, 0.337);   // #120656
-            color = mix(color, indigo, smoothstep(-0.2, 0.4, n) * 0.55);
+            // Tint wash where noise is positive — drifts organically.
+            // Default value of uTint is the original indigo (#120656);
+            // kid pages override via the --line-color CSS variable.
+            color = mix(color, uTint, smoothstep(-0.2, 0.4, n) * 0.55);
 
             // Cyan accent in the brighter noise regions.
             vec3 cyan = vec3(0.133, 0.827, 0.933);    // #22D3EE
