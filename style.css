@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.45
+Version: 1.0.46
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2596,7 +2596,7 @@ body.admin-bar .heritage-progress {
    up the right color via the cascade — and the page-wide background
    wash below can read --line-color from this same declaration. */
 .person-spoke--patience { --line-color: #A78BFA; }  /* purple */
-.person-spoke--daniel   { --line-color: #38BDF8; }  /* sky    */
+.person-spoke--daniel   { --line-color: #22C55E; }  /* forest */
 .person-spoke--faith    { --line-color: #F472B6; }  /* pink   */
 
 /* Per-kid page background wash. Two soft radial gradients in the kid's
@@ -2617,15 +2617,15 @@ body.admin-bar .heritage-progress {
    color even on browsers without :has() support — graceful fallback. */
 
 body:has(.person-spoke--patience) { --line-color: #A78BFA; }
-body:has(.person-spoke--daniel)   { --line-color: #38BDF8; }
+body:has(.person-spoke--daniel)   { --line-color: #22C55E; }
 body:has(.person-spoke--faith)    { --line-color: #F472B6; }
 
 body:has(.person-spoke--patience),
 body:has(.person-spoke--daniel),
 body:has(.person-spoke--faith) {
     background-image:
-        radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--line-color) 14%, transparent), transparent 55%),
-        radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--line-color) 9%, transparent), transparent 60%);
+        radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--line-color) 26%, transparent), transparent 60%),
+        radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--line-color) 16%, transparent), transparent 65%);
     background-attachment: fixed;
     background-repeat: no-repeat;
     background-size: 100% 100%;
@@ -3217,7 +3217,7 @@ body:has(.person-spoke--faith) {
 
 .tree-chip--daniel {
     left: 50%; top: 84%;
-    --chip-color: #38BDF8;
+    --chip-color: #22C55E;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/ca.svg');
