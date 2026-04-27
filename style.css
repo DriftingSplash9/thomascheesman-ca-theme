@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.36
+Version: 1.0.37
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2706,15 +2706,15 @@ body.admin-bar .heritage-progress {
     --pswp-bg: rgba(4, 6, 25, 1);
 }
 
-/* Backdrop: light navy tint with a strong page-blur + slight
-   saturation bump. The blurred page is the dominant visual — you
-   can read where you are on the site through it. No vignette or
-   grain (they were piling extra darkness onto an already-dark page). */
+/* Backdrop: light navy tint with a strong page-blur + saturation
+   bump. The blurred page is the dominant visual — you can read where
+   you are on the site through it. The site's bg is dark, so the tint
+   alpha is kept low (0.18) so the page actually shows through. */
 .pswp__bg {
-    background-color: rgba(40, 55, 95, 0.28);
+    background-color: rgba(50, 65, 110, 0.18);
     background-image: none;
-    backdrop-filter: blur(14px) saturate(110%);
-    -webkit-backdrop-filter: blur(14px) saturate(110%);
+    backdrop-filter: blur(18px) saturate(120%);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
 }
 
 /* Lift shadow on the displayed image — gives the photo presence
@@ -2752,7 +2752,7 @@ body.admin-bar .heritage-progress {
 .pswp__button--close,
 .pswp__button--arrow--prev,
 .pswp__button--arrow--next {
-    background: rgba(8, 10, 26, 0.42) !important;
+    background: rgba(8, 10, 26, 0.65) !important;
     backdrop-filter: blur(10px) saturate(125%) !important;
     -webkit-backdrop-filter: blur(10px) saturate(125%) !important;
     border-radius: 10px !important;
@@ -2765,23 +2765,49 @@ body.admin-bar .heritage-progress {
 .pswp__button--close:hover,
 .pswp__button--arrow--prev:hover,
 .pswp__button--arrow--next:hover {
-    background: rgba(8, 10, 26, 0.62) !important;
+    background: rgba(8, 10, 26, 0.85) !important;
 }
 
-/* Side nav arrows — give them breathing room from the screen edge
-   and a fixed pill size, so they don't span full screen height. */
+/* Side nav arrows — fixed pill size with breathing room from the
+   screen edge. Use margin-top: -28px (half of 56) instead of CSS
+   transform for vertical centering, so the hover scale doesn't
+   collide with the centering transform. */
 .pswp__button--arrow--prev,
 .pswp__button--arrow--next {
     width: 56px !important;
     height: 56px !important;
     top: 50% !important;
-    transform: translateY(-50%);
-    margin: 0 18px;
+    margin-top: -28px !important;
+}
+
+.pswp__button--arrow--prev {
+    left: 18px !important;
+}
+
+.pswp__button--arrow--next {
+    right: 18px !important;
 }
 
 .pswp__button--arrow--prev:hover,
 .pswp__button--arrow--next:hover {
-    transform: translateY(-50%) scale(1.05);
+    transform: scale(1.05);
+}
+
+/* Arrow buttons get a special inner .pswp__icn from PhotoSwipe — a
+   60x60 element with its OWN circular background and border-radius,
+   completely separate from the .pswp__icn used elsewhere. We strip
+   that built-in circle and shrink the icon to 32x32 so it sits
+   centered inside our 56x56 frosted pill instead of bursting through
+   the corners. */
+.pswp__button--arrow--prev .pswp__icn,
+.pswp__button--arrow--next .pswp__icn {
+    width: 32px !important;
+    height: 32px !important;
+    top: 50% !important;
+    left: 50% !important;
+    margin: -16px 0 0 -16px !important;
+    background: none !important;
+    border-radius: 0 !important;
 }
 
 /* Editorial counter — "01 / 06" in Italiana (Didone display serif),
