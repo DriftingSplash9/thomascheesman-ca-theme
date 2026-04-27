@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initKineticHero();
     initHeroScrollOut();
     initPillarReveal();
+    initFamilyTreeReveal();
     initBlogReveal();
     initScrollReveals();
     initHeritagePage();
@@ -358,7 +359,7 @@ function initBlogReveal() {
         y: 0,
         rotation: 0,
         duration: 0.95,
-        stagger: 0.25,
+        stagger: 0.15,
         ease: 'power3.out',
     });
 
@@ -371,6 +372,84 @@ function initBlogReveal() {
         ScrollTrigger.create({
             trigger: section,
             start: 'top 60%',
+            once: true,
+            onEnter: () => tl.play(),
+        });
+    }
+}
+
+/**
+ * Family Tree reveal — animate the eight chips on /family into place.
+ *
+ * Two overlapping phases per chip:
+ *   1. Fade in (opacity 0 → 1) over 1.2s with 'power1.out' easing
+ *   2. Settle (translate Y + rotation to 0) over 1.1s with 'power2.out'
+ * The settle starts 0.5s into the fade so the chip is still arriving
+ * visually as the position locks in — reads as "fade in as they rotate
+ * into place" rather than two discrete movements.
+ *
+ * Each chip starts at a random rotation in [-10°, +10°] so no two
+ * reveals look identical. xPercent/yPercent baseline preserves the
+ * CSS centering (transform: translate(-50%, -50%)) through the
+ * GSAP-composed transform string. onComplete clears the inline
+ * transform so the CSS hover lift composes cleanly afterward.
+ *
+ * Trigger logic mirrors the pillar/blog reveals — fire immediately
+ * if visible on load, otherwise wait for ScrollTrigger.
+ */
+function initFamilyTreeReveal() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const section = document.querySelector('.family-tree-section');
+    if (!section) return;
+
+    const chips = section.querySelectorAll('.tree-chip');
+    if (chips.length === 0) return;
+
+    chips.forEach((chip) => {
+        const rotation = (Math.random() - 0.5) * 20;
+        gsap.set(chip, {
+            xPercent: -50,
+            yPercent: -50,
+            opacity: 0,
+            y: 30,
+            rotation,
+        });
+    });
+
+    const tl = gsap.timeline({
+        paused: true,
+        onComplete: () => {
+            gsap.set(chips, { clearProps: 'transform' });
+        },
+    });
+
+    tl.to(chips, {
+        opacity: 1,
+        duration: 1.2,
+        stagger: 0.15,
+        ease: 'power1.out',
+    }, 0);
+
+    tl.to(chips, {
+        xPercent: -50,
+        yPercent: -50,
+        y: 0,
+        rotation: 0,
+        duration: 1.1,
+        stagger: 0.15,
+        ease: 'power2.out',
+    }, 0.5);
+
+    const rect = section.getBoundingClientRect();
+    const visibleOnLoad = rect.top < window.innerHeight * 0.75;
+
+    if (visibleOnLoad) {
+        tl.play();
+    } else {
+        ScrollTrigger.create({
+            trigger: section,
+            start: 'top 70%',
             once: true,
             onEnter: () => tl.play(),
         });

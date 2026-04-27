@@ -2,31 +2,29 @@
 /**
  * Page Template: Family
  *
- * Auto-applied by WordPress to any page whose slug is `family` (template
- * hierarchy resolves `page-{slug}.php` before the generic `page.php`).
+ * Auto-applied by WordPress to any page whose slug is `family`.
  *
- * To activate:
- *   1. WP admin → Pages → Add New
- *   2. Title: "Family" (slug becomes "family" automatically)
- *   3. Publish. Visiting /family will now use this template.
- *   4. (Optional) Create a category named "family" — posts tagged with
- *      that category appear in the Stories feed at the bottom.
- *
- * This is the **template page** for the rebuild. The structure here —
- * page-hero / page-intro / people-grid / post-feed — is what About,
- * Community, and Journal will all reuse with different content.
+ * Layout (top to bottom):
+ *   1. Page hero (kinetic title + subtitle)
+ *   2. Side-by-side hero photos (group + three kids)
+ *   3. Page intro lead paragraph
+ *   4. The family tree — a single illustrated tree with five family-line
+ *      chips along the canopy and three kid chips at the roots. Each
+ *      chip links to its spoke (heritage line) or per-person page.
+ *   5. Heritage banner — a wider call-to-action linking to the
+ *      /family/heritage hub for the deeper card-grid view of all 5 lines.
+ *   6. Stories feed (posts categorized "family")
+ *   7. Photo credit colophon
  */
 
 get_header(); ?>
 
-<main id="primary" class="site-main">
+<main id="primary" class="site-main family-page">
 
     <!-- ==============================================================
          PAGE HERO
-         A simpler, transparent band — kinetic title + subtitle only.
-         No big gradient, no horizon glow. Those are reserved for the
-         homepage so the "book cover" framing stays meaningful (only
-         the front cover gets the lit edges).
+         Kinetic title + eyebrow + subtitle. No big gradient or horizon
+         glow — those are reserved for the homepage hero.
          ============================================================== -->
     <section class="page-hero">
         <div class="container">
@@ -39,22 +37,31 @@ get_header(); ?>
     </section>
 
     <!-- ==============================================================
-         HERO FIGURE
-         Wide editorial photo that sits under the page-hero band.
-         Group photo, summer 2024. Uses home_url() so the image URL
-         stays correct after the site moves from staging to production.
+         HERO PAIR
+         Two hero photos side by side instead of stacked: the
+         extended-family group on the left, the three kids on the right.
+         Both eager-loaded — they're above the fold on desktop.
          ============================================================== -->
-    <figure class="page-figure page-figure--hero">
-        <img
-            src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_9320.jpg' ) ); ?>"
-            alt="<?php esc_attr_e( 'Extended-family group photo, summer 2024', 'tc-ventures-child' ); ?>"
-            loading="eager"
-        />
-    </figure>
+    <div class="hero-pair">
+        <figure class="hero-pair__item">
+            <img
+                src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_9320.jpg' ) ); ?>"
+                alt="<?php esc_attr_e( 'Extended-family group photo, summer 2024', 'tc-ventures-child' ); ?>"
+                loading="eager"
+            />
+        </figure>
+        <figure class="hero-pair__item">
+            <img
+                src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/fall-leaves-scaled.jpg' ) ); ?>"
+                alt="<?php esc_attr_e( 'The three kids together', 'tc-ventures-child' ); ?>"
+                loading="eager"
+            />
+        </figure>
+    </div>
 
     <!-- ==============================================================
          PAGE INTRO
-         A single lead paragraph. Sets the voice for the page.
+         Single lead paragraph in the narrower reading column.
          ============================================================== -->
     <section class="page-intro">
         <div class="container">
@@ -65,86 +72,95 @@ get_header(); ?>
     </section>
 
     <!-- ==============================================================
-         SECONDARY FIGURE
-         The three kids together — sits between the lead and the
-         four-card people-grid as a visual transition.
+         THE FAMILY TREE
+         A transparent-PNG tree image as the visual scaffolding, with
+         eight chips positioned absolutely around it: 5 family-line
+         chips along the canopy edge (top), 3 kid chips at the roots
+         (bottom). Each chip is a link.
+
+         Tree image: assets/img/family-tree.png. Sized to a fixed
+         aspect ratio so chip percentages stay anchored to the same
+         visual landmarks at every breakpoint.
+
+         Mobile fallback (< 768px, see CSS): the tree disappears and
+         the chips become a clean stacked list, separated into a
+         "Branches" group and a "Roots" group via CSS.
          ============================================================== -->
-    <figure class="page-figure page-figure--inline">
-        <img
-            src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/fall-leaves-scaled.jpg' ) ); ?>"
-            alt="<?php esc_attr_e( 'The three kids together', 'tc-ventures-child' ); ?>"
-            loading="lazy"
-        />
-    </figure>
+    <section class="family-tree-section scroll-animate">
+        <div class="container">
+            <h2 class="family-tree-section__heading kinetic-text-scroll">The Family Tree</h2>
+
+            <div class="family-tree" role="navigation" aria-label="<?php esc_attr_e( 'Family tree — branches and roots', 'tc-ventures-child' ); ?>">
+                <img
+                    class="family-tree__image"
+                    src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/family-tree.png' ); ?>"
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                />
+
+                <!-- Branches — five family lines, in numbered order. -->
+                <a class="tree-chip tree-chip--branch tree-chip--cheesmans" href="<?php echo esc_url( home_url( '/family/heritage/cheesmans' ) ); ?>">
+                    <span class="tree-chip__eyebrow">01</span>
+                    <span class="tree-chip__title">The Cheesmans</span>
+                    <span class="tree-chip__cta">Read the line &rarr;</span>
+                </a>
+                <a class="tree-chip tree-chip--branch tree-chip--dochertys" href="<?php echo esc_url( home_url( '/family/heritage/dochertys' ) ); ?>">
+                    <span class="tree-chip__eyebrow">02</span>
+                    <span class="tree-chip__title">The Dochertys</span>
+                    <span class="tree-chip__cta">Read the line &rarr;</span>
+                </a>
+                <a class="tree-chip tree-chip--branch tree-chip--lakemans" href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">
+                    <span class="tree-chip__eyebrow">03</span>
+                    <span class="tree-chip__title">The Lakemans</span>
+                    <span class="tree-chip__cta">Read the line &rarr;</span>
+                </a>
+                <a class="tree-chip tree-chip--branch tree-chip--rycrofts" href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">
+                    <span class="tree-chip__eyebrow">04</span>
+                    <span class="tree-chip__title">The Rycrofts</span>
+                    <span class="tree-chip__cta">Read the line &rarr;</span>
+                </a>
+                <a class="tree-chip tree-chip--branch tree-chip--haistes" href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">
+                    <span class="tree-chip__eyebrow">05</span>
+                    <span class="tree-chip__title">The Haistes</span>
+                    <span class="tree-chip__cta">Read the line &rarr;</span>
+                </a>
+
+                <!-- Roots — the three kids, in chronological order. -->
+                <a class="tree-chip tree-chip--root tree-chip--patience" href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">
+                    <span class="tree-chip__title">Patience</span>
+                    <span class="tree-chip__role">Daughter</span>
+                </a>
+                <a class="tree-chip tree-chip--root tree-chip--daniel" href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">
+                    <span class="tree-chip__title">Daniel</span>
+                    <span class="tree-chip__role">Son</span>
+                </a>
+                <a class="tree-chip tree-chip--root tree-chip--faith" href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">
+                    <span class="tree-chip__title">Faith</span>
+                    <span class="tree-chip__role">Daughter</span>
+                </a>
+            </div>
+        </div>
+    </section>
 
     <!-- ==============================================================
-         PEOPLE GRID
-         Reuses the homepage's .pillar-card pattern — same rotating
-         conic-gradient border, same hover lift, same reveal choreography
-         driven by initPillarReveal() in main.js (which targets any
-         .pillars-section). Per-card colors come from --card-color-a/b
-         on the nth-child rules; the 4th slot ("Heritage") is added
-         in style.css for this page.
+         HERITAGE BANNER
+         A wide horizontal CTA below the tree, linking to the
+         /family/heritage hub. The tree gives jump links to each spoke;
+         this banner is the "see all five together" alternative.
          ============================================================== -->
-    <section class="pillars-section people-grid-section">
+    <section class="heritage-banner-section scroll-animate">
         <div class="container">
-            <h2 class="pillars-heading kinetic-text-scroll" aria-label="The People">The People</h2>
-
-            <div class="pillars-grid">
-
-                <!-- Patience -->
-                <div class="pillar-card person-card">
-                    <div class="pillar-icon person-card__monogram">
-                        <span aria-hidden="true">P</span>
-                    </div>
-                    <h3>Patience</h3>
-                    <p class="person-card__role">Daughter</p>
-                    <p>
-                        My oldest. Arrived 10 days late on the same day I started as Head Chef at Ric's Grill. Natural leader, big-sister boss, dimples she tries to hide when she grins.
+            <a class="heritage-banner" href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">
+                <div class="heritage-banner__body">
+                    <span class="heritage-banner__eyebrow">Heritage</span>
+                    <h3 class="heritage-banner__title">Five lines, one household</h3>
+                    <p class="heritage-banner__copy">
+                        The deeper read on where the kids came from &mdash; Cheesmans, Dochertys, Lakemans, Rycrofts, and Haistes, each with their own page.
                     </p>
-                    <a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Read her stories &rarr;</a>
                 </div>
-
-                <!-- Daniel -->
-                <div class="pillar-card person-card">
-                    <div class="pillar-icon person-card__monogram">
-                        <span aria-hidden="true">D</span>
-                    </div>
-                    <h3>Daniel</h3>
-                    <p class="person-card__role">Son</p>
-                    <p>
-                        Born June 30, 2015. Uncle Vance nicknamed him Charlie Brown for the bald head. Never crawled &mdash; just butt-scootched. A silent observer who pays attention more than he says.
-                    </p>
-                    <a href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Read his stories &rarr;</a>
-                </div>
-
-                <!-- Faith -->
-                <div class="pillar-card person-card">
-                    <div class="pillar-icon person-card__monogram">
-                        <span aria-hidden="true">F</span>
-                    </div>
-                    <h3>Faith</h3>
-                    <p class="person-card__role">Daughter</p>
-                    <p>
-                        Born March 29, 2017. Her name came to me in a dream at 3 a.m. We weren't sure of it until she choked while still in the hospital and got rushed to the NICU &mdash; then we knew.
-                    </p>
-                    <a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Read her stories &rarr;</a>
-                </div>
-
-                <!-- The Families — five family lines on a single hub page -->
-                <div class="pillar-card person-card">
-                    <div class="pillar-icon person-card__monogram">
-                        <span aria-hidden="true">5</span>
-                    </div>
-                    <h3>The Families</h3>
-                    <p class="person-card__role">Five lines, one household</p>
-                    <p>
-                        Five family lines: Cheesmans, Dochertys and McIvers, Rycrofts, Haistes, and Lakemans. Some I know well, some I'm still piecing together. This is where I keep what I've found &mdash; and what's still missing.
-                    </p>
-                    <a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">Trace the lines &rarr;</a>
-                </div>
-
-            </div>
+                <span class="heritage-banner__cta" aria-hidden="true">Read the lines &rarr;</span>
+            </a>
         </div>
     </section>
 
@@ -219,8 +235,8 @@ get_header(); ?>
 
     <!-- ==============================================================
          PHOTO CREDIT
-         Small italic colophon line at the bottom of the page,
-         crediting the photographer for the recent family photos.
+         Italic colophon line crediting the photographer of the
+         summer 2024 family photos.
          ============================================================== -->
     <p class="page-credit">
         Most of the recent family photos on these pages were taken by my good friend Dalyn Echo in summer 2024. Thanks Dalyn.
