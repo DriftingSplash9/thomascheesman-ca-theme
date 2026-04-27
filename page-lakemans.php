@@ -70,6 +70,15 @@ get_header(); ?>
 
                     <p>My grandmother <strong>Suzanna Verboom</strong> was born September 25, 1918, in Ter Aar, Zuid-Holland, in the Netherlands. The surname is pronounced &ldquo;ver-BOAM.&rdquo; She lived to be 100, dying in Calgary in 2018. Her father was a tailor and a barber whose shop was attached to the family home, and he taught her to sew and tailor &mdash; she became a most excellent seamstress, and she'll be remembered for her cooking, her impeccable taste, and the unmistakable Dutch accent she never lost.</p>
 
+                    <figure class="heritage-line__figure">
+                        <img
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/suzan-lakeman-and-me.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'Gramma Suzanna Lakeman with Thomas', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                        <figcaption>Gramma Suzanna and me.</figcaption>
+                    </figure>
+
                     <p>The Verbooms were a Ter Aar family. Suzanna's parents were <strong>Cornelis Verboom</strong> and <strong>Aagje Donker</strong>. Her brother Pieter Verboom married a woman named Kelly and ran a hair salon about a block south of his father's barber shop &mdash; he got around on a Vespa big enough to fit himself, his wife, and two daughters. Her other brother Jacob &ldquo;Yap&rdquo; Verboom took over the barber shop when their father retired. So somewhere in Ter Aar, the odds are good that Verboom cousins or grandchildren are still cutting hair.</p>
 
                     <figure class="heritage-line__figure">
@@ -84,6 +93,15 @@ get_header(); ?>
                     <p>Going back another generation on the Lakeman side: my great-grandfather was <strong>Pieter Karel Willem Lakeman</strong> &mdash; known in the family as P.K.W. &mdash; born January 27, 1881, in The Hague. He served as Burgemeester (mayor) in the Dutch East Indies, including postings in Magelang (1929&ndash;1934) and Malang (1933&ndash;1936). He patrolled his whole district on horseback. He retired to the Netherlands in 1933, when my grandfather was 15. They sailed back to Holland together.</p>
 
                     <p>Rienk Sr. also had a brother, <strong>Pieter Lakeman</strong>, a medical doctor with two daughters.</p>
+
+                    <figure class="heritage-line__figure">
+                        <img
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/father-me-and-uncle-reink-and-his-2nd-wife.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'Martin Lakeman, Thomas, and Uncle Rienk Lakeman Jr. with his second wife', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                        <figcaption>Dad Martin, me, Uncle Rienk Jr, and his second wife &mdash; the Lakeman line as it stands now.</figcaption>
+                    </figure>
 
                     <p>There's more to fill in here &mdash; the wartime years in the Indies, deeper Verboom roots in Friesland, the Timmermans line on the great-grandmother's side that traces back to baptisms in the 1700s. Material for another day.</p>
 

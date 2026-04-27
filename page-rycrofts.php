@@ -79,6 +79,15 @@ get_header(); ?>
 
                     <p>I'm still digging through the family tree to fill in dates and connections &mdash; Eric Jarmann had eight or so siblings I haven't fully traced, and there are plenty of Rycroft cousins around the Peace Country I'd like to know better. More to add as I learn it.</p>
 
+                    <figure class="heritage-line__figure">
+                        <img
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/sam-and-bette-tombstone.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'The shared tombstone of Sam and Bette Rycroft', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                        <figcaption>Sam and Bette, side by side.</figcaption>
+                    </figure>
+
                 </div>
             </section>
 
