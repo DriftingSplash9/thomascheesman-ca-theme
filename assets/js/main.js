@@ -707,8 +707,15 @@ function initLightbox() {
                 gallery: '#primary',
                 children: 'a.lightbox-link[data-pswp-width]',
                 pswpModule: () => import('https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.esm.js'),
-                bgOpacity: 0.94,
+                // bgOpacity 1.0 leaves the .pswp__bg element fully opaque
+                // so its backdrop-filter (blur 8px) renders cleanly. The
+                // visible transparency comes from the rgba() bg color
+                // in CSS instead.
+                bgOpacity: 1,
                 showHideAnimationType: 'fade',
+                // Mouse wheel / trackpad scroll zooms toward cursor
+                // instead of panning. Native PhotoSwipe option.
+                wheelToZoom: true,
             });
 
             lightbox.on('uiRegister', () => {
@@ -744,6 +751,31 @@ function initLightbox() {
                             const text = ((img && img.alt) || '').trim();
                             el.innerText = text;
                             el.style.opacity = text ? '1' : '0';
+                        };
+                        pswp.on('change', update);
+                        update();
+                    },
+                });
+
+                // Download button — anchor element with the download
+                // attribute so the browser saves the file instead of
+                // navigating. Sits in the bar (top-right area) just
+                // before the close button (order 8 < close's 20).
+                lightbox.pswp.ui.registerElement({
+                    name: 'tc-download',
+                    order: 8,
+                    isButton: true,
+                    tagName: 'a',
+                    html: '<svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><path d="M16 5 V21 M10 15 L16 21 L22 15 M8 26 H24" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                    onInit: (el, pswp) => {
+                        el.setAttribute('download', '');
+                        el.setAttribute('target', '_blank');
+                        el.setAttribute('rel', 'noopener');
+                        el.setAttribute('aria-label', 'Download image');
+                        el.setAttribute('title', 'Download image');
+                        const update = () => {
+                            const src = pswp.currSlide && pswp.currSlide.data && pswp.currSlide.data.src;
+                            if (src) el.href = src;
                         };
                         pswp.on('change', update);
                         update();

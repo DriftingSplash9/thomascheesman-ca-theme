@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.32
+Version: 1.0.33
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2706,17 +2706,20 @@ body.admin-bar .heritage-progress {
     --pswp-bg: rgba(4, 6, 25, 1);
 }
 
-/* Backdrop: solid navy + grain noise + radial vignette (darken at
-   the corners to draw the eye toward the image). */
+/* Backdrop: translucent navy tint over a blurred-page backdrop, plus
+   grain and a softer radial vignette. The backdrop-filter blur sees
+   through the rgba alpha to blur whatever's behind the lightbox. */
 .pswp__bg {
-    background-color: rgba(4, 6, 25, 1);
+    background-color: rgba(20, 25, 55, 0.6);
     background-image:
         radial-gradient(
             ellipse at center,
-            transparent 30%,
-            rgba(0, 0, 0, 0.55) 95%
+            transparent 35%,
+            rgba(0, 0, 0, 0.35) 100%
         ),
         url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 /* Lift shadow on the displayed image — gives the photo presence
