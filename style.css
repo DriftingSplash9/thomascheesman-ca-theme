@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.52
+Version: 1.0.53
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3592,6 +3592,92 @@ body:has(.person-spoke--faith) {
     font-style: italic;
     color: var(--text-light);
     font-size: clamp(1rem, 1.8vw, 1.15rem);
+}
+
+/* Centered figure used as a page-opener (HCS hero halo) and as the
+   closing portrait. Same chrome as .about-figure but no float — sits
+   centered at column width with a max cap. The --small modifier is
+   for the closing portrait, which doesn't need the same gravity as
+   the page-opener. */
+.about-hero-figure {
+    margin: 0 auto;
+    max-width: 480px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(8, 10, 26, 0.55);
+}
+
+.about-hero-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.about-hero-figure figcaption {
+    padding: 8px 12px 10px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--text-light);
+    font-style: italic;
+    text-align: center;
+}
+
+.about-hero-figure--small {
+    max-width: 320px;
+    margin-bottom: clamp(24px, 4vh, 40px);
+}
+
+/* Wraps the HCS hero halo figure between page-hero and article body.
+   Padding mirrors the article body so the figure sits in the same
+   gutter; vertical rhythm gives it room to breathe both above and
+   below before the prose starts. */
+.hcs-hero-figure-section {
+    padding: 0 20px;
+    margin: clamp(20px, 4vh, 40px) 0 clamp(40px, 6vh, 60px);
+}
+
+/* Bullet lists inside about-section get the same body-copy color
+   and rhythm as the surrounding paragraphs. Padding-left gives the
+   bullets a hang; margin-bottom matches paragraph spacing. */
+.about-list {
+    margin: 0 0 1.2em 0;
+    padding-left: 1.5em;
+}
+
+.about-list li {
+    font-size: clamp(1rem, 1.8vw, 1.1rem);
+    line-height: 1.7;
+    color: var(--text-medium);
+    margin-bottom: 0.6em;
+}
+
+.about-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* H3 subheadings inside the resources section. Smaller and quieter
+   than the section H2; no accent stripe, since stripes are reserved
+   for top-level section breaks. */
+.about-section__subheading {
+    font-size: clamp(1.1rem, 2vw, 1.25rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 32px 0 12px;
+    color: var(--text-dark);
+}
+
+/* HCS sign-off block — three lines (name, place, date) centered
+   under the closing CTA. Italic, lighter, smaller than body copy.
+   Same flavor as a magazine letter-from-the-author colophon. */
+.hcs-signoff {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-light);
+    font-style: italic;
+    margin-top: clamp(40px, 6vh, 60px);
+    text-align: center;
 }
 
 /* ============================================
