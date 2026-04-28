@@ -278,9 +278,21 @@ function tc_dispatch_handler() {
         exit;
     }
 
+    // Recipient is configured via TC_CONTACT_RECIPIENT in wp-config.php
+    // (server-only file, outside the public theme repo) so the address
+    // never appears in source code. If the constant is missing or
+    // invalid we fail closed — never silently send to nowhere.
+    $to = defined( 'TC_CONTACT_RECIPIENT' ) && is_email( TC_CONTACT_RECIPIENT )
+        ? TC_CONTACT_RECIPIENT
+        : '';
+
+    if ( empty( $to ) ) {
+        wp_safe_redirect( home_url( '/contact/?dispatch=error' ) );
+        exit;
+    }
+
     // Compose. Subject prefix flags it as form mail in the inbox so
     // it's easy to filter or visually scan for.
-    $to             = 'wecare@bareyourrare.org';
     $subject_prefix = '[thomascheesman.ca]';
     $final_subject  = $subject
         ? $subject_prefix . ' ' . $subject
