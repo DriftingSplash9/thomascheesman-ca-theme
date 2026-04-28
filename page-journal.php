@@ -43,13 +43,17 @@ get_header();
                 </p>
 
                 <?php
-                // Exclude family and hcs categories. get_cat_ID() returns
-                // 0 if the category doesn't exist; array_filter strips
-                // those zeros so the query doesn't accidentally exclude
-                // posts in category ID 0 (which would be all of them).
-                $family_id = get_cat_ID( 'Family' );
-                $hcs_id    = get_cat_ID( 'HCS' );
-                $excluded  = array_filter( array( $family_id, $hcs_id ) );
+                // Exclude family and hcs categories. Look up by slug, not
+                // display name — display names get renamed (e.g. "HCS" →
+                // "Hajdu-Cheney Syndrome") and break get_cat_ID(). Slugs
+                // are stable. array_filter strips any zeros so the query
+                // doesn't accidentally exclude posts in category ID 0.
+                $family_term = get_term_by( 'slug', 'family', 'category' );
+                $hcs_term    = get_term_by( 'slug', 'hcs', 'category' );
+                $excluded    = array_filter( array(
+                    $family_term ? $family_term->term_id : 0,
+                    $hcs_term    ? $hcs_term->term_id    : 0,
+                ) );
 
                 $rambling_query = new WP_Query( array(
                     'post_type'        => 'post',
