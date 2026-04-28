@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.76
+Version: 1.0.77
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1452,13 +1452,6 @@ html.tc-menu-open body {
 }
 
 .tc-footer__marquee {
-    position: relative;
-    /* isolation:isolate creates a fresh stacking context so the ::before
-       gradient strip below sits inside the same context as the text and
-       the mix-blend-mode: difference on the text has a colored surface
-       to invert against. Without this strip the text was just inverting
-       near-black → near-white, which read as static white. */
-    isolation: isolate;
     overflow: hidden;
     white-space: nowrap;
     margin-bottom: 36px;
@@ -1472,46 +1465,7 @@ html.tc-menu-open body {
             mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
 }
 
-/* Slow-drifting accent gradient strip behind the marquee text. Site
-   palette only — indigo, cyan, soft purple, then back. Dim alphas so
-   the strip itself reads as a subtle tint over the footer surface;
-   the high-contrast effect is reserved for the white-text difference
-   inversion that runs ON TOP of it. background-size 300% gives the
-   gradient room to drift across without seams. */
-.tc-footer__marquee::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background: linear-gradient(
-        90deg,
-        rgba(34, 211, 238, 0.32)   0%,    /* cyan */
-        rgba(99, 102, 241, 0.32)   25%,   /* indigo */
-        rgba(168, 85, 247, 0.28)   50%,   /* purple */
-        rgba(34, 211, 238, 0.32)   75%,   /* cyan again */
-        rgba(99, 102, 241, 0.32)   100%   /* indigo again — seamless wrap */
-    );
-    background-size: 300% 100%;
-    animation: tc-marquee-bg-drift 24s linear infinite;
-}
-
-@keyframes tc-marquee-bg-drift {
-    from { background-position:    0% 0; }
-    to   { background-position: -300% 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .tc-footer__marquee::before {
-        animation: none;
-    }
-}
-
 .tc-footer__marquee-track {
-    /* z-index above the ::before gradient strip so the text isn't
-       swallowed by it. position:relative is required for z-index to apply. */
-    position: relative;
-    z-index: 1;
     display: inline-flex;
     align-items: center;
     gap: 56px;
@@ -1536,29 +1490,54 @@ html.tc-menu-open body {
     font-variation-settings: 'wght' 700, 'opsz' 96;
     font-weight: 700;
     letter-spacing: -0.01em;
-    /* mix-blend-mode: difference inverts the text color against whatever
-       sits behind it inside the footer's stacking context — the dark
-       gradient and the cyan ::before halo. Pure white fill is required
-       for the inversion to read; the previous transparent + stroke
-       approach gave difference nothing to work with. The blend is
-       constrained to the footer's stacking context because the parent
-       has backdrop-filter, but the cyan halo + gradient still produce
-       a constantly-shifting palette as the marquee sways. */
-    color: #ffffff;
+    /* Slow-drifting site-palette gradient painted INTO the text shape
+       via background-clip: text. Replaces the earlier mix-blend-mode
+       experiment which produced muted whites against the dark footer.
+       Here the text itself becomes the gradient — no separate band, no
+       inversion math. The 300% background-size + animated background-
+       position produces a continuous left-drift that wraps seamlessly. */
+    background: linear-gradient(
+        90deg,
+        #22d3ee   0%,   /* cyan */
+        #6366f1  25%,   /* indigo */
+        #a855f7  50%,   /* purple */
+        #22d3ee  75%,   /* cyan again */
+        #6366f1 100%    /* indigo — seamless wrap */
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
     -webkit-text-stroke: 0;
-    mix-blend-mode: difference;
+    animation: tc-marquee-text-drift 24s linear infinite;
     line-height: 1.15;
 }
 
-/* Decorative glyph between phrase repetitions. The text-difference blend
-   on the parent would invert this cyan badly, so opt out via mix-blend-
-   mode: normal — the glyph reads as a calm cyan punctuation regardless
-   of what's behind it. */
+@keyframes tc-marquee-text-drift {
+    from { background-position:    0% 0; }
+    to   { background-position: -300% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tc-footer__marquee-item {
+        animation: none;
+    }
+}
+
+/* Decorative glyph between phrase repetitions. Opts out of the
+   gradient-clipped text on the parent — solid cyan ✦ instead, so it
+   punctuates the sway without competing with the drifting hue of the
+   phrases on either side. */
 .tc-footer__marquee-glyph {
-    -webkit-text-stroke: 0;
+    background: none;
+    -webkit-background-clip: border-box;
+            background-clip: border-box;
     color: rgba(34, 211, 238, 0.55);
+    -webkit-text-fill-color: rgba(34, 211, 238, 0.55);
+    -webkit-text-stroke: 0;
     font-size: clamp(1.4rem, 4vw, 2.6rem);
-    mix-blend-mode: normal;
+    animation: none;
 }
 
 @keyframes tc-marquee {
