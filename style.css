@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.73
+Version: 1.0.74
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1481,6 +1481,13 @@ html.tc-menu-open body {
 
 .tc-footer__marquee-item {
     font-size: clamp(2rem, 6vw, 4rem);
+    /* Fraunces variable serif. Scoped to the marquee only so the rest of
+       the theme's typography is untouched. font-variation-settings drives
+       the weight + optical-size axes; opsz at 96 reads as a true display
+       cut. wght 700 is the static base — the breathing JS (next commit)
+       will animate it per character. */
+    font-family: 'Fraunces', Georgia, serif;
+    font-variation-settings: 'wght' 700, 'opsz' 96;
     font-weight: 700;
     letter-spacing: -0.01em;
     /* A semi-transparent text-fill plus a faint white text-stroke gives

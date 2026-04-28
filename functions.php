@@ -54,6 +54,21 @@ function tc_ventures_enqueue_scripts() {
         null
     );
 
+    // Fraunces — variable serif used by the footer marquee. Two axes:
+    //   wght 300..900 — drives per-character "breathing" (light at the
+    //                   marquee's edges, heavy through the center) once
+    //                   the breathing JS is wired up. The transition is
+    //                   GPU-cheap because it interpolates a single axis.
+    //   opsz 9..144   — optical size axis lets the glyphs be drawn at
+    //                   display sizes without looking thin/spindly.
+    // Google Fonts serves a single variable file covering both ranges.
+    wp_enqueue_style(
+        'tc-fraunces',
+        'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&display=swap',
+        array(),
+        null
+    );
+
     // GSAP core library (CDN).
     wp_enqueue_script(
         'gsap-core',
