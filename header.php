@@ -89,37 +89,46 @@
 
         <nav class="tc-menu__nav" aria-label="<?php esc_attr_e( 'Primary', 'tc-ventures-child' ); ?>">
             <?php
-            // If the user has assigned a menu to the "primary" location in
-            // Appearance → Menus, render that. Otherwise we fall back to a
-            // hardcoded list so the site is usable on a fresh install.
+            // TEMPORARY MENU (2026-04 → BHAG).
             //
-            // The split into per-character spans happens in main.js (it
-            // walks every .tc-menu__list a and rewrites the link text),
-            // so the markup here stays simple and copy-paste-friendly.
-            if ( has_nav_menu( 'primary' ) ) {
-                wp_nav_menu( array(
-                    'theme_location' => 'primary',
-                    'container'      => false,
-                    'menu_class'     => 'tc-menu__list',
-                    'fallback_cb'    => false,
-                    'depth'          => 1,
-                    'items_wrap'     => '<ul class="tc-menu__list">%3$s</ul>',
-                ) );
-            } else {
-                ?>
-                <ul class="tc-menu__list">
-                    <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/blog' ) ); ?>">Blog</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a></li>
-                </ul>
-                <?php
-            }
+            // We deliberately ignore any WP-admin "primary" menu while the
+            // basic temporary menu is in service. The hardcoded list below
+            // is the source of truth — easier to keep in sync with the
+            // theme's growing page set than asking Thomas to maintain it
+            // in WP admin in parallel.
+            //
+            // When the BHAG (persistent-canvas / topography) menu ships,
+            // this whole block gets replaced. See memory:
+            //   project_tc_bhag_living_document.md
+            //
+            // To re-enable WP-admin menu control later, restore the
+            // has_nav_menu( 'primary' ) conditional that lived here in
+            // commit history before 2026-04-27.
             ?>
+            <ul class="tc-menu__list">
+                <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">HCS</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a></li>
+            </ul>
         </nav>
 
         <div class="tc-menu__meta">
+            <div class="tc-menu__meta-block">
+                <span class="tc-menu__meta-label">Family pages</span>
+                <ul class="tc-menu__meta-list">
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">Heritage</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/cheesmans' ) ); ?>">↳ Cheesmans</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">↳ Lakemans</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">↳ Rycrofts</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">↳ Haistes</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/dochertys' ) ); ?>">↳ Dochertys</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Daniel</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Faith</a></li>
+                </ul>
+            </div>
             <div class="tc-menu__meta-block">
                 <span class="tc-menu__meta-label">Elsewhere</span>
                 <ul class="tc-menu__meta-list">
