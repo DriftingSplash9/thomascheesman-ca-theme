@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.87
+Version: 1.0.88
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1504,8 +1504,13 @@ html.tc-menu-open body {
     isolation: isolate;
 }
 
-/* Sharp 1px rotating ring — cool palette, alpha-tuned so it reads
-   as a sheen rather than a hard outline. */
+/* 1px rotating ring with a single travelling shine pulse — same
+   pattern the header capsule uses (steady-base + 80°-wide bright
+   arc that rotates around). Here the base is calm indigo at low
+   alpha; the pulse ramps cyan → near-white → cyan across 280°–320°
+   then drops back to indigo base. As --marquee-shine-angle advances
+   the entire pattern rotates, so the shine arc travels once around
+   the pill per animation cycle. */
 .tc-footer__marquee-pill::before {
     content: '';
     position: absolute;
@@ -1514,10 +1519,12 @@ html.tc-menu-open body {
     border-radius: inherit;
     background: conic-gradient(
         from var(--marquee-shine-angle, 0deg),
-        rgba(34, 211, 238, 0.65)   0deg,    /* cyan */
-        rgba(99, 102, 241, 0.55)  120deg,   /* indigo */
-        rgba(168, 85, 247, 0.65)  240deg,   /* purple */
-        rgba(34, 211, 238, 0.65)  360deg    /* cyan — seamless wrap */
+        rgba(99, 102, 241, 0.30)   0deg,    /* indigo base */
+        rgba(99, 102, 241, 0.30) 240deg,    /* indigo base */
+        rgba(34, 211, 238, 0.65)  280deg,   /* cyan ramp up */
+        rgba(229, 231, 245, 0.95) 300deg,   /* near-white shine peak */
+        rgba(34, 211, 238, 0.65)  320deg,   /* cyan ramp down */
+        rgba(99, 102, 241, 0.30)  360deg    /* indigo base — seamless wrap */
     );
     /* Mask-composite trick: punch the inner content-box out of the
        full-size gradient so only a 1px outer ring remains visible. */
