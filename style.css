@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.81
+Version: 1.0.82
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1513,16 +1513,18 @@ html.tc-menu-open body {
 }
 
 /* Per-character spans created by initMarqueeBreathing() in main.js. The
-   --char-weight var is rewritten every rAF tick based on each char's
-   horizontal distance from the viewport center — chars at the edges
-   read at 300, chars at dead-center read at 900, with smoothstep
-   interpolation between. font-variation-settings interpolates because
-   --char-weight is registered via @property above. display:inline-block
-   so each char takes its own bounding box (needed for getBoundingClientRect). */
+   --char-weight var is rewritten by the rAF tick when the snapped weight
+   crosses a 50-unit threshold; font-variation-settings interpolates the
+   wght axis because --char-weight is registered via @property above.
+   contain:layout style isolates each char's layout from its siblings —
+   without it, a weight change on one char (which alters glyph metrics)
+   would re-flow every following inline-block in the line, costing a
+   forced layout per char per frame. */
 .tc-footer__marquee-item .marquee-char {
     --char-weight: 700;
     font-variation-settings: 'wght' var(--char-weight), 'opsz' 96;
     display: inline-block;
+    contain: layout style;
 }
 
 /* Decorative glyph between phrase repetitions. Stable cyan punctuation

@@ -2232,6 +2232,18 @@ function initMarqueeBreathing() {
     let active = false;
     let rafId = null;
 
+    // Per-char snapshot of the last weight we wrote. Lets us skip
+    // setProperty when the snapped weight hasn't changed — most frames
+    // for most chars. setProperty on --char-weight invalidates layout
+    // (the wght axis affects glyph metrics), so avoiding redundant
+    // writes is the biggest single win against jitter.
+    const lastWeightWritten = new WeakMap();
+    // Snap weight to multiples of this so the wght axis only updates
+    // at meaningful thresholds rather than chasing every sub-pixel
+    // float. Visually indistinguishable from continuous; eliminates
+    // most layout invalidations.
+    const WEIGHT_SNAP = 50;
+
     function tick() {
         if (!active) {
             rafId = null;
@@ -2243,12 +2255,24 @@ function initMarqueeBreathing() {
         const now = performance.now();
         const huePhaseT = now * (Math.PI * 2 / HUE_T_PERIOD);
 
-        for (const char of chars) {
-            const rect = char.getBoundingClientRect();
-            // Bail on chars completely outside the viewport — saves the
-            // setProperty write and the variable's value isn't visible.
+        // ---- READ PASS ----
+        // Pull every char's rect first, before any writes. This way the
+        // browser only has to compute layout once for the whole loop,
+        // instead of recomputing after every weight write (the read-
+        // write-read-write thrash pattern).
+        const rects = new Array(chars.length);
+        for (let i = 0; i < chars.length; i++) {
+            rects[i] = chars[i].getBoundingClientRect();
+        }
+
+        // ---- WRITE PASS ----
+        for (let i = 0; i < chars.length; i++) {
+            const rect = rects[i];
+            // Bail on chars completely outside the viewport — saves
+            // both the math and the writes.
             if (rect.right < 0 || rect.left > viewportW) continue;
 
+            const char = chars[i];
             const charCenter = (rect.left + rect.right) * 0.5;
             const distance = Math.abs(charCenter - center);
             // 0 at edges → 1 at dead center (clamped).
@@ -2257,19 +2281,28 @@ function initMarqueeBreathing() {
             // middle. Reads as a more natural "lens" focus than linear.
             const eased = t * t * (3 - 2 * t);
 
-            const weight = WEIGHT_MIN + (WEIGHT_MAX - WEIGHT_MIN) * eased;
-            const scale  = SCALE_MAX  + (SCALE_MIN  - SCALE_MAX)  * eased;
-            const yLift  = ARC_LIFT * eased;
+            const weightRaw = WEIGHT_MIN + (WEIGHT_MAX - WEIGHT_MIN) * eased;
+            const weightSnap = Math.round(weightRaw / WEIGHT_SNAP) * WEIGHT_SNAP;
+            const scale = SCALE_MAX + (SCALE_MIN - SCALE_MAX) * eased;
+            const yLift = ARC_LIFT * eased;
 
-            // Hue oscillates with time and is offset by the char's screen
-            // X position, so the phrase looks like a flowing gradient at
-            // any instant and drifts as time advances.
+            // Hue oscillates with time and is offset by the char's
+            // screen X position, so the phrase looks like a flowing
+            // gradient at any instant and drifts as time advances.
             const huePhase = huePhaseT + charCenter * HUE_X_FACTOR;
             const hue = HUE_BASE + HUE_AMP * Math.sin(huePhase);
 
-            char.style.setProperty('--char-weight', weight.toFixed(0));
-            // Single transform string — translateY for the arc, scale for
-            // the shrink. Both GPU-composited; no layout thrash.
+            // Only re-write the weight when the snapped value actually
+            // changes. setProperty on --char-weight invalidates layout
+            // because the wght axis alters glyph metrics; skipping
+            // redundant writes is the main jitter fix.
+            if (lastWeightWritten.get(char) !== weightSnap) {
+                char.style.setProperty('--char-weight', weightSnap);
+                lastWeightWritten.set(char, weightSnap);
+            }
+            // transform and color are GPU-composited / paint-only
+            // respectively — no layout cost — so writing every frame
+            // is fine for these.
             char.style.transform = 'translateY(' + yLift.toFixed(2) + 'px) scale(' + scale.toFixed(3) + ')';
             char.style.color = 'hsl(' + hue.toFixed(1) + ', ' + HUE_SAT + '%, ' + HUE_LIT + '%)';
         }
