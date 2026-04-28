@@ -219,6 +219,47 @@ function tc_ventures_allow_page_slug_over_attachment( $slug, $post_id, $post_sta
 add_filter( 'wp_unique_post_slug', 'tc_ventures_allow_page_slug_over_attachment', 10, 6 );
 
 /**
+ * Route wp_mail() through gmail's SMTP server.
+ *
+ * Hostinger's default PHP mail() silently drops most outbound mail
+ * to gmail (sender domain isn't authenticated, so gmail rejects on
+ * the receiving end). Sending via smtp.gmail.com with an App Password
+ * solves that — gmail authenticates its own credentials, signs the
+ * message itself, and trusts the result.
+ *
+ * Credentials live in wp-config.php (server-only, never in the public
+ * theme repo) as TC_SMTP_USER and TC_SMTP_PASS. The password is a
+ * 16-character Google App Password generated at
+ * https://myaccount.google.com/apppasswords with 2FA enabled — NOT
+ * the gmail account password.
+ *
+ * If either constant is missing this hook no-ops and wp_mail() falls
+ * back to PHP's mail() — so rotating or removing the credentials
+ * never breaks the site, only the contact form's deliverability.
+ *
+ * Reply-To is set per-message by tc_dispatch_handler() below, so even
+ * though every form email is "from" the gmail account, hitting Reply
+ * in the inbox routes to the visitor's address.
+ */
+function tc_route_mail_through_gmail( $phpmailer ) {
+    if ( ! defined( 'TC_SMTP_USER' ) || ! defined( 'TC_SMTP_PASS' ) ) {
+        return;
+    }
+
+    $phpmailer->isSMTP();
+    $phpmailer->Host       = 'smtp.gmail.com';
+    $phpmailer->SMTPAuth   = true;
+    $phpmailer->Port       = 587;
+    $phpmailer->SMTPSecure = 'tls';
+    $phpmailer->Username   = TC_SMTP_USER;
+    $phpmailer->Password   = TC_SMTP_PASS;
+
+    $phpmailer->From     = TC_SMTP_USER;
+    $phpmailer->FromName = 'TC ventures contact form';
+}
+add_action( 'phpmailer_init', 'tc_route_mail_through_gmail' );
+
+/**
  * Contact form handler — receives submissions from /contact.
  *
  * The form in page-contact.php POSTs to admin-post.php with
