@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.57
+Version: 1.0.59
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3655,6 +3655,208 @@ body:has(.person-spoke--faith) {
 
 .about-list li:last-child {
     margin-bottom: 0;
+}
+
+/* Contact directory on /contact — quiet two-column rows (channel
+   label | link). Sits inside an .about-section so anchors inherit
+   the section's link styling; this block only handles layout.
+   Stacks to single column under 600px. */
+.contact-list {
+    list-style: none;
+    margin: clamp(20px, 3vh, 32px) 0 0;
+    padding: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.contact-list li {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+    padding: clamp(14px, 2vh, 20px) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    align-items: baseline;
+}
+
+.contact-list__label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    .contact-list li {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}
+
+/* "Or find me on:" intro line, sits above the contact-list when the
+   list serves as a fallback below the dispatch form. */
+.contact-list__intro {
+    margin: clamp(40px, 6vh, 60px) 0 clamp(8px, 1.2vh, 12px);
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+/* ============================================
+   DISPATCH FORM — /contact contact form
+   ============================================
+   Hand-rolled, no plugin. Posts to admin-post.php; handler is
+   tc_dispatch_handler() in functions.php. Recipient inbox is
+   server-side only and never appears in markup.
+
+   Class names use the .dispatch-* namespace (editorial /
+   non-utilitarian) so they will not collide with theme conventions,
+   plugins, or future utility libraries down the road.
+
+   Layered spam defenses (no third-party widget):
+     - WP nonce  (markup hidden field via wp_nonce_field)
+     - Honeypot  (.dispatch__honeypot, off-screen below)
+     - Time-trap (server-side, not styled) */
+
+.dispatch {
+    margin-top: clamp(24px, 4vh, 36px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 2.4vh, 22px);
+}
+
+.dispatch__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dispatch__label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+.dispatch__optional {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    font-style: italic;
+    opacity: 0.7;
+    margin-left: 4px;
+}
+
+.dispatch__input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 1rem;
+    line-height: 1.5;
+    font-family: inherit;
+    color: var(--text-dark);
+    background: rgba(8, 10, 26, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    appearance: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.dispatch__input::placeholder {
+    color: var(--text-light);
+    opacity: 0.6;
+}
+
+.dispatch__input:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+.dispatch__input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 25%, transparent);
+    background: rgba(8, 10, 26, 0.72);
+}
+
+.dispatch__input--textarea {
+    resize: vertical;
+    min-height: 140px;
+    line-height: 1.6;
+}
+
+/* Honeypot — present in DOM (so bots fill it), invisible to humans.
+   Position absolute + offscreen avoids tabindex/screen-reader pickup;
+   aria-hidden on the wrapper is the belt to that suspenders. */
+.dispatch__honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Send button — frosted pill chrome, matches the menu nav pills. */
+.dispatch__send {
+    align-self: flex-start;
+    margin-top: clamp(8px, 1vh, 14px);
+    padding: 12px 28px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-dark);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.dispatch__send:hover,
+.dispatch__send:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.5);
+    outline: none;
+}
+
+.dispatch__send:active {
+    transform: translateY(0);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Status banners — appear above the form when ?dispatch=<status> is
+   on the URL after a submission redirect. Soft semantic colors,
+   no animation; the banner just is. */
+.dispatch__banner {
+    margin: 0 0 clamp(20px, 3vh, 30px);
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    border: 1px solid;
+}
+
+.dispatch__banner--ok {
+    color: rgb(190, 240, 205);
+    background: rgba(60, 140, 90, 0.15);
+    border-color: rgba(80, 180, 120, 0.35);
+}
+
+.dispatch__banner--err {
+    color: rgb(245, 200, 195);
+    background: rgba(170, 70, 60, 0.15);
+    border-color: rgba(220, 100, 90, 0.35);
+}
+
+@media (max-width: 600px) {
+    .dispatch__send {
+        align-self: stretch;
+        text-align: center;
+    }
 }
 
 /* H3 subheadings inside the resources section. Smaller and quieter

@@ -219,6 +219,97 @@ function tc_ventures_allow_page_slug_over_attachment( $slug, $post_id, $post_sta
 add_filter( 'wp_unique_post_slug', 'tc_ventures_allow_page_slug_over_attachment', 10, 6 );
 
 /**
+ * Contact form handler — receives submissions from /contact.
+ *
+ * The form in page-contact.php POSTs to admin-post.php with
+ * action=tc_dispatch_send. Both `admin_post_*` and
+ * `admin_post_nopriv_*` hooks must be registered — the _nopriv
+ * variant fires for anonymous visitors (i.e., everyone using the
+ * contact form). Without it the request would 400 silently.
+ *
+ * Defenses (no third-party widget, no CAPTCHA):
+ *   1. WP nonce — single-use token; blocks cross-site replay.
+ *   2. Honeypot field "dispatch_website" — visually hidden in CSS,
+ *      bots that fill every input will fill it. If it has a value
+ *      we pretend success so the bot logs the submission as good
+ *      and stops probing, instead of telling it the trap exists.
+ *   3. Time-trap — render-time timestamp is stamped on the form.
+ *      If the form returns in under 3 seconds it's almost certainly
+ *      a script auto-filling and submitting.
+ *
+ * Recipient (wecare@bareyourrare.org) is hardcoded server-side and
+ * is never present in the rendered HTML, so address-harvesters get
+ * nothing to scrape.
+ *
+ * Result is communicated back via redirect to /contact/?dispatch=<status>
+ * which page-contact.php renders as a status banner above the form.
+ */
+function tc_dispatch_handler() {
+    // 1. Nonce.
+    if ( ! isset( $_POST['tc_dispatch_nonce'] )
+         || ! wp_verify_nonce( $_POST['tc_dispatch_nonce'], 'tc_dispatch' ) ) {
+        wp_safe_redirect( home_url( '/contact/?dispatch=error' ) );
+        exit;
+    }
+
+    // 2. Honeypot — pretend success so the bot doesn't learn the trap.
+    if ( ! empty( $_POST['dispatch_website'] ) ) {
+        wp_safe_redirect( home_url( '/contact/?dispatch=sent' ) );
+        exit;
+    }
+
+    // 3. Time-trap — under 3 seconds since render is bot territory.
+    $t0 = isset( $_POST['dispatch_t0'] ) ? intval( $_POST['dispatch_t0'] ) : 0;
+    if ( $t0 === 0 || ( time() - $t0 ) < 3 ) {
+        wp_safe_redirect( home_url( '/contact/?dispatch=error' ) );
+        exit;
+    }
+
+    // Sanitize. wp_unslash undoes WordPress's automatic magic-quoting
+    // before sanitizing, so apostrophes in names/messages survive intact.
+    $name    = sanitize_text_field(     wp_unslash( $_POST['dispatch_name']    ?? '' ) );
+    $email   = sanitize_email(          wp_unslash( $_POST['dispatch_email']   ?? '' ) );
+    $subject = sanitize_text_field(     wp_unslash( $_POST['dispatch_subject'] ?? '' ) );
+    $message = sanitize_textarea_field( wp_unslash( $_POST['dispatch_message'] ?? '' ) );
+
+    // Validate required fields.
+    if ( ! is_email( $email ) || empty( $message ) ) {
+        wp_safe_redirect( home_url( '/contact/?dispatch=invalid' ) );
+        exit;
+    }
+
+    // Compose. Subject prefix flags it as form mail in the inbox so
+    // it's easy to filter or visually scan for.
+    $to             = 'wecare@bareyourrare.org';
+    $subject_prefix = '[thomascheesman.ca]';
+    $final_subject  = $subject
+        ? $subject_prefix . ' ' . $subject
+        : $subject_prefix . ' New message via /contact';
+
+    $body  = "Name:    " . ( $name ?: '(not provided)' ) . "\n";
+    $body .= "Email:   " . $email . "\n";
+    if ( $subject ) {
+        $body .= "Subject: " . $subject . "\n";
+    }
+    $body .= "\n----\n\n" . $message . "\n";
+
+    // Reply-To = visitor's address so hitting Reply in the inbox
+    // goes to them, not back to wecare@.
+    $reply_to = $name ? sprintf( '%s <%s>', $name, $email ) : $email;
+    $headers  = array(
+        'Reply-To: ' . $reply_to,
+        'Content-Type: text/plain; charset=UTF-8',
+    );
+
+    $sent = wp_mail( $to, $final_subject, $body, $headers );
+
+    wp_safe_redirect( home_url( '/contact/?dispatch=' . ( $sent ? 'sent' : 'error' ) ) );
+    exit;
+}
+add_action( 'admin_post_tc_dispatch_send',        'tc_dispatch_handler' );
+add_action( 'admin_post_nopriv_tc_dispatch_send', 'tc_dispatch_handler' );
+
+/**
  * Placeholders — uncomment when ready.
  */
 
