@@ -69,12 +69,14 @@ get_header(); ?>
             <section class="about-section scroll-animate">
                 <h2 class="about-section__heading">The plain-English version</h2>
 
-                <!--
                 <figure class="about-figure about-figure--right">
-                    <img src="" alt="Autosomal dominant inheritance pattern diagram" loading="lazy" />
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/Capture.png' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Autosomal dominant inheritance pattern diagram', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
                     <figcaption>Autosomal dominant inheritance &mdash; one parent, one-in-two odds per pregnancy.</figcaption>
                 </figure>
-                -->
 
                 <p>Hajdu-Cheney Syndrome &mdash; pronounced "hay-dew chaye-knee" &mdash; is a rare bone and connective-tissue disorder. Your skeleton is doing two jobs at the same time, every day of your life: building bone and breaking bone down. In HCS the breakdown crews run faster than the builder crews. The result is bones that get thinner, smaller, and less stable over time, especially in the hands and feet, where the tips of the fingers and toes can resorb back into the body. The connective tissues are still quite the mystery and I am not sure how exactly they are affected by the mutated gene. The medical word for that bone loss and clubbing at the tips is acro-osteolysis. It is a headline symptom but not the only one &mdash; HCS reaches into the spine, the skull, the jaw, the heart, the kidneys, and the immune system. The longer you have it, the more of you it gets to. Some of us start out a lot further along than others who barely have symptoms until much later in life. I am fortunate mine is relatively tame.</p>
 
@@ -95,14 +97,25 @@ get_header(); ?>
 
                 <p>My case is unusual in one important way. I have been tested twice for the known NOTCH2 mutations that cause HCS in most people, and both times the test came back clean. I do not carry a recognized pathogenic variant. My diagnosis is clinical &mdash; confirmed on the way my body has built itself, not on a line of code in my genome. That makes me a footnote in my own disease. Most published case studies are children or middle-aged adults with a confirmed mutation; I am forty-four, with the phenotype of a textbook case and the genotype of someone the textbook hasn't met yet.</p>
 
-                <!--
                 <figure class="about-figure about-figure--left">
-                    <img src="" alt="Hand X-ray showing acro-osteolysis at the fingertips" loading="lazy" />
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/hands-and-xray-scaled.png' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Hands beside an X-ray showing acro-osteolysis at the fingertips', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
                     <figcaption>Acro-osteolysis: the tips of the fingers, dissolved.</figcaption>
                 </figure>
-                -->
 
                 <p>The shape of my version, in fast-forward: childhood pneumonias every other year, growing up on farms doing the manual labour the other kids did. A basketball injury at fifteen that knocked my neck into permanent reduced range. A culinary career &mdash; The Keg, SAIT, then Ric's Grill, then Township 71, then teaching at GPRC, then Majors Homestyle. Twenty years of bisphosphonates starting in 2004. A neck DVT in 2017 because I have no clavicles and pinched a vein closed in my sleep. A sledding accident in January 2021 that nearly finished what was left of the alignment in my upper spine. A couple accidents playing with kids finished it off leading to a cervical fusion in July 2022 that runs from the base of my skull to my T3 &mdash; three rods, twelve plates, forty-odd screws, donor bone, and enough bone glue for three people. I weigh 98 pounds today. My BMI is 13.6. The right condyle of my jaw is gone; the left is partially eroded.</p>
+
+                <figure class="about-figure about-figure--right">
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/10_AX_T1_low_through_mandible.png' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Axial T1 MRI through the mandible showing cervical fusion hardware', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
+                    <figcaption>Three rods, twelve plates, forty-odd screws.</figcaption>
+                </figure>
 
                 <p>If you've read my chronological story on Bare Your Rare, you already have the timeline. This page isn't the timeline. This page is what the timeline turned out to mean instead.</p>
 
@@ -111,20 +124,24 @@ get_header(); ?>
 
             <!-- ======================================================
                  SECTION 4 — What I lost (candid)
-                 TODO image: chef-era photo (in chef whites, on the line,
-                 or plating). Thomas to provide.
+                 Figure: foot X-ray showing bone spike, placed next to
+                 the bone-spike sentence in paragraph 2. A chef-era
+                 photo for the top of the section is still open if
+                 Thomas wants one later.
                  ====================================================== -->
             <section class="about-section scroll-animate">
                 <h2 class="about-section__heading">What I lost</h2>
 
-                <!--
-                <figure class="about-figure about-figure--left">
-                    <img src="" alt="Thomas in chef whites on the line" loading="lazy" />
-                    <figcaption>The kitchen years.</figcaption>
-                </figure>
-                -->
-
                 <p>The kitchen went first, and the kitchen was where I lived. I started cooking in 2001 to pay my way through the last year of college at The Keg and I would go on to spend the next 12 years cooking and running the kitchen. I worked my way up the line over 2 years and then became assistant kitchen manager, then kitchen manager for 10 years. In 2011 I began my schooling for the apprenticeship at SAIT. I finished in the fall of 2012. Eventually I had to move on to try a different angle and that's when I started as Head Chef at Ric's Grill the day Patience was born, ten days late. I ran Township 71 after shutting down Ric's Grill. At the same time all this was going on I taught the cooking part of the Hospitality and Tourism Diploma at the college up here in Grande Prairie. The last full kitchen I ran was Majors Homestyle and Tractor Jack's. By 2018 I couldn't sustain eight let alone twelve hours on the line with a thirty-pound stockpot and a 50lb box of potatoes. Standing and walking twelve miles a day across an eight-to-sixteen-hour shift was no joy. I knew before everyone around me that the kitchen was going to lose this argument. I'm grateful I left on my own terms. I am also still angry about it some days, I felt like I had years left in me and I did not intend to let my family down the way I did. I should have left years before so that I would have the gas left for my new family. Even today I am torn between not wanting to overdo it and at the same time there is a lot of guilt for not helping out more with housework and chores.</p>
+
+                <figure class="about-figure about-figure--left">
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/foot-3.jpg' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Foot showing a bone spike on the underside', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
+                    <figcaption>A bone spike, on the bottom of the foot.</figcaption>
+                </figure>
 
                 <p>The hands took the kitchen. After the hands, slower losses, the kind that don't have one moment to point at. Both wrists that won't bend backwards. Shoulders that won't lift above my head. A left thumb dislocated in a few places. A right hand more degenerated than the left, but the left compensated by losing a ring finger to partial dislocation. Most of my fingertips are dissolved or gone. There were bone spikes growing on the bottom of my feet. Both feet have very little up-and-down rocking left. The arches are gone and then some.</p>
 
@@ -197,12 +214,14 @@ get_header(); ?>
             <section class="about-section scroll-animate">
                 <h2 class="about-section__heading">What I wish I had known</h2>
 
-                <!--
                 <figure class="about-figure about-figure--left">
-                    <img src="" alt="Post-operative recovery in trauma ward" loading="lazy" />
-                    <figcaption>Trauma ward, after the fusion.</figcaption>
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/day-after-surgert.jpg' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Day after the cervical spinal fusion, July 2022', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
+                    <figcaption>Day after the fusion.</figcaption>
                 </figure>
-                -->
 
                 <p>A lot of advice for the newly diagnosed comes from people who haven't been at it for forty years. Here is what I have learned from forty years of being at it.</p>
 
@@ -210,12 +229,14 @@ get_header(); ?>
 
                 <p>Photograph and back up every page of your medical paperwork. The same documents will be asked for again at every appeal, every program transition, every specialist intake. The first copy you make is the easiest. Make three. If you worked there is your disability pension, provincial/state benefits, some municipal benefits though they only require income statements. If you have a rare condition and do your own research your files are very helpful.</p>
 
-                <!--
                 <figure class="about-figure about-figure--right">
-                    <img src="" alt="TMJ CT scan slice showing condyle erosion" loading="lazy" />
-                    <figcaption>TMJ CT, right condyle absent.</figcaption>
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/14_SAG_MEDIC_RIGHT_bone_detail.png' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Sagittal MRI showing erosion of the right jaw condyle', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
+                    <figcaption>TMJ MRI, right side &mdash; the condyle is gone.</figcaption>
                 </figure>
-                -->
 
                 <p>CPP Disability and AISH stack, but AISH claws back the CPPD dollar-for-dollar. Apply to both. Understand that getting CPPD does not raise your income &mdash; it just shifts which level of government is paying you. Knowing that in advance saves a lot of "did I do something wrong" feelings on the first deposit day after the change.</p>
 
@@ -242,12 +263,14 @@ get_header(); ?>
 
                 <p>This is the part of the page nobody else can write about my disease, because nobody else has been reading my disease from the inside for forty years.</p>
 
-                <!--
                 <figure class="about-figure about-figure--right">
-                    <img src="" alt="Notch signaling pathway diagram" loading="lazy" />
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/Signal_transduction_v1.png' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Notch signaling pathway diagram', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
                     <figcaption>The Notch signaling pathway &mdash; one of the oldest tools evolution has.</figcaption>
                 </figure>
-                -->
 
                 <p>HCS is caused &mdash; for the people who carry the recognized version &mdash; by a single faulty copy of a gene called NOTCH2. NOTCH2 sits on chromosome 1, and it codes for a kind of antenna that pokes out of cells, ready to receive a signal from the cell next door. When the signal arrives, the antenna gets snipped, the snipped piece travels to the nucleus, and the cell decides what to do next &mdash; what to become, when to divide, when to die. This is the Notch signaling pathway, and it is one of the oldest tools evolution has. Fruit flies use it. Worms use it. We use it every day, in development and in adulthood.</p>
 
@@ -257,12 +280,14 @@ get_header(); ?>
 
                 <p>NOTCH2's main partner ligand is JAG1 &mdash; Jagged1 &mdash; and JAG1 is the bridge between bone disease and blood disease. In bone marrow, Jagged1 helps decide whether stem cells stay quiet, divide, or commit to becoming red blood cells, white cells, or platelets. The same axis that is dialed too loud in my skeleton is also instructing my immune system. Most of us with HCS don't show dramatic blood phenotypes &mdash; but the link is there, and it is one reason I read my own bloodwork carefully.</p>
 
-                <!--
                 <figure class="about-figure about-figure--left">
-                    <img src="" alt="Bisphosphonate mechanism in bone resorption" loading="lazy" />
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/Pamidronate-and-HCS.png' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Bisphosphonate mechanism slowing osteoclast bone resorption', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
                     <figcaption>Pamidronate slowing the demolition crew.</figcaption>
                 </figure>
-                -->
 
                 <p>Where does that leave treatment? Bisphosphonates &mdash; pamidronate, then alendronate, then zoledronic acid for me &mdash; work downstream by poisoning osteoclasts directly. They do not fix the Notch problem; they slow the damage. Denosumab blocks RANKL, which is the activator the osteoclasts respond to; it raises bone density without stopping the acro-osteolysis itself. Romosozumab &mdash; Evenity &mdash; is the new option I am tracking; it builds bone instead of just slowing breakdown. It is not approved for HCS in Canada (it is on-label for postmenopausal osteoporosis), but the mechanism is right and the trial data are good. Anti-Notch antibodies are the frontier; they are not in HCS trials yet, but they are in the literature, and the mouse data are encouraging.</p>
 
@@ -392,11 +417,13 @@ get_header(); ?>
                  at the camera. Centered, smaller than hero.
                  ====================================================== -->
             <section class="about-section about-section--closing scroll-animate">
-                <!--
                 <figure class="about-hero-figure about-hero-figure--small">
-                    <img src="" alt="Recent portrait of Thomas Cheesman" loading="lazy" />
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/329522544_2994549090848961_1632327471623159622_n.jpg' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Recent portrait of Thomas Cheesman, post-recovery', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
                 </figure>
-                -->
 
                 <p>There are a hundred of us documented in the medical literature. Less than fifty of us are still alive. If you are one of us, or you love one of us, or you treat one of us, or you've stumbled onto this page because something in your body is acting like something on this page &mdash; please know that you are not alone, and please consider reaching out.</p>
 
