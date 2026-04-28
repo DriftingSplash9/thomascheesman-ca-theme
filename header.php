@@ -117,7 +117,7 @@
 
         <div class="tc-menu__meta">
             <div class="tc-menu__meta-block">
-                <span class="tc-menu__meta-label">Family pages</span>
+                <span class="tc-menu__meta-label">Heritage</span>
                 <ul class="tc-menu__meta-list">
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">Heritage</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/cheesmans' ) ); ?>">↳ Cheesmans</a></li>
@@ -125,6 +125,11 @@
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">↳ Rycrofts</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">↳ Haistes</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/dochertys' ) ); ?>">↳ Dochertys</a></li>
+                </ul>
+            </div>
+            <div class="tc-menu__meta-block">
+                <span class="tc-menu__meta-label">Kids</span>
+                <ul class="tc-menu__meta-list">
                     <li><a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Daniel</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Faith</a></li>
