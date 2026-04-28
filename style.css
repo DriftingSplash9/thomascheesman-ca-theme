@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.86
+Version: 1.0.87
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1481,13 +1481,17 @@ html.tc-menu-open body {
 
 .tc-footer__marquee-pill {
     position: relative;
-    /* Pill width caps so it doesn't span the full footer; max-width
-       keeps it readable on wide screens, the auto margins center it. */
-    max-width: min(1100px, 92vw);
+    /* Narrower than full-width — a chrome element, not a banner.
+       820px caps the readable line length on wide displays; 90vw
+       guards against overflow on small screens. */
+    max-width: min(820px, 90vw);
     margin: 0 auto 36px;
     border-radius: 999px;
-    /* Frosted-glass interior matching the header capsule. */
-    background: rgba(8, 10, 26, 0.55);
+    /* Frosted-glass interior. Higher opacity (0.78 vs the header
+       capsule's 0.55) is deliberate — the warm glow ::after sits
+       behind the pill in z-order, and a lower opacity would let
+       the glow bleed through the interior and dominate it. */
+    background: rgba(8, 10, 26, 0.82);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
     /* Drop shadow + a hairline inset highlight so the pill reads
@@ -1495,57 +1499,59 @@ html.tc-menu-open body {
     box-shadow:
         0 12px 40px rgba(0, 0, 0, 0.45),
         0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-    /* No clipping at the pill — the glow ::after needs to extend
-       outside its bounds. The inner .tc-footer__marquee handles the
-       text overflow. */
+    /* New stacking context so the glow ::after with z-index:-1 lands
+       behind the pill's own background rather than the page beneath. */
     isolation: isolate;
 }
 
-/* Sharp 1px rotating gradient ring — cool palette. */
+/* Sharp 1px rotating ring — cool palette, alpha-tuned so it reads
+   as a sheen rather than a hard outline. */
 .tc-footer__marquee-pill::before {
     content: '';
     position: absolute;
     inset: 0;
-    padding: 1.5px;
+    padding: 1px;
     border-radius: inherit;
     background: conic-gradient(
         from var(--marquee-shine-angle, 0deg),
-        #22d3ee   0deg,    /* cyan */
-        #6366f1  120deg,   /* indigo */
-        #a855f7  240deg,   /* purple */
-        #22d3ee  360deg    /* cyan — seamless wrap */
+        rgba(34, 211, 238, 0.65)   0deg,    /* cyan */
+        rgba(99, 102, 241, 0.55)  120deg,   /* indigo */
+        rgba(168, 85, 247, 0.65)  240deg,   /* purple */
+        rgba(34, 211, 238, 0.65)  360deg    /* cyan — seamless wrap */
     );
     /* Mask-composite trick: punch the inner content-box out of the
-       full-size gradient so only a 1.5px outer ring remains visible. */
+       full-size gradient so only a 1px outer ring remains visible. */
     -webkit-mask:
         linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
             mask-composite: exclude;
     pointer-events: none;
-    animation: tc-marquee-shine 18s linear infinite;
+    animation: tc-marquee-shine 36s linear infinite;
     z-index: 1;
 }
 
-/* Outer warm glow, contrasting the cool border. Blurred + inset
-   outside the pill so it reads as a soft halo. Same rotation, but
-   the warm palette gives an opposing temperature at every angle. */
+/* Soft outer halo. Desaturated warm palette (peach / dusty rose /
+   soft amber) so the cool/warm contrast with the border is felt as
+   a temperature shift rather than blasted as colour. Heavy blur and
+   low opacity put it in halo-of-light territory rather than visible
+   gradient. */
 .tc-footer__marquee-pill::after {
     content: '';
     position: absolute;
-    inset: -10px;
+    inset: -18px;
     border-radius: inherit;
     background: conic-gradient(
         from var(--marquee-shine-angle, 0deg),
-        #f59e0b   0deg,    /* amber */
-        #fb7185  120deg,   /* rose */
-        #f97316  240deg,   /* orange */
-        #f59e0b  360deg    /* amber — seamless wrap */
+        #fbbf77   0deg,    /* warm peach */
+        #f9a8a4  120deg,   /* dusty rose */
+        #fdba74  240deg,   /* soft amber */
+        #fbbf77  360deg    /* peach — seamless wrap */
     );
-    filter: blur(22px);
-    opacity: 0.45;
+    filter: blur(32px);
+    opacity: 0.22;
     pointer-events: none;
-    animation: tc-marquee-shine 18s linear infinite;
+    animation: tc-marquee-shine 36s linear infinite;
     z-index: -1;
 }
 
@@ -1568,10 +1574,10 @@ html.tc-menu-open body {
     /* Pill-shaped clipping so the sweep text follows the rounded edges
        of the wrapper. */
     border-radius: inherit;
-    /* Vertical padding so descenders (g, p, y, j) clear the overflow:hidden
-       crop. line-height:1 on the items keeps the line box flush with cap
-       height; the padding here adds room for the glyph metrics below it. */
-    padding: 14px 0 18px;
+    /* Tight vertical padding — chrome, not a banner. Bottom > top by
+       a few px so descenders (g, p, y, j) clear the crop without
+       making the pill read as bottom-heavy. */
+    padding: 10px 0 14px;
     /* Soft fade at the left/right edges so the text feels endless
        rather than abruptly clipped against the pill's interior. */
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
@@ -1593,14 +1599,15 @@ html.tc-menu-open body {
 }
 
 .tc-footer__marquee-item {
-    font-size: clamp(2rem, 6vw, 4rem);
+    font-size: clamp(1.4rem, 3.6vw, 2.4rem);
     /* Fraunces variable serif. Scoped to the marquee only so the rest of
-       the theme's typography is untouched. wght 700 / opsz 96 — a true
-       display cut at this size. Static now that the per-character lens
-       effect was retired in favour of the pill chrome. */
+       the theme's typography is untouched. Sized down so the text fits
+       comfortably inside the pill rather than competing with it; opsz 56
+       reads at the new mid-display size; wght 600 is a touch lighter
+       than display-bold for elegance. */
     font-family: 'Fraunces', Georgia, serif;
-    font-variation-settings: 'wght' 700, 'opsz' 96;
-    font-weight: 700;
+    font-variation-settings: 'wght' 600, 'opsz' 56;
+    font-weight: 600;
     letter-spacing: -0.01em;
     /* Calm off-white. The visual life of the marquee comes from the
        pill's rotating gradient border + contrasting glow, not the text. */
@@ -1610,13 +1617,12 @@ html.tc-menu-open body {
 }
 
 
-/* Decorative glyph between phrase repetitions. Stable cyan punctuation
-   so it doesn't compete with the per-character colour drift on the
-   adjacent phrases. */
+/* Decorative glyph between phrase repetitions. Stable cyan
+   punctuation, sized down with the rest of the marquee text. */
 .tc-footer__marquee-glyph {
     color: rgba(34, 211, 238, 0.55);
     -webkit-text-stroke: 0;
-    font-size: clamp(1.4rem, 4vw, 2.6rem);
+    font-size: clamp(1rem, 2.6vw, 1.6rem);
 }
 
 @keyframes tc-marquee {
