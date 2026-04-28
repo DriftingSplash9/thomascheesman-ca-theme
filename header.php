@@ -110,6 +110,7 @@
                 <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">HCS</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/journal' ) ); ?>">Journal</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a></li>
             </ul>
         </nav>
@@ -134,12 +135,6 @@
                 <ul class="tc-menu__meta-list">
                     <li><a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare <span aria-hidden="true">↗</span></a></li>
                     <li><a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">GPRS <span aria-hidden="true">↗</span></a></li>
-                </ul>
-            </div>
-            <div class="tc-menu__meta-block">
-                <span class="tc-menu__meta-label">Contact</span>
-                <ul class="tc-menu__meta-list">
-                    <li><a href="mailto:thomasmcheesman@gmail.com">thomasmcheesman@gmail.com</a></li>
                 </ul>
             </div>
         </div>
