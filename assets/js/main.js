@@ -2198,7 +2198,7 @@ function initMarqueeBreathing() {
     const chars = container.querySelectorAll('.marquee-char');
     if (!chars.length) return;
 
-    // Lens parameters. Three axes drive off the same smoothstepped t:
+    // Lens parameters. Three lens axes drive off the same smoothstepped t:
     //   weight 300 → 900   (light at edges, heavy at center)
     //   scale  1.00 → 0.92 (chars compact as they intensify)
     //   y       0 → -10px  (slight upward arc through focus)
@@ -2211,6 +2211,24 @@ function initMarqueeBreathing() {
     const SCALE_MAX  = 1.00;   // at edges
     const ARC_LIFT   = -10;    // px, applied at center; 0 at edges
 
+    // Colour drift parameters. Per-char colour was originally a parent
+    // gradient + background-clip: text, but per-char transforms (scale +
+    // arc) create child stacking contexts that prevent the parent's
+    // text-clip from painting into them. Computing colour per char per
+    // frame restores the visual without fighting the transform.
+    //   - hue oscillates between HUE_BASE ± HUE_AMP (cyan ≈ 180,
+    //     indigo ≈ 240, purple ≈ 280, so ~230 ± 50 covers the palette).
+    //   - phase = time-based component + position-based component, so
+    //     adjacent chars at the same instant have similar (but not
+    //     identical) hues, producing a gradient-like flow across the
+    //     phrase that drifts as time advances.
+    const HUE_BASE      = 230;
+    const HUE_AMP       =  55;
+    const HUE_SAT       =  68;     // %
+    const HUE_LIT       =  68;     // %
+    const HUE_T_PERIOD  = 12000;   // ms — full time-based oscillation
+    const HUE_X_FACTOR  = 0.0035;  // higher = more chromatic spread per pixel
+
     let active = false;
     let rafId = null;
 
@@ -2222,6 +2240,8 @@ function initMarqueeBreathing() {
         const viewportW = window.innerWidth;
         const center = viewportW * 0.5;
         const radius = viewportW * 0.5;
+        const now = performance.now();
+        const huePhaseT = now * (Math.PI * 2 / HUE_T_PERIOD);
 
         for (const char of chars) {
             const rect = char.getBoundingClientRect();
@@ -2241,10 +2261,17 @@ function initMarqueeBreathing() {
             const scale  = SCALE_MAX  + (SCALE_MIN  - SCALE_MAX)  * eased;
             const yLift  = ARC_LIFT * eased;
 
+            // Hue oscillates with time and is offset by the char's screen
+            // X position, so the phrase looks like a flowing gradient at
+            // any instant and drifts as time advances.
+            const huePhase = huePhaseT + charCenter * HUE_X_FACTOR;
+            const hue = HUE_BASE + HUE_AMP * Math.sin(huePhase);
+
             char.style.setProperty('--char-weight', weight.toFixed(0));
             // Single transform string — translateY for the arc, scale for
             // the shrink. Both GPU-composited; no layout thrash.
             char.style.transform = 'translateY(' + yLift.toFixed(2) + 'px) scale(' + scale.toFixed(3) + ')';
+            char.style.color = 'hsl(' + hue.toFixed(1) + ', ' + HUE_SAT + '%, ' + HUE_LIT + '%)';
         }
 
         rafId = requestAnimationFrame(tick);

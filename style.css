@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.80
+Version: 1.0.81
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1500,39 +1500,16 @@ html.tc-menu-open body {
     font-variation-settings: 'wght' 700, 'opsz' 96;
     font-weight: 700;
     letter-spacing: -0.01em;
-    /* Slow-drifting site-palette gradient painted INTO the text shape
-       via background-clip: text. The text itself becomes the gradient
-       — no backdrop band, no blend math. Stops are palindromic
-       (cyan→indigo→purple→indigo→cyan) so the tile boundary at every
-       background-repeat is invisible: 0% and 100% are the same colour,
-       so wrap-around has no hard seam. */
-    background: linear-gradient(
-        90deg,
-        #22d3ee   0%,   /* cyan      ← matches 100% */
-        #6366f1  25%,   /* indigo */
-        #a855f7  50%,   /* purple */
-        #6366f1  75%,   /* indigo */
-        #22d3ee 100%    /* cyan      ← matches 0% (seamless wrap) */
-    );
-    background-size: 300% 100%;
-    -webkit-background-clip: text;
-            background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+    /* Default colour for the pre-JS state and for non-split items
+       (the ✦ glyph items don't get char-split). Once initMarqueeBreathing
+       runs, each .marquee-char overrides this with a per-frame HSL value
+       computed from time + screen position (cyan → indigo → purple). The
+       parent's text-clip gradient was abandoned because per-char transforms
+       (scale + arc) create child stacking contexts that prevent the
+       parent's background-clip: text from painting into them. */
+    color: #cbd5e1;
     -webkit-text-stroke: 0;
-    animation: tc-marquee-text-drift 24s linear infinite;
     line-height: 1.15;
-}
-
-@keyframes tc-marquee-text-drift {
-    from { background-position:    0% 0; }
-    to   { background-position: -300% 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .tc-footer__marquee-item {
-        animation: none;
-    }
 }
 
 /* Per-character spans created by initMarqueeBreathing() in main.js. The
@@ -1548,19 +1525,13 @@ html.tc-menu-open body {
     display: inline-block;
 }
 
-/* Decorative glyph between phrase repetitions. Opts out of the
-   gradient-clipped text on the parent — solid cyan ✦ instead, so it
-   punctuates the sway without competing with the drifting hue of the
-   phrases on either side. */
+/* Decorative glyph between phrase repetitions. Stable cyan punctuation
+   so it doesn't compete with the per-character colour drift on the
+   adjacent phrases. */
 .tc-footer__marquee-glyph {
-    background: none;
-    -webkit-background-clip: border-box;
-            background-clip: border-box;
     color: rgba(34, 211, 238, 0.55);
-    -webkit-text-fill-color: rgba(34, 211, 238, 0.55);
     -webkit-text-stroke: 0;
     font-size: clamp(1.4rem, 4vw, 2.6rem);
-    animation: none;
 }
 
 @keyframes tc-marquee {
