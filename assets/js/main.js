@@ -996,7 +996,10 @@ function initParticleField() {
     }, { passive: true });
 
     function render() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Clear in CSS-pixel coords so the active setTransform(dpr,...)
+        // scales the rect back up to fill the whole pixel grid. Same
+        // zoom-out residue bug fixed on the ink-trail canvas.
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
         const w = window.innerWidth;
         const h = window.innerHeight;
