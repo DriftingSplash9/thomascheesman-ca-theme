@@ -132,9 +132,18 @@ get_header(); ?>
             <section class="about-section scroll-animate">
                 <h2 class="about-section__heading">What I lost</h2>
 
+                <figure class="about-figure about-figure--left">
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/me-in-the-sait-kitchen.jpg' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Thomas in the SAIT culinary kitchen, apprentice years', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
+                    <figcaption>The kitchen at SAIT, apprentice years.</figcaption>
+                </figure>
+
                 <p>The kitchen went first, and the kitchen was where I lived. I started cooking in 2001 to pay my way through the last year of college at The Keg and I would go on to spend the next 12 years cooking and running the kitchen. I worked my way up the line over 2 years and then became assistant kitchen manager, then kitchen manager for 10 years. In 2011 I began my schooling for the apprenticeship at SAIT. I finished in the fall of 2012. Eventually I had to move on to try a different angle and that's when I started as Head Chef at Ric's Grill the day Patience was born, ten days late. I ran Township 71 after shutting down Ric's Grill. At the same time all this was going on I taught the cooking part of the Hospitality and Tourism Diploma at the college up here in Grande Prairie. The last full kitchen I ran was Majors Homestyle and Tractor Jack's. By 2018 I couldn't sustain eight let alone twelve hours on the line with a thirty-pound stockpot and a 50lb box of potatoes. Standing and walking twelve miles a day across an eight-to-sixteen-hour shift was no joy. I knew before everyone around me that the kitchen was going to lose this argument. I'm grateful I left on my own terms. I am also still angry about it some days, I felt like I had years left in me and I did not intend to let my family down the way I did. I should have left years before so that I would have the gas left for my new family. Even today I am torn between not wanting to overdo it and at the same time there is a lot of guilt for not helping out more with housework and chores.</p>
 
-                <figure class="about-figure about-figure--left">
+                <figure class="about-figure about-figure--right">
                     <img
                         src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/foot-3.jpg' ) ); ?>"
                         alt="<?php esc_attr_e( 'Foot showing a bone spike on the underside', 'tc-ventures-child' ); ?>"
@@ -145,7 +154,25 @@ get_header(); ?>
 
                 <p>The hands took the kitchen. After the hands, slower losses, the kind that don't have one moment to point at. Both wrists that won't bend backwards. Shoulders that won't lift above my head. A left thumb dislocated in a few places. A right hand more degenerated than the left, but the left compensated by losing a ring finger to partial dislocation. Most of my fingertips are dissolved or gone. There were bone spikes growing on the bottom of my feet. Both feet have very little up-and-down rocking left. The arches are gone and then some.</p>
 
+                <figure class="about-figure about-figure--left">
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/img_0288.webp' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Both hands showing acro-osteolysis at the fingertips', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
+                    <figcaption>Both hands, today.</figcaption>
+                </figure>
+
                 <p>The current ledger, since you asked. My ribs hurt &mdash; the right back ribs especially, where they don't unite cleanly anymore, and the front ones that have started to feel like they're pressing in on the lung. That is not a cool feeling. My back hurts at T8, where there's a wedge fracture and a big osteophyte that doesn't care what chair I'm sitting in. My right shoulder is in a queue for an ultrasound to be booked; I've been waiting for that call since mid-February. The bone scan I'm waiting for has been in the same queue since the same week. I need iron levels checked, a fluoroscopy, a colonoscopy. I have nocturnal bowel movements I'm not used to having, and the occasional accident I'm even less used to. The ribs and the back wake me up at night. I tried six weeks of low-FODMAP and got about ten percent of my gut back, which is something but is not enough to claim victory. I had a cortisone shot in a finger that made the pain worse for two weeks; the same finger turned out to have an infection in the tip; the nail was surgically cut off; two rounds of antibiotics; the nail is growing back; it still friggen hurts. I am thinking about going back on oxycodone, which is the kind of decision that is difficult to make, seldom is there a way back when one is degenerative like this.</p>
+
+                <figure class="about-figure about-figure--right">
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/osteolysis-of-jaw-bones.webp' ) ); ?>"
+                        alt="<?php esc_attr_e( 'CT scan showing osteolysis of the jaw bones', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
+                    <figcaption>Osteolysis of the jaw bones.</figcaption>
+                </figure>
 
                 <p>That is what HCS is on a Tuesday afternoon as I am writing this on.</p>
             </section>
@@ -246,6 +273,15 @@ get_header(); ?>
 
                 <p>The "rapid reinstatement" rule is your safety net for trying work. If you leave AISH for employment and earnings later drop, you can be reinstated within two years without a fresh medical. Knowing that exists makes attempting work less terrifying. Most people don't know it exists.</p>
 
+                <figure class="about-figure about-figure--left">
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/foot-4-2.jpg' ) ); ?>"
+                        alt="<?php esc_attr_e( 'Foot X-ray showing a broken surgical screw', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
+                    <figcaption>A surgical screw, broken.</figcaption>
+                </figure>
+
                 <p>Sleep is a metric. If your back and ribs are waking you at night, that is not a "tough it out" problem. That is a planning problem and a medication problem and a sometimes-an-imaging problem. Track your nights. Bring the count to the appointment.</p>
 
                 <p>Your body is a teaching text and that is fine. I tend to be unusual in clinical settings. There was a whole nursing class that came by to watch them put my halo on. I don't mind. The next person walking into a halo brace will get more careful hands because of those students. If you are willing to be the example, say so. If you are not, say that too.</p>
@@ -302,6 +338,15 @@ get_header(); ?>
                  ====================================================== -->
             <section class="about-section scroll-animate">
                 <h2 class="about-section__heading">What I write about now</h2>
+
+                <figure class="about-hero-figure">
+                    <img
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/NORD_Journey_4.25.21-scaled-1.jpg' ) ); ?>"
+                        alt="<?php esc_attr_e( 'NORD infographic mapping the rare-disease patient journey', 'tc-ventures-child' ); ?>"
+                        loading="lazy"
+                    />
+                    <figcaption>The patient&rsquo;s journey, mapped &mdash; NORD.</figcaption>
+                </figure>
 
                 <p>After forty years of HCS, I had a choice about what to do with the literacy it had built in me. I built a website for it.</p>
 
