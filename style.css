@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.68
+Version: 1.0.69
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1241,7 +1241,7 @@ html.tc-menu-open .tc-menu {
     display: grid;
     grid-template-rows: 1fr auto;
     gap: 24px;
-    padding: clamp(60px, 10vh, 110px) clamp(24px, 6vw, 96px) clamp(40px, 6vh, 80px);
+    padding: clamp(40px, 7vh, 80px) clamp(24px, 6vw, 96px) clamp(40px, 6vh, 80px);
     /* Slight upward translation while closed; settles to 0 on open.
        Combined with the opacity transition, gives the panel a subtle
        rise into place rather than a hard show. */
@@ -1277,7 +1277,7 @@ html.tc-menu-open .tc-menu__inner {
     padding: clamp(2px, 0.6vh, 6px) 0;
     text-decoration: none;
     color: var(--text-dark);
-    font-size: clamp(2rem, 6.5vw, 4.5rem);
+    font-size: clamp(1.75rem, 5vw, 3.25rem);
     font-weight: 700;
     line-height: 1.05;
     letter-spacing: -0.03em;
