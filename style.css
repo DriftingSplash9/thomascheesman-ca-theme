@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.77
+Version: 1.0.78
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1491,18 +1491,18 @@ html.tc-menu-open body {
     font-weight: 700;
     letter-spacing: -0.01em;
     /* Slow-drifting site-palette gradient painted INTO the text shape
-       via background-clip: text. Replaces the earlier mix-blend-mode
-       experiment which produced muted whites against the dark footer.
-       Here the text itself becomes the gradient — no separate band, no
-       inversion math. The 300% background-size + animated background-
-       position produces a continuous left-drift that wraps seamlessly. */
+       via background-clip: text. The text itself becomes the gradient
+       — no backdrop band, no blend math. Stops are palindromic
+       (cyan→indigo→purple→indigo→cyan) so the tile boundary at every
+       background-repeat is invisible: 0% and 100% are the same colour,
+       so wrap-around has no hard seam. */
     background: linear-gradient(
         90deg,
-        #22d3ee   0%,   /* cyan */
+        #22d3ee   0%,   /* cyan      ← matches 100% */
         #6366f1  25%,   /* indigo */
         #a855f7  50%,   /* purple */
-        #22d3ee  75%,   /* cyan again */
-        #6366f1 100%    /* indigo — seamless wrap */
+        #6366f1  75%,   /* indigo */
+        #22d3ee 100%    /* cyan      ← matches 0% (seamless wrap) */
     );
     background-size: 300% 100%;
     -webkit-background-clip: text;
