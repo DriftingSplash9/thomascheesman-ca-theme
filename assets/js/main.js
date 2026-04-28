@@ -2200,14 +2200,14 @@ function initMarqueeBreathing() {
 
     // Lens parameters. Two lens axes drive off the same smoothstepped t:
     //   weight 300 → 900   (light at edges, heavy at center)
-    //   y       0 → -10px  (slight upward arc through focus)
-    // The scale axis (chars shrinking at center) was tried but pulled
-    // back out — its per-frame transform writes were a measurable
-    // contributor to perceived jitter on slower hardware. Easy to
-    // restore via a SCALE_MIN/MAX pair if we want it back.
+    //   scale  1.00 → 0.92 (chars compact as they intensify)
+    // The translateY arc was tried but pulled back out — translateY
+    // changes per frame on inline-block chars inside a transforming
+    // parent appeared to be a stronger jitter source than scale alone.
     const WEIGHT_MIN = 300;
     const WEIGHT_MAX = 900;
-    const ARC_LIFT   = -10;    // px, applied at center; 0 at edges
+    const SCALE_MIN  = 0.92;   // at center
+    const SCALE_MAX  = 1.00;   // at edges
 
     // Colour drift parameters. Per-char colour was originally a parent
     // gradient + background-clip: text, but per-char transforms (scale +
@@ -2281,7 +2281,7 @@ function initMarqueeBreathing() {
 
             const weightRaw = WEIGHT_MIN + (WEIGHT_MAX - WEIGHT_MIN) * eased;
             const weightSnap = Math.round(weightRaw / WEIGHT_SNAP) * WEIGHT_SNAP;
-            const yLift = ARC_LIFT * eased;
+            const scale = SCALE_MAX + (SCALE_MIN - SCALE_MAX) * eased;
 
             // Hue oscillates with time and is offset by the char's
             // screen X position, so the phrase looks like a flowing
@@ -2300,7 +2300,7 @@ function initMarqueeBreathing() {
             // transform and color are GPU-composited / paint-only
             // respectively — no layout cost — so writing every frame
             // is fine for these.
-            char.style.transform = 'translateY(' + yLift.toFixed(2) + 'px)';
+            char.style.transform = 'scale(' + scale.toFixed(3) + ')';
             char.style.color = 'hsl(' + hue.toFixed(1) + ', ' + HUE_SAT + '%, ' + HUE_LIT + '%)';
         }
 
