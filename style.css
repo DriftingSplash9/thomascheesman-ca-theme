@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.78
+Version: 1.0.79
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -62,6 +62,16 @@ Domain Path: /languages
 @property --card-border-angle {
     syntax: '<angle>';
     initial-value: 0deg;
+    inherits: false;
+}
+
+/* Registered weight axis for the footer marquee's per-character breathing.
+   Without @property the browser can't smoothly transition a custom prop
+   used inside font-variation-settings — it would jump between integer
+   values. Initial 700 matches the static fallback weight. */
+@property --char-weight {
+    syntax: '<number>';
+    initial-value: 700;
     inherits: false;
 }
 
@@ -1523,6 +1533,19 @@ html.tc-menu-open body {
     .tc-footer__marquee-item {
         animation: none;
     }
+}
+
+/* Per-character spans created by initMarqueeBreathing() in main.js. The
+   --char-weight var is rewritten every rAF tick based on each char's
+   horizontal distance from the viewport center — chars at the edges
+   read at 300, chars at dead-center read at 900, with smoothstep
+   interpolation between. font-variation-settings interpolates because
+   --char-weight is registered via @property above. display:inline-block
+   so each char takes its own bounding box (needed for getBoundingClientRect). */
+.tc-footer__marquee-item .marquee-char {
+    --char-weight: 700;
+    font-variation-settings: 'wght' var(--char-weight), 'opsz' 96;
+    display: inline-block;
 }
 
 /* Decorative glyph between phrase repetitions. Opts out of the

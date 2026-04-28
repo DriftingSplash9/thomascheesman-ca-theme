@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initParticleField();
     initCustomCursor();
     initMagneticElements();
+    initMarqueeBreathing();
 });
 
 /**
@@ -2132,4 +2133,121 @@ function initHeritagePage() {
             }
         });
     }
+}
+
+/**
+ * Footer marquee — per-character variable-weight "breathing".
+ *
+ * Splits each phrase item in the footer marquee into one span per
+ * character, then drives each character's --char-weight CSS variable
+ * (registered as a <number> via @property in style.css) every rAF
+ * tick. The weight ramps from 300 (light, at the viewport edges) up
+ * to 900 (heavy, at dead center) using a smoothstep curve, so letters
+ * appear to bulge as they pass through the middle of the screen and
+ * thin again as they exit. The font-variation-settings rule on the
+ * spans picks up the var, and Fraunces' wght axis interpolates the
+ * outline shapes accordingly.
+ *
+ * The decorative ✦ glyph items are excluded — they keep a fixed
+ * weight so the punctuation reads stable while the phrases breathe.
+ *
+ * Performance:
+ *   - rAF loop is gated by an IntersectionObserver on the marquee
+ *     container. Loop only ticks while the marquee is in (or near)
+ *     the viewport. On long pages, the user spends most of their
+ *     time outside the footer; ticking there would burn cycles for
+ *     no visible payoff.
+ *   - Per-tick work is a getBoundingClientRect read + a setProperty
+ *     write per char (~10–30 chars per phrase × 4 phrase repetitions
+ *     = ~80–120 chars worst case). All cheap reads/writes; no layout
+ *     thrash because we only set a custom property, not a layout-
+ *     affecting style.
+ *
+ * Sit-out conditions:
+ *   - prefers-reduced-motion → skip entirely; chars stay at 700.
+ *   - no marquee on the page → no-op.
+ */
+function initMarqueeBreathing() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const container = document.querySelector('.tc-footer__marquee');
+    if (!container) return;
+
+    // Only split phrase items — leave the ✦ glyphs alone so they read
+    // as stable punctuation between breathing phrases.
+    const phraseItems = container.querySelectorAll(
+        '.tc-footer__marquee-item:not(.tc-footer__marquee-glyph)'
+    );
+    if (!phraseItems.length) return;
+
+    phraseItems.forEach(function (item) {
+        if (item.dataset.charsSplit === '1') return;
+        const text = item.textContent;
+        item.textContent = '';
+        for (const ch of text) {
+            const span = document.createElement('span');
+            span.className = 'marquee-char';
+            // Spaces wrapped in inline-block spans collapse — use NBSP
+            // so the gap between words is preserved.
+            span.textContent = ch === ' ' ? ' ' : ch;
+            item.appendChild(span);
+        }
+        item.dataset.charsSplit = '1';
+    });
+
+    const chars = container.querySelectorAll('.marquee-char');
+    if (!chars.length) return;
+
+    // Lens parameters. WEIGHT_MIN at viewport edges, WEIGHT_MAX at
+    // dead center. The lens "radius" is the half-viewport width — at
+    // a distance ≥ this, a char is at the minimum weight.
+    const WEIGHT_MIN = 300;
+    const WEIGHT_MAX = 900;
+
+    let active = false;
+    let rafId = null;
+
+    function tick() {
+        if (!active) {
+            rafId = null;
+            return;
+        }
+        const viewportW = window.innerWidth;
+        const center = viewportW * 0.5;
+        const radius = viewportW * 0.5;
+
+        for (const char of chars) {
+            const rect = char.getBoundingClientRect();
+            // Bail on chars completely outside the viewport — saves the
+            // setProperty write and the variable's value isn't visible.
+            if (rect.right < 0 || rect.left > viewportW) continue;
+
+            const charCenter = (rect.left + rect.right) * 0.5;
+            const distance = Math.abs(charCenter - center);
+            // 0 at edges → 1 at dead center (clamped).
+            const t = Math.max(0, Math.min(1, 1 - (distance / radius)));
+            // Smoothstep — gentler ramp at edges, steeper through the
+            // middle. Reads as a more natural "lens" focus than linear.
+            const eased = t * t * (3 - 2 * t);
+            const weight = WEIGHT_MIN + (WEIGHT_MAX - WEIGHT_MIN) * eased;
+            char.style.setProperty('--char-weight', weight.toFixed(0));
+        }
+
+        rafId = requestAnimationFrame(tick);
+    }
+
+    function startTick() {
+        if (rafId !== null) return;
+        rafId = requestAnimationFrame(tick);
+    }
+
+    // Gate the rAF loop on the marquee being in (or near) view.
+    // 200px rootMargin starts the breathing slightly before the marquee
+    // enters the viewport, so it's already in motion when the user
+    // scrolls down to it rather than starting flat-footed.
+    const io = new IntersectionObserver(function (entries) {
+        active = entries[0].isIntersecting;
+        if (active) startTick();
+    }, { rootMargin: '200px 0px' });
+    io.observe(container);
 }
