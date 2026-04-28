@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.75
+Version: 1.0.76
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1452,6 +1452,13 @@ html.tc-menu-open body {
 }
 
 .tc-footer__marquee {
+    position: relative;
+    /* isolation:isolate creates a fresh stacking context so the ::before
+       gradient strip below sits inside the same context as the text and
+       the mix-blend-mode: difference on the text has a colored surface
+       to invert against. Without this strip the text was just inverting
+       near-black → near-white, which read as static white. */
+    isolation: isolate;
     overflow: hidden;
     white-space: nowrap;
     margin-bottom: 36px;
@@ -1465,7 +1472,46 @@ html.tc-menu-open body {
             mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
 }
 
+/* Slow-drifting accent gradient strip behind the marquee text. Site
+   palette only — indigo, cyan, soft purple, then back. Dim alphas so
+   the strip itself reads as a subtle tint over the footer surface;
+   the high-contrast effect is reserved for the white-text difference
+   inversion that runs ON TOP of it. background-size 300% gives the
+   gradient room to drift across without seams. */
+.tc-footer__marquee::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        rgba(34, 211, 238, 0.32)   0%,    /* cyan */
+        rgba(99, 102, 241, 0.32)   25%,   /* indigo */
+        rgba(168, 85, 247, 0.28)   50%,   /* purple */
+        rgba(34, 211, 238, 0.32)   75%,   /* cyan again */
+        rgba(99, 102, 241, 0.32)   100%   /* indigo again — seamless wrap */
+    );
+    background-size: 300% 100%;
+    animation: tc-marquee-bg-drift 24s linear infinite;
+}
+
+@keyframes tc-marquee-bg-drift {
+    from { background-position:    0% 0; }
+    to   { background-position: -300% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tc-footer__marquee::before {
+        animation: none;
+    }
+}
+
 .tc-footer__marquee-track {
+    /* z-index above the ::before gradient strip so the text isn't
+       swallowed by it. position:relative is required for z-index to apply. */
+    position: relative;
+    z-index: 1;
     display: inline-flex;
     align-items: center;
     gap: 56px;
