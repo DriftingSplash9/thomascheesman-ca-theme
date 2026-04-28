@@ -1577,7 +1577,7 @@ function initInkTrail() {
 
     // ----- Trail state -----
     const points = []; // { x, y, t (ms), v (px/ms) }
-    const MAX_AGE = 850; // ms before a sample expires
+    const MAX_AGE = 510; // ms before a sample expires
 
     // Stacked stroke layers, outer-to-inner. Width is the BASE that gets
     // multiplied by velocity-factor and age-factor per segment. Alpha is
@@ -1638,7 +1638,11 @@ function initInkTrail() {
         const dt = Math.max(1, now - lastFrameTime); // ms since last frame
         lastFrameTime = now;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Clear in CSS-pixel coords so the active setTransform(dpr,...)
+        // scales the rect back up to fill the whole pixel grid. Using
+        // canvas.width/height directly under-clears when dpr < 1 (Chrome
+        // zoom-out), which left permanent trail residue.
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
         // ---- Trail pass ----
         // Drop expired samples from the head of the queue.
