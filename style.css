@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.71
+Version: 1.0.72
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1598,6 +1598,30 @@ html.tc-menu-open body {
 .tc-footer__year {
     font-size: 12px;
     color: var(--text-light);
+}
+
+/* Social list — small text labels with an outbound arrow, sitting
+   between the Contact link and the © line in the meta column. Stays
+   right-aligned on desktop; centers under 768px alongside the rest
+   of the meta col. */
+.tc-footer__social {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tc-footer__social a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 12px;
+    transition: color 0.3s ease;
+}
+
+.tc-footer__social a:hover {
+    color: var(--primary-color);
 }
 
 /* ---- Reduced motion overrides for chrome ---- */

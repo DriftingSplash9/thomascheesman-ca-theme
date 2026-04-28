@@ -51,13 +51,17 @@
 
         <nav class="tc-footer__col tc-footer__col--links" aria-label="<?php esc_attr_e( 'Footer', 'tc-ventures-child' ); ?>">
             <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a>
-            <a href="<?php echo esc_url( home_url( '/blog' ) ); ?>">Blog</a>
+            <a href="<?php echo esc_url( home_url( '/journal' ) ); ?>">Ramblings</a>
             <a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a>
             <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a>
         </nav>
 
         <div class="tc-footer__col tc-footer__col--meta">
-            <a href="mailto:thomasmcheesman@gmail.com" class="tc-footer__email">thomasmcheesman@gmail.com</a>
+            <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>" class="tc-footer__email">Contact <span aria-hidden="true">&rarr;</span></a>
+            <ul class="tc-footer__social" aria-label="<?php esc_attr_e( 'Social', 'tc-ventures-child' ); ?>">
+                <li><a href="https://x.com/TCheesy_" target="_blank" rel="noopener noreferrer">X <span aria-hidden="true">↗</span></a></li>
+                <li><a href="https://www.facebook.com/thomas.cheesman.9/" target="_blank" rel="noopener noreferrer">Facebook <span aria-hidden="true">↗</span></a></li>
+            </ul>
             <span class="tc-footer__year">© <?php echo esc_html( gmdate( 'Y' ) ); ?> Thomas Cheesman</span>
         </div>
     </div>
