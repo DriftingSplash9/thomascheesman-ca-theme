@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.72
+Version: 1.0.73
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1455,6 +1455,10 @@ html.tc-menu-open body {
     overflow: hidden;
     white-space: nowrap;
     margin-bottom: 36px;
+    /* Vertical padding so descenders (g, p, y, j) clear the overflow:hidden
+       crop. line-height:1 on the items keeps the line box flush with cap
+       height; the padding here adds room for the glyph metrics below it. */
+    padding: 6px 0 12px;
     /* Soft fade at the left/right edges so the marquee feels endless
        rather than abruptly clipped against the viewport. */
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
@@ -1484,7 +1488,7 @@ html.tc-menu-open body {
        the colophon below. */
     color: transparent;
     -webkit-text-stroke: 1px rgba(229, 231, 245, 0.3);
-    line-height: 1;
+    line-height: 1.15;
 }
 
 /* Decorative glyph between phrase repetitions. Filled cyan instead of
