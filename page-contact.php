@@ -60,6 +60,35 @@ $dispatch_status = isset( $_GET['dispatch'] ) ? sanitize_key( $_GET['dispatch'] 
                     </div>
                 <?php endif; ?>
 
+                <?php
+                // Admin-only diagnostic — surfaces SMTP route status,
+                // wp_mail return value, and wp_mail_failed errors so
+                // deliverability issues are visible without checking PHP
+                // error logs. Gated to manage_options so visitors never
+                // see this; only Thomas (logged in) does.
+                if ( $dispatch_status && current_user_can( 'manage_options' ) ) :
+                    $tc_smtp_route   = get_transient( 'tc_dispatch_smtp_route' );
+                    $tc_last_attempt = get_transient( 'tc_dispatch_last_attempt' );
+                    $tc_last_error   = get_transient( 'tc_dispatch_last_error' );
+                    if ( $tc_smtp_route || $tc_last_attempt || $tc_last_error ) : ?>
+                        <div style="margin: 0 0 24px; padding: 14px 18px; background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.18); border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; line-height: 1.7; color: var(--text-light);">
+                            <strong style="display: block; margin-bottom: 6px; color: var(--text-dark); font-family: inherit;">Admin diagnostic (only you see this)</strong>
+                            <?php if ( $tc_smtp_route ) : ?>
+                                SMTP route: <?php echo esc_html( $tc_smtp_route ); ?><br>
+                            <?php endif; ?>
+                            <?php if ( $tc_last_attempt ) : ?>
+                                Last attempt: <?php echo esc_html( $tc_last_attempt['time'] ); ?><br>
+                                To (after +alias rewrite): <?php echo esc_html( $tc_last_attempt['to'] ); ?><br>
+                                Subject: <?php echo esc_html( $tc_last_attempt['subject'] ); ?><br>
+                                wp_mail returned: <?php echo $tc_last_attempt['sent'] ? 'true (PHPMailer accepted)' : 'false (PHPMailer threw)'; ?><br>
+                            <?php endif; ?>
+                            <?php if ( $tc_last_error ) : ?>
+                                wp_mail error: <?php echo esc_html( $tc_last_error ); ?>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
+
                 <form class="dispatch" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" novalidate>
                     <input type="hidden" name="action" value="tc_dispatch_send">
                     <?php wp_nonce_field( 'tc_dispatch', 'tc_dispatch_nonce' ); ?>
