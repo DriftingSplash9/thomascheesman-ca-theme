@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.85
+Version: 1.0.86
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -65,13 +65,13 @@ Domain Path: /languages
     inherits: false;
 }
 
-/* Registered weight axis for the footer marquee's per-character breathing.
-   Without @property the browser can't smoothly transition a custom prop
-   used inside font-variation-settings — it would jump between integer
-   values. Initial 700 matches the static fallback weight. */
-@property --char-weight {
-    syntax: '<number>';
-    initial-value: 700;
+/* Registered angle for the footer marquee pill's rotating gradient
+   border + contrasting outer glow. Without @property the browser
+   can't smoothly interpolate angles inside a conic-gradient, so the
+   rotation would step rather than glide. */
+@property --marquee-shine-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
     inherits: false;
 }
 
@@ -1461,16 +1461,119 @@ html.tc-menu-open body {
     z-index: 2;
 }
 
+/* ============================================
+   FOOTER MARQUEE PILL
+   ============================================
+   A frosted pill — same fill + backdrop-blur as the header capsule —
+   wrapping the sweeping marquee text. Two stacked decorations:
+     ::before  Sharp 1px rotating gradient ring (cool palette: cyan
+               → indigo → purple → cyan). Mask-composite trick keeps
+               the gradient confined to the 1px outer ring.
+     ::after   Soft outer glow using a warm palette (amber → rose →
+               amber) blurred and inset slightly outside the pill.
+               Both rotate on the same --marquee-shine-angle so at
+               every angular position the cool border has a warm
+               counterpart in the glow — continuous colour contrast
+               that breathes around the pill.
+   Animation runs over 18s — slow enough to read as ambient rather
+   than busy.
+*/
+
+.tc-footer__marquee-pill {
+    position: relative;
+    /* Pill width caps so it doesn't span the full footer; max-width
+       keeps it readable on wide screens, the auto margins center it. */
+    max-width: min(1100px, 92vw);
+    margin: 0 auto 36px;
+    border-radius: 999px;
+    /* Frosted-glass interior matching the header capsule. */
+    background: rgba(8, 10, 26, 0.55);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    /* Drop shadow + a hairline inset highlight so the pill reads
+       as elevated against the footer surface. */
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    /* No clipping at the pill — the glow ::after needs to extend
+       outside its bounds. The inner .tc-footer__marquee handles the
+       text overflow. */
+    isolation: isolate;
+}
+
+/* Sharp 1px rotating gradient ring — cool palette. */
+.tc-footer__marquee-pill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: conic-gradient(
+        from var(--marquee-shine-angle, 0deg),
+        #22d3ee   0deg,    /* cyan */
+        #6366f1  120deg,   /* indigo */
+        #a855f7  240deg,   /* purple */
+        #22d3ee  360deg    /* cyan — seamless wrap */
+    );
+    /* Mask-composite trick: punch the inner content-box out of the
+       full-size gradient so only a 1.5px outer ring remains visible. */
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    animation: tc-marquee-shine 18s linear infinite;
+    z-index: 1;
+}
+
+/* Outer warm glow, contrasting the cool border. Blurred + inset
+   outside the pill so it reads as a soft halo. Same rotation, but
+   the warm palette gives an opposing temperature at every angle. */
+.tc-footer__marquee-pill::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: inherit;
+    background: conic-gradient(
+        from var(--marquee-shine-angle, 0deg),
+        #f59e0b   0deg,    /* amber */
+        #fb7185  120deg,   /* rose */
+        #f97316  240deg,   /* orange */
+        #f59e0b  360deg    /* amber — seamless wrap */
+    );
+    filter: blur(22px);
+    opacity: 0.45;
+    pointer-events: none;
+    animation: tc-marquee-shine 18s linear infinite;
+    z-index: -1;
+}
+
+@keyframes tc-marquee-shine {
+    to { --marquee-shine-angle: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tc-footer__marquee-pill::before,
+    .tc-footer__marquee-pill::after {
+        animation: none;
+    }
+}
+
 .tc-footer__marquee {
+    position: relative;
+    z-index: 0;
     overflow: hidden;
     white-space: nowrap;
-    margin-bottom: 36px;
+    /* Pill-shaped clipping so the sweep text follows the rounded edges
+       of the wrapper. */
+    border-radius: inherit;
     /* Vertical padding so descenders (g, p, y, j) clear the overflow:hidden
        crop. line-height:1 on the items keeps the line box flush with cap
        height; the padding here adds room for the glyph metrics below it. */
-    padding: 6px 0 12px;
-    /* Soft fade at the left/right edges so the marquee feels endless
-       rather than abruptly clipped against the viewport. */
+    padding: 14px 0 18px;
+    /* Soft fade at the left/right edges so the text feels endless
+       rather than abruptly clipped against the pill's interior. */
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
             mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
 }
@@ -1492,40 +1595,20 @@ html.tc-menu-open body {
 .tc-footer__marquee-item {
     font-size: clamp(2rem, 6vw, 4rem);
     /* Fraunces variable serif. Scoped to the marquee only so the rest of
-       the theme's typography is untouched. font-variation-settings drives
-       the weight + optical-size axes; opsz at 96 reads as a true display
-       cut. wght 700 is the static base — the breathing JS (next commit)
-       will animate it per character. */
+       the theme's typography is untouched. wght 700 / opsz 96 — a true
+       display cut at this size. Static now that the per-character lens
+       effect was retired in favour of the pill chrome. */
     font-family: 'Fraunces', Georgia, serif;
     font-variation-settings: 'wght' 700, 'opsz' 96;
     font-weight: 700;
     letter-spacing: -0.01em;
-    /* Default colour for the pre-JS state and for non-split items
-       (the ✦ glyph items don't get char-split). Once initMarqueeBreathing
-       runs, each .marquee-char overrides this with a per-frame HSL value
-       computed from time + screen position (cyan → indigo → purple). The
-       parent's text-clip gradient was abandoned because per-char transforms
-       (scale + arc) create child stacking contexts that prevent the
-       parent's background-clip: text from painting into them. */
+    /* Calm off-white. The visual life of the marquee comes from the
+       pill's rotating gradient border + contrasting glow, not the text. */
     color: #cbd5e1;
     -webkit-text-stroke: 0;
     line-height: 1.15;
 }
 
-/* Per-character spans created by initMarqueeBreathing() in main.js. The
-   --char-weight var is rewritten by the rAF tick when the snapped weight
-   crosses a 50-unit threshold; font-variation-settings interpolates the
-   wght axis because --char-weight is registered via @property above.
-   contain:layout style isolates each char's layout from its siblings —
-   without it, a weight change on one char (which alters glyph metrics)
-   would re-flow every following inline-block in the line, costing a
-   forced layout per char per frame. */
-.tc-footer__marquee-item .marquee-char {
-    --char-weight: 700;
-    font-variation-settings: 'wght' var(--char-weight), 'opsz' 96;
-    display: inline-block;
-    contain: layout style;
-}
 
 /* Decorative glyph between phrase repetitions. Stable cyan punctuation
    so it doesn't compete with the per-character colour drift on the

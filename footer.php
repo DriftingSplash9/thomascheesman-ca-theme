@@ -26,19 +26,25 @@
          banner text, not a list of clickable nav items (which the previous
          "TC 'ventures · Life · Family · …" structure was getting confused
          for). -->
-    <div class="tc-footer__marquee" aria-hidden="true">
-        <div class="tc-footer__marquee-track">
-            <!-- Set 1 -->
-            <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
-            <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
-            <!-- Set 2 (duplicate, makes the -50% turnaround position
-                 identical to the 0% start position — sway loops cleanly) -->
-            <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
-            <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
-            <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
+    <!-- Pill wrapper houses the rotating-gradient border + contrasting
+         outer glow (CSS pseudo-elements). The inner .tc-footer__marquee
+         keeps overflow:hidden + edge mask for the sway, separated so the
+         glow can extend outside the marquee's clipping area. -->
+    <div class="tc-footer__marquee-pill" aria-hidden="true">
+        <div class="tc-footer__marquee">
+            <div class="tc-footer__marquee-track">
+                <!-- Set 1 -->
+                <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
+                <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
+                <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
+                <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
+                <!-- Set 2 (duplicate, makes the -50% turnaround position
+                     identical to the 0% start position — sway loops cleanly) -->
+                <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
+                <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
+                <span class="tc-footer__marquee-item">Exploring life, family, and what matters most</span>
+                <span class="tc-footer__marquee-item tc-footer__marquee-glyph">✦</span>
+            </div>
         </div>
     </div>
 
