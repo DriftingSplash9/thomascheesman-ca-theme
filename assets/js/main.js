@@ -2136,35 +2136,37 @@ function initHeritagePage() {
 }
 
 /**
- * Footer marquee — per-character variable-weight "breathing".
+ * Footer marquee — per-character lens effect.
  *
  * Splits each phrase item in the footer marquee into one span per
- * character, then drives each character's --char-weight CSS variable
- * (registered as a <number> via @property in style.css) every rAF
- * tick. The weight ramps from 300 (light, at the viewport edges) up
- * to 900 (heavy, at dead center) using a smoothstep curve, so letters
- * appear to bulge as they pass through the middle of the screen and
- * thin again as they exit. The font-variation-settings rule on the
- * spans picks up the var, and Fraunces' wght axis interpolates the
- * outline shapes accordingly.
+ * character, then in a rAF loop computes each char's distance from
+ * the viewport center and drives three lens axes off the same
+ * smoothstepped t value:
+ *   - scale  1.00 → 0.92  chars compact at center
+ *   - y       0 → -10px   slight upward arc through focus
+ *   - hue                 cyan → indigo → purple drift over time
  *
- * The decorative ✦ glyph items are excluded — they keep a fixed
- * weight so the punctuation reads stable while the phrases breathe.
+ * The wght (variable-weight breathing) axis was tried and pulled —
+ * font-variation-settings on the wght axis alters glyph metrics,
+ * which forced inline-block re-layouts every time the snapped
+ * weight changed. Even with batched reads + dedupe, the cumulative
+ * layout work was visible as jitter. The remaining transform-only
+ * axes are GPU-composited and don't trigger layout.
+ *
+ * The decorative ✦ glyph items are excluded — they keep a stable
+ * cyan colour so the punctuation reads as a calm anchor between
+ * the drifting phrases.
  *
  * Performance:
  *   - rAF loop is gated by an IntersectionObserver on the marquee
  *     container. Loop only ticks while the marquee is in (or near)
- *     the viewport. On long pages, the user spends most of their
- *     time outside the footer; ticking there would burn cycles for
- *     no visible payoff.
- *   - Per-tick work is a getBoundingClientRect read + a setProperty
- *     write per char (~10–30 chars per phrase × 4 phrase repetitions
- *     = ~80–120 chars worst case). All cheap reads/writes; no layout
- *     thrash because we only set a custom property, not a layout-
- *     affecting style.
+ *     the viewport.
+ *   - Per-tick work is a single batched read pass (one rect per
+ *     char) followed by a write pass (transform + color). Both
+ *     writes are paint/composite-only; no forced layouts.
  *
  * Sit-out conditions:
- *   - prefers-reduced-motion → skip entirely; chars stay at 700.
+ *   - prefers-reduced-motion → skip entirely; chars stay static.
  *   - no marquee on the page → no-op.
  */
 function initMarqueeBreathing() {
@@ -2198,16 +2200,16 @@ function initMarqueeBreathing() {
     const chars = container.querySelectorAll('.marquee-char');
     if (!chars.length) return;
 
-    // Lens parameters. Two lens axes drive off the same smoothstepped t:
-    //   weight 300 → 900   (light at edges, heavy at center)
+    // Lens parameters. Two transform-only axes drive off the same
+    // smoothstepped t:
     //   scale  1.00 → 0.92 (chars compact as they intensify)
-    // The translateY arc was tried but pulled back out — translateY
-    // changes per frame on inline-block chars inside a transforming
-    // parent appeared to be a stronger jitter source than scale alone.
-    const WEIGHT_MIN = 300;
-    const WEIGHT_MAX = 900;
-    const SCALE_MIN  = 0.92;   // at center
-    const SCALE_MAX  = 1.00;   // at edges
+    //   y       0 → -10px  (slight upward arc through focus)
+    // Plus an HSL hue drift on color (paint-only). Both transform
+    // and color are non-layout, so the rAF loop doesn't trigger
+    // forced layouts.
+    const SCALE_MIN = 0.92;   // at center
+    const SCALE_MAX = 1.00;   // at edges
+    const ARC_LIFT  = -10;    // px at center; 0 at edges
 
     // Colour drift parameters. Per-char colour was originally a parent
     // gradient + background-clip: text, but per-char transforms (scale +
@@ -2229,18 +2231,6 @@ function initMarqueeBreathing() {
 
     let active = false;
     let rafId = null;
-
-    // Per-char snapshot of the last weight we wrote. Lets us skip
-    // setProperty when the snapped weight hasn't changed — most frames
-    // for most chars. setProperty on --char-weight invalidates layout
-    // (the wght axis affects glyph metrics), so avoiding redundant
-    // writes is the biggest single win against jitter.
-    const lastWeightWritten = new WeakMap();
-    // Snap weight to multiples of this so the wght axis only updates
-    // at meaningful thresholds rather than chasing every sub-pixel
-    // float. Visually indistinguishable from continuous; eliminates
-    // most layout invalidations.
-    const WEIGHT_SNAP = 50;
 
     function tick() {
         if (!active) {
@@ -2279,9 +2269,8 @@ function initMarqueeBreathing() {
             // middle. Reads as a more natural "lens" focus than linear.
             const eased = t * t * (3 - 2 * t);
 
-            const weightRaw = WEIGHT_MIN + (WEIGHT_MAX - WEIGHT_MIN) * eased;
-            const weightSnap = Math.round(weightRaw / WEIGHT_SNAP) * WEIGHT_SNAP;
             const scale = SCALE_MAX + (SCALE_MIN - SCALE_MAX) * eased;
+            const yLift = ARC_LIFT * eased;
 
             // Hue oscillates with time and is offset by the char's
             // screen X position, so the phrase looks like a flowing
@@ -2289,18 +2278,10 @@ function initMarqueeBreathing() {
             const huePhase = huePhaseT + charCenter * HUE_X_FACTOR;
             const hue = HUE_BASE + HUE_AMP * Math.sin(huePhase);
 
-            // Only re-write the weight when the snapped value actually
-            // changes. setProperty on --char-weight invalidates layout
-            // because the wght axis alters glyph metrics; skipping
-            // redundant writes is the main jitter fix.
-            if (lastWeightWritten.get(char) !== weightSnap) {
-                char.style.setProperty('--char-weight', weightSnap);
-                lastWeightWritten.set(char, weightSnap);
-            }
             // transform and color are GPU-composited / paint-only
             // respectively — no layout cost — so writing every frame
-            // is fine for these.
-            char.style.transform = 'scale(' + scale.toFixed(3) + ')';
+            // is fine for both.
+            char.style.transform = 'translateY(' + yLift.toFixed(2) + 'px) scale(' + scale.toFixed(3) + ')';
             char.style.color = 'hsl(' + hue.toFixed(1) + ', ' + HUE_SAT + '%, ' + HUE_LIT + '%)';
         }
 
