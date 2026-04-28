@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.74
+Version: 1.0.75
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1490,20 +1490,29 @@ html.tc-menu-open body {
     font-variation-settings: 'wght' 700, 'opsz' 96;
     font-weight: 700;
     letter-spacing: -0.01em;
-    /* A semi-transparent text-fill plus a faint white text-stroke gives
-       the marquee a "ghost" feel — it's there but doesn't compete with
-       the colophon below. */
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(229, 231, 245, 0.3);
+    /* mix-blend-mode: difference inverts the text color against whatever
+       sits behind it inside the footer's stacking context — the dark
+       gradient and the cyan ::before halo. Pure white fill is required
+       for the inversion to read; the previous transparent + stroke
+       approach gave difference nothing to work with. The blend is
+       constrained to the footer's stacking context because the parent
+       has backdrop-filter, but the cyan halo + gradient still produce
+       a constantly-shifting palette as the marquee sways. */
+    color: #ffffff;
+    -webkit-text-stroke: 0;
+    mix-blend-mode: difference;
     line-height: 1.15;
 }
 
-/* Decorative glyph between phrase repetitions. Filled cyan instead of
-   stroked, so it punctuates the sway without reading as a list separator. */
+/* Decorative glyph between phrase repetitions. The text-difference blend
+   on the parent would invert this cyan badly, so opt out via mix-blend-
+   mode: normal — the glyph reads as a calm cyan punctuation regardless
+   of what's behind it. */
 .tc-footer__marquee-glyph {
     -webkit-text-stroke: 0;
     color: rgba(34, 211, 238, 0.55);
     font-size: clamp(1.4rem, 4vw, 2.6rem);
+    mix-blend-mode: normal;
 }
 
 @keyframes tc-marquee {
