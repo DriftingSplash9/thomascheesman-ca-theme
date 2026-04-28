@@ -219,58 +219,6 @@ function tc_ventures_allow_page_slug_over_attachment( $slug, $post_id, $post_sta
 add_filter( 'wp_unique_post_slug', 'tc_ventures_allow_page_slug_over_attachment', 10, 6 );
 
 /**
- * Route wp_mail() through gmail's SMTP server.
- *
- * Hostinger's default PHP mail() silently drops most outbound mail
- * to gmail (sender domain isn't authenticated, so gmail rejects on
- * the receiving end). Sending via smtp.gmail.com with an App Password
- * solves that — gmail authenticates its own credentials, signs the
- * message itself, and trusts the result.
- *
- * Credentials live in wp-config.php (server-only, never in the public
- * theme repo) as TC_SMTP_USER and TC_SMTP_PASS. The password is a
- * 16-character Google App Password generated at
- * https://myaccount.google.com/apppasswords with 2FA enabled — NOT
- * the gmail account password.
- *
- * If either constant is missing this hook no-ops and wp_mail() falls
- * back to PHP's mail() — so rotating or removing the credentials
- * never breaks the site, only the contact form's deliverability.
- *
- * Reply-To is set per-message by tc_dispatch_handler() below, so even
- * though every form email is "from" the gmail account, hitting Reply
- * in the inbox routes to the visitor's address.
- */
-function tc_route_mail_through_gmail( $phpmailer ) {
-    if ( ! defined( 'TC_SMTP_USER' ) || ! defined( 'TC_SMTP_PASS' ) ) {
-        set_transient(
-            'tc_dispatch_smtp_route',
-            'no — TC_SMTP_USER/PASS not defined in wp-config.php',
-            30 * MINUTE_IN_SECONDS
-        );
-        return;
-    }
-
-    $phpmailer->isSMTP();
-    $phpmailer->Host       = 'smtp.gmail.com';
-    $phpmailer->SMTPAuth   = true;
-    $phpmailer->Port       = 587;
-    $phpmailer->SMTPSecure = 'tls';
-    $phpmailer->Username   = TC_SMTP_USER;
-    $phpmailer->Password   = TC_SMTP_PASS;
-
-    $phpmailer->From     = TC_SMTP_USER;
-    $phpmailer->FromName = 'TC ventures contact form';
-
-    set_transient(
-        'tc_dispatch_smtp_route',
-        'yes — gmail SMTP configured (user: ' . TC_SMTP_USER . ')',
-        30 * MINUTE_IN_SECONDS
-    );
-}
-add_action( 'phpmailer_init', 'tc_route_mail_through_gmail' );
-
-/**
  * Contact form handler — receives submissions from /contact.
  *
  * The form in page-contact.php POSTs to admin-post.php with
@@ -343,20 +291,6 @@ function tc_dispatch_handler() {
         exit;
     }
 
-    // Self-mail workaround: gmail SMTP authenticates as TC_SMTP_USER,
-    // and when the recipient is also that same account gmail can route
-    // the message into "All Mail" or treat it as a Sent-folder duplicate
-    // and skip the Inbox entirely. Rewriting the To header to use a
-    // +alias variant makes gmail treat the message as delivery to a
-    // distinct address — the base account still receives it via gmail's
-    // alias routing, but inbox classification works normally.
-    if ( defined( 'TC_SMTP_USER' )
-         && strtolower( $to ) === strtolower( TC_SMTP_USER )
-         && strpos( $to, '+' ) === false ) {
-        list( $local, $domain ) = explode( '@', $to, 2 );
-        $to = $local . '+tcsite@' . $domain;
-    }
-
     // Compose. Subject prefix flags it as form mail in the inbox so
     // it's easy to filter or visually scan for.
     $subject_prefix = '[thomascheesman.ca]';
@@ -381,35 +315,11 @@ function tc_dispatch_handler() {
 
     $sent = wp_mail( $to, $final_subject, $body, $headers );
 
-    // Capture what just happened so the /contact page can surface it
-    // to admin users only (visitors never see it) — useful for
-    // diagnosing deliverability without needing PHP error logs.
-    // 30-minute TTL so transients age out cleanly.
-    set_transient( 'tc_dispatch_last_attempt', array(
-        'to'      => $to,
-        'subject' => $final_subject,
-        'sent'    => (bool) $sent,
-        'time'    => current_time( 'mysql' ),
-    ), 30 * MINUTE_IN_SECONDS );
-
     wp_safe_redirect( home_url( '/contact/?dispatch=' . ( $sent ? 'sent' : 'error' ) ) );
     exit;
 }
 add_action( 'admin_post_tc_dispatch_send',        'tc_dispatch_handler' );
 add_action( 'admin_post_nopriv_tc_dispatch_send', 'tc_dispatch_handler' );
-
-/**
- * Capture wp_mail errors to a transient so the contact page can show
- * them inline for admin users. Saves a trip into PHP error logs when
- * something goes wrong with the SMTP send.
- */
-add_action( 'wp_mail_failed', function ( $wp_error ) {
-    set_transient(
-        'tc_dispatch_last_error',
-        $wp_error->get_error_message(),
-        30 * MINUTE_IN_SECONDS
-    );
-} );
 
 /**
  * Placeholders — uncomment when ready.
