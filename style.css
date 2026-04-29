@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.123
+Version: 1.0.124
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5125,7 +5125,7 @@ body.page-timeline {
        left edge of the viewport so it stays in view but doesn't obstruct
        the home photos. */
     --jeep-shrink: clamp(0, calc((var(--tl-prog-eased) - 0.55) * 14.3), 1);
-    --jeep-scale: calc(1 - var(--jeep-shrink) * 0.9);
+    --jeep-scale: calc(1 - var(--jeep-shrink) * 0.8);
     left: calc(50% - var(--jeep-shrink) * 45vw);
     bottom: 6vh;
     transform: translateX(-50%) scale(var(--jeep-scale));
@@ -5217,20 +5217,24 @@ body.page-timeline {
     color: #e7dcc1;
 }
 
-/* IMAGE — now spans both rear cargo + passenger door panes (prose moved
-   to the .timeline-prose-pill below the road), so the per-event image
-   gets significantly more real estate. */
+/* IMAGE — extracted from inside the jeep so the per-event image stays
+   put when the jeep shrinks/slides during the home era. Positioned at
+   roughly the same screen coordinates the in-jeep window used to occupy
+   (centered on the original jeep, upper-jeep area). */
 .timeline-jeep__rear {
     position: absolute;
-    left: calc(14% + 25px);
-    top: 14%;
-    width: 50%;
-    height: 32%;
+    left: 50%;
+    top: 33vh;
+    transform: translateX(-58%);     /* slight left bias to mirror in-jeep position */
+    width: min(700px, 36vw);
+    height: 26vh;
     background-color: rgba(0, 0, 0, 0.55);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     border: 1px solid rgba(20, 12, 6, 0.7);
+    z-index: 8;
+    pointer-events: none;
     /* Time-based fade. */
     opacity: var(--beat-rear-opacity, 1);
     transition: opacity 0.45s ease;

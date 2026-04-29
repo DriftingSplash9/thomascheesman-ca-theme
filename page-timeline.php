@@ -490,16 +490,17 @@ get_header(); ?>
                      "next place" ghost text or weather hint. -->
                 <div class="timeline-jeep__windshield" data-jeep-windshield aria-hidden="true"></div>
 
-                <!-- Rear cargo window — image for the current entry. Now
-                     spans both window panes since prose moved to the
-                     persistent pill below the road. -->
-                <div class="timeline-jeep__rear" data-jeep-rear aria-hidden="true"></div>
-
                 <!-- Wheels — CSS-spun by JS per scroll velocity. -->
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--front" data-jeep-wheel aria-hidden="true"></span>
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--rear"  data-jeep-wheel aria-hidden="true"></span>
             </div>
         </div>
+
+        <!-- Per-event image surface, extracted from inside the jeep so
+             it stays put when the jeep shrinks/slides during the home-era
+             handoff. Sized + positioned to roughly match where the jeep's
+             windows used to be. -->
+        <div class="timeline-jeep__rear" data-jeep-rear aria-hidden="true"></div>
 
         <!-- Persistent prose pill below the road. Holds year + title +
              prose for the current event; styled to echo the sitewide
