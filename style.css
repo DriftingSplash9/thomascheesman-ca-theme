@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.99
+Version: 1.0.100
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5079,9 +5079,13 @@ body.page-timeline {
     background-repeat: no-repeat;
 }
 
-/* Three content windows. Coordinates are tuned to Thomas's jeep.jpg —
-   adjust by feel once it's live. They're percentage-based against the
-   shell so they stay correct as the jeep scales. */
+/* Three content windows. Naming note: .__passenger and .__rear refer to
+   CONTENT type (passenger = prose; rear = image-from-the-back), not which
+   physical jeep window they sit over. As of 2026-04-29 the prose lives
+   in the LEFT (rear cargo) window pane and the image lives in the MIDDLE
+   (passenger door) pane. Don't be misled by the legacy names — the JS
+   data attrs (data-jeep-passenger, data-jeep-rear) follow the same
+   content-type convention. */
 .timeline-jeep__windshield {
     position: absolute;
     left: 64%;
@@ -5092,9 +5096,10 @@ body.page-timeline {
     pointer-events: none;
 }
 
+/* PROSE — sits over the rear cargo window pane (left side of jeep). */
 .timeline-jeep__passenger {
     position: absolute;
-    left: 38%;
+    left: 14%;
     top: 16%;
     width: 24%;
     height: 28%;
@@ -5132,11 +5137,12 @@ body.page-timeline {
     color: #e7dcc1;
 }
 
+/* IMAGE — sits over the passenger door window pane (middle of jeep). */
 .timeline-jeep__rear {
     position: absolute;
-    left: 16%;
+    left: 40%;
     top: 16%;
-    width: 18%;
+    width: 22%;
     height: 28%;
     background-color: rgba(0, 0, 0, 0.55);
     background-size: cover;
