@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.95
+Version: 1.0.96
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1486,9 +1486,14 @@ html.tc-menu-open body {
     z-index: 2;
     transform: rotate(-1.4deg);
     transform-origin: 50% 40%;
+    /* perspective lets the cover's rotateX register as actual depth
+       instead of just a flat scale. 2000px is a soft perspective —
+       enough to read as 3D without making text feel warped. */
+    perspective: 2000px;
+    perspective-origin: 50% 0%;
     /* Padding gives the rotated deck breathing room so its tilted
        corners don't clip against the footer edges. */
-    padding: 16px 0 28px;
+    padding: 16px 0 36px;
 }
 
 .tc-footer__cover {
@@ -1501,11 +1506,24 @@ html.tc-menu-open body {
     padding: 14px;
     max-width: min(990px, 95vw);
     margin: 0 auto;
-    /* Heavy outer drop shadow — the closed cover edge with the cream
-       page resting in it casts a real shadow on the wood surface. */
+    /* Slight forward tilt + the parent perspective give the passport
+       a real 3D lift off the table, the way a thick-bound passport
+       actually sits — spine on the surface, far edge raised slightly
+       because the cover is rigid and the binding is thick. */
+    transform: rotateX(3deg);
+    transform-origin: 50% 100%;
+    transform-style: preserve-3d;
+    /* Layered drop shadows for the lift. Multiple offsets at
+       increasing softness give a believable contact-shadow + ambient-
+       shadow stack instead of one diffuse blob. The sharper near
+       shadow grounds it; the softer far shadow makes it look raised. */
     box-shadow:
-        0 24px 60px rgba(0, 0, 0, 0.55),
-        0 4px 14px rgba(0, 0, 0, 0.35),
+        /* contact shadow — sharp, close to the spine */
+        0 6px 12px -4px rgba(0, 0, 0, 0.55),
+        /* mid lift shadow */
+        0 18px 28px -6px rgba(0, 0, 0, 0.45),
+        /* ambient lift shadow — broadest, softest */
+        0 36px 64px -12px rgba(0, 0, 0, 0.55),
         /* Inset hairline gold around the cover interior — leather
            binding has a thin gilt edge inside. */
         inset 0 0 0 1px rgba(201, 168, 106, 0.18);
@@ -1855,10 +1873,7 @@ html.tc-menu-open body {
     box-shadow: inset 0 0 18px rgba(90, 56, 24, 0.10);
     flex-shrink: 0;
     isolation: isolate;
-    /* overflow:visible so the holo can extend past the photo bounds
-       a little. The img is constrained by object-fit so it stays in
-       the photo well regardless. */
-    overflow: visible;
+    overflow: hidden;
 }
 
 .tc-passport__photo-img {
@@ -1886,7 +1901,10 @@ html.tc-menu-open body {
 .tc-passport__photo::after {
     content: '';
     position: absolute;
-    inset: -14px;
+    /* Constrained to the photo bounds — was inset:-14px to extend
+       past the photo, but the bleed read as a coloured halo on the
+       cream paper that distracted from the page contents. */
+    inset: 0;
     background: conic-gradient(
         from var(--marquee-shine-angle, 0deg),
         rgba(255,  90,  90, 0.85),
@@ -2112,9 +2130,10 @@ html.tc-menu-open body {
        the heavily-pressed border. */
     background: radial-gradient(circle, rgba(255, 250, 235, 0.40), transparent 75%);
     transform: var(--stamp-rest-transform, rotate(-4deg));
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
                 border-color 0.3s ease,
-                filter 0.3s ease;
+                box-shadow  0.45s ease,
+                filter      0.3s ease;
     /* Subtle ink-bleed shadow + soft outer drop, as if the rubber
        stamp pressed firmly and a touch of pigment seeped outward. */
     box-shadow: 0 0 0 1px rgba(90, 56, 24, 0.10),
@@ -2123,7 +2142,15 @@ html.tc-menu-open body {
 
 .tc-passport__stamp-link:hover .tc-passport__stamp-mark {
     transform: var(--stamp-hover-transform, rotate(0deg));
-    filter: brightness(1.12);
+    filter: brightness(1.18);
+    /* Layered glow + stronger lift shadow on hover. The first shadow
+       is a coloured halo using currentColor (which is the per-stamp
+       ink palette); the second is a deeper drop suggesting the
+       stamp lifted off the page. */
+    box-shadow:
+        0 0 0 1px rgba(90, 56, 24, 0.18),
+        0 0 18px 2px currentColor,
+        0 12px 22px -4px rgba(0, 0, 0, 0.30);
 }
 
 .tc-passport__stamp-mark svg {
@@ -2150,16 +2177,18 @@ html.tc-menu-open body {
 }
 
 .tc-passport__stamp-label {
-    font-size: 10px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    font-weight: 700;
-    color: var(--pp-ink-faint);
+    font-weight: 800;
+    /* Darkened from --pp-ink-faint to --pp-ink-dark so the label
+       reads as the page nav it actually is, not a quiet caption. */
+    color: var(--pp-ink-dark);
     transition: color 0.3s ease;
 }
 
 .tc-passport__stamp-link:hover .tc-passport__stamp-label {
-    color: var(--pp-ink-dark);
+    color: #000;
 }
 
 /* Per-stamp ink colour, rotation, and Y-offset. Each stamp gets a
@@ -2218,30 +2247,34 @@ html.tc-menu-open body {
 
 /* ---- Socials row ---- */
 
-/* Sits between the stamps and the MRZ. Centered, calm. */
+/* Sits between the stamps and the MRZ. Centered, calm. Sized up so
+   the social links read as actual call-to-action links rather than
+   afterthought meta. */
 .tc-passport__socials {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     padding-top: 18px;
     margin-bottom: 16px;
     border-top: 1px dashed var(--pp-ink-line);
-    font-size: 11px;
-    letter-spacing: 0.06em;
+    font-size: 14px;
+    letter-spacing: 0.04em;
 }
 
 .tc-passport__socials-label {
-    color: var(--pp-ink-faint);
+    color: var(--pp-ink-sepia);
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    font-size: 10px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .tc-passport__socials a {
     color: var(--pp-gold-deep);
     text-decoration: none;
+    font-weight: 700;
     transition: color 0.3s ease;
 }
 
