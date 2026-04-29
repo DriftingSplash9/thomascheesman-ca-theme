@@ -2266,10 +2266,18 @@ function initTimelinePage() {
             } catch (e) { /* path may not be ready */ }
         }
 
-        // --- Beat update (which event is the jeep currently passing?) ---
+        // --- Beat update (which event's prose should be shown?) ---
+        // Prose for event[i] fires at the midpoint between event[i-1].pos
+        // and event[i].pos, so the prose names what's *approaching* — the
+        // marker for the named event is still ahead of the jeep at the
+        // moment its prose appears. Reads as "we're heading toward X" while
+        // the X sign rolls in from the right.
         let idx = 0;
         for (let i = 0; i < events.length; i++) {
-            if (events[i].pos <= easedProgress) idx = i;
+            const trigger = (i === 0)
+                ? events[i].pos
+                : (events[i - 1].pos + events[i].pos) / 2;
+            if (trigger <= easedProgress) idx = i;
             else break;
         }
         if (idx !== currentBeatIndex) {
@@ -2277,10 +2285,18 @@ function initTimelinePage() {
             currentBeatIndex = idx;
         }
 
-        // --- Year odometer in capsule (interpolates between event years) ---
+        // --- Year odometer in capsule ---
+        // Tracks where the jeep ACTUALLY is on the road, independent of
+        // prose timing — keeps the year in sync with the visible scenery
+        // even though prose fires earlier.
+        let yearIdx = 0;
+        for (let i = 0; i < events.length; i++) {
+            if (events[i].pos <= easedProgress) yearIdx = i;
+            else break;
+        }
         if (yearCapsuleEl) {
-            const a = events[idx];
-            const b = events[Math.min(idx + 1, events.length - 1)];
+            const a = events[yearIdx];
+            const b = events[Math.min(yearIdx + 1, events.length - 1)];
             const span = b.pos - a.pos;
             const localT = span > 0
                 ? Math.max(0, Math.min(1, (easedProgress - a.pos) / span))

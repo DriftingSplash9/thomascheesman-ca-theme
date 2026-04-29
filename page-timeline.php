@@ -81,6 +81,7 @@ $tc_timeline_events = array(
         'prose'     => 'Parents divorced. Moved to Teepee Creek, AB — to the Bird Farm. Open prairie, distant trees, a different kind of quiet.',
         'image'     => '',
         'pos'       => 0.13,
+        'mark'      => array( 'kind' => 'sign', 'label' => 'Welcome to Teepee Creek' ),
     ),
     array(
         'year'      => '1991–93',
@@ -121,7 +122,6 @@ $tc_timeline_events = array(
         'prose'     => 'A few months in Spirit River before finding a farm near Little Smokey.',
         'image'     => '',
         'pos'       => 0.31,
-        'mark'      => array( 'kind' => 'sign', 'label' => 'Welcome to Spirit River' ),
     ),
     array(
         'year'      => '1997–99',
