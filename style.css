@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.94
+Version: 1.0.95
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1384,32 +1384,17 @@ html.tc-menu-open body {
 
 .tc-footer {
     position: relative;
-    /* Wooden table surface beneath the passport. Layered:
-         1. Solid warm walnut base
-         2. Repeating horizontal grain stripes — slight darks + lights
-         3. Two large knot-style radial darkenings for irregularity
-         4. SVG fractal noise stretched HORIZONTALLY (very low Y
-            frequency) so it reads as wood-fibre texture rather than
-            uniform speckle
-         5. Soft overhead-lamp warm radial bloom from above so the
-            passport is "lit from above" on the table
-       The previous cyan-haloed dark gradient is gone — the wood
-       is the new floor. */
-    background-color: #5a3825;
-    background-image:
-        radial-gradient(ellipse 110% 70% at 50% -10%, rgba(255, 220, 170, 0.14), transparent 65%),
-        repeating-linear-gradient(
-            90deg,
-            transparent 0,
-            rgba(0, 0, 0, 0.05) 2px,
-            transparent 6px,
-            rgba(255, 220, 170, 0.04) 9px,
-            transparent 14px
-        ),
-        radial-gradient(ellipse 22% 38% at 22% 35%, rgba(0, 0, 0, 0.18), transparent 70%),
-        radial-gradient(ellipse 18% 30% at 78% 70%, rgba(0, 0, 0, 0.14), transparent 70%),
-        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='100'><filter id='wood'><feTurbulence type='turbulence' baseFrequency='0.020 0.55' numOctaves='3' seed='8' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.10 0 0 0 0 0.05 0 0 0 0 0.02 0 0 0 0.45 0'/></filter><rect width='100%25' height='100%25' filter='url(%23wood)'/></svg>");
-    background-size: cover, auto, auto, auto, 400px 100px;
+    /* Wooden table surface — Grok-generated photograph of a stained
+       walnut tabletop with scattered objects (passport, papers,
+       lamp, reflection of the photographer). The passport overlay
+       sits on top; the photographer's hands are mostly covered by
+       the passport, only edges showing. cover sizing keeps the
+       table proportional regardless of footer width. */
+    background-color: #3a2418;  /* fallback while image loads */
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/passport-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     backdrop-filter: blur(12px) saturate(135%);
     -webkit-backdrop-filter: blur(12px) saturate(135%);
     padding: 64px 0 40px;
@@ -1755,18 +1740,27 @@ html.tc-menu-open body {
     margin: 0;
     padding: 36px clamp(24px, 4vw, 60px) 32px;
     color: var(--pp-ink-sepia);
-    /* Solid cream paper — the actual interior of the passport.
-       Background-image adds a faint vertical shadow band centred
-       on the page — the spine fold of a bound passport. */
-    background-color: var(--pp-paper);
-    background-image: linear-gradient(
-        to right,
-        transparent 46%,
-        rgba(0, 0, 0, 0.04)  48.5%,
-        rgba(0, 0, 0, 0.12)  50%,
-        rgba(0, 0, 0, 0.04)  51.5%,
-        transparent 54%
-    );
+    /* Real aged-paper photograph as the page surface — replaces the
+       earlier procedural cream + CSS noise. The paper image carries
+       its own crease, fibre grain, corner stains and aging, so the
+       previous ::before / ::after texture overlays are retired. The
+       vertical spine-shadow gradient stays as the topmost layer
+       since the paper image only has a horizontal centre crease,
+       not the vertical binding fold a passport needs. */
+    background-color: var(--pp-paper);  /* fallback while image loads */
+    background-image:
+        linear-gradient(
+            to right,
+            transparent 46%,
+            rgba(0, 0, 0, 0.05)  48.5%,
+            rgba(0, 0, 0, 0.14)  50%,
+            rgba(0, 0, 0, 0.05)  51.5%,
+            transparent 54%
+        ),
+        url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/passport-paper.png');
+    background-size: auto, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
     /* Page-edge gilt + inner printed frame line. The cover wrapper
        handles the outer drop-shadow now, so this rule only needs
        the inset hairline. */
@@ -1775,49 +1769,10 @@ html.tc-menu-open body {
     outline: 1px dashed rgba(140, 109, 44, 0.40);
     outline-offset: -10px;
     box-shadow: 0 0 0 1px rgba(90, 56, 24, 0.10) inset;
-    /* Z-context for the ::before / ::after layers. */
+    /* Z-context for any positioned descendants (staples) and any
+       blend-mode pseudos elsewhere. */
     isolation: isolate;
     overflow: hidden;
-}
-
-/* Fibre grain. SVG feTurbulence procedurally generates a noise
-   pattern; the colour matrix tints it darker sepia. multiply blend
-   mode darkens the cream paper at the noise pixels — reads as paper
-   fibre depressions and irregular pulp. */
-.tc-passport::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.30 0 0 0 0 0.20 0 0 0 0 0.08 0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>");
-    background-size: 220px 220px;
-    border-radius: inherit;
-    mix-blend-mode: multiply;
-    opacity: 0.55;
-    z-index: -1;
-}
-
-/* Edge aging + sparse stains. Corner darkening reads as the page
-   being touched at the edges; sepia blobs are coffee rings, age
-   spots, the asymmetric wear that real aged paper has. */
-.tc-passport::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-        /* Corner aging — sepia rather than black so the cream paper
-           ages rather than darkens. */
-        radial-gradient(ellipse 70% 50% at 0% 0%, var(--pp-paper-edge), transparent 55%),
-        radial-gradient(ellipse 70% 50% at 100% 0%, var(--pp-paper-edge), transparent 55%),
-        radial-gradient(ellipse 70% 50% at 0% 100%, var(--pp-paper-edge), transparent 55%),
-        radial-gradient(ellipse 70% 50% at 100% 100%, var(--pp-paper-edge), transparent 55%),
-        /* Sparse sepia stains at irregular positions */
-        radial-gradient(circle 8% at 18% 62%, var(--pp-paper-stain), transparent 60%),
-        radial-gradient(circle 6% at 78% 28%, var(--pp-paper-stain), transparent 60%),
-        radial-gradient(circle 5% at 42% 88%, var(--pp-paper-stain), transparent 70%);
-    border-radius: inherit;
-    z-index: -1;
 }
 
 /* ---- Document title ---- */
@@ -1884,8 +1839,9 @@ html.tc-menu-open body {
 
 /* Aspect 35:45 = ICAO 9303 standard passport photo. The photo well
    contains: <img> portrait, four gold corner markers, and an
-   iridescent holographic foil overlay (::after). isolation:isolate
-   so the overlay's mix-blend-mode works against the photo only. */
+   iridescent holographic foil overlay (::after) that extends slightly
+   beyond the photo bounds. isolation:isolate so the overlay's mix-
+   blend-mode works against the photo + immediate surroundings only. */
 .tc-passport__photo {
     position: relative;
     width: 110px;
@@ -1899,7 +1855,10 @@ html.tc-menu-open body {
     box-shadow: inset 0 0 18px rgba(90, 56, 24, 0.10);
     flex-shrink: 0;
     isolation: isolate;
-    overflow: hidden;
+    /* overflow:visible so the holo can extend past the photo bounds
+       a little. The img is constrained by object-fit so it stays in
+       the photo well regardless. */
+    overflow: visible;
 }
 
 .tc-passport__photo-img {
@@ -1914,48 +1873,48 @@ html.tc-menu-open body {
     z-index: 0;
 }
 
-/* Holographic foil overlay — diagonal rainbow shimmer band masked
-   to a narrow stripe across the photo. Real passports have a
-   hologram band like this stamped over the bearer's photo as a
-   security feature; the iridescent reflection is what catches your
-   eye when you tilt the document. The shimmer rotates in sync with
-   --marquee-shine-angle so it slowly drifts across the photo over
-   the same 36s cycle as the pill border, tying the two motions
-   together. mix-blend-mode: overlay lifts the saturation against
-   the photo without obscuring it. */
+/* Holographic foil overlay — full-coverage iridescent rainbow that
+   extends 14px past the photo on every side, like the security
+   foil on a real passport that's stamped slightly larger than the
+   portrait. Conic-gradient rainbow rotates in sync with --marquee-
+   shine-angle (same 36s cycle as the pill border), so the colour
+   sweep moves across the foil. soft-light blend keeps the photo
+   recognisable underneath while still tinting it with the iridescent
+   colour. The radial-gradient mask at the EDGES of the foil fades
+   it out into the cream paper around the photo so the holo doesn't
+   read as a hard rectangle of colour. */
 .tc-passport__photo::after {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -14px;
     background: conic-gradient(
         from var(--marquee-shine-angle, 0deg),
-        rgba(255,  90,  90, 0.65),
-        rgba(255, 200,  80, 0.65),
-        rgba( 90, 255, 150, 0.65),
-        rgba( 80, 200, 255, 0.65),
-        rgba(180, 100, 255, 0.65),
-        rgba(255, 100, 180, 0.65),
-        rgba(255,  90,  90, 0.65)
+        rgba(255,  90,  90, 0.85),
+        rgba(255, 200,  80, 0.85),
+        rgba( 90, 255, 150, 0.85),
+        rgba( 80, 200, 255, 0.85),
+        rgba(180, 100, 255, 0.85),
+        rgba(255, 100, 180, 0.85),
+        rgba(255,  90,  90, 0.85)
     );
-    /* Diagonal mask isolates the rainbow to a narrow shimmer band
-       (~20% of the photo width) instead of coating the whole image.
-       The band moves with the underlying conic gradient rotation. */
-    -webkit-mask-image: linear-gradient(
-        125deg,
-        transparent 28%,
-        rgba(0,0,0,0.85) 44%,
-        rgba(0,0,0,0.85) 56%,
-        transparent 72%
+    /* Radial mask: full opacity in the centre, fading to transparent
+       at the edges of the (extended) overlay. Means the holo is
+       densest over the photo itself and bleeds into the paper around
+       it as a soft halo. */
+    -webkit-mask-image: radial-gradient(
+        ellipse 60% 65% at center,
+        rgba(0,0,0,0.95) 35%,
+        rgba(0,0,0,0.55) 70%,
+        transparent 100%
     );
-            mask-image: linear-gradient(
-        125deg,
-        transparent 28%,
-        rgba(0,0,0,0.85) 44%,
-        rgba(0,0,0,0.85) 56%,
-        transparent 72%
+            mask-image: radial-gradient(
+        ellipse 60% 65% at center,
+        rgba(0,0,0,0.95) 35%,
+        rgba(0,0,0,0.55) 70%,
+        transparent 100%
     );
-    mix-blend-mode: overlay;
-    opacity: 0.65;
+    mix-blend-mode: soft-light;
+    opacity: 0.55;
     pointer-events: none;
     z-index: 2;
     animation: tc-marquee-shine 36s linear infinite;
