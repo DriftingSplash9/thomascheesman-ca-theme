@@ -2285,8 +2285,10 @@ function initTimelinePage() {
 
         // --- Year odometer in capsule ---
         // Interpolates from the previous event's year toward the named
-        // event's year as we approach. The odometer shows the year of where
-        // the jeep currently IS while prose names what's coming up.
+        // event's year. Biased to reach the named year at the *midpoint*
+        // of the prose window (localT * 2, clamped) instead of the end —
+        // so when prose says "Faith" (2017), the year reads 2017 quickly
+        // instead of slowly ticking from 2015 across the whole window.
         if (yearCapsuleEl) {
             const a = events[Math.max(0, idx - 1)];
             const b = events[idx];
@@ -2294,7 +2296,8 @@ function initTimelinePage() {
             const localT = span > 0
                 ? Math.max(0, Math.min(1, (easedProgress - a.pos) / span))
                 : 0;
-            const yearNow = Math.round(a.yearStart + (b.yearStart - a.yearStart) * localT);
+            const localTYear = Math.min(1, localT * 2);
+            const yearNow = Math.round(a.yearStart + (b.yearStart - a.yearStart) * localTYear);
             yearCapsuleEl.textContent = String(yearNow);
         }
 
