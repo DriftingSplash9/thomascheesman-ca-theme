@@ -471,6 +471,23 @@ get_header(); ?>
             </div>
         </div>
 
+        <!-- Home finale: at the very end of the scroll the parallax stops,
+             the jeep parks, and a single full-frame image of Thomas's home
+             cross-fades through Street View captures from oldest to most
+             recent. Time becomes the only thing that moves. JS computes
+             per-frame opacity bands across [0.93, 0.97] of scroll progress.
+             Add <img data-finale-frame="N"> children once Street View
+             captures + present-day photo URLs are available. -->
+        <div class="timeline-home-finale" data-home-finale aria-hidden="true">
+            <!-- Frames go here:
+                 <img class="timeline-home-finale__frame" data-finale-frame="0"
+                      src="…oldest-streetview.png" alt="" />
+                 …
+                 <img class="timeline-home-finale__frame" data-finale-frame="N"
+                      src="…present-day.jpg" alt="" />
+            -->
+        </div>
+
         <!-- "Roll-Out" sign — appears at the road's end (scroll progress ≈ 1).
              Click → home (or, when BHAG ships, returns to topography). -->
         <a class="timeline-rollout" data-rollout href="<?php echo esc_url( home_url( '/' ) ); ?>"

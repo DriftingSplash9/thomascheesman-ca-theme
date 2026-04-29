@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.109
+Version: 1.0.110
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5209,12 +5209,57 @@ body.page-timeline {
 .timeline-jeep__wheel--front { left: 78%; }
 .timeline-jeep__wheel--rear  { left: 8%; }
 
+/* ---- Home finale: settle-into-place ending --------------------------- */
+/* When scroll passes 0.93, the parallax stops and a single full-frame
+   image of Thomas's home cross-fades through Street View captures from
+   oldest year to a present-day photo. The jeep parks; time becomes the
+   only thing that moves. Per-frame opacity bands inside the container
+   are wired by JS once frame URLs are populated. */
+.timeline-home-finale {
+    position: absolute;
+    inset: 0;
+    z-index: 9;             /* above jeep (8); below Roll-Out (10) */
+    pointer-events: none;
+    background: #1a1208;    /* under-fill so any frame gap reads as "settled" black */
+    /* Container fades in once the scene fade-out has cleared the stage. */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.94) * 33.33), 1);
+    transition: opacity 0.4s ease;
+}
+
+.timeline-home-finale__frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    /* Each frame's opacity is set inline by JS based on its slot index +
+       the total frame count, so the cross-fade window divides evenly
+       across [0.94, 0.97] of scroll progress regardless of how many
+       Street View captures Thomas uploads. */
+    opacity: 0;
+    will-change: opacity;
+    filter: contrast(1.02) saturate(0.95);
+}
+
+/* The existing scene (layers, road, jeep, markers) fades out across
+   [0.93, 0.94] so it's gone by the time the finale image appears. */
+.timeline-page {
+    --tl-scene-opacity: clamp(0, calc(1 - (var(--tl-prog-eased) - 0.93) * 100), 1);
+}
+.timeline-layer,
+.timeline-road,
+.timeline-jeep,
+.timeline-markers {
+    opacity: var(--tl-scene-opacity, 1);
+}
+
 /* ---- Roll-Out sign at the road's end ----------------------------------- */
 .timeline-rollout {
     position: absolute;
     right: 6vw;
     bottom: 14vh;
-    z-index: 7;
+    z-index: 10;            /* above the home-finale image */
     text-decoration: none;
     pointer-events: auto;
     /* Hidden until scroll progress nears the end. */
