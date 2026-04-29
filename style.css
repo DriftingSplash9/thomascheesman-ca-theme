@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.117
+Version: 1.0.118
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5009,29 +5009,31 @@ body.page-timeline {
 
 /* 2009 Street View of the house — fades in over the stitched/blended
    forested-house, so the home view "zooms in" from a treed composition
-   to a real Street View capture. */
+   to a real Street View capture. Native aspect, fits height. */
 .timeline-back-strip--house-2009 {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png');
     background-repeat: no-repeat;
     background-position: 50% 100%;
-    background-size: cover;
+    background-size: auto 100%;
     z-index: 4;
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.85) * 33.33), 1);
 }
 
 /* Video of the house changing over the years — fades in over 2009-house.
-   Plays once, half-speed, muted. Sized like the other home-era strips. */
+   Plays once, half-speed, muted. Inherits parent layer's transform/width
+   via inset:0 — do NOT apply right:-100vw or transform here (would
+   double-up with the parent layer's parallax). Hidden via visibility
+   until JS reveals it when the band approaches. */
 .timeline-back-strip--video {
     position: absolute;
     inset: 0;
-    right: -100vw;
-    object-fit: cover;
+    object-fit: contain;
     object-position: 50% 100%;
     pointer-events: none;
-    will-change: opacity, transform;
-    transform: translate3d(var(--tl-layer-translate, 0), 0, 0);
     z-index: 5;
+    visibility: hidden;
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.92) * 33.33), 1);
+    will-change: opacity;
 }
 
 /* 2026 final image — the present-day photo with the empty hole where a
@@ -5040,7 +5042,7 @@ body.page-timeline {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg');
     background-repeat: no-repeat;
     background-position: 50% 100%;
-    background-size: cover;
+    background-size: auto 100%;
     z-index: 6;
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.97) * 50), 1);
 }

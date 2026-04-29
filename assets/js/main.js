@@ -2298,13 +2298,23 @@ function initTimelinePage() {
         // --- Position markers along the SVG road ---
         positionMarkers();
 
-        // --- Home video: start playback when its fade-in band approaches.
-        // Avoids spinning up the decoder before the user is anywhere near
-        // the home-era. Plays once, no loop — once it's done it sits on
-        // its last frame until the 2026-house image fades in over it.
-        if (homeVideo && !homeVideoStarted && easedProgress >= 0.90) {
-            homeVideoStarted = true;
-            homeVideo.play().catch(function () { /* autoplay blocked */ });
+        // --- Home video: reveal + start playback when its fade-in band
+        // approaches. The element is visibility:hidden by default in CSS
+        // so its (potentially dark) poster frame doesn't bleed through
+        // earlier in the timeline. Once visible, JS triggers .play() once.
+        if (homeVideo) {
+            if (easedProgress >= 0.90) {
+                homeVideo.style.visibility = 'visible';
+                if (!homeVideoStarted) {
+                    homeVideoStarted = true;
+                    homeVideo.play().catch(function () { /* autoplay blocked */ });
+                }
+            } else if (homeVideoStarted) {
+                // Allow the element to remain visible once revealed (avoids
+                // a flash if the user scrolls back and forth across 0.90).
+            } else {
+                homeVideo.style.visibility = 'hidden';
+            }
         }
 
         rafId = requestAnimationFrame(tick);
