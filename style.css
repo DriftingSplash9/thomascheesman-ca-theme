@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.116
+Version: 1.0.117
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4923,6 +4923,10 @@ body.page-timeline {
 .timeline-layer {
     position: absolute;
     inset: 0;
+    /* Extend layers 100vw past the viewport right edge so when they pan
+       leftward (max -90vw for fore) the right side of the viewport is
+       still covered by content rather than showing the page background. */
+    right: -100vw;
     pointer-events: none;
     will-change: transform;
     background-repeat: repeat-x;
@@ -4993,18 +4997,52 @@ body.page-timeline {
 
 .timeline-back-strip--forested-house {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forested-house.jpg');
-    /* Single instance, anchored to the right edge of the back layer. Pure
-       forest tiles underneath — left of this image stays pure forest, the
-       stitched image overlays its own forest+house composition where it
-       covers. Reads as the house emerging in a clearing among the trees. */
+    /* Single instance, centered in the now-200vw back layer. Pure forest
+       tiles underneath fill the area to the left and right. Reads as the
+       house emerging in a clearing among the trees. */
     background-repeat: no-repeat;
-    background-position: 100% 100%;
+    background-position: 50% 100%;
     z-index: 3;
-    /* Fades in 0.66 → 0.69 (3% scroll = ~60vh) — quick reveal so the
-       seam between pure-forest tiles and the stitched image isn't a long
-       overlap. By 0.69 ("OMG, a baby" 2013, the move-in year) the home
-       is fully visible. */
+    /* Fades in 0.66 → 0.69 (60vh) — quick reveal at the 2013 move-in. */
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.66) * 33.33), 1);
+}
+
+/* 2009 Street View of the house — fades in over the stitched/blended
+   forested-house, so the home view "zooms in" from a treed composition
+   to a real Street View capture. */
+.timeline-back-strip--house-2009 {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png');
+    background-repeat: no-repeat;
+    background-position: 50% 100%;
+    background-size: cover;
+    z-index: 4;
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.85) * 33.33), 1);
+}
+
+/* Video of the house changing over the years — fades in over 2009-house.
+   Plays once, half-speed, muted. Sized like the other home-era strips. */
+.timeline-back-strip--video {
+    position: absolute;
+    inset: 0;
+    right: -100vw;
+    object-fit: cover;
+    object-position: 50% 100%;
+    pointer-events: none;
+    will-change: opacity, transform;
+    transform: translate3d(var(--tl-layer-translate, 0), 0, 0);
+    z-index: 5;
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.92) * 33.33), 1);
+}
+
+/* 2026 final image — the present-day photo with the empty hole where a
+   tree was. Fades in over the video, becomes the resting frame. */
+.timeline-back-strip--house-2026 {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg');
+    background-repeat: no-repeat;
+    background-position: 50% 100%;
+    background-size: cover;
+    z-index: 6;
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.97) * 50), 1);
 }
 
 /* Middle band — leftward, faster than back, slower than fore. */
@@ -5240,10 +5278,10 @@ body.page-timeline {
     z-index: 10;            /* above the home-finale image */
     text-decoration: none;
     pointer-events: auto;
-    /* Hidden until past the 2026 event (pos 0.96), then fades in across
-       the final stretch of scroll. */
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.96) * 25), 1);
-    transform: translateY(calc((1 - clamp(0, calc((var(--tl-prog-eased) - 0.96) * 25), 1)) * 24px));
+    /* Hidden until past the 2026 final image is fully visible, then
+       fades in like a sign hammered into the lawn at the very end. */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.99) * 100), 1);
+    transform: translateY(calc((1 - clamp(0, calc((var(--tl-prog-eased) - 0.99) * 100), 1)) * 24px));
     transition: opacity 0.4s ease, transform 0.4s ease;
 }
 

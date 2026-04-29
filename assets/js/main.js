@@ -2183,6 +2183,11 @@ function initTimelinePage() {
     const yearJeepEl= root.querySelector('[data-jeep-year]');
     const rearEl    = root.querySelector('[data-jeep-rear]');
     const markers   = Array.from(root.querySelectorAll('[data-marker]'));
+    const homeVideo = root.querySelector('[data-home-video]');
+    if (homeVideo) {
+        homeVideo.playbackRate = 0.5;
+    }
+    let homeVideoStarted = false;
 
     // ---- Projector lightbox ----
     const projector = root.querySelector('[data-projector]');
@@ -2292,6 +2297,15 @@ function initTimelinePage() {
 
         // --- Position markers along the SVG road ---
         positionMarkers();
+
+        // --- Home video: start playback when its fade-in band approaches.
+        // Avoids spinning up the decoder before the user is anywhere near
+        // the home-era. Plays once, no loop — once it's done it sits on
+        // its last frame until the 2026-house image fades in over it.
+        if (homeVideo && !homeVideoStarted && easedProgress >= 0.90) {
+            homeVideoStarted = true;
+            homeVideo.play().catch(function () { /* autoplay blocked */ });
+        }
 
         rafId = requestAnimationFrame(tick);
     }
