@@ -332,26 +332,6 @@ get_header(); ?>
              images (forest meeting house) so the transition feels like
              the house emerging from the trees rather than a hard cut. -->
         <div class="timeline-layer timeline-layer--back" data-layer="back" aria-hidden="true">
-            <!-- Final beat: 2026 present-day photo (with the empty
-                 hole where a tree was). Fades in last, becomes the
-                 resting frame before the Roll-Out sign. -->
-            <div class="timeline-back-strip timeline-back-strip--house-2026"></div>
-            <!-- Video showing the house changing through the years.
-                 Plays once, half-speed, muted. Fades in over 2009-house. -->
-            <video class="timeline-back-strip timeline-back-strip--video"
-                   data-home-video
-                   muted playsinline preload="metadata"
-                   aria-hidden="true">
-                <!-- TODO: upload home-video.mp4 to WP Media Library and
-                     replace this src with the resulting URL. -->
-                <source src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/home-video.mp4" type="video/mp4">
-            </video>
-            <!-- 2009 Street View — first real capture of the house. -->
-            <div class="timeline-back-strip timeline-back-strip--house-2009"></div>
-            <!-- Stitched forest+house composition (the "split image"). -->
-            <div class="timeline-back-strip timeline-back-strip--forested-house"></div>
-            <!-- Pure forest substrate — always tiling, fills wherever the
-                 home-era images don't cover. -->
             <div class="timeline-back-strip timeline-back-strip--forest"></div>
             <div class="timeline-back-strip timeline-back-strip--prairie"></div>
             <div class="timeline-back-strip timeline-back-strip--foothills"></div>
@@ -516,6 +496,25 @@ get_header(); ?>
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--front" data-jeep-wheel aria-hidden="true"></span>
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--rear"  data-jeep-wheel aria-hidden="true"></span>
             </div>
+        </div>
+
+        <!-- Finale takeover: 2009 Street View → home video → 2026 photo.
+             Fills the entire viewport at end of scroll (above all parallax
+             layers and the jeep). The world fades out (forest + jeep) and
+             the home era resolves through these three frames. -->
+        <div class="timeline-finale" data-finale aria-hidden="true">
+            <img class="timeline-finale__frame timeline-finale__frame--first"
+                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png"
+                 alt="" loading="lazy" />
+            <video class="timeline-finale__video"
+                   data-home-video
+                   muted playsinline preload="metadata"
+                   aria-hidden="true">
+                <source src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/home-video.mp4" type="video/mp4">
+            </video>
+            <img class="timeline-finale__frame timeline-finale__frame--last"
+                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg"
+                 alt="" loading="lazy" />
         </div>
 
         <!-- "Roll-Out" sign — appears at the road's end (scroll progress ≈ 1).

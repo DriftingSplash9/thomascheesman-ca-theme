@@ -2299,20 +2299,18 @@ function initTimelinePage() {
         positionMarkers();
 
         // --- Home video: reveal + start playback when its fade-in band
-        // approaches. The element is visibility:hidden by default in CSS
-        // so its (potentially dark) poster frame doesn't bleed through
-        // earlier in the timeline. Once visible, JS triggers .play() once.
+        // approaches. Hidden by default (CSS visibility:hidden) so its
+        // poster frame doesn't bleed through during the 2009-image phase.
+        // Trigger at 0.92 — just before the video's opacity formula
+        // (0.93 → 0.95) actually starts revealing it.
         if (homeVideo) {
-            if (easedProgress >= 0.90) {
+            if (easedProgress >= 0.92) {
                 homeVideo.style.visibility = 'visible';
                 if (!homeVideoStarted) {
                     homeVideoStarted = true;
                     homeVideo.play().catch(function () { /* autoplay blocked */ });
                 }
-            } else if (homeVideoStarted) {
-                // Allow the element to remain visible once revealed (avoids
-                // a flash if the user scrolls back and forth across 0.90).
-            } else {
+            } else if (!homeVideoStarted) {
                 homeVideo.style.visibility = 'hidden';
             }
         }
