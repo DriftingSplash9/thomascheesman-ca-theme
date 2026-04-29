@@ -76,14 +76,36 @@
             <span class="tc-passport__title-sub">&mdash; TC&nbsp;'ventures &mdash;</span>
         </div>
 
-        <!-- Bearer block + signature panel — top half of the passport
-             page. Bearer left, signature right, mirroring the layout
-             of a real passport's photo page. -->
+        <!-- Photo + bearer block + signature — top of the passport
+             page. Three columns mirror a real passport's photo page:
+             photo left, bearer details centre, signature right. -->
         <div class="tc-passport__header">
+
+            <!-- Passport photo. Placeholder for now — corner markers
+                 show the photo bounds while the centre stays empty,
+                 ready for an <img> swap once Thomas provides a cropped
+                 portrait. 35:45 aspect matches the real ICAO 9303
+                 passport photo standard. -->
+            <div class="tc-passport__photo" aria-hidden="true">
+                <span class="tc-passport__photo-corner tc-passport__photo-corner--tl"></span>
+                <span class="tc-passport__photo-corner tc-passport__photo-corner--tr"></span>
+                <span class="tc-passport__photo-corner tc-passport__photo-corner--bl"></span>
+                <span class="tc-passport__photo-corner tc-passport__photo-corner--br"></span>
+                <span class="tc-passport__photo-placeholder">Photo</span>
+            </div>
+
+            <!-- Bearer details with a Place-of-Issue field added below
+                 the tagline, mirroring how real passports render
+                 secondary metadata. -->
             <div class="tc-passport__bearer">
                 <span class="tc-passport__bearer-label">Bearer</span>
                 <span class="tc-passport__bearer-name">TC 'ventures</span>
                 <span class="tc-passport__bearer-tagline">Life, Family, Things that matter</span>
+
+                <div class="tc-passport__bearer-field">
+                    <span class="tc-passport__bearer-field-label">Place of Issue</span>
+                    <span class="tc-passport__bearer-field-value">Grande Prairie, Alberta<br>Canada</span>
+                </div>
             </div>
 
             <div class="tc-passport__signature">
@@ -108,6 +130,13 @@
                 <span class="screen-reader-text">Thomas Cheesman</span>
             </div>
         </div>
+
+        <!-- Binding artefacts. Three small staples down the spine, plus
+             the spine itself (a faint shadow band in CSS background).
+             aria-hidden because they're decorative passport-coding. -->
+        <span class="tc-passport__staple tc-passport__staple--top" aria-hidden="true"></span>
+        <span class="tc-passport__staple tc-passport__staple--mid" aria-hidden="true"></span>
+        <span class="tc-passport__staple tc-passport__staple--bot" aria-hidden="true"></span>
 
         <!-- Stamps row — one engraved stamp per major site place.
              Each stamp is a clickable link to the corresponding page,
