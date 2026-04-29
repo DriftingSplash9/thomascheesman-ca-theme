@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.113
+Version: 1.0.114
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4984,21 +4984,27 @@ body.page-timeline {
 .timeline-back-strip--forest {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forest.png');
     z-index: 2;
-    /* Pure boreal forest — Little Smokey through pre-home years. Fades
-       out 0.55→0.69 to reveal the forested-house era (Thomas moved into
-       the home in 2013, around event "OMG, a baby" at pos 0.69). */
-    opacity: clamp(0, calc((0.69 - var(--tl-prog-eased)) * 7.14), 1);
+    /* Pure boreal forest — always-tiling substrate from the Little Smokey
+       era onward. Stays opaque throughout. The forested-house image sits
+       on top of this from 2013 forward, so the visible viewport always
+       shows: forested-house where it covers, pure forest tiles elsewhere. */
+    opacity: 1;
 }
 
 .timeline-back-strip--forested-house {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forested-house.jpg');
-    z-index: 1;
-    /* Stitched landscape: forest meeting the 2009 house. Always opaque
-       underneath the forest strip — revealed as forest fades 0.55→0.69.
-       The house "emerges from the trees" as we approach the 2013 move-in.
-       Future stitched years (2012, 2022, 2025, 2026) slot above this one
-       with their own fade-in bands. */
-    opacity: 1;
+    /* Single instance, anchored to the right edge of the back layer. Pure
+       forest tiles underneath — left of this image stays pure forest, the
+       stitched image overlays its own forest+house composition where it
+       covers. Reads as the house emerging in a clearing among the trees. */
+    background-repeat: no-repeat;
+    background-position: 100% 100%;
+    z-index: 3;
+    /* Fades in 0.66 → 0.69 (3% scroll = ~60vh) — quick reveal so the
+       seam between pure-forest tiles and the stitched image isn't a long
+       overlap. By 0.69 ("OMG, a baby" 2013, the move-in year) the home
+       is fully visible. */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.66) * 33.33), 1);
 }
 
 /* Middle band — leftward, faster than back, slower than fore. */
