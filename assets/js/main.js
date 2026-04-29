@@ -2267,16 +2267,14 @@ function initTimelinePage() {
         }
 
         // --- Beat update (which event's prose should be shown?) ---
-        // Prose for event[i] fires at the midpoint between event[i-1].pos
-        // and event[i].pos, so the prose names what's *approaching* — the
-        // marker for the named event is still ahead of the jeep at the
-        // moment its prose appears. Reads as "we're heading toward X" while
-        // the X sign rolls in from the right.
+        // Prose for event[i] is active across the *approach* to event[i] —
+        // from the moment we leave event[i-1] until event[i]'s marker
+        // passes the jeep. Trigger is event[i-1].pos so "Headed to X" is
+        // shown the entire time X's sign is approaching from the right,
+        // and flips to event[i+1] the instant X's sign passes under the jeep.
         let idx = 0;
         for (let i = 0; i < events.length; i++) {
-            const trigger = (i === 0)
-                ? events[i].pos
-                : (events[i - 1].pos + events[i].pos) / 2;
+            const trigger = (i === 0) ? 0 : events[i - 1].pos;
             if (trigger <= easedProgress) idx = i;
             else break;
         }
@@ -2286,17 +2284,12 @@ function initTimelinePage() {
         }
 
         // --- Year odometer in capsule ---
-        // Tracks where the jeep ACTUALLY is on the road, independent of
-        // prose timing — keeps the year in sync with the visible scenery
-        // even though prose fires earlier.
-        let yearIdx = 0;
-        for (let i = 0; i < events.length; i++) {
-            if (events[i].pos <= easedProgress) yearIdx = i;
-            else break;
-        }
+        // Interpolates from the previous event's year toward the named
+        // event's year as we approach. The odometer shows the year of where
+        // the jeep currently IS while prose names what's coming up.
         if (yearCapsuleEl) {
-            const a = events[yearIdx];
-            const b = events[Math.min(yearIdx + 1, events.length - 1)];
+            const a = events[Math.max(0, idx - 1)];
+            const b = events[idx];
             const span = b.pos - a.pos;
             const localT = span > 0
                 ? Math.max(0, Math.min(1, (easedProgress - a.pos) / span))

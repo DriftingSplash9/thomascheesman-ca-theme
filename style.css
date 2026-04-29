@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.105
+Version: 1.0.106
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4885,7 +4885,7 @@ body:has(.person-spoke--faith) {
     --tl-pan-back: -50vw;    /* leftward */
     --tl-pan-mid:  35vw;     /* RIGHTWARD against the back */
     --tl-pan-fore: -90vw;    /* fastest, leftward */
-    --tl-pan-road: -180vw;   /* the road itself slides under the jeep */
+    --tl-pan-road: 300vw;    /* total leftward pan distance — equals .timeline-road width so the path point at pos=current_progress always sits under the jeep */
 }
 
 /* ---- The page outer ---------------------------------------------------- */
@@ -5012,7 +5012,10 @@ body.page-timeline {
     height: 60vh;
     z-index: 4;
     pointer-events: none;
-    transform: translate3d(calc(var(--tl-pan-road) * var(--tl-prog-eased)), 0, 0);
+    /* Initial 50vw shift puts the path's start point at jeep center at P=0;
+       the leftward * progress drift carries it through the viewport so the
+       path point at pos=P stays under the jeep at all progress values. */
+    transform: translate3d(calc(50vw - var(--tl-pan-road) * var(--tl-prog-eased)), 0, 0);
     will-change: transform;
 }
 
