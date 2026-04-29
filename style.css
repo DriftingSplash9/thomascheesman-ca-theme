@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.121
+Version: 1.0.122
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5001,9 +5001,15 @@ body.page-timeline {
 .timeline-back-strip--house {
     background-repeat: no-repeat;
     background-position: 50% 100%;
-    background-size: auto 80%;   /* tune this to taste */
+    background-size: auto 100%;
     opacity: 0;                  /* JS overrides per frame */
     will-change: opacity;
+}
+
+/* Jeep fades out 0.55 → 0.62 — same band as the 2009 slide's fade-in,
+   so the jeep clears the scene as the home photo takes its place. */
+.timeline-jeep {
+    opacity: clamp(0, calc((0.62 - var(--tl-prog-eased)) * 14.3), 1);
 }
 .timeline-back-strip--house-2009  { z-index: 5; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png'); }
 .timeline-back-strip--house-2012  { z-index: 6; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png'); }
