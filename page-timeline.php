@@ -490,21 +490,25 @@ get_header(); ?>
                      "next place" ghost text or weather hint. -->
                 <div class="timeline-jeep__windshield" data-jeep-windshield aria-hidden="true"></div>
 
-                <!-- Passenger window — current entry's prose lives here. -->
-                <div class="timeline-jeep__passenger" data-jeep-passenger>
-                    <span class="timeline-jeep__year" data-jeep-year aria-hidden="true">1980</span>
-                    <h2 class="timeline-jeep__title" data-jeep-title>Born — look out, Calgary</h2>
-                    <p class="timeline-jeep__prose" data-jeep-prose>Born in Calgary. Look out, Calgary.</p>
-                </div>
-
-                <!-- Rear cargo window — image for the current entry. Empty
-                     until Thomas drops in per-event imagery. -->
+                <!-- Rear cargo window — image for the current entry. Now
+                     spans both window panes since prose moved to the
+                     persistent pill below the road. -->
                 <div class="timeline-jeep__rear" data-jeep-rear aria-hidden="true"></div>
 
                 <!-- Wheels — CSS-spun by JS per scroll velocity. -->
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--front" data-jeep-wheel aria-hidden="true"></span>
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--rear"  data-jeep-wheel aria-hidden="true"></span>
             </div>
+        </div>
+
+        <!-- Persistent prose pill below the road. Holds year + title +
+             prose for the current event; styled to echo the sitewide
+             .tc-capsule. Stays visible the entire timeline so the jeep
+             can shrink/slide off without losing the narration. -->
+        <div class="timeline-prose-pill" data-jeep-passenger>
+            <span class="timeline-jeep__year" data-jeep-year aria-hidden="true">1980</span>
+            <h2 class="timeline-jeep__title" data-jeep-title>Born — look out, Calgary</h2>
+            <p class="timeline-jeep__prose" data-jeep-prose>Born in Calgary. Look out, Calgary.</p>
         </div>
 
         <!-- "Roll-Out" sign — appears at the road's end (scroll progress ≈ 1).

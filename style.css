@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.122
+Version: 1.0.123
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5006,11 +5006,8 @@ body.page-timeline {
     will-change: opacity;
 }
 
-/* Jeep fades out 0.55 → 0.62 — same band as the 2009 slide's fade-in,
-   so the jeep clears the scene as the home photo takes its place. */
-.timeline-jeep {
-    opacity: clamp(0, calc((0.62 - var(--tl-prog-eased)) * 14.3), 1);
-}
+/* (Jeep handoff is via shrink + slide-left in the main .timeline-jeep
+   rule above — no opacity fade.) */
 .timeline-back-strip--house-2009  { z-index: 5; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png'); }
 .timeline-back-strip--house-2012  { z-index: 6; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png'); }
 .timeline-back-strip--house-2022  { z-index: 7; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png'); }
@@ -5123,9 +5120,16 @@ body.page-timeline {
 /* ---- The jeep ---------------------------------------------------------- */
 .timeline-jeep {
     position: absolute;
-    left: 50%;
+    /* During the home era (progress 0.55 → 0.62) the jeep shrinks to 10%
+       of its size and slides left along the road, ending small at the
+       left edge of the viewport so it stays in view but doesn't obstruct
+       the home photos. */
+    --jeep-shrink: clamp(0, calc((var(--tl-prog-eased) - 0.55) * 14.3), 1);
+    --jeep-scale: calc(1 - var(--jeep-shrink) * 0.9);
+    left: calc(50% - var(--jeep-shrink) * 45vw);
     bottom: 6vh;
-    transform: translateX(-50%);
+    transform: translateX(-50%) scale(var(--jeep-scale));
+    transform-origin: 50% 100%;
     width: min(1350px, 82vw);
     aspect-ratio: 16 / 9;
     /* Belt: never let the jeep overflow short viewports. aspect-ratio
@@ -5163,23 +5167,32 @@ body.page-timeline {
     pointer-events: none;
 }
 
-/* PROSE — sits over the rear cargo window pane (left side of jeep). */
-.timeline-jeep__passenger {
+/* PROSE — moved out of the jeep into a persistent pill below the road
+   (.timeline-prose-pill). The pill stays visible the whole timeline so
+   the jeep can shrink/slide off without losing the narration. Styled to
+   echo the sitewide .tc-capsule (frosted glass, full-pill radius). */
+.timeline-prose-pill {
     position: absolute;
-    left: calc(14% + 25px);
-    top: 16%;
-    width: 24%;
-    height: 28%;
-    padding: 10px 14px;
-    background: rgba(20, 12, 6, 0.62);
+    left: 50%;
+    bottom: 4vh;
+    transform: translateX(-50%);
+    z-index: 9;
+    max-width: min(680px, 88vw);
+    padding: 14px 28px;
+    text-align: center;
+    background: rgba(8, 10, 26, 0.62);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 0;
+    border-radius: 24px;
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset;
     color: #f1ead8;
-    border-radius: 2px;
-    overflow: hidden;
     pointer-events: auto;
-    /* Time-based fade; JS toggles --beat-state. */
+    /* Time-based fade — same convention as the old in-jeep passenger box. */
     opacity: var(--beat-passenger-opacity, 1);
     transition: opacity 0.45s ease;
-    backdrop-filter: blur(2px);
 }
 
 .timeline-jeep__year {
@@ -5204,13 +5217,15 @@ body.page-timeline {
     color: #e7dcc1;
 }
 
-/* IMAGE — sits over the passenger door window pane (middle of jeep). */
+/* IMAGE — now spans both rear cargo + passenger door panes (prose moved
+   to the .timeline-prose-pill below the road), so the per-event image
+   gets significantly more real estate. */
 .timeline-jeep__rear {
     position: absolute;
-    left: calc(40% + 25px);
-    top: 16%;
-    width: 22%;
-    height: 28%;
+    left: calc(14% + 25px);
+    top: 14%;
+    width: 50%;
+    height: 32%;
     background-color: rgba(0, 0, 0, 0.55);
     background-size: cover;
     background-position: center;

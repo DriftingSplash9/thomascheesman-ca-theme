@@ -2183,7 +2183,10 @@ function initTimelinePage() {
     const yearJeepEl= root.querySelector('[data-jeep-year]');
     const rearEl    = root.querySelector('[data-jeep-rear]');
     const markers   = Array.from(root.querySelectorAll('[data-marker]'));
-    const finaleFrames = Array.from(root.querySelectorAll('[data-finale-frame]'));
+    const finaleFrames = Array.from(root.querySelectorAll('[data-finale-frame]'))
+        .sort(function (a, b) {
+            return parseInt(a.dataset.finaleFrame, 10) - parseInt(b.dataset.finaleFrame, 10);
+        });
     // Slide centers for the home-photo finale, ordered by data-finale-frame
     // index (2009 → 2012 → 2022 → 2025 → 2026). Year-weighted positions so
     // each image lands roughly where its year shows on the counter.
@@ -2255,7 +2258,12 @@ function initTimelinePage() {
         html.style.setProperty('--tl-wheel-spin',   totalSpin.toFixed(1) + 'deg');
 
         // --- Compass (road-tangent direction) ---
-        if (roadPath) {
+        // Once the home-era slideshow starts at 0.55, lock the compass
+        // to north. The house faces south — the photo POV is looking
+        // north, so the needle settles on N as the home era takes over.
+        if (easedProgress >= 0.55) {
+            html.style.setProperty('--tl-compass-deg', '0deg');
+        } else if (roadPath) {
             try {
                 const len = roadPath.getTotalLength();
                 const t   = easedProgress * len;
