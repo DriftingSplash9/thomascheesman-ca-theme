@@ -266,7 +266,7 @@ $tc_timeline_events = array(
         'title'     => 'Permanent disability',
         'prose'     => 'Went on permanent disability support. Chronic, accumulated.',
         'image'     => '',
-        'pos'       => 0.825,
+        'pos'       => 0.81,
     ),
     array(
         'year'      => '2020',
@@ -274,7 +274,15 @@ $tc_timeline_events = array(
         'title'     => 'Pandemic',
         'prose'     => 'COVID. Empty streets, masks, the whole thing.',
         'image'     => '',
-        'pos'       => 0.86,
+        'pos'       => 0.84,
+    ),
+    array(
+        'year'      => '2022',
+        'yearStart' => 2022,
+        'title'     => 'Spinal fusion',
+        'prose'     => 'Spinal fusion surgery. Hardware in. A long recovery, and the slow rebuild from there.',
+        'image'     => '',
+        'pos'       => 0.87,
     ),
     array(
         'year'      => '2023–24',
@@ -282,7 +290,23 @@ $tc_timeline_events = array(
         'title'     => 'Coming back',
         'prose'     => 'Return toward normalcy.',
         'image'     => '',
+        'pos'       => 0.90,
+    ),
+    array(
+        'year'      => '2025',
+        'yearStart' => 2025,
+        'title'     => 'Settled, twice over',
+        'prose'     => 'New roof, furnace, central air, water heater. A 2022 Kia Carnival in the driveway. Patience earned the Award for Excellence again — top of the schoolboard, twice now.',
+        'image'     => '',
         'pos'       => 0.93,
+    ),
+    array(
+        'year'      => '2026',
+        'yearStart' => 2026,
+        'title'     => 'Into the ring',
+        'prose'     => 'Daniel started boxing. A couple of months later, Faith laced up too.',
+        'image'     => '',
+        'pos'       => 0.96,
     ),
 );
 
