@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.90
+Version: 1.0.91
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1720,6 +1720,42 @@ html.tc-menu-open body {
     z-index: -1;
 }
 
+/* ---- Document title ---- */
+
+/* Stamp the document name across the top of the page. Stencil-feel
+   via heavy display weight + wide tracking. The bilingual subtitle
+   underneath cements the "official document" register without
+   invoking any actual country's passport. */
+.tc-passport__title {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed rgba(201, 168, 106, 0.30);
+}
+
+.tc-passport__title-main {
+    display: block;
+    font-family: 'Fraunces', Georgia, serif;
+    font-variation-settings: 'wght' 800, 'opsz' 144;
+    font-size: clamp(26px, 4vw, 40px);
+    text-transform: uppercase;
+    letter-spacing: 0.42em;
+    /* Indent compensates visually for the trailing letter-spacing
+       so the word reads optically centred. */
+    text-indent: 0.42em;
+    color: var(--pp-gold);
+    line-height: 1;
+}
+
+.tc-passport__title-sub {
+    display: block;
+    margin-top: 8px;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(240, 230, 210, 0.55);
+}
+
 /* ---- Bearer + signature header ---- */
 
 .tc-passport__header {
@@ -1850,13 +1886,18 @@ html.tc-menu-open body {
 }
 
 .tc-passport__stamp-mark {
-    /* Stamp is a circular border around the line-engraved icon. The
-       slight rotation gives it the hand-stamped imperfection of a
-       real visa mark — not perfectly aligned to the page grid. */
-    width: 76px;
-    height: 76px;
-    display: grid;
-    place-items: center;
+    /* Stamp is a circular border around the line-engraved icon + date.
+       Slight rotation gives it the hand-stamped imperfection of a real
+       visa mark. flex-column stacks the icon above the date inside the
+       circle, mirroring how real visa stamps lay out (motif on top,
+       date underneath). */
+    width: 84px;
+    height: 84px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
     border: 1.5px solid currentColor;
     border-radius: 50%;
     /* Faint background tint so the stamp ring "sits in" the paper
@@ -1878,8 +1919,20 @@ html.tc-menu-open body {
 }
 
 .tc-passport__stamp-mark svg {
-    width: 56%;
-    height: 56%;
+    width: 44%;
+    height: 44%;
+}
+
+/* Stamp date — small monospace overlay at the bottom of the stamp
+   circle, mimicking a date-wheel imprint inside a real visa stamp. */
+.tc-passport__stamp-date {
+    font-family: 'Iosevka', 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    color: currentColor;
+    opacity: 0.78;
+    line-height: 1;
 }
 
 .tc-passport__stamp-label {
@@ -1906,33 +1959,20 @@ html.tc-menu-open body {
     color: var(--pp-cream);
 }
 
-/* ---- Foot row ---- */
+/* ---- Socials row ---- */
 
-.tc-passport__foot {
+/* Sits between the stamps and the MRZ. Centered, calm. */
+.tc-passport__socials {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     padding-top: 18px;
+    margin-bottom: 16px;
     border-top: 1px dashed rgba(201, 168, 106, 0.30);
     font-size: 11px;
     letter-spacing: 0.06em;
-    color: rgba(240, 230, 210, 0.55);
-}
-
-@media (max-width: 640px) {
-    .tc-passport__foot {
-        justify-content: center;
-        text-align: center;
-    }
-}
-
-.tc-passport__socials {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
 }
 
 .tc-passport__socials-label {
@@ -1952,23 +1992,58 @@ html.tc-menu-open body {
     color: var(--pp-cream);
 }
 
-.tc-passport__socials-sep,
-.tc-passport__serial-sep {
+.tc-passport__socials-sep {
     color: rgba(201, 168, 106, 0.35);
 }
 
-/* Serial-number row uses a monospace stack so the No. field reads
-   as machine-printed authority text — counterpoint to the signed
-   handwritten line above. */
-.tc-passport__serial {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
+/* ---- Machine-Readable Zone ---- */
+
+/* Two 44-character monospace lines mimicking the OCR-B MRZ on a real
+   passport's photo page. The font stack tries Iosevka / JetBrains
+   Mono first (closer to OCR-B's geometric character) then falls back
+   to system mono. Letter-spacing is intentionally tight — real MRZ
+   characters are nearly fixed-pitch and butt up against each other.
+   word-break:break-all and overflow-x:auto guard against wide-char
+   browsers wrapping the line awkwardly on narrow screens. */
+.tc-passport__mrz {
+    margin: 0 0 10px;
+    padding: 12px 0 10px;
+    border-top: 1px dashed rgba(201, 168, 106, 0.30);
+    border-bottom: 1px dashed rgba(201, 168, 106, 0.30);
+    text-align: center;
+    overflow-x: auto;
+    /* Hide the scrollbar visually while keeping the content reachable. */
+    scrollbar-width: none;
+}
+
+.tc-passport__mrz::-webkit-scrollbar {
+    display: none;
+}
+
+.tc-passport__mrz-line {
+    display: block;
     font-family: 'Iosevka', 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Consolas, monospace;
     font-variant-numeric: tabular-nums;
+    font-size: clamp(10px, 1.15vw, 13px);
+    letter-spacing: 0.04em;
+    color: rgba(240, 230, 210, 0.62);
+    line-height: 1.4;
+    /* Real MRZ has very restrained tracking; we mimic by using a slim
+       weight and slightly muted colour so it reads as printed code,
+       not headline. */
+    font-weight: 400;
+    white-space: pre;
+}
+
+/* ---- Copyright ---- */
+
+.tc-passport__copyright {
+    margin: 0;
+    text-align: center;
     font-size: 10px;
-    letter-spacing: 0.10em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(240, 230, 210, 0.30);
 }
 
 /* ---- Reduced motion overrides for chrome ---- */

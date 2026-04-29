@@ -66,6 +66,16 @@
          ============================================================ -->
     <section class="tc-passport" aria-label="<?php esc_attr_e( 'Site colophon', 'tc-ventures-child' ); ?>">
 
+        <!-- Document title — every real passport stamps PASSPORT
+             across the top of the photo page in stencil-ish display
+             type. Bilingual treatment underneath cements the
+             official-document feel without literally invoking any
+             actual country's passport design. -->
+        <div class="tc-passport__title" aria-hidden="true">
+            <span class="tc-passport__title-main">Passport</span>
+            <span class="tc-passport__title-sub">&mdash; TC&nbsp;'ventures &mdash;</span>
+        </div>
+
         <!-- Bearer block + signature panel — top half of the passport
              page. Bearer left, signature right, mirroring the layout
              of a real passport's photo page. -->
@@ -114,6 +124,7 @@
                             <path d="M32 14 C 27 16 23 14 21 18 C 17 18 17 22 19 24 C 15 24 15 28 18 30 C 14 30 14 34 17 36 C 14 36 15 40 18 41 C 16 44 19 46 22 46 C 24 50 28 49 32 51 C 36 49 40 50 42 46 C 45 46 48 44 46 41 C 49 40 50 36 47 36 C 50 34 50 30 46 30 C 49 28 49 24 45 24 C 47 22 47 18 43 18 C 41 14 37 16 32 14 Z"/>
                             <path d="M32 22 L26 28 M32 28 L26 34 M32 34 L26 40 M32 22 L38 28 M32 28 L38 34 M32 34 L38 40" opacity="0.5"/>
                         </svg>
+                        <span class="tc-passport__stamp-date">12&middot;02&middot;25</span>
                     </span>
                     <span class="tc-passport__stamp-label">Family</span>
                 </a>
@@ -131,6 +142,7 @@
                             <!-- Twine wrap -->
                             <path d="M32 16 L32 50" stroke-dasharray="2 2"/>
                         </svg>
+                        <span class="tc-passport__stamp-date">28&middot;04&middot;26</span>
                     </span>
                     <span class="tc-passport__stamp-label">Ramblings</span>
                 </a>
@@ -147,6 +159,7 @@
                             <rect x="29" y="42" width="6" height="8"/>
                             <path d="M37 30 L37 33 L40 33" />
                         </svg>
+                        <span class="tc-passport__stamp-date">03&middot;11&middot;24</span>
                     </span>
                     <span class="tc-passport__stamp-label">About</span>
                 </a>
@@ -164,6 +177,7 @@
                             <path d="M32 40 L32 52"/>
                             <path d="M24 52 L40 52"/>
                         </svg>
+                        <span class="tc-passport__stamp-date">28&middot;04&middot;26</span>
                     </span>
                     <span class="tc-passport__stamp-label">Contact</span>
                 </a>
@@ -180,28 +194,43 @@
                             <!-- Subtle marker ticks on horizon -->
                             <path d="M14 38 L14 42 M50 38 L50 42" opacity="0.4"/>
                         </svg>
+                        <span class="tc-passport__stamp-date">18&middot;07&middot;25</span>
                     </span>
                     <span class="tc-passport__stamp-label">Timeline</span>
                 </a>
             </li>
         </ul>
 
-        <!-- Foot row — socials + serial-number copyright. -->
-        <div class="tc-passport__foot">
-            <div class="tc-passport__socials" aria-label="<?php esc_attr_e( 'Social', 'tc-ventures-child' ); ?>">
-                <span class="tc-passport__socials-label">Find me on:</span>
-                <a href="https://x.com/TCheesy_" target="_blank" rel="noopener noreferrer">X <span aria-hidden="true">↗</span></a>
-                <span class="tc-passport__socials-sep" aria-hidden="true">·</span>
-                <a href="https://www.facebook.com/thomas.cheesman.9/" target="_blank" rel="noopener noreferrer">Facebook <span aria-hidden="true">↗</span></a>
-            </div>
-            <div class="tc-passport__serial">
-                <span>Issued <?php echo esc_html( gmdate( 'Y' ) ); ?></span>
-                <span class="tc-passport__serial-sep" aria-hidden="true">·</span>
-                <span>No.&nbsp;TC&#8209;<?php echo esc_html( gmdate( 'Y' ) ); ?>&#8209;0001</span>
-                <span class="tc-passport__serial-sep" aria-hidden="true">·</span>
-                <span>&copy; Thomas Cheesman</span>
-            </div>
+        <!-- Socials row — sits above the MRZ. -->
+        <div class="tc-passport__socials" aria-label="<?php esc_attr_e( 'Social', 'tc-ventures-child' ); ?>">
+            <span class="tc-passport__socials-label">Find me on:</span>
+            <a href="https://x.com/TCheesy_" target="_blank" rel="noopener noreferrer">X <span aria-hidden="true">↗</span></a>
+            <span class="tc-passport__socials-sep" aria-hidden="true">·</span>
+            <a href="https://www.facebook.com/thomas.cheesman.9/" target="_blank" rel="noopener noreferrer">Facebook <span aria-hidden="true">↗</span></a>
         </div>
+
+        <!-- Machine-Readable Zone — every real passport's photo page
+             ends with two 44-character lines of OCR-B encoding name,
+             passport number, dates. The format is purely visual here:
+             it LOOKS like an MRZ. The serial / issued / © data is
+             folded into the encoding so we don't repeat it elsewhere.
+             aria-hidden because screen readers reading "less than less
+             than less than" 30 times is just noise. -->
+        <?php
+        $mrz_year_short = gmdate( 'y' );
+        $mrz_today      = gmdate( 'd' ) . '<' . gmdate( 'm' ) . '<' . $mrz_year_short;
+        $mrz_line_1     = str_pad( 'P<TCV<<CHEESMAN<<THOMAS', 44, '<' );
+        $mrz_line_2     = str_pad( 'TC' . $mrz_year_short . '0001<<TCVENTURESCA', 44 - strlen( $mrz_today ), '<' ) . $mrz_today;
+        ?>
+        <div class="tc-passport__mrz" aria-hidden="true">
+            <span class="tc-passport__mrz-line"><?php echo esc_html( $mrz_line_1 ); ?></span>
+            <span class="tc-passport__mrz-line"><?php echo esc_html( $mrz_line_2 ); ?></span>
+        </div>
+
+        <!-- Tiny copyright line at the very bottom — passports usually
+             carry a small attribution at the bottom of the photo page.
+             Visible but unobtrusive. -->
+        <p class="tc-passport__copyright">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> Thomas Cheesman</p>
 
     </section>
 
