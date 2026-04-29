@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.106
+Version: 1.0.107
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5008,14 +5008,21 @@ body.page-timeline {
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 300vw;            /* SVG viewBox is wide; we translate it across */
+    /* SVG width = viewBox width / main-path width × main-path screen width.
+       viewBox is now -4000..16000 (20000 wide), main path occupies vbx 0..12000.
+       At 25vw/1000 vbx scale → SVG element 500vw wide; main path occupies
+       element_x 100..400vw, lead-in 0..100vw, lead-out 400..500vw. */
+    width: 500vw;
     height: 60vh;
     z-index: 4;
     pointer-events: none;
-    /* Initial 50vw shift puts the path's start point at jeep center at P=0;
-       the leftward * progress drift carries it through the viewport so the
-       path point at pos=P stays under the jeep at all progress values. */
-    transform: translate3d(calc(50vw - var(--tl-pan-road) * var(--tl-prog-eased)), 0, 0);
+    /* Transform places the main-path point at pos=current_progress at
+       viewport_x = 75vw (right of jeep center) at every P, so the sign for
+       the currently-narrated event stays in front of the jeep through its
+       prose window. Path is panned from element_left = -25vw (P=0) to
+       -325vw (P=1) — leaves lead-in covering the left half of viewport at
+       start, lead-out covering the right half at end. */
+    transform: translate3d(calc(-25vw - var(--tl-pan-road) * var(--tl-prog-eased)), 0, 0);
     will-change: transform;
 }
 

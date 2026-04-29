@@ -2349,17 +2349,19 @@ function initTimelinePage() {
         if (rect.width === 0 || rect.height === 0) return;
 
         const len = roadPath.getTotalLength();
-        // SVG viewBox is 0 0 12000 600 (kept in sync with the template).
-        const scaleX = rect.width  / 12000;
-        const scaleY = rect.height / 600;
+        // Read viewBox dynamically so the math survives template edits to
+        // the SVG dimensions (lead-in / lead-out extensions, etc.).
+        const vbox = svg.viewBox.baseVal;
+        const scaleX = rect.width  / vbox.width;
+        const scaleY = rect.height / vbox.height;
 
         markers.forEach(function (m) {
             const pos = parseFloat(m.dataset.markerPos);
             if (isNaN(pos)) return;
             try {
                 const pt = roadPath.getPointAtLength(pos * len);
-                const cx = rect.left + pt.x * scaleX;
-                const cy = rect.top  + pt.y * scaleY;
+                const cx = rect.left + (pt.x - vbox.x) * scaleX;
+                const cy = rect.top  + (pt.y - vbox.y) * scaleY;
                 m.style.setProperty('--m-x', (cx / window.innerWidth  * 100).toFixed(2) + 'vw');
                 m.style.setProperty('--m-y', (cy / window.innerHeight * 100).toFixed(2) + 'vh');
                 // Hide markers that fall well outside the viewport so we

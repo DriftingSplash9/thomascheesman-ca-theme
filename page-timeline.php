@@ -322,7 +322,7 @@ get_header(); ?>
              Translates left as scroll advances; markers ride along it.
              The viewBox is wide so the path can wander without clipping. -->
         <svg class="timeline-road" data-road
-             viewBox="0 0 12000 600"
+             viewBox="-4000 0 20000 600"
              preserveAspectRatio="xMinYMax slice"
              aria-hidden="true">
             <defs>
@@ -332,6 +332,24 @@ get_header(); ?>
                     <stop offset="100%" stop-color="rgba(40,30,20,0.45)"/>
                 </linearGradient>
             </defs>
+
+            <!-- Lead-in: visual road extension before the first event so
+                 the viewport is never half-empty at scroll progress 0.
+                 NOT used for marker positioning (events still index along
+                 the main #tc-road-path only). -->
+            <path d="M -4000 540 L 0 520"
+                  fill="none"
+                  stroke="#3b2c1a"
+                  stroke-width="38"
+                  stroke-linecap="round"
+                  vector-effect="non-scaling-stroke"/>
+            <path d="M -4000 540 L 0 520"
+                  fill="none"
+                  stroke="rgba(245, 230, 200, 0.55)"
+                  stroke-width="2"
+                  stroke-dasharray="14 18"
+                  stroke-linecap="round"
+                  vector-effect="non-scaling-stroke"/>
 
             <!-- Road body. Tuned by hand to bend at biographical inflections.
                  If you re-tune, also retune the marker positions in CSS via
@@ -376,6 +394,21 @@ get_header(); ?>
                     S 10400 360, 10800 400
                     S 11500 460, 12000 440
                   "
+                  fill="none"
+                  stroke="rgba(245, 230, 200, 0.55)"
+                  stroke-width="2"
+                  stroke-dasharray="14 18"
+                  stroke-linecap="round"
+                  vector-effect="non-scaling-stroke"/>
+
+            <!-- Lead-out: visual road extension past the last event. -->
+            <path d="M 12000 440 L 16000 440"
+                  fill="none"
+                  stroke="#3b2c1a"
+                  stroke-width="38"
+                  stroke-linecap="round"
+                  vector-effect="non-scaling-stroke"/>
+            <path d="M 12000 440 L 16000 440"
                   fill="none"
                   stroke="rgba(245, 230, 200, 0.55)"
                   stroke-width="2"
