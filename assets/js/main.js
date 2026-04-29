@@ -2302,23 +2302,35 @@ function initTimelinePage() {
         // --- Position markers along the SVG road ---
         positionMarkers();
 
-        // --- Home finale: per-frame cross-fade across [0.94, 0.97] ---
-        // Each frame has a triangular opacity profile centered on its slot
-        // so neighbors overlap by exactly halfWidth — total visible
-        // opacity sums to 1 at every progress value, no flicker between
-        // captures. Frames outside the finale window stay at opacity 0.
+        // --- Home finale: per-frame cross-fade across [0.88, 1.00] ---
+        // Trapezoidal opacity profile: each frame holds at full opacity for
+        // the middle 60% of its slot (the "dwell"), then ramps to 0 over
+        // the outer 40% — so the viewer reads "this is 2009" for a beat
+        // before the transition begins. Adjacent slots' ramps overlap so
+        // the opacity sum stays 1 across boundaries (no flicker, no gap).
+        // The last frame holds at 1 past its center so the present-day
+        // photo doesn't fade out at end-of-scroll.
         if (finaleFrames.length) {
-            const FINALE_START = 0.94;
-            const FINALE_END   = 0.97;
+            const FINALE_START = 0.88;
+            const FINALE_END   = 1.00;
             const N = finaleFrames.length;
-            const span = FINALE_END - FINALE_START;
-            const halfWidth = N > 1 ? span / (N - 1) : 1;
+            const slotWidth = (FINALE_END - FINALE_START) / N;
+            const dwellHalf = slotWidth * 0.3;   // 60% dwell
+            const rampReach = slotWidth * 0.7;   // ramp to 0 by slot edge + overlap
             for (let i = 0; i < N; i++) {
-                const center = N > 1
-                    ? FINALE_START + (i / (N - 1)) * span
-                    : (FINALE_START + FINALE_END) / 2;
+                const center = FINALE_START + (i + 0.5) * slotWidth;
                 const dist = Math.abs(easedProgress - center);
-                const op = Math.max(0, Math.min(1, 1 - dist / halfWidth));
+                let op;
+                if (dist <= dwellHalf) {
+                    op = 1;
+                } else if (dist >= rampReach) {
+                    op = 0;
+                } else {
+                    op = 1 - (dist - dwellHalf) / (rampReach - dwellHalf);
+                }
+                // Last frame: hold at 1 past its center so the present-day
+                // photo persists through the rest of scroll.
+                if (i === N - 1 && easedProgress >= center) op = 1;
                 finaleFrames[i].style.opacity = op.toFixed(3);
             }
         }
