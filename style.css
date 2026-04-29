@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.103
+Version: 1.0.104
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4876,7 +4876,7 @@ body:has(.person-spoke--faith) {
     /* Page geometry — total scrollable height of the timeline page.
        29 events spread over ~11 viewports gives roughly ~38vh of scroll
        per event so each one has room to land before the next arrives. */
-    --tl-length: 1100vh;
+    --tl-length: 2000vh;
 
     /* How far each layer travels across the full scroll. The carnival-duck
        reversal: even-indexed layers go left (negative), odd go right.
