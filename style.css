@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.108
+Version: 1.0.109
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4967,22 +4967,25 @@ body.page-timeline {
 .timeline-back-strip--foothills {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/foothills.png');
     z-index: 3;
-    /* Calgary / Turner Valley / HCS era. Opaque at 0; fades out 0.10→0.20. */
-    opacity: clamp(0, calc((0.20 - var(--tl-prog-eased)) * 10), 1);
+    /* Calgary / Turner Valley / HCS era. Opaque at 0; fades out 0.05→0.13
+       (gone by Teepee Creek divorce). */
+    opacity: clamp(0, calc((0.13 - var(--tl-prog-eased)) * 12.5), 1);
 }
 
 .timeline-back-strip--prairie {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/prairie.png');
     z-index: 2;
-    /* Peace Country prairie — dominant from Teepee Creek through GP. Full
-       through ~0.55, fades out 0.55→0.65 to reveal forest. */
-    opacity: clamp(0, calc((0.65 - var(--tl-prog-eased)) * 10), 1);
+    /* Peace Country prairie — Teepee Creek through Pig Farm. Fades out
+       0.25→0.35, fully gone by Little Smokey ("boreal forest in every
+       direction") so the forest takes over. */
+    opacity: clamp(0, calc((0.35 - var(--tl-prog-eased)) * 10), 1);
 }
 
 .timeline-back-strip--forest {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forest.png');
     z-index: 1;
-    /* Always opaque underneath; revealed once prairie fades. */
+    /* Always opaque underneath; dominant backdrop from Little Smokey on
+       (most of life from 1997 onward — boreal/forest country). */
     opacity: 1;
 }
 
