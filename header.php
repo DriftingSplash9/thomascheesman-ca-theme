@@ -108,6 +108,7 @@
             <ul class="tc-menu__list">
                 <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/timeline' ) ); ?>">Timeline</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">HCS</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/journal' ) ); ?>">My Ramblings</a></li>

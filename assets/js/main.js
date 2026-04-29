@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initParticleField();
     initCustomCursor();
     initMagneticElements();
+    initTimelinePage();
 });
 
 /**
@@ -2132,5 +2133,374 @@ function initHeritagePage() {
             }
         });
     }
+}
+
+/**
+ * Timeline page — pinned parallax stage with vertical-scroll-driven
+ * horizontal pan, side-profile jeep with three content windows, curving
+ * road, easter-egg roadside markers that open a projector lightbox, and
+ * a capsule swap (year + compass) that activates only on this page.
+ *
+ * Architecture:
+ *   - Bails immediately if [data-timeline-root] isn't on the page.
+ *   - Adds body.page-timeline so CSS can morph the capsule for this page.
+ *   - Reads embedded JSON event data (server-rendered) to drive beats.
+ *   - Single rAF loop owns: lerp-smoothed scroll progress, road-tangent
+ *     compass, year odometer, jeep prose/image cross-fade beats, and
+ *     marker positioning along the SVG road path.
+ *   - Lerp factor 0.10 means even violent mouse-wheel-flicks resolve
+ *     into a smooth glide; reading speed is enforced by the easing.
+ *
+ * The projector lightbox is a separate component from the sitewide
+ * PhotoSwipe (initLightbox) — different aesthetic, different chrome,
+ * shared nav contract. Markers wire their click → open() here.
+ */
+function initTimelinePage() {
+    const root = document.querySelector('[data-timeline-root]');
+    if (!root) return;
+
+    document.body.classList.add('page-timeline');
+
+    // ---- Parse server-rendered event data ----
+    const dataEl = root.querySelector('[data-timeline-data]');
+    let events = [];
+    try {
+        events = JSON.parse(dataEl ? dataEl.textContent : '[]');
+    } catch (e) {
+        return;
+    }
+    if (!Array.isArray(events) || !events.length) return;
+
+    // ---- Capsule swap — inject year + compass into existing chrome ----
+    injectCapsuleTimelineChrome();
+    const yearCapsuleEl = document.querySelector('[data-tl-year]');
+
+    // ---- DOM refs (all optional — bail individually) ----
+    const roadPath  = root.querySelector('[data-road-path]');
+    const passenger = root.querySelector('[data-jeep-passenger]');
+    const titleEl   = root.querySelector('[data-jeep-title]');
+    const proseEl   = root.querySelector('[data-jeep-prose]');
+    const yearJeepEl= root.querySelector('[data-jeep-year]');
+    const rearEl    = root.querySelector('[data-jeep-rear]');
+    const markers   = Array.from(root.querySelectorAll('[data-marker]'));
+
+    // ---- Projector lightbox ----
+    const projector = root.querySelector('[data-projector]');
+    const projectorApi = projector ? createProjectorLightbox(projector) : null;
+
+    // Wire each marker's click to the lightbox. If the event has no
+    // easter-egg media (`mark.eg`), open with a placeholder card.
+    markers.forEach(function (m) {
+        m.addEventListener('click', function () {
+            if (!projectorApi) return;
+            const pos = parseFloat(m.dataset.markerPos);
+            const evt = events.find(function (e) {
+                return e.mark && Math.abs(e.pos - pos) < 0.001;
+            });
+            const items = (evt && evt.mark && Array.isArray(evt.mark.eg) && evt.mark.eg.length)
+                ? evt.mark.eg
+                : [{
+                      type: 'placeholder',
+                      caption: (evt && evt.mark && evt.mark.label) || 'Memory in transit',
+                  }];
+            projectorApi.open(items, 0);
+        });
+    });
+
+    // ---- Lerp scroll loop state ----
+    const html = document.documentElement;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let targetProgress = 0;
+    let easedProgress  = 0;
+    let totalSpin      = 0;
+    let currentBeatIndex = -1;
+    let beatTimer = null;
+    let rafId = 0;
+    let isVisible = !document.hidden;
+
+    // Reduced motion: skip lerp, snap to scroll, no idle wheel rotation.
+    const lerpFactor = reduceMotion ? 1 : 0.10;
+    const wheelFloorPerFrame = reduceMotion ? 0 : 0.4;
+
+    function tick() {
+        if (!isVisible) return;
+
+        // --- Compute target progress from current scroll geometry ---
+        const rect = root.getBoundingClientRect();
+        const scrollable = root.offsetHeight - window.innerHeight;
+        targetProgress = scrollable > 0
+            ? Math.max(0, Math.min(1, -rect.top / scrollable))
+            : 0;
+
+        // --- Lerp ---
+        const prev = easedProgress;
+        easedProgress += (targetProgress - easedProgress) * lerpFactor;
+        const dProgress = easedProgress - prev;
+
+        // Wheel rotation accumulates. Velocity-driven plus a small idle
+        // floor so the jeep never looks parked while the page is open.
+        totalSpin += dProgress * 14000 + wheelFloorPerFrame;
+
+        // --- Publish to CSS custom properties ---
+        html.style.setProperty('--tl-progress',     targetProgress.toFixed(4));
+        html.style.setProperty('--tl-prog-eased',   easedProgress.toFixed(4));
+        html.style.setProperty('--tl-wheel-spin',   totalSpin.toFixed(1) + 'deg');
+
+        // --- Compass (road-tangent direction) ---
+        if (roadPath) {
+            try {
+                const len = roadPath.getTotalLength();
+                const t   = easedProgress * len;
+                const p1  = roadPath.getPointAtLength(t);
+                const p2  = roadPath.getPointAtLength(Math.min(len, t + 1));
+                // SVG y-axis is inverted vs. screen up. atan2 returns angle
+                // in radians where 0 = pointing right (east). We want
+                // needle convention where 0deg = up (north) and rotation
+                // increases clockwise. So east => 90deg, road-rising
+                // (negative SVG dy) => slightly less than 90 (NE).
+                const angRad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                const compassDeg = (angRad * 180 / Math.PI) + 90;
+                html.style.setProperty('--tl-compass-deg', compassDeg.toFixed(1) + 'deg');
+            } catch (e) { /* path may not be ready */ }
+        }
+
+        // --- Beat update (which event is the jeep currently passing?) ---
+        let idx = 0;
+        for (let i = 0; i < events.length; i++) {
+            if (events[i].pos <= easedProgress) idx = i;
+            else break;
+        }
+        if (idx !== currentBeatIndex) {
+            crossFadeToBeat(idx);
+            currentBeatIndex = idx;
+        }
+
+        // --- Year odometer in capsule (interpolates between event years) ---
+        if (yearCapsuleEl) {
+            const a = events[idx];
+            const b = events[Math.min(idx + 1, events.length - 1)];
+            const span = b.pos - a.pos;
+            const localT = span > 0
+                ? Math.max(0, Math.min(1, (easedProgress - a.pos) / span))
+                : 0;
+            const yearNow = Math.round(a.yearStart + (b.yearStart - a.yearStart) * localT);
+            yearCapsuleEl.textContent = String(yearNow);
+        }
+
+        // --- Position markers along the SVG road ---
+        positionMarkers();
+
+        rafId = requestAnimationFrame(tick);
+    }
+
+    /**
+     * Cross-fade the jeep windows to the new beat. Time-based, not
+     * scroll-based — once the fade-out starts, the swap happens 450ms
+     * later regardless of how the user is scrolling. Reading rhythm is
+     * preserved.
+     */
+    function crossFadeToBeat(idx) {
+        const evt = events[idx];
+        if (!evt) return;
+
+        if (passenger) passenger.style.setProperty('--beat-passenger-opacity', '0');
+        if (rearEl)    rearEl.style.setProperty('--beat-rear-opacity', '0');
+
+        if (beatTimer) clearTimeout(beatTimer);
+        beatTimer = setTimeout(function () {
+            if (yearJeepEl) yearJeepEl.textContent = evt.year || '';
+            if (titleEl)    titleEl.textContent    = evt.title || '';
+            if (proseEl)    proseEl.textContent    = evt.prose || '';
+
+            if (rearEl) {
+                if (evt.image) {
+                    rearEl.style.backgroundImage = 'url("' + evt.image + '")';
+                } else {
+                    rearEl.style.backgroundImage = '';
+                }
+            }
+
+            if (passenger) passenger.style.setProperty('--beat-passenger-opacity', '1');
+            if (rearEl)    rearEl.style.setProperty('--beat-rear-opacity', '1');
+        }, 450);
+    }
+
+    /**
+     * Compute each marker's screen position from its --pos along the
+     * road's SVG path. Runs every frame because the road's getBoundingClientRect
+     * shifts as the road element translates.
+     */
+    function positionMarkers() {
+        if (!roadPath || !markers.length) return;
+        const svg = roadPath.ownerSVGElement;
+        if (!svg) return;
+        const rect = svg.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+
+        const len = roadPath.getTotalLength();
+        // SVG viewBox is 0 0 12000 600 (kept in sync with the template).
+        const scaleX = rect.width  / 12000;
+        const scaleY = rect.height / 600;
+
+        markers.forEach(function (m) {
+            const pos = parseFloat(m.dataset.markerPos);
+            if (isNaN(pos)) return;
+            try {
+                const pt = roadPath.getPointAtLength(pos * len);
+                const cx = rect.left + pt.x * scaleX;
+                const cy = rect.top  + pt.y * scaleY;
+                m.style.setProperty('--m-x', (cx / window.innerWidth  * 100).toFixed(2) + 'vw');
+                m.style.setProperty('--m-y', (cy / window.innerHeight * 100).toFixed(2) + 'vh');
+                // Hide markers that fall well outside the viewport so we
+                // don't trigger their hover styles off-screen.
+                const inView = cx > -200 && cx < window.innerWidth + 200;
+                m.style.opacity = inView ? '1' : '0';
+                m.style.pointerEvents = inView ? 'auto' : 'none';
+            } catch (e) { /* path geometry not ready */ }
+        });
+    }
+
+    // ---- Visibility / focus management (perf) ----
+    document.addEventListener('visibilitychange', function () {
+        isVisible = !document.hidden;
+        if (isVisible) {
+            rafId = requestAnimationFrame(tick);
+        } else {
+            cancelAnimationFrame(rafId);
+        }
+    });
+
+    // ---- Boot ----
+    rafId = requestAnimationFrame(tick);
+}
+
+/**
+ * Insert the year-odometer and compass-rose elements into the existing
+ * .tc-capsule__clock, replacing the time/zone visually (CSS hides the
+ * defaults on body.page-timeline). Header.php stays pristine.
+ */
+function injectCapsuleTimelineChrome() {
+    const clock = document.querySelector('.tc-capsule__clock');
+    if (!clock) return;
+    if (clock.querySelector('[data-tl-year]')) return; // idempotent
+
+    const yearEl = document.createElement('span');
+    yearEl.className = 'tc-capsule__year';
+    yearEl.setAttribute('data-tl-year', '');
+    yearEl.textContent = '1980';
+    clock.appendChild(yearEl);
+
+    const compass = document.createElement('span');
+    compass.className = 'tc-capsule__compass';
+    compass.setAttribute('data-tl-compass', '');
+    compass.setAttribute('aria-hidden', 'true');
+
+    const needle = document.createElement('span');
+    needle.className = 'tc-capsule__compass-needle';
+    compass.appendChild(needle);
+
+    clock.appendChild(compass);
+}
+
+/**
+ * Projector lightbox — opens with a list of media items, supports prev /
+ * next / close and keyboard nav. Items are { type, src, caption, alt }
+ * objects; `type === 'placeholder'` renders a subtle "memory in transit"
+ * card so a marker still feels clickable before media is wired in.
+ *
+ * This is intentionally separate from the sitewide PhotoSwipe lightbox.
+ * The projector aesthetic (night, beam, screen, flicker) is part of the
+ * timeline page's voice, not a generic media-viewer.
+ */
+function createProjectorLightbox(root) {
+    const media   = root.querySelector('[data-projector-media]');
+    const caption = root.querySelector('[data-projector-caption]');
+    const counter = root.querySelector('[data-projector-counter]');
+    const closeBtn= root.querySelector('[data-projector-close]');
+    const prevBtn = root.querySelector('[data-projector-prev]');
+    const nextBtn = root.querySelector('[data-projector-next]');
+    const night   = root.querySelector('.timeline-projector__night');
+
+    let items = [];
+    let index = 0;
+
+    function open(itemList, startIndex) {
+        items = Array.isArray(itemList) ? itemList : [];
+        index = Math.max(0, Math.min(items.length - 1, startIndex || 0));
+        root.setAttribute('aria-hidden', 'false');
+        document.documentElement.classList.add('tc-projector-open');
+        render();
+        document.addEventListener('keydown', onKey);
+    }
+
+    function close() {
+        root.setAttribute('aria-hidden', 'true');
+        document.documentElement.classList.remove('tc-projector-open');
+        if (media) media.innerHTML = '';
+        document.removeEventListener('keydown', onKey);
+    }
+
+    function nav(delta) {
+        if (!items.length) return;
+        index = (index + delta + items.length) % items.length;
+        render();
+    }
+
+    function render() {
+        if (!media) return;
+        media.innerHTML = '';
+        const item = items[index];
+
+        if (!item) {
+            if (caption) caption.textContent = '';
+            if (counter) counter.textContent = '0 / 0';
+            return;
+        }
+
+        if (item.type === 'video' && item.src) {
+            const v = document.createElement('video');
+            v.src = item.src;
+            v.controls = true;
+            v.autoplay = true;
+            v.loop = !!item.loop;
+            v.playsInline = true;
+            media.appendChild(v);
+        } else if (item.type === 'image' && item.src) {
+            const img = document.createElement('img');
+            img.src = item.src;
+            img.alt = item.alt || '';
+            media.appendChild(img);
+        } else {
+            // Placeholder card — keeps the marker clickable before media
+            // is wired in. Reads as deliberate, not broken.
+            const ph = document.createElement('div');
+            ph.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#c2a76a;font:500 16px/1.4 Italiana, Georgia, serif;letter-spacing:0.12em;text-transform:uppercase;text-align:center;padding:30px;';
+            ph.textContent = item.caption || 'Memory in transit';
+            media.appendChild(ph);
+        }
+
+        if (caption) caption.textContent = item.caption || '';
+        if (counter) {
+            counter.textContent = String(index + 1).padStart(2, '0') + ' / ' +
+                                  String(items.length).padStart(2, '0');
+        }
+    }
+
+    function onKey(e) {
+        if (e.key === 'Escape')      close();
+        else if (e.key === 'ArrowLeft')  nav(-1);
+        else if (e.key === 'ArrowRight') nav(1);
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (prevBtn)  prevBtn.addEventListener('click', function () { nav(-1); });
+    if (nextBtn)  nextBtn.addEventListener('click', function () { nav(1); });
+
+    // Click on the night backdrop or root (outside the screen) closes.
+    root.addEventListener('click', function (e) {
+        if (e.target === root || e.target === night) close();
+    });
+
+    return { open: open, close: close };
 }
 

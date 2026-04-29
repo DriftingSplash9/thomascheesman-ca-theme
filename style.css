@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.96
+Version: 1.0.97
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4838,5 +4838,674 @@ body:has(.person-spoke--faith) {
 @media (prefers-reduced-motion: reduce) {
     @view-transition {
         navigation: none;
+    }
+}
+
+/* ============================================================================
+   TIMELINE PAGE  ("/timeline")
+   ============================================================================
+   The page is a pinned parallax stage with vertical-scroll-driven horizontal
+   pan. Four scenery layers translate in alternating directions (carnival-duck
+   mechanic), a curving SVG road sits below them, and a side-profile jeep is
+   pinned center-bottom with three content windows.
+
+   Custom properties driven by JS each frame:
+     --tl-progress         scroll progress, 0..1
+     --tl-prog-eased       eased version (lerp output)
+     --tl-pan              base horizontal pan in px (negative)
+     --tl-wheel-spin       cumulative wheel rotation in deg
+     --tl-compass-deg      current road tangent direction in deg
+     --tl-year             integer year for the capsule odometer
+
+   The stage and all positional math reference these so motion stays in sync
+   across the whole scene from one source of truth.
+
+   Image assets live as background-image fills on each layer. Until Thomas
+   uploads them, layers fall back to flat color blocks tinted by era so the
+   parallax is still visible.
+   ============================================================================ */
+
+:root {
+    /* Tuned defaults — JS overrides at runtime. */
+    --tl-progress: 0;
+    --tl-prog-eased: 0;
+    --tl-pan: 0px;
+    --tl-wheel-spin: 0deg;
+    --tl-compass-deg: 90deg;
+
+    /* Page geometry — total scrollable height of the timeline page.
+       Bigger = slower journey. ~6x viewport height feels right at desktop. */
+    --tl-length: 600vh;
+
+    /* How far each layer travels across the full scroll. The carnival-duck
+       reversal: even-indexed layers go left (negative), odd go right.
+       Foreground travels furthest, sky barely moves. */
+    --tl-pan-sky:  -8vw;     /* slowest, leftward */
+    --tl-pan-back: -50vw;    /* leftward */
+    --tl-pan-mid:  35vw;     /* RIGHTWARD against the back */
+    --tl-pan-fore: -90vw;    /* fastest, leftward */
+    --tl-pan-road: -180vw;   /* the road itself slides under the jeep */
+}
+
+/* ---- The page outer ---------------------------------------------------- */
+body.page-template-page-timeline,
+body.page-timeline {
+    /* Suppress horizontal overflow created by negative-translated layers. */
+    overflow-x: clip;
+    background: #0c1628;  /* night-ish until JS tints by era */
+}
+
+.timeline-page {
+    position: relative;
+    height: var(--tl-length);
+    margin: 0;
+    padding: 0;
+    color: #f1ead8;
+    overflow: visible;
+}
+
+/* ---- Pinned stage ------------------------------------------------------ */
+.timeline-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    isolation: isolate;
+    /* Soft Kodachrome warmth across the whole scene. JS may shift this
+       per era; CSS gives it a sane starting point. */
+    background:
+        radial-gradient(ellipse at 50% 0%, #d6c79a 0%, #b89c66 30%, #6e5230 70%, #2b1f12 100%);
+}
+
+/* ---- Parallax layers --------------------------------------------------- */
+.timeline-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    will-change: transform;
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    background-position: 0% 100%;
+    transform: translate3d(var(--tl-layer-translate, 0), 0, 0);
+}
+
+/* Sky — a cream/sepia gradient until Grok night/day strip is dropped in. */
+.timeline-layer--sky {
+    --tl-layer-translate: calc(var(--tl-pan-sky)  * var(--tl-prog-eased));
+    background:
+        linear-gradient(to bottom,
+            #f0e1b3 0%,
+            #e6c98a 22%,
+            #d2a763 55%,
+            #8b6b3c 90%,
+            #4a3520 100%);
+    z-index: 1;
+}
+
+/* Backdrop layer — placeholder silhouette band until Grok foothills /
+   prairie / forest / city strips arrive. */
+.timeline-layer--back {
+    --tl-layer-translate: calc(var(--tl-pan-back) * var(--tl-prog-eased));
+    background-image:
+        linear-gradient(to top,
+            rgba(60,40,25,0.55) 0%,
+            rgba(60,40,25,0.0)  35%);
+    /* Add a faint repeating "mountain shape" via SVG so motion is visible
+       before real assets arrive. */
+    background:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 600'><path d='M0,400 L120,260 L260,360 L380,200 L520,340 L660,250 L800,380 L940,220 L1080,340 L1220,260 L1360,360 L1500,240 L1600,360 L1600,600 L0,600 Z' fill='%234e3a25' opacity='0.55'/></svg>") repeat-x 0 70% / auto 60%;
+    z-index: 2;
+}
+
+/* Middle band — RIGHTWARD against the back's leftward (carnival reversal).
+   Sparse silhouettes with intentional gaps. */
+.timeline-layer--mid {
+    --tl-layer-translate: calc(var(--tl-pan-mid)  * var(--tl-prog-eased));
+    background:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 400'><g fill='%2336261a'><rect x='100' y='240' width='40' height='160'/><rect x='160' y='220' width='80' height='180'/><polygon points='180,220 200,180 220,220'/><rect x='480' y='250' width='120' height='150'/><rect x='960' y='200' width='30' height='200'/><rect x='1180' y='260' width='100' height='140'/><rect x='1310' y='240' width='60' height='160'/></g></svg>") repeat-x 0 80% / auto 55%;
+    z-index: 3;
+}
+
+/* Foreground — closest, fastest. Tufts and posts with most of the strip empty. */
+.timeline-layer--fore {
+    --tl-layer-translate: calc(var(--tl-pan-fore) * var(--tl-prog-eased));
+    background:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200'><g fill='%231e1610'><circle cx='80' cy='180' r='14'/><circle cx='100' cy='178' r='10'/><rect x='320' y='150' width='4' height='40'/><rect x='340' y='140' width='4' height='50'/><circle cx='620' cy='178' r='12'/><rect x='980' y='148' width='4' height='44'/><circle cx='1180' cy='178' r='10'/><circle cx='1320' cy='176' r='14'/></g></svg>") repeat-x 0 100% / auto 35%;
+    z-index: 5;
+}
+
+/* ---- The road ---------------------------------------------------------- */
+.timeline-road {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 300vw;            /* SVG viewBox is wide; we translate it across */
+    height: 60vh;
+    z-index: 4;
+    pointer-events: none;
+    transform: translate3d(calc(var(--tl-pan-road) * var(--tl-prog-eased)), 0, 0);
+    will-change: transform;
+}
+
+/* ---- Markers (easter eggs along the road) ------------------------------ */
+.timeline-markers {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    /* Markers themselves get pointer-events back below. */
+}
+
+.timeline-marker {
+    position: absolute;
+    /* JS sets --m-x and --m-y each frame based on path-tangent lookup. */
+    left: var(--m-x, 50%);
+    top:  var(--m-y, 70%);
+    transform: translate(-50%, -100%);
+    appearance: none;
+    background: #f0e1b3;
+    color: #2a1a08;
+    border: 1px solid rgba(60, 40, 20, 0.55);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font: 600 11px/1 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow:
+        0 6px 14px rgba(0, 0, 0, 0.35),
+        inset 0 0 0 1px rgba(255, 230, 180, 0.4);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.timeline-marker::after {
+    /* Tiny post under the sign. */
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 2px;
+    height: 14px;
+    background: rgba(60, 40, 20, 0.75);
+    transform: translateX(-50%);
+}
+
+.timeline-marker:hover {
+    transform: translate(-50%, -106%);
+    box-shadow:
+        0 10px 22px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(255, 230, 180, 0.7);
+}
+
+.timeline-marker:focus-visible {
+    outline: 2px solid #f0e1b3;
+    outline-offset: 4px;
+}
+
+.timeline-marker--pothole {
+    /* Subtle, low to the road — not a sign, a hazard. */
+    background: #2a1a08;
+    color: #f0e1b3;
+    border-radius: 50%;
+    padding: 4px 8px;
+}
+
+/* ---- The jeep ---------------------------------------------------------- */
+.timeline-jeep {
+    position: absolute;
+    left: 50%;
+    bottom: 8vh;
+    transform: translateX(-50%);
+    width: min(640px, 70vw);
+    aspect-ratio: 16 / 9;
+    z-index: 8;
+    pointer-events: none;
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45));
+}
+
+.timeline-jeep__shell {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-image: url('/wp-content/uploads/2026/04/jeep.jpg');
+    background-size: contain;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+}
+
+/* Three content windows. Coordinates are tuned to Thomas's jeep.jpg —
+   adjust by feel once it's live. They're percentage-based against the
+   shell so they stay correct as the jeep scales. */
+.timeline-jeep__windshield {
+    position: absolute;
+    left: 64%;
+    top: 18%;
+    width: 18%;
+    height: 26%;
+    /* Reserved for atmosphere — empty for now. */
+    pointer-events: none;
+}
+
+.timeline-jeep__passenger {
+    position: absolute;
+    left: 38%;
+    top: 16%;
+    width: 24%;
+    height: 28%;
+    padding: 6px 8px;
+    background: rgba(20, 12, 6, 0.62);
+    color: #f1ead8;
+    border-radius: 2px;
+    overflow: hidden;
+    pointer-events: auto;
+    /* Time-based fade; JS toggles --beat-state. */
+    opacity: var(--beat-passenger-opacity, 1);
+    transition: opacity 0.45s ease;
+    backdrop-filter: blur(2px);
+}
+
+.timeline-jeep__year {
+    display: block;
+    font: 600 10px/1 'Courier New', monospace;
+    letter-spacing: 0.18em;
+    color: #f0c98a;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.timeline-jeep__title {
+    margin: 0 0 4px;
+    font: 700 13px/1.2 'Fraunces', Georgia, serif;
+    letter-spacing: 0.01em;
+    color: #fff5dc;
+}
+
+.timeline-jeep__prose {
+    margin: 0;
+    font: 400 11px/1.35 'Fraunces', Georgia, serif;
+    color: #e7dcc1;
+}
+
+.timeline-jeep__rear {
+    position: absolute;
+    left: 16%;
+    top: 16%;
+    width: 18%;
+    height: 28%;
+    background-color: rgba(0, 0, 0, 0.55);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 1px solid rgba(20, 12, 6, 0.7);
+    /* Time-based fade. */
+    opacity: var(--beat-rear-opacity, 1);
+    transition: opacity 0.45s ease;
+}
+
+.timeline-jeep__wheel {
+    position: absolute;
+    bottom: 4%;
+    width: 14%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, #2a1d10 0%, #1a1209 60%, #000 100%);
+    transform: rotate(var(--tl-wheel-spin));
+    /* The jeep image already shows wheels — these spin transparently
+       overlaid. Until tuned to align, we keep them invisible. */
+    opacity: 0;
+}
+
+.timeline-jeep__wheel--front { left: 78%; }
+.timeline-jeep__wheel--rear  { left: 8%; }
+
+/* ---- Roll-Out sign at the road's end ----------------------------------- */
+.timeline-rollout {
+    position: absolute;
+    right: 6vw;
+    bottom: 14vh;
+    z-index: 7;
+    text-decoration: none;
+    pointer-events: auto;
+    /* Hidden until scroll progress nears the end. */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.92) * 12), 1);
+    transform: translateY(calc((1 - clamp(0, calc((var(--tl-prog-eased) - 0.92) * 12), 1)) * 24px));
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.timeline-rollout__plate {
+    display: inline-block;
+    padding: 14px 28px;
+    background: #f0e1b3;
+    color: #2a1a08;
+    font: 700 22px/1 'Courier New', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 3px solid #2a1a08;
+    border-radius: 4px;
+    transform: rotate(-2.5deg);
+    box-shadow:
+        0 12px 26px rgba(0, 0, 0, 0.55),
+        inset 0 0 0 6px #f0e1b3,
+        inset 0 0 0 7px rgba(60, 40, 20, 0.6);
+}
+
+.timeline-rollout:hover .timeline-rollout__plate {
+    transform: rotate(-2.5deg) translateY(-3px);
+}
+
+.timeline-rollout:focus-visible .timeline-rollout__plate {
+    outline: 2px solid #f0e1b3;
+    outline-offset: 6px;
+}
+
+/* ---- Spacer driving the scroll ---------------------------------------- */
+.timeline-spacer {
+    height: 0;
+    /* The .timeline-page already has the full height; this is only here
+       in case future tweaks need a separate scroll driver. */
+}
+
+/* ---- Capsule swap on /timeline ---------------------------------------- */
+/* On this page, the time clock becomes a year odometer + compass. Hide
+   the default clock children and reveal the timeline-specific ones (which
+   JS injects into .tc-capsule__clock on init). */
+body.page-template-page-timeline .tc-capsule__clock-time,
+body.page-timeline .tc-capsule__clock-time {
+    display: none;
+}
+
+body.page-template-page-timeline .tc-capsule__clock-zone,
+body.page-timeline .tc-capsule__clock-zone {
+    display: none;
+}
+
+.tc-capsule__year {
+    font: 700 14px/1 'Courier New', monospace;
+    color: #fff5dc;
+    letter-spacing: 0.12em;
+    font-variant-numeric: tabular-nums;
+}
+
+.tc-capsule__compass {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 230, 180, 0.7);
+    background: rgba(20, 12, 6, 0.4);
+}
+
+.tc-capsule__compass-needle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1.5px;
+    height: 8px;
+    background: linear-gradient(to top, transparent 0%, transparent 50%, #ff6a3d 50%, #ff6a3d 100%);
+    transform-origin: 50% 100%;
+    transform: translate(-50%, -100%) rotate(var(--tl-compass-deg, 0deg));
+    transition: transform 0.18s linear;
+}
+
+.tc-capsule__compass-needle::before {
+    /* South side of needle (white). */
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 100%;
+    width: 1.5px;
+    height: 8px;
+    background: rgba(255, 240, 220, 0.8);
+}
+
+/* ---- Projector lightbox ----------------------------------------------- */
+.timeline-projector {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.45s ease;
+}
+
+.timeline-projector[aria-hidden="false"] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.timeline-projector__night {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 50% 80%, #102030 0%, #060c14 60%, #000 100%);
+}
+
+/* The cone of projector light — drifting subtly across the air. */
+.timeline-projector__beam {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 18% 60%, rgba(255, 240, 200, 0.22) 0%, transparent 28%),
+        conic-gradient(from 80deg at 16% 62%, rgba(255, 240, 200, 0.0) 0deg, rgba(255, 240, 200, 0.10) 6deg, rgba(255, 240, 200, 0) 12deg);
+    mix-blend-mode: screen;
+    pointer-events: none;
+}
+
+.timeline-projector__stage {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+}
+
+.timeline-projector__jeep {
+    position: absolute;
+    left: 50%;
+    bottom: 4vh;
+    width: min(900px, 80vw);
+    aspect-ratio: 16 / 9;
+    background-image: url('/wp-content/uploads/2026/04/jeep.jpg');
+    background-size: contain;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    transform: translateX(-50%);
+    filter: brightness(0.55);
+    opacity: 0.92;
+}
+
+.timeline-projector__screen {
+    position: relative;
+    width: min(72vw, 1100px);
+    aspect-ratio: 4 / 3;
+    margin: 0;
+    background: #f3ead2;
+    box-shadow:
+        0 30px 60px rgba(0, 0, 0, 0.6),
+        inset 0 0 30px rgba(0, 0, 0, 0.18),
+        inset 0 0 80px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    /* Slight wobble — real screens never sit perfectly still. */
+    animation: tcProjectorWobble 9s ease-in-out infinite;
+}
+
+@keyframes tcProjectorWobble {
+    0%, 100% { transform: rotate(-0.15deg); }
+    50%      { transform: rotate(0.15deg); }
+}
+
+.timeline-projector__media {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 36px);
+    background: #1a1208;
+}
+
+.timeline-projector__media img,
+.timeline-projector__media video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: contrast(1.05) saturate(0.85) sepia(0.06);
+}
+
+.timeline-projector__caption {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    font: 500 12px/1 'Italiana', Georgia, serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #5a3818;
+    background: #e6dcc4;
+    border-top: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+/* The flicker overlay sits over the screen for the projector feel. */
+.timeline-projector__flicker {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(0deg,
+            rgba(0, 0, 0, 0.0) 0px,
+            rgba(0, 0, 0, 0.04) 1px,
+            rgba(0, 0, 0, 0) 2px),
+        radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(0,0,0,0.4) 100%);
+    mix-blend-mode: multiply;
+    animation: tcProjectorFlicker 1.4s steps(8, end) infinite;
+}
+
+@keyframes tcProjectorFlicker {
+    0%   { opacity: 0.85; }
+    20%  { opacity: 0.92; }
+    40%  { opacity: 0.78; }
+    60%  { opacity: 0.95; }
+    80%  { opacity: 0.83; }
+    100% { opacity: 0.88; }
+}
+
+.timeline-projector__chrome {
+    position: absolute;
+    bottom: 4vh;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 14px;
+    background: rgba(20, 12, 6, 0.7);
+    border: 1px solid rgba(255, 230, 180, 0.3);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+}
+
+.timeline-projector__nav,
+.timeline-projector__close {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: #f0e1b3;
+    font: 600 16px/1 'Italiana', Georgia, serif;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-projector__nav:hover,
+.timeline-projector__close:hover {
+    background: rgba(255, 230, 180, 0.18);
+}
+
+.timeline-projector__nav:focus-visible,
+.timeline-projector__close:focus-visible {
+    outline: 2px solid #f0e1b3;
+    outline-offset: 2px;
+}
+
+.timeline-projector__counter {
+    font: 500 12px/1 'Italiana', Georgia, serif;
+    letter-spacing: 0.18em;
+    color: #f0e1b3;
+    text-transform: uppercase;
+}
+
+/* ---- Mobile fallback --------------------------------------------------- */
+.timeline-mobile-list {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 32px 20px 80px;
+    counter-reset: tc-mobile-tl;
+    background: #1c1409;
+    color: #f1ead8;
+}
+
+.timeline-mobile-item {
+    margin: 0 0 28px;
+    padding: 14px 16px;
+    background: rgba(255, 230, 180, 0.06);
+    border-left: 3px solid #f0c98a;
+    border-radius: 4px;
+}
+
+.timeline-mobile-item__year {
+    display: block;
+    font: 600 11px/1 'Courier New', monospace;
+    letter-spacing: 0.18em;
+    color: #f0c98a;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.timeline-mobile-item__title {
+    margin: 0 0 6px;
+    font: 700 16px/1.2 'Fraunces', Georgia, serif;
+    color: #fff5dc;
+}
+
+.timeline-mobile-item__prose {
+    margin: 0;
+    font: 400 13px/1.5 'Fraunces', Georgia, serif;
+    color: #e7dcc1;
+}
+
+@media (max-width: 768px) {
+    .timeline-stage,
+    .timeline-spacer,
+    .timeline-rollout {
+        display: none !important;
+    }
+
+    .timeline-page {
+        height: auto;
+    }
+
+    .timeline-mobile-list {
+        display: block;
+    }
+
+    /* On mobile, the capsule swap doesn't fire — the time clock is
+       hidden in the existing mobile capsule rules. Compass + year never
+       enter the DOM here. */
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .timeline-projector__screen,
+    .timeline-projector__flicker {
+        animation: none;
+    }
+    .timeline-layer {
+        transition: none;
     }
 }
