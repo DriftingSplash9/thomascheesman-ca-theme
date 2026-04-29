@@ -332,6 +332,15 @@ get_header(); ?>
              images (forest meeting house) so the transition feels like
              the house emerging from the trees rather than a hard cut. -->
         <div class="timeline-layer timeline-layer--back" data-layer="back" aria-hidden="true">
+            <!-- Home slideshow — sits in the back layer, sized smaller
+                 than the viewport. JS drives per-frame opacity using
+                 year-weighted slide centers for the crossfades. -->
+            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2026" data-finale-frame="4"></div>
+            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2025" data-finale-frame="3"></div>
+            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2022" data-finale-frame="2"></div>
+            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2012" data-finale-frame="1"></div>
+            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2009" data-finale-frame="0"></div>
+            <!-- Era backdrops behind the slideshow. -->
             <div class="timeline-back-strip timeline-back-strip--forest"></div>
             <div class="timeline-back-strip timeline-back-strip--prairie"></div>
             <div class="timeline-back-strip timeline-back-strip--foothills"></div>
@@ -496,28 +505,6 @@ get_header(); ?>
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--front" data-jeep-wheel aria-hidden="true"></span>
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--rear"  data-jeep-wheel aria-hidden="true"></span>
             </div>
-        </div>
-
-        <!-- Finale slideshow: five home photos crossfading from 2009 to
-             2026 across the late timeline. Forest + jeep fade out; these
-             fill the viewport. JS computes per-frame opacity using slide
-             positions weighted to year-counter alignment. -->
-        <div class="timeline-finale" data-finale aria-hidden="true">
-            <img class="timeline-finale__frame" data-finale-frame="0"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png"
-                 alt="" loading="lazy" />
-            <img class="timeline-finale__frame" data-finale-frame="1"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png"
-                 alt="" loading="lazy" />
-            <img class="timeline-finale__frame" data-finale-frame="2"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png"
-                 alt="" loading="lazy" />
-            <img class="timeline-finale__frame" data-finale-frame="3"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2025-house.png"
-                 alt="" loading="lazy" />
-            <img class="timeline-finale__frame" data-finale-frame="4"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg"
-                 alt="" loading="lazy" />
         </div>
 
         <!-- "Roll-Out" sign — appears at the road's end (scroll progress ≈ 1).

@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.120
+Version: 1.0.121
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4988,42 +4988,28 @@ body.page-timeline {
 .timeline-back-strip--forest {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forest.png');
     z-index: 2;
-    /* Pure boreal forest — tiles as substrate from Little Smokey era
-       through the late timeline. Fades out 0.58 → 0.65 to hand off
-       cleanly to the 2009 home image (the first finale slide). */
-    opacity: clamp(0, calc((0.65 - var(--tl-prog-eased)) * 14.3), 1);
+    /* Pure boreal forest — always-tiling substrate. The home slideshow
+       sits on top of forest from 0.62 onward, so forest peeks out around
+       the smaller-sized house photos as background scenery. */
+    opacity: 1;
 }
 
-/* ---- Finale slideshow ------------------------------------------------- */
-/* Crossfading sequence of home photos — 2009 Street View → 2012 → 2022 →
-   2025 → 2026 present-day. Each fills the viewport. Per-frame opacity is
-   set inline by JS using an asymmetric trapezoidal profile so slides that
-   span more years (the 2012 → 2022 gap especially) hold longer. */
-.timeline-finale {
-    position: absolute;
-    inset: 0;
-    z-index: 9;             /* above all parallax (max z 5) and jeep (8); below Roll-Out (10) */
-    pointer-events: none;
-    overflow: hidden;
-}
-
-.timeline-finale__frame {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    opacity: 0;
+/* Home slideshow — sized smaller than the viewport so the road, jeep,
+   prose box, and forest scenery all stay visible around them. Crossfade
+   between five photos (2009 → 2012 → 2022 → 2025 → 2026). Per-frame
+   opacity is set inline by JS using year-weighted asymmetric trapezoid. */
+.timeline-back-strip--house {
+    background-repeat: no-repeat;
+    background-position: 50% 100%;
+    background-size: auto 80%;   /* tune this to taste */
+    opacity: 0;                  /* JS overrides per frame */
     will-change: opacity;
 }
-
-/* Jeep fades out 0.58 → 0.65 alongside the forest's fade-out — the world
-   hands off to the home slideshow. Late-event prose (2025, 2026) fades
-   with the jeep; the slideshow carries the end of the story. */
-.timeline-jeep {
-    opacity: clamp(0, calc((0.65 - var(--tl-prog-eased)) * 14.3), 1);
-}
+.timeline-back-strip--house-2009  { z-index: 5; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png'); }
+.timeline-back-strip--house-2012  { z-index: 6; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png'); }
+.timeline-back-strip--house-2022  { z-index: 7; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png'); }
+.timeline-back-strip--house-2025  { z-index: 8; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2025-house.png'); }
+.timeline-back-strip--house-2026  { z-index: 9; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg'); }
 
 /* Middle band — leftward, faster than back, slower than fore. */
 .timeline-layer--mid {

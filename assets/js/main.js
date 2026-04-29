@@ -2187,8 +2187,8 @@ function initTimelinePage() {
     // Slide centers for the home-photo finale, ordered by data-finale-frame
     // index (2009 → 2012 → 2022 → 2025 → 2026). Year-weighted positions so
     // each image lands roughly where its year shows on the counter.
-    const FINALE_SLIDE_POSITIONS = [0.65, 0.71, 0.89, 0.95, 0.97];
-    const FINALE_FIRST_BAND_START = 0.58;
+    const FINALE_SLIDE_POSITIONS = [0.62, 0.70, 0.84, 0.92, 0.99];
+    const FINALE_FIRST_BAND_START = 0.55;
 
     // ---- Projector lightbox ----
     const projector = root.querySelector('[data-projector]');
