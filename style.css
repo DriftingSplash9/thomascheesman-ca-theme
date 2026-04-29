@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.100
+Version: 1.0.101
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5099,7 +5099,7 @@ body.page-timeline {
 /* PROSE — sits over the rear cargo window pane (left side of jeep). */
 .timeline-jeep__passenger {
     position: absolute;
-    left: 14%;
+    left: calc(14% + 25px);
     top: 16%;
     width: 24%;
     height: 28%;
@@ -5140,7 +5140,7 @@ body.page-timeline {
 /* IMAGE — sits over the passenger door window pane (middle of jeep). */
 .timeline-jeep__rear {
     position: absolute;
-    left: 40%;
+    left: calc(40% + 25px);
     top: 16%;
     width: 22%;
     height: 28%;
