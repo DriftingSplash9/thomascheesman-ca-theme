@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.110
+Version: 1.0.111
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5221,8 +5221,9 @@ body.page-timeline {
     z-index: 9;             /* above jeep (8); below Roll-Out (10) */
     pointer-events: none;
     background: #1a1208;    /* under-fill so any frame gap reads as "settled" black */
-    /* Container fades in once the scene fade-out has cleared the stage. */
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.94) * 33.33), 1);
+    /* Container fades in alongside the existing scene's fade-out, so the
+       handoff at 0.94 is a clean swap (scene 0 → finale 1). */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.93) * 100), 1);
     transition: opacity 0.4s ease;
 }
 

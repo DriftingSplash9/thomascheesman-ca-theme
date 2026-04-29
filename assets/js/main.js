@@ -2183,6 +2183,7 @@ function initTimelinePage() {
     const yearJeepEl= root.querySelector('[data-jeep-year]');
     const rearEl    = root.querySelector('[data-jeep-rear]');
     const markers   = Array.from(root.querySelectorAll('[data-marker]'));
+    const finaleFrames = Array.from(root.querySelectorAll('[data-finale-frame]'));
 
     // ---- Projector lightbox ----
     const projector = root.querySelector('[data-projector]');
@@ -2300,6 +2301,27 @@ function initTimelinePage() {
 
         // --- Position markers along the SVG road ---
         positionMarkers();
+
+        // --- Home finale: per-frame cross-fade across [0.94, 0.97] ---
+        // Each frame has a triangular opacity profile centered on its slot
+        // so neighbors overlap by exactly halfWidth — total visible
+        // opacity sums to 1 at every progress value, no flicker between
+        // captures. Frames outside the finale window stay at opacity 0.
+        if (finaleFrames.length) {
+            const FINALE_START = 0.94;
+            const FINALE_END   = 0.97;
+            const N = finaleFrames.length;
+            const span = FINALE_END - FINALE_START;
+            const halfWidth = N > 1 ? span / (N - 1) : 1;
+            for (let i = 0; i < N; i++) {
+                const center = N > 1
+                    ? FINALE_START + (i / (N - 1)) * span
+                    : (FINALE_START + FINALE_END) / 2;
+                const dist = Math.abs(easedProgress - center);
+                const op = Math.max(0, Math.min(1, 1 - dist / halfWidth));
+                finaleFrames[i].style.opacity = op.toFixed(3);
+            }
+        }
 
         rafId = requestAnimationFrame(tick);
     }

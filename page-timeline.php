@@ -479,13 +479,21 @@ get_header(); ?>
              Add <img data-finale-frame="N"> children once Street View
              captures + present-day photo URLs are available. -->
         <div class="timeline-home-finale" data-home-finale aria-hidden="true">
-            <!-- Frames go here:
-                 <img class="timeline-home-finale__frame" data-finale-frame="0"
-                      src="…oldest-streetview.png" alt="" />
-                 …
-                 <img class="timeline-home-finale__frame" data-finale-frame="N"
-                      src="…present-day.jpg" alt="" />
-            -->
+            <img class="timeline-home-finale__frame" data-finale-frame="0"
+                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png"
+                 alt="" loading="lazy" />
+            <img class="timeline-home-finale__frame" data-finale-frame="1"
+                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png"
+                 alt="" loading="lazy" />
+            <img class="timeline-home-finale__frame" data-finale-frame="2"
+                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png"
+                 alt="" loading="lazy" />
+            <img class="timeline-home-finale__frame" data-finale-frame="3"
+                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2025-house.png"
+                 alt="" loading="lazy" />
+            <img class="timeline-home-finale__frame" data-finale-frame="4"
+                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg"
+                 alt="" loading="lazy" />
         </div>
 
         <!-- "Roll-Out" sign — appears at the road's end (scroll progress ≈ 1).
