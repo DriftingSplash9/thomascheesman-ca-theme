@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.93
+Version: 1.0.94
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1384,20 +1384,35 @@ html.tc-menu-open body {
 
 .tc-footer {
     position: relative;
-    /* Vertical gradient — lighter at the top edge so the cyan halo
-       has something to bloom into, gradually denser toward the bottom. */
-    background: linear-gradient(
-        180deg,
-        rgba(8, 10, 26, 0.45) 0%,
-        rgba(4, 6, 25, 0.85) 60%,
-        rgba(4, 6, 25, 0.92) 100%
-    );
-    /* Backdrop-blur softens the particle field behind the footer.
-       12px is enough to take the edge off motion without going full
-       opaque-frost. */
+    /* Wooden table surface beneath the passport. Layered:
+         1. Solid warm walnut base
+         2. Repeating horizontal grain stripes — slight darks + lights
+         3. Two large knot-style radial darkenings for irregularity
+         4. SVG fractal noise stretched HORIZONTALLY (very low Y
+            frequency) so it reads as wood-fibre texture rather than
+            uniform speckle
+         5. Soft overhead-lamp warm radial bloom from above so the
+            passport is "lit from above" on the table
+       The previous cyan-haloed dark gradient is gone — the wood
+       is the new floor. */
+    background-color: #5a3825;
+    background-image:
+        radial-gradient(ellipse 110% 70% at 50% -10%, rgba(255, 220, 170, 0.14), transparent 65%),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            rgba(0, 0, 0, 0.05) 2px,
+            transparent 6px,
+            rgba(255, 220, 170, 0.04) 9px,
+            transparent 14px
+        ),
+        radial-gradient(ellipse 22% 38% at 22% 35%, rgba(0, 0, 0, 0.18), transparent 70%),
+        radial-gradient(ellipse 18% 30% at 78% 70%, rgba(0, 0, 0, 0.14), transparent 70%),
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='100'><filter id='wood'><feTurbulence type='turbulence' baseFrequency='0.020 0.55' numOctaves='3' seed='8' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.10 0 0 0 0 0.05 0 0 0 0 0.02 0 0 0 0.45 0'/></filter><rect width='100%25' height='100%25' filter='url(%23wood)'/></svg>");
+    background-size: cover, auto, auto, auto, 400px 100px;
     backdrop-filter: blur(12px) saturate(135%);
     -webkit-backdrop-filter: blur(12px) saturate(135%);
-    padding: 56px 0 36px;
+    padding: 64px 0 40px;
     margin-top: 80px;
     /* No overflow: hidden here — we want the ::before's halo box-shadow
        to bleed slightly above the footer's top edge for the lighting
@@ -1414,20 +1429,22 @@ html.tc-menu-open body {
     left: 0;
     right: 0;
     height: 1px;
+    /* Subtle warm gold edge where the wood table meets the page above.
+       Replaces the previous cyan halo line — that was the lit-edge of
+       the dark footer; now we have a real wood surface, so the edge
+       reads as the gleam of light catching the joint between the page
+       above and the table below. */
     background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(34, 211, 238, 0.5) 25%,
-        rgba(34, 211, 238, 0.85) 50%,
-        rgba(34, 211, 238, 0.5) 75%,
+        rgba(201, 168, 106, 0.32) 25%,
+        rgba(201, 168, 106, 0.55) 50%,
+        rgba(201, 168, 106, 0.32) 75%,
         transparent 100%
     );
-    /* Multi-layer box-shadow gives the line a halo that fades over
-       distance — closer = brighter, farther = wispier. */
     box-shadow:
-        0 0 8px rgba(34, 211, 238, 0.55),
-        0 0 18px rgba(34, 211, 238, 0.32),
-        0 0 36px rgba(34, 211, 238, 0.18);
+        0 0 6px rgba(201, 168, 106, 0.32),
+        0 0 16px rgba(201, 168, 106, 0.18);
     z-index: 1;
     pointer-events: none;
 }
@@ -1442,14 +1459,17 @@ html.tc-menu-open body {
     left: 50%;
     transform: translateX(-50%);
     width: 85%;
-    height: 180px;
+    height: 220px;
+    /* Warm overhead-lamp bloom — replaces the previous cyan radial
+       glow. Reads as soft warm light spilling onto the table from
+       a lamp somewhere above. */
     background: radial-gradient(
         ellipse at top,
-        rgba(34, 211, 238, 0.16) 0%,
-        rgba(34, 211, 238, 0.06) 35%,
+        rgba(255, 220, 170, 0.16) 0%,
+        rgba(255, 220, 170, 0.06) 40%,
         transparent 70%
     );
-    filter: blur(18px);
+    filter: blur(22px);
     z-index: 0;
     pointer-events: none;
 }
@@ -1463,14 +1483,58 @@ html.tc-menu-open body {
 }
 
 /* ============================================
+   FOOTER DECK + COVER
+   ============================================
+   The deck is the rotation wrapper — pill, cover, and cream page
+   tilt together as a single document casually placed on the wood
+   table. Slight rotation (-1.4°) reads as "set down without care"
+   without making text annoying to read. Children unrotate themselves
+   nowhere — the whole assembly tilts as one piece.
+
+   The cover is a dark-navy backing that sticks out around the cream
+   page, mimicking the leather cover of an actual passport visible
+   behind the photo page when the passport is open.
+*/
+
+.tc-footer__deck {
+    position: relative;
+    z-index: 2;
+    transform: rotate(-1.4deg);
+    transform-origin: 50% 40%;
+    /* Padding gives the rotated deck breathing room so its tilted
+       corners don't clip against the footer edges. */
+    padding: 16px 0 28px;
+}
+
+.tc-footer__cover {
+    background: linear-gradient(
+        180deg,
+        var(--pp-navy)      0%,
+        var(--pp-navy-deep) 100%
+    );
+    border-radius: 6px;
+    padding: 14px;
+    max-width: min(990px, 95vw);
+    margin: 0 auto;
+    /* Heavy outer drop shadow — the closed cover edge with the cream
+       page resting in it casts a real shadow on the wood surface. */
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.55),
+        0 4px 14px rgba(0, 0, 0, 0.35),
+        /* Inset hairline gold around the cover interior — leather
+           binding has a thin gilt edge inside. */
+        inset 0 0 0 1px rgba(201, 168, 106, 0.18);
+}
+
+/* ============================================
    FOOTER PASSPORT — PALETTE
    ============================================
-   The footer is composed as a stylised passport. Cover (marquee pill)
-   stays dark navy + gold like an embossed leather binding. Interior
-   page is actual cream paper with DARK ink for text + stamps —
-   matches how real passport biometric pages look (light paper, dark
-   typography). The dark-cover / light-interior pairing reads as the
-   passport opened up.
+   The footer is composed as a stylised passport. Cover (marquee pill
+   + the dark navy wrap below) stays dark navy + gold like an
+   embossed leather binding. Interior page is actual cream paper
+   with DARK ink for text + stamps — matches how real passport
+   biometric pages look (light paper, dark typography). The dark-
+   cover / light-interior pairing reads as the passport opened up.
 
    Variables prefixed --pp- are scoped to .tc-footer so they don't
    pollute the rest of the theme.
@@ -1685,17 +1749,15 @@ html.tc-menu-open body {
 
 .tc-passport {
     position: relative;
-    max-width: min(960px, 92vw);
-    margin: 0 auto;
+    /* Width and centring are handled by the .tc-footer__cover wrapper
+       above. The cream page just fills its container. */
+    width: 100%;
+    margin: 0;
     padding: 36px clamp(24px, 4vw, 60px) 32px;
     color: var(--pp-ink-sepia);
     /* Solid cream paper — the actual interior of the passport.
-       The pill above remains navy (the cover); this is what's
-       revealed when you open it.
        Background-image adds a faint vertical shadow band centred
-       on the page — the spine fold of a bound passport. The band
-       is subtle (12% darkening at peak) so it reads as a depression
-       in the paper, not a literal printed line. */
+       on the page — the spine fold of a bound passport. */
     background-color: var(--pp-paper);
     background-image: linear-gradient(
         to right,
@@ -1705,21 +1767,14 @@ html.tc-menu-open body {
         rgba(0, 0, 0, 0.04)  51.5%,
         transparent 54%
     );
-    /* Outer thin gold border — the page-edge gilt that real passport
-       interior pages have. The dashed inner border at -10px offset
-       is the "frame" line printed inside the page edge on most
-       passport designs. outline-offset accepting negative values is
-       a CSS quirk that lets us stack a second border without an
-       extra element or pseudo. */
+    /* Page-edge gilt + inner printed frame line. The cover wrapper
+       handles the outer drop-shadow now, so this rule only needs
+       the inset hairline. */
     border: 1.5px solid var(--pp-gold-deep);
-    border-radius: 3px;
+    border-radius: 2px;
     outline: 1px dashed rgba(140, 109, 44, 0.40);
     outline-offset: -10px;
-    /* Soft outer drop shadow so the cream page reads as elevated
-       above the dark footer surface. */
-    box-shadow:
-        0 14px 36px rgba(0, 0, 0, 0.55),
-        0 0 0 1px rgba(90, 56, 24, 0.10) inset;
+    box-shadow: 0 0 0 1px rgba(90, 56, 24, 0.10) inset;
     /* Z-context for the ::before / ::after layers. */
     isolation: isolate;
     overflow: hidden;
@@ -1827,9 +1882,10 @@ html.tc-menu-open body {
 
 /* ---- Passport photo ---- */
 
-/* Aspect 35:45 = ICAO 9303 standard passport photo. Corner brackets
-   mark the photo bounds passport-style; centre stays empty until an
-   <img> is added. */
+/* Aspect 35:45 = ICAO 9303 standard passport photo. The photo well
+   contains: <img> portrait, four gold corner markers, and an
+   iridescent holographic foil overlay (::after). isolation:isolate
+   so the overlay's mix-blend-mode works against the photo only. */
 .tc-passport__photo {
     position: relative;
     width: 110px;
@@ -1842,6 +1898,67 @@ html.tc-menu-open body {
     border: 1px solid rgba(90, 56, 24, 0.25);
     box-shadow: inset 0 0 18px rgba(90, 56, 24, 0.10);
     flex-shrink: 0;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.tc-passport__photo-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Slight desaturation + contrast tweak so the photo reads as a
+       passport portrait rather than a candid snap. */
+    filter: grayscale(0.18) contrast(1.05) brightness(0.97);
+    z-index: 0;
+}
+
+/* Holographic foil overlay — diagonal rainbow shimmer band masked
+   to a narrow stripe across the photo. Real passports have a
+   hologram band like this stamped over the bearer's photo as a
+   security feature; the iridescent reflection is what catches your
+   eye when you tilt the document. The shimmer rotates in sync with
+   --marquee-shine-angle so it slowly drifts across the photo over
+   the same 36s cycle as the pill border, tying the two motions
+   together. mix-blend-mode: overlay lifts the saturation against
+   the photo without obscuring it. */
+.tc-passport__photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: conic-gradient(
+        from var(--marquee-shine-angle, 0deg),
+        rgba(255,  90,  90, 0.65),
+        rgba(255, 200,  80, 0.65),
+        rgba( 90, 255, 150, 0.65),
+        rgba( 80, 200, 255, 0.65),
+        rgba(180, 100, 255, 0.65),
+        rgba(255, 100, 180, 0.65),
+        rgba(255,  90,  90, 0.65)
+    );
+    /* Diagonal mask isolates the rainbow to a narrow shimmer band
+       (~20% of the photo width) instead of coating the whole image.
+       The band moves with the underlying conic gradient rotation. */
+    -webkit-mask-image: linear-gradient(
+        125deg,
+        transparent 28%,
+        rgba(0,0,0,0.85) 44%,
+        rgba(0,0,0,0.85) 56%,
+        transparent 72%
+    );
+            mask-image: linear-gradient(
+        125deg,
+        transparent 28%,
+        rgba(0,0,0,0.85) 44%,
+        rgba(0,0,0,0.85) 56%,
+        transparent 72%
+    );
+    mix-blend-mode: overlay;
+    opacity: 0.65;
+    pointer-events: none;
+    z-index: 2;
+    animation: tc-marquee-shine 36s linear infinite;
 }
 
 .tc-passport__photo-corner {
@@ -1849,23 +1966,12 @@ html.tc-menu-open body {
     width: 14px;
     height: 14px;
     border: 1.6px solid var(--pp-gold-deep);
+    z-index: 3;
 }
 .tc-passport__photo-corner--tl { top: -1px; left:  -1px; border-right:  0; border-bottom: 0; }
 .tc-passport__photo-corner--tr { top: -1px; right: -1px; border-left:   0; border-bottom: 0; }
 .tc-passport__photo-corner--bl { bottom: -1px; left:  -1px; border-right: 0; border-top:    0; }
 .tc-passport__photo-corner--br { bottom: -1px; right: -1px; border-left:  0; border-top:    0; }
-
-.tc-passport__photo-placeholder {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 9px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--pp-ink-faint);
-    font-weight: 600;
-}
 
 /* ---- Bearer field row (Place of Issue / address) ---- */
 
@@ -1893,17 +1999,18 @@ html.tc-menu-open body {
 
 /* ---- Binding staples ---- */
 
-/* Three small silver staples down the page spine, positioned along
-   the centre. Linear-gradient gives a subtle metallic sheen; faint
-   shadow grounds them to the paper. */
+/* Three small silver staples down the page spine, oriented VERTICALLY
+   (running along the spine direction, the way real saddle-stitch
+   staples lie). Brushed-silver gradient runs left-to-right giving the
+   side-on metal sheen. */
 .tc-passport__staple {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: 14px;
-    height: 2.5px;
+    width: 2.5px;
+    height: 16px;
     background: linear-gradient(
-        to bottom,
+        to right,
         #b0b0b8 0%,
         #888893 45%,
         #6a6a73 55%,
@@ -1911,8 +2018,8 @@ html.tc-menu-open body {
     );
     border-radius: 1px;
     box-shadow:
-        0 1px 1px rgba(0, 0, 0, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        1px 0 1px rgba(0, 0, 0, 0.22),
+        inset 1px 0 0 rgba(255, 255, 255, 0.18);
     pointer-events: none;
     z-index: 2;
 }

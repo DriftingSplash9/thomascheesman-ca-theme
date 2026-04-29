@@ -35,6 +35,11 @@
          banner text, not a list of clickable nav items (which the previous
          "TC 'ventures · Life · Family · …" structure was getting confused
          for). -->
+    <!-- Passport "deck" — wraps the marquee-pill (cover plate) + the
+         dark navy cover wrapper + the cream interior page so the whole
+         document tilts as one casually-placed object on the wood table. -->
+    <div class="tc-footer__deck">
+
     <!-- Pill wrapper houses the rotating-gradient border + contrasting
          outer glow (CSS pseudo-elements). The inner .tc-footer__marquee
          keeps overflow:hidden + edge mask for the sway, separated so the
@@ -56,6 +61,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Cover wrapper — dark navy backing that sticks out around the
+         cream page so it reads as the passport's leather cover holding
+         the photo page open. Visible edge ~14px around the page. -->
+    <div class="tc-footer__cover">
 
     <!-- ============================================================
          PASSPORT INTERIOR
@@ -81,17 +91,21 @@
              photo left, bearer details centre, signature right. -->
         <div class="tc-passport__header">
 
-            <!-- Passport photo. Placeholder for now — corner markers
-                 show the photo bounds while the centre stays empty,
-                 ready for an <img> swap once Thomas provides a cropped
-                 portrait. 35:45 aspect matches the real ICAO 9303
-                 passport photo standard. -->
+            <!-- Passport photo. Real cropped portrait + corner markers
+                 + holographic foil overlay (the iridescent shimmer band
+                 every modern passport has across the photo). 35:45
+                 aspect matches the ICAO 9303 standard. -->
             <div class="tc-passport__photo" aria-hidden="true">
+                <img class="tc-passport__photo-img"
+                     src="<?php echo esc_url( 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/passport-photo.jpg' ); ?>"
+                     alt=""
+                     width="110"
+                     height="138"
+                     loading="lazy" />
                 <span class="tc-passport__photo-corner tc-passport__photo-corner--tl"></span>
                 <span class="tc-passport__photo-corner tc-passport__photo-corner--tr"></span>
                 <span class="tc-passport__photo-corner tc-passport__photo-corner--bl"></span>
                 <span class="tc-passport__photo-corner tc-passport__photo-corner--br"></span>
-                <span class="tc-passport__photo-placeholder">Photo</span>
             </div>
 
             <!-- Bearer details with a Place-of-Issue field added below
@@ -262,6 +276,10 @@
         <p class="tc-passport__copyright">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> Thomas Cheesman</p>
 
     </section>
+
+    </div><!-- /.tc-footer__cover -->
+
+    </div><!-- /.tc-footer__deck -->
 
 </footer>
 
