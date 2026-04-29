@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.112
+Version: 1.0.113
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4983,9 +4983,21 @@ body.page-timeline {
 
 .timeline-back-strip--forest {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forest.png');
+    z-index: 2;
+    /* Pure boreal forest — Little Smokey through pre-home years. Fades
+       out 0.55→0.69 to reveal the forested-house era (Thomas moved into
+       the home in 2013, around event "OMG, a baby" at pos 0.69). */
+    opacity: clamp(0, calc((0.69 - var(--tl-prog-eased)) * 7.14), 1);
+}
+
+.timeline-back-strip--forested-house {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forested-house.jpg');
     z-index: 1;
-    /* Always opaque underneath; dominant backdrop from Little Smokey on
-       (most of life from 1997 onward — boreal/forest country). */
+    /* Stitched landscape: forest meeting the 2009 house. Always opaque
+       underneath the forest strip — revealed as forest fades 0.55→0.69.
+       The house "emerges from the trees" as we approach the 2013 move-in.
+       Future stitched years (2012, 2022, 2025, 2026) slot above this one
+       with their own fade-in bands. */
     opacity: 1;
 }
 
@@ -5209,49 +5221,10 @@ body.page-timeline {
 .timeline-jeep__wheel--front { left: 78%; }
 .timeline-jeep__wheel--rear  { left: 8%; }
 
-/* ---- Home finale: settle-into-place ending --------------------------- */
-/* Sits in the scene at the jeep's level — a framed destination photograph
-   that crossfades through Street View captures while the road, layers, and
-   sky persist behind. Only the jeep fades out as the photo fades in.
-   Per-frame opacity bands inside the container are wired by JS for a
-   trapezoidal profile (long dwell + short transitions). */
-.timeline-home-finale {
-    position: absolute;
-    left: 50%;
-    bottom: 14vh;
-    transform: translateX(-50%);
-    width: min(900px, 65vw);
-    aspect-ratio: 16 / 9;
-    z-index: 7;             /* between markers (6) and jeep (8) — sits in the scene */
-    pointer-events: none;
-    background: #1a1208;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
-    overflow: hidden;
-    /* Container fades in 0.86 → 0.92 so the destination photograph arrives
-       gracefully alongside the jeep's fade-out. */
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.86) * 16.66), 1);
-    transition: opacity 0.4s ease;
-}
-
-.timeline-home-finale__frame {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center center;
-    opacity: 0;
-    will-change: opacity;
-    filter: contrast(1.02) saturate(0.95);
-}
-
-/* Only the jeep fades out — road, layers, markers stay alive. The jeep
-   fades 0.86 → 0.94 so by the time the photo is fully visible the jeep
-   is gone (engine off, parked). */
-.timeline-jeep {
-    --tl-jeep-opacity: clamp(0, calc(1 - (var(--tl-prog-eased) - 0.86) * 12.5), 1);
-    opacity: var(--tl-jeep-opacity, 1);
-}
+/* The home era is handled by adding stitched landscape images (forest +
+   house at different years) as additional back-strips in the era-band
+   chain — see .timeline-back-strip--forested-house above. The journey
+   continues through to the end with the home as backdrop. */
 
 /* ---- Roll-Out sign at the road's end ----------------------------------- */
 .timeline-rollout {

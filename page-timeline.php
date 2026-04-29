@@ -301,10 +301,14 @@ get_header(); ?>
         <!-- Sky / atmosphere — slowest, tints across eras. -->
         <div class="timeline-layer timeline-layer--sky" data-layer="sky" aria-hidden="true"></div>
 
-        <!-- Backdrop — mountains, distant skylines, dense forest. Slides leftward.
-             Era-banded photographic strips, stacked top-to-bottom by chronology.
-             Earlier eras sit on top and fade out to reveal later ones underneath. -->
+        <!-- Backdrop — mountains, distant skylines, dense forest, the home.
+             Era-banded photographic strips, stacked top-to-bottom by
+             chronology. Earlier eras sit on top and fade out to reveal
+             later ones underneath. The home era uses stitched landscape
+             images (forest meeting house) so the transition feels like
+             the house emerging from the trees rather than a hard cut. -->
         <div class="timeline-layer timeline-layer--back" data-layer="back" aria-hidden="true">
+            <div class="timeline-back-strip timeline-back-strip--forested-house"></div>
             <div class="timeline-back-strip timeline-back-strip--forest"></div>
             <div class="timeline-back-strip timeline-back-strip--prairie"></div>
             <div class="timeline-back-strip timeline-back-strip--foothills"></div>
@@ -469,31 +473,6 @@ get_header(); ?>
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--front" data-jeep-wheel aria-hidden="true"></span>
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--rear"  data-jeep-wheel aria-hidden="true"></span>
             </div>
-        </div>
-
-        <!-- Home finale: at the very end of the scroll the parallax stops,
-             the jeep parks, and a single full-frame image of Thomas's home
-             cross-fades through Street View captures from oldest to most
-             recent. Time becomes the only thing that moves. JS computes
-             per-frame opacity bands across [0.93, 0.97] of scroll progress.
-             Add <img data-finale-frame="N"> children once Street View
-             captures + present-day photo URLs are available. -->
-        <div class="timeline-home-finale" data-home-finale aria-hidden="true">
-            <img class="timeline-home-finale__frame" data-finale-frame="0"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png"
-                 alt="" loading="lazy" />
-            <img class="timeline-home-finale__frame" data-finale-frame="1"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png"
-                 alt="" loading="lazy" />
-            <img class="timeline-home-finale__frame" data-finale-frame="2"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png"
-                 alt="" loading="lazy" />
-            <img class="timeline-home-finale__frame" data-finale-frame="3"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2025-house.png"
-                 alt="" loading="lazy" />
-            <img class="timeline-home-finale__frame" data-finale-frame="4"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg"
-                 alt="" loading="lazy" />
         </div>
 
         <!-- "Roll-Out" sign — appears at the road's end (scroll progress ≈ 1).
