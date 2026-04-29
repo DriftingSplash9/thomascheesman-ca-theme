@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.89
+Version: 1.0.90
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1786,24 +1786,35 @@ html.tc-menu-open body {
     }
 }
 
-/* Signature mark — placeholder for the SVG-traced handwritten
-   signature. Currently rendered as text in a script-style fallback
-   so the panel never looks empty. The future commit replaces this
-   with an SVG path + ember-pen reveal animation. */
+/* Signature mark — Thomas's actual handwritten signature, inlined
+   as an SVG (assets/svg/signature.svg) so its paths live in the DOM
+   and can be targeted by a future stroke-dasharray reveal animation.
+   currentColor on the SVG strokes lets us drive the ink colour from
+   here. The underline beneath the signature mimics a real signature
+   panel; padding + min-width keep the panel a consistent width
+   regardless of the signature's natural aspect. */
 .tc-passport__signature-mark {
-    font-family: 'Fraunces', 'Brush Script MT', cursive;
-    font-style: italic;
-    font-variation-settings: 'wght' 500, 'opsz' 32;
-    font-size: clamp(20px, 2.6vw, 26px);
+    display: block;
     color: var(--pp-sepia);
-    /* Faint warm shadow so the signature reads as ink that has
-       seeped slightly into the paper. */
-    text-shadow: 0 0 6px rgba(255, 140, 66, 0.18);
-    letter-spacing: 0.01em;
-    /* Underscore line beneath the signature, like a real signature panel. */
+    /* Faint warm shadow on the signature ink — looks as if a touch
+       of the pen's ink has seeped slightly into the paper fibre. */
+    filter: drop-shadow(0 0 4px rgba(255, 140, 66, 0.20));
+    /* Underscore line beneath the signature, like a real signature
+       panel. */
     border-bottom: 1px solid rgba(122, 59, 12, 0.35);
     padding-bottom: 4px;
-    min-width: 200px;
+    min-width: 220px;
+    max-width: 320px;
+    line-height: 0; /* SVG sits flush; no baseline gap below it */
+}
+
+.tc-signature-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 72px;
+    /* The SVG's stroke is currentColor — inherits sepia from
+       .tc-passport__signature-mark. */
 }
 
 /* ---- Stamps row ---- */

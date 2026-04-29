@@ -78,10 +78,24 @@
 
             <div class="tc-passport__signature">
                 <span class="tc-passport__signature-label">Created By:</span>
-                <!-- Signature mark — static placeholder until Thomas's
-                     hand-drawn signature is digitised to an SVG path
-                     and the ember-pen reveal animation is added. -->
-                <span class="tc-passport__signature-mark">Thomas Cheesman</span>
+                <!-- Inlined SVG of Thomas's actual handwritten signature
+                     (vectorizer.ai trace of a phone-photographed signing).
+                     file_get_contents inlines the SVG so its paths are in
+                     the live DOM, which lets a future commit add a
+                     stroke-dasharray reveal animation. PHP opcache + file
+                     stat cache means the read is effectively free per
+                     page. The wrapping span carries layout + colour. -->
+                <span class="tc-passport__signature-mark">
+                    <?php
+                    $signature_path = get_stylesheet_directory() . '/assets/svg/signature.svg';
+                    if ( file_exists( $signature_path ) ) {
+                        // The SVG file authors its own attributes (viewBox,
+                        // class, aria-hidden); CSS handles size + colour.
+                        echo file_get_contents( $signature_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+                    }
+                    ?>
+                </span>
+                <span class="screen-reader-text">Thomas Cheesman</span>
             </div>
         </div>
 
