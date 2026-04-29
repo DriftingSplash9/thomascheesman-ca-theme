@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.91
+Version: 1.0.92
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1466,18 +1466,38 @@ html.tc-menu-open body {
    FOOTER PASSPORT — PALETTE
    ============================================
    The footer is composed as a stylised passport. Cover (marquee pill)
-   and interior page share one palette so they read as one document.
+   stays dark navy + gold like an embossed leather binding. Interior
+   page is actual cream paper with DARK ink for text + stamps —
+   matches how real passport biometric pages look (light paper, dark
+   typography). The dark-cover / light-interior pairing reads as the
+   passport opened up.
+
+   Variables prefixed --pp- are scoped to .tc-footer so they don't
+   pollute the rest of the theme.
 */
 .tc-footer {
-    --pp-navy:        #0c1a3e;
-    --pp-navy-deep:   #06102a;
-    --pp-gold:        #c9a86a;
-    --pp-gold-soft:   rgba(201, 168, 106, 0.55);
-    --pp-cream:       #f0e6d2;
-    --pp-sepia:       #7a3b0c;
-    --pp-sepia-soft:  rgba(122, 59, 12, 0.06);
-    --pp-teal:        #2c5466;
-    --pp-shadow:      rgba(0, 0, 0, 0.25);
+    /* Dark elements (cover, MRZ ink on dark backgrounds, etc.) */
+    --pp-navy:           #0c1a3e;
+    --pp-navy-deep:      #06102a;
+    --pp-gold:           #c9a86a;
+    --pp-gold-deep:      #8c6d2c;
+
+    /* Cream paper interior + dark inks used on it */
+    --pp-paper:          #f0e6d2;
+    --pp-paper-edge:     rgba(80, 50, 18, 0.18);   /* corner aging on cream */
+    --pp-paper-stain:    rgba(122, 59, 12, 0.10);  /* sparse sepia stains */
+    --pp-ink-dark:       #2a1a08;                  /* darkest ink — bearer name */
+    --pp-ink-sepia:      #5a3818;                  /* signature + body text */
+    --pp-ink-faint:      rgba(90, 56, 24, 0.55);   /* tagline, labels */
+    --pp-ink-line:       rgba(90, 56, 24, 0.32);   /* dashed dividers */
+
+    /* Per-stamp ink colours — varied so stamps feel like marks from
+       different times / different ink pads, not a uniform set. */
+    --pp-stamp-indigo:   #1e3a5f;
+    --pp-stamp-sepia:    #5a3018;
+    --pp-stamp-oxblood:  #7a2818;
+    --pp-stamp-teal:     #1e4858;
+    --pp-stamp-ochre:    #6e5018;
 }
 
 /* ============================================
@@ -1668,54 +1688,61 @@ html.tc-menu-open body {
     max-width: min(960px, 92vw);
     margin: 0 auto;
     padding: 36px clamp(20px, 4vw, 56px) 32px;
-    color: var(--pp-cream);
-    /* Subtle gold inset hairline — the page edge of the passport. */
-    border: 1px solid rgba(201, 168, 106, 0.20);
+    color: var(--pp-ink-sepia);
+    /* Solid cream paper — the actual interior of the passport.
+       Replaces the previous dark-with-cream-wash approach. The pill
+       above remains navy (the cover); this is what's revealed when
+       you open it. */
+    background-color: var(--pp-paper);
+    /* Subtle dark inset hairline — the page edge of the passport. */
+    border: 1px solid rgba(90, 56, 24, 0.25);
     border-radius: 4px;
-    /* Back-most layer is the cream wash (low alpha), front layers are
-       added by ::before (fibre grain) and ::after (edge aging + stains). */
-    background-color: rgba(240, 230, 210, 0.045);
+    /* Soft outer drop shadow so the cream page reads as elevated
+       above the dark footer surface. */
+    box-shadow:
+        0 14px 36px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(90, 56, 24, 0.10) inset;
     /* Z-context for the ::before / ::after layers. */
     isolation: isolate;
     overflow: hidden;
 }
 
 /* Fibre grain. SVG feTurbulence procedurally generates a noise
-   pattern; the colour matrix tints it to a muted sepia. The image
-   tiles at 220px so the pattern doesn't read as obviously repeating
-   across a wide footer. screen blend mode lifts the lit pixels of
-   the noise into the cream wash without darkening anywhere. */
+   pattern; the colour matrix tints it darker sepia. multiply blend
+   mode darkens the cream paper at the noise pixels — reads as paper
+   fibre depressions and irregular pulp. */
 .tc-passport::before {
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.45 0 0 0 0 0.36 0 0 0 0 0.18 0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.30 0 0 0 0 0.20 0 0 0 0 0.08 0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>");
     background-size: 220px 220px;
     border-radius: inherit;
-    mix-blend-mode: screen;
-    opacity: 0.85;
+    mix-blend-mode: multiply;
+    opacity: 0.55;
     z-index: -1;
 }
 
-/* Edge aging + sparse stains. Multiple radial gradients composite
-   to give corner darkening, a faint spine line down the middle, and
-   3-4 irregular stain blobs in sepia tones. */
+/* Edge aging + sparse stains. Corner darkening reads as the page
+   being touched at the edges; sepia blobs are coffee rings, age
+   spots, the asymmetric wear that real aged paper has. */
 .tc-passport::after {
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
     background:
-        /* Corner aging */
-        radial-gradient(ellipse 70% 50% at 0% 0%, rgba(0, 0, 0, 0.28), transparent 55%),
-        radial-gradient(ellipse 70% 50% at 100% 0%, rgba(0, 0, 0, 0.22), transparent 55%),
-        radial-gradient(ellipse 70% 50% at 0% 100%, rgba(0, 0, 0, 0.22), transparent 55%),
-        radial-gradient(ellipse 70% 50% at 100% 100%, rgba(0, 0, 0, 0.28), transparent 55%),
+        /* Corner aging — sepia rather than black so the cream paper
+           ages rather than darkens. */
+        radial-gradient(ellipse 70% 50% at 0% 0%, var(--pp-paper-edge), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 100% 0%, var(--pp-paper-edge), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 0% 100%, var(--pp-paper-edge), transparent 55%),
+        radial-gradient(ellipse 70% 50% at 100% 100%, var(--pp-paper-edge), transparent 55%),
         /* Sparse sepia stains at irregular positions */
-        radial-gradient(circle 8% at 18% 62%, rgba(122, 59, 12, 0.10), transparent 60%),
-        radial-gradient(circle 6% at 78% 28%, rgba(122, 59, 12, 0.07), transparent 60%),
-        radial-gradient(circle 5% at 42% 88%, rgba(122, 59, 12, 0.06), transparent 70%);
+        radial-gradient(circle 8% at 18% 62%, var(--pp-paper-stain), transparent 60%),
+        radial-gradient(circle 6% at 78% 28%, var(--pp-paper-stain), transparent 60%),
+        radial-gradient(circle 5% at 42% 88%, var(--pp-paper-stain), transparent 70%);
     border-radius: inherit;
     z-index: -1;
 }
@@ -1743,7 +1770,9 @@ html.tc-menu-open body {
     /* Indent compensates visually for the trailing letter-spacing
        so the word reads optically centred. */
     text-indent: 0.42em;
-    color: var(--pp-gold);
+    /* Deeper gold reads on the cream paper background — the lighter
+       gold from before was for dark-mode contrast. */
+    color: var(--pp-gold-deep);
     line-height: 1;
 }
 
@@ -1753,7 +1782,7 @@ html.tc-menu-open body {
     font-size: 11px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
-    color: rgba(240, 230, 210, 0.55);
+    color: var(--pp-ink-faint);
 }
 
 /* ---- Bearer + signature header ---- */
@@ -1764,7 +1793,7 @@ html.tc-menu-open body {
     gap: 32px;
     align-items: end;
     padding-bottom: 24px;
-    border-bottom: 1px dashed rgba(201, 168, 106, 0.30);
+    border-bottom: 1px dashed var(--pp-ink-line);
     margin-bottom: 28px;
 }
 
@@ -1786,15 +1815,15 @@ html.tc-menu-open body {
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.22em;
-    color: var(--pp-gold);
-    font-weight: 600;
+    color: var(--pp-gold-deep);
+    font-weight: 700;
 }
 
 .tc-passport__bearer-name {
     font-family: 'Fraunces', Georgia, serif;
     font-variation-settings: 'wght' 700, 'opsz' 32;
     font-size: clamp(20px, 3vw, 28px);
-    color: var(--pp-cream);
+    color: var(--pp-ink-dark);
     letter-spacing: 0.01em;
     line-height: 1.1;
 }
@@ -1802,7 +1831,7 @@ html.tc-menu-open body {
 .tc-passport__bearer-tagline {
     font-size: 13px;
     font-style: italic;
-    color: rgba(240, 230, 210, 0.70);
+    color: var(--pp-ink-faint);
     letter-spacing: 0.02em;
     margin-top: 2px;
 }
@@ -1826,18 +1855,17 @@ html.tc-menu-open body {
    as an SVG (assets/svg/signature.svg) so its paths live in the DOM
    and can be targeted by a future stroke-dasharray reveal animation.
    currentColor on the SVG strokes lets us drive the ink colour from
-   here. The underline beneath the signature mimics a real signature
-   panel; padding + min-width keep the panel a consistent width
-   regardless of the signature's natural aspect. */
+   here. Sepia ink on cream paper is exactly how a real signed
+   signature reads. */
 .tc-passport__signature-mark {
     display: block;
-    color: var(--pp-sepia);
-    /* Faint warm shadow on the signature ink — looks as if a touch
-       of the pen's ink has seeped slightly into the paper fibre. */
-    filter: drop-shadow(0 0 4px rgba(255, 140, 66, 0.20));
+    color: var(--pp-ink-sepia);
+    /* Faint warm bleed shadow — a touch of the pen's ink seeping
+       into the paper fibre. Subtle on cream; reads at hover. */
+    filter: drop-shadow(0 0 3px rgba(122, 59, 12, 0.30));
     /* Underscore line beneath the signature, like a real signature
        panel. */
-    border-bottom: 1px solid rgba(122, 59, 12, 0.35);
+    border-bottom: 1px solid var(--pp-ink-line);
     padding-bottom: 4px;
     min-width: 220px;
     max-width: 320px;
@@ -1857,12 +1885,15 @@ html.tc-menu-open body {
 
 .tc-passport__stamps {
     list-style: none;
-    margin: 0 0 28px;
+    margin: 8px 0 24px;
     padding: 0;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 28px clamp(16px, 3vw, 36px);
+    /* Generous vertical gap so the per-stamp Y-offsets below don't
+       cause overlap with adjacent rows when wrapping. */
+    gap: 36px clamp(20px, 3.5vw, 40px);
+    align-items: center;
 }
 
 .tc-passport__stamp {
@@ -1874,53 +1905,52 @@ html.tc-menu-open body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     text-decoration: none;
-    color: var(--pp-gold);
     transition: color 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.tc-passport__stamp-link:hover {
-    color: var(--pp-cream);
-    transform: translateY(-2px);
 }
 
 .tc-passport__stamp-mark {
     /* Stamp is a circular border around the line-engraved icon + date.
-       Slight rotation gives it the hand-stamped imperfection of a real
-       visa mark. flex-column stacks the icon above the date inside the
-       circle, mirroring how real visa stamps lay out (motif on top,
-       date underneath). */
-    width: 84px;
-    height: 84px;
+       Each stamp gets unique rest + hover transforms via :nth-child
+       below so the row reads as hand-pressed marks at slightly off
+       angles and Y positions, not a stencil-aligned grid. */
+    width: 92px;
+    height: 92px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 2px;
-    border: 1.5px solid currentColor;
+    border: 1.8px solid currentColor;
     border-radius: 50%;
-    /* Faint background tint so the stamp ring "sits in" the paper
-       rather than floating on top. */
-    background:
-        radial-gradient(circle, rgba(201, 168, 106, 0.06), transparent 70%);
-    transform: rotate(-4deg);
+    /* Inner cream tint so the ring frames a slightly brighter centre
+       — mimics ink stamps where the centre is a hair lighter than
+       the heavily-pressed border. */
+    background: radial-gradient(circle, rgba(255, 250, 235, 0.40), transparent 75%);
+    transform: var(--stamp-rest-transform, rotate(-4deg));
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.3s ease;
-    /* Subtle ink-bleed shadow as if the rubber stamp pressed firmly
-       and a touch of pigment seeped outward. */
-    box-shadow: 0 0 0 1px rgba(201, 168, 106, 0.10),
-                0 1px 3px rgba(0, 0, 0, 0.20);
+                border-color 0.3s ease,
+                filter 0.3s ease;
+    /* Subtle ink-bleed shadow + soft outer drop, as if the rubber
+       stamp pressed firmly and a touch of pigment seeped outward. */
+    box-shadow: 0 0 0 1px rgba(90, 56, 24, 0.10),
+                0 2px 4px rgba(0, 0, 0, 0.10);
 }
 
 .tc-passport__stamp-link:hover .tc-passport__stamp-mark {
-    transform: rotate(2deg);
-    border-color: var(--pp-cream);
+    transform: var(--stamp-hover-transform, rotate(0deg));
+    filter: brightness(1.12);
 }
 
 .tc-passport__stamp-mark svg {
-    width: 44%;
-    height: 44%;
+    /* Icons enlarged from 44% to 60% — at this stamp size the
+       previous icon felt timid against the bordered circle. Slightly
+       heavier stroke (1.8 instead of 1.5) reads cleanly at the
+       larger render size. */
+    width: 60%;
+    height: 60%;
+    stroke-width: 1.8;
 }
 
 /* Stamp date — small monospace overlay at the bottom of the stamp
@@ -1928,35 +1958,79 @@ html.tc-menu-open body {
 .tc-passport__stamp-date {
     font-family: 'Iosevka', 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Consolas, monospace;
     font-variant-numeric: tabular-nums;
-    font-size: 9px;
-    letter-spacing: 0.05em;
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
     color: currentColor;
-    opacity: 0.78;
+    opacity: 0.85;
     line-height: 1;
+    font-weight: 700;
 }
 
 .tc-passport__stamp-label {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    font-weight: 600;
-    color: rgba(240, 230, 210, 0.72);
+    font-weight: 700;
+    color: var(--pp-ink-faint);
     transition: color 0.3s ease;
 }
 
 .tc-passport__stamp-link:hover .tc-passport__stamp-label {
-    color: var(--pp-cream);
+    color: var(--pp-ink-dark);
 }
 
-/* Alternate every other stamp to faded teal so the row isn't a
-   uniform gold; matches the hand-mixed feel of real passport stamp
-   inks. nth-child(even) targets the 2nd and 4th stamps. */
-.tc-passport__stamp:nth-child(even) .tc-passport__stamp-link {
-    color: var(--pp-teal);
+/* Per-stamp ink colour, rotation, and Y-offset. Each stamp gets a
+   distinct ink colour drawn from the --pp-stamp-* palette so the
+   row reads as marks from different ink pads pressed at different
+   times — not a uniform set. The --stamp-*-transform vars carry
+   the rest + hover transforms so :hover only swaps the variable.
+   nth-child runs in document order: Family → Ramblings → About →
+   Contact → Timeline. */
+.tc-passport__stamp:nth-child(1) .tc-passport__stamp-link {
+    color: var(--pp-stamp-indigo);
+}
+.tc-passport__stamp:nth-child(1) .tc-passport__stamp-mark {
+    --stamp-rest-transform:  rotate(-7deg) translateY(2px);
+    --stamp-hover-transform: rotate(-3deg) translateY(-3px);
 }
 
-.tc-passport__stamp:nth-child(even) .tc-passport__stamp-link:hover {
-    color: var(--pp-cream);
+.tc-passport__stamp:nth-child(2) .tc-passport__stamp-link {
+    color: var(--pp-stamp-sepia);
+}
+.tc-passport__stamp:nth-child(2) .tc-passport__stamp-mark {
+    --stamp-rest-transform:  rotate(4deg) translateY(-3px);
+    --stamp-hover-transform: rotate(0deg) translateY(-7px);
+}
+
+.tc-passport__stamp:nth-child(3) .tc-passport__stamp-link {
+    color: var(--pp-stamp-oxblood);
+}
+.tc-passport__stamp:nth-child(3) .tc-passport__stamp-mark {
+    --stamp-rest-transform:  rotate(-2deg) translateY(5px);
+    --stamp-hover-transform: rotate(2deg) translateY(0);
+}
+
+.tc-passport__stamp:nth-child(4) .tc-passport__stamp-link {
+    color: var(--pp-stamp-teal);
+}
+.tc-passport__stamp:nth-child(4) .tc-passport__stamp-mark {
+    --stamp-rest-transform:  rotate(6deg) translateY(-1px);
+    --stamp-hover-transform: rotate(2deg) translateY(-5px);
+}
+
+.tc-passport__stamp:nth-child(5) .tc-passport__stamp-link {
+    color: var(--pp-stamp-ochre);
+}
+.tc-passport__stamp:nth-child(5) .tc-passport__stamp-mark {
+    --stamp-rest-transform:  rotate(-5deg) translateY(3px);
+    --stamp-hover-transform: rotate(-1deg) translateY(-2px);
+}
+
+/* Tiny per-stamp opacity variation — some stamps look more faded
+   than others, like ink that's worn over time. */
+.tc-passport__stamp:nth-child(2) .tc-passport__stamp-mark,
+.tc-passport__stamp:nth-child(5) .tc-passport__stamp-mark {
+    opacity: 0.88;
 }
 
 /* ---- Socials row ---- */
@@ -1970,30 +2044,30 @@ html.tc-menu-open body {
     gap: 8px;
     padding-top: 18px;
     margin-bottom: 16px;
-    border-top: 1px dashed rgba(201, 168, 106, 0.30);
+    border-top: 1px dashed var(--pp-ink-line);
     font-size: 11px;
     letter-spacing: 0.06em;
 }
 
 .tc-passport__socials-label {
-    color: rgba(240, 230, 210, 0.45);
+    color: var(--pp-ink-faint);
     text-transform: uppercase;
     letter-spacing: 0.18em;
     font-size: 10px;
 }
 
 .tc-passport__socials a {
-    color: var(--pp-gold);
+    color: var(--pp-gold-deep);
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .tc-passport__socials a:hover {
-    color: var(--pp-cream);
+    color: var(--pp-ink-dark);
 }
 
 .tc-passport__socials-sep {
-    color: rgba(201, 168, 106, 0.35);
+    color: var(--pp-ink-line);
 }
 
 /* ---- Machine-Readable Zone ---- */
@@ -2002,14 +2076,12 @@ html.tc-menu-open body {
    passport's photo page. The font stack tries Iosevka / JetBrains
    Mono first (closer to OCR-B's geometric character) then falls back
    to system mono. Letter-spacing is intentionally tight — real MRZ
-   characters are nearly fixed-pitch and butt up against each other.
-   word-break:break-all and overflow-x:auto guard against wide-char
-   browsers wrapping the line awkwardly on narrow screens. */
+   characters are nearly fixed-pitch and butt up against each other. */
 .tc-passport__mrz {
-    margin: 0 0 10px;
+    margin: 0 0 12px;
     padding: 12px 0 10px;
-    border-top: 1px dashed rgba(201, 168, 106, 0.30);
-    border-bottom: 1px dashed rgba(201, 168, 106, 0.30);
+    border-top: 1px dashed var(--pp-ink-line);
+    border-bottom: 1px dashed var(--pp-ink-line);
     text-align: center;
     overflow-x: auto;
     /* Hide the scrollbar visually while keeping the content reachable. */
@@ -2026,12 +2098,10 @@ html.tc-menu-open body {
     font-variant-numeric: tabular-nums;
     font-size: clamp(10px, 1.15vw, 13px);
     letter-spacing: 0.04em;
-    color: rgba(240, 230, 210, 0.62);
+    /* Dark ink against cream — reads as actual printed OCR-B. */
+    color: var(--pp-ink-sepia);
     line-height: 1.4;
-    /* Real MRZ has very restrained tracking; we mimic by using a slim
-       weight and slightly muted colour so it reads as printed code,
-       not headline. */
-    font-weight: 400;
+    font-weight: 500;
     white-space: pre;
 }
 
@@ -2043,7 +2113,7 @@ html.tc-menu-open body {
     font-size: 10px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: rgba(240, 230, 210, 0.30);
+    color: var(--pp-ink-faint);
 }
 
 /* ---- Reduced motion overrides for chrome ---- */
