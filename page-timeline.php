@@ -311,8 +311,7 @@ get_header(); ?>
         </div>
 
         <!-- Middle band — towns, farms, scattered groups with empty stretches.
-             Slides RIGHTWARD against the backdrop's leftward drift (the
-             carnival-duck reversal). -->
+             Slides leftward, faster than back, slower than foreground. -->
         <div class="timeline-layer timeline-layer--mid" data-layer="mid" aria-hidden="true"></div>
 
         <!-- Foreground tufts — closest, fastest, leftward. -->

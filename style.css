@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.107
+Version: 1.0.108
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4883,7 +4883,7 @@ body:has(.person-spoke--faith) {
        Foreground travels furthest, sky barely moves. */
     --tl-pan-sky:  -8vw;     /* slowest, leftward */
     --tl-pan-back: -50vw;    /* leftward */
-    --tl-pan-mid:  35vw;     /* RIGHTWARD against the back */
+    --tl-pan-mid:  -70vw;    /* leftward — between back and fore for parallax */
     --tl-pan-fore: -90vw;    /* fastest, leftward */
     --tl-pan-road: 300vw;    /* total leftward pan distance — equals .timeline-road width so the path point at pos=current_progress always sits under the jeep */
 }
@@ -4986,8 +4986,7 @@ body.page-timeline {
     opacity: 1;
 }
 
-/* Middle band — RIGHTWARD against the back's leftward (carnival reversal).
-   Sparse silhouettes with intentional gaps. */
+/* Middle band — leftward, faster than back, slower than fore. */
 .timeline-layer--mid {
     --tl-layer-translate: calc(var(--tl-pan-mid)  * var(--tl-prog-eased));
     background:
