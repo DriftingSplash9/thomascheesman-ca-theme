@@ -2219,7 +2219,9 @@ function initTimelinePage() {
     let isVisible = !document.hidden;
 
     // Reduced motion: skip lerp, snap to scroll, no idle wheel rotation.
-    const lerpFactor = reduceMotion ? 1 : 0.10;
+    // 0.06 = ~280ms to settle from a wheel-flick; smooth enough to read,
+    // responsive enough not to feel sluggish on slow input.
+    const lerpFactor = reduceMotion ? 1 : 0.06;
     const wheelFloorPerFrame = reduceMotion ? 0 : 0.4;
 
     function tick() {
