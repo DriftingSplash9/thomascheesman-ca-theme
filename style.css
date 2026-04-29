@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.119
+Version: 1.0.120
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4989,25 +4989,25 @@ body.page-timeline {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forest.png');
     z-index: 2;
     /* Pure boreal forest — tiles as substrate from Little Smokey era
-       through the late timeline. Fades out 0.85 → 0.90 to let the
-       full-viewport finale takeover (.timeline-finale) hand off cleanly. */
-    opacity: clamp(0, calc((0.90 - var(--tl-prog-eased)) * 20), 1);
+       through the late timeline. Fades out 0.58 → 0.65 to hand off
+       cleanly to the 2009 home image (the first finale slide). */
+    opacity: clamp(0, calc((0.65 - var(--tl-prog-eased)) * 14.3), 1);
 }
 
-/* ---- Finale takeover -------------------------------------------------- */
-/* At end-of-timeline the world (parallax layers + jeep) fades out and a
-   sequence of full-viewport images replaces it: 2009 Street View → home
-   video → 2026 present-day photo. Each child fully covers the viewport. */
+/* ---- Finale slideshow ------------------------------------------------- */
+/* Crossfading sequence of home photos — 2009 Street View → 2012 → 2022 →
+   2025 → 2026 present-day. Each fills the viewport. Per-frame opacity is
+   set inline by JS using an asymmetric trapezoidal profile so slides that
+   span more years (the 2012 → 2022 gap especially) hold longer. */
 .timeline-finale {
     position: absolute;
     inset: 0;
-    z-index: 9;             /* above all parallax layers (max z 5) and the jeep (8); below Roll-Out (10) */
+    z-index: 9;             /* above all parallax (max z 5) and jeep (8); below Roll-Out (10) */
     pointer-events: none;
     overflow: hidden;
 }
 
-.timeline-finale__frame,
-.timeline-finale__video {
+.timeline-finale__frame {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -5018,29 +5018,11 @@ body.page-timeline {
     will-change: opacity;
 }
 
-.timeline-finale__frame--first {
-    /* 2009 Street View — fades in 0.85 → 0.90 alongside the world's exit. */
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.85) * 20), 1);
-}
-
-.timeline-finale__video {
-    /* Video crossfades in over the 2009 image 0.93 → 0.95. Hidden by JS
-       until band approaches so the poster frame can't bleed through. */
-    visibility: hidden;
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.93) * 50), 1);
-}
-
-.timeline-finale__frame--last {
-    /* 2026 present-day photo — fades in 0.97 → 0.99 over the video and
-       holds frozen through end of scroll. */
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.97) * 50), 1);
-}
-
-/* Jeep fades out alongside the world's exit — 0.85 → 0.90. Late-event
-   prose (2025, 2026) fades with the jeep; the visual finale carries the
-   end of the story instead of the prose box. */
+/* Jeep fades out 0.58 → 0.65 alongside the forest's fade-out — the world
+   hands off to the home slideshow. Late-event prose (2025, 2026) fades
+   with the jeep; the slideshow carries the end of the story. */
 .timeline-jeep {
-    opacity: clamp(0, calc((0.90 - var(--tl-prog-eased)) * 20), 1);
+    opacity: clamp(0, calc((0.65 - var(--tl-prog-eased)) * 14.3), 1);
 }
 
 /* Middle band — leftward, faster than back, slower than fore. */

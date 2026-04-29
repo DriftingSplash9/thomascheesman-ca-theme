@@ -2183,11 +2183,12 @@ function initTimelinePage() {
     const yearJeepEl= root.querySelector('[data-jeep-year]');
     const rearEl    = root.querySelector('[data-jeep-rear]');
     const markers   = Array.from(root.querySelectorAll('[data-marker]'));
-    const homeVideo = root.querySelector('[data-home-video]');
-    if (homeVideo) {
-        homeVideo.playbackRate = 0.5;
-    }
-    let homeVideoStarted = false;
+    const finaleFrames = Array.from(root.querySelectorAll('[data-finale-frame]'));
+    // Slide centers for the home-photo finale, ordered by data-finale-frame
+    // index (2009 → 2012 → 2022 → 2025 → 2026). Year-weighted positions so
+    // each image lands roughly where its year shows on the counter.
+    const FINALE_SLIDE_POSITIONS = [0.65, 0.71, 0.89, 0.95, 0.97];
+    const FINALE_FIRST_BAND_START = 0.58;
 
     // ---- Projector lightbox ----
     const projector = root.querySelector('[data-projector]');
@@ -2298,20 +2299,40 @@ function initTimelinePage() {
         // --- Position markers along the SVG road ---
         positionMarkers();
 
-        // --- Home video: reveal + start playback when its fade-in band
-        // approaches. Hidden by default (CSS visibility:hidden) so its
-        // poster frame doesn't bleed through during the 2009-image phase.
-        // Trigger at 0.92 — just before the video's opacity formula
-        // (0.93 → 0.95) actually starts revealing it.
-        if (homeVideo) {
-            if (easedProgress >= 0.92) {
-                homeVideo.style.visibility = 'visible';
-                if (!homeVideoStarted) {
-                    homeVideoStarted = true;
-                    homeVideo.play().catch(function () { /* autoplay blocked */ });
+        // --- Home finale slideshow: per-frame opacity using an asymmetric
+        // trapezoidal profile. Each slide is fully opaque for the second
+        // half of its leftward range and the first half of its rightward
+        // range, ramping to 0 at the midpoint with each neighbor — so
+        // adjacent slides crossfade through their midpoint with summed
+        // opacity ≈ 1. The last slide holds at 1 past its center so the
+        // 2026 photo is the resting frame.
+        if (finaleFrames.length) {
+            const N = FINALE_SLIDE_POSITIONS.length;
+            for (let i = 0; i < N; i++) {
+                if (!finaleFrames[i]) continue;
+                const center = FINALE_SLIDE_POSITIONS[i];
+                const leftMid = i === 0
+                    ? FINALE_FIRST_BAND_START
+                    : (FINALE_SLIDE_POSITIONS[i - 1] + center) / 2;
+                const rightMid = i === N - 1
+                    ? 1.5  // sentinel; last slide holds at 1 past its center
+                    : (center + FINALE_SLIDE_POSITIONS[i + 1]) / 2;
+
+                let op;
+                if (i === N - 1 && easedProgress >= center) {
+                    op = 1;
+                } else if (easedProgress < leftMid || easedProgress > rightMid) {
+                    op = 0;
+                } else if (easedProgress <= center) {
+                    const leftHalf = center - leftMid;
+                    const t = (easedProgress - leftMid) / leftHalf;
+                    op = Math.min(1, t * 2);
+                } else {
+                    const rightHalf = rightMid - center;
+                    const t = (rightMid - easedProgress) / rightHalf;
+                    op = Math.min(1, t * 2);
                 }
-            } else if (!homeVideoStarted) {
-                homeVideo.style.visibility = 'hidden';
+                finaleFrames[i].style.opacity = op.toFixed(3);
             }
         }
 
