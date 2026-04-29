@@ -437,7 +437,10 @@ get_header(); ?>
              Click → home (or, when BHAG ships, returns to topography). -->
         <a class="timeline-rollout" data-rollout href="<?php echo esc_url( home_url( '/' ) ); ?>"
            aria-label="Roll out — return home">
-            <span class="timeline-rollout__plate" aria-hidden="true">ROLL-OUT</span>
+            <img class="timeline-rollout__sign"
+                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/roll-out.png"
+                 alt=""
+                 aria-hidden="true" />
         </a>
 
     </section>
@@ -470,12 +473,18 @@ get_header(); ?>
         <div class="timeline-projector__stage">
             <div class="timeline-projector__jeep" aria-hidden="true"></div>
             <figure class="timeline-projector__screen" data-projector-screen>
-                <div class="timeline-projector__media" data-projector-media>
-                    <!-- Populated by JS: img or video element with aged-film overlay. -->
+                <!-- The image (projector-screen.png) draws the tripod + screen
+                     fabric. Everything dynamic — the projected media, caption,
+                     flicker — lives inside .__canvas which is positioned to
+                     overlap exactly with the white screen region of the image. -->
+                <div class="timeline-projector__canvas">
+                    <div class="timeline-projector__media" data-projector-media>
+                        <!-- Populated by JS: img or video element with aged-film overlay. -->
+                    </div>
+                    <figcaption class="timeline-projector__caption" data-projector-caption></figcaption>
+                    <div class="timeline-projector__flicker" aria-hidden="true"></div>
                 </div>
-                <figcaption class="timeline-projector__caption" data-projector-caption></figcaption>
             </figure>
-            <div class="timeline-projector__flicker" aria-hidden="true"></div>
         </div>
         <div class="timeline-projector__chrome">
             <button type="button" class="timeline-projector__nav timeline-projector__nav--prev"
