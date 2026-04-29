@@ -301,8 +301,14 @@ get_header(); ?>
         <!-- Sky / atmosphere — slowest, tints across eras. -->
         <div class="timeline-layer timeline-layer--sky" data-layer="sky" aria-hidden="true"></div>
 
-        <!-- Backdrop — mountains, distant skylines, dense forest. Slides leftward. -->
-        <div class="timeline-layer timeline-layer--back" data-layer="back" aria-hidden="true"></div>
+        <!-- Backdrop — mountains, distant skylines, dense forest. Slides leftward.
+             Era-banded photographic strips, stacked top-to-bottom by chronology.
+             Earlier eras sit on top and fade out to reveal later ones underneath. -->
+        <div class="timeline-layer timeline-layer--back" data-layer="back" aria-hidden="true">
+            <div class="timeline-back-strip timeline-back-strip--forest"></div>
+            <div class="timeline-back-strip timeline-back-strip--prairie"></div>
+            <div class="timeline-back-strip timeline-back-strip--foothills"></div>
+        </div>
 
         <!-- Middle band — towns, farms, scattered groups with empty stretches.
              Slides RIGHTWARD against the backdrop's leftward drift (the

@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.102
+Version: 1.0.103
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4944,19 +4944,46 @@ body.page-timeline {
     z-index: 1;
 }
 
-/* Backdrop layer — placeholder silhouette band until Grok foothills /
-   prairie / forest / city strips arrive. */
+/* Backdrop layer — three photographic Kodachrome strips stacked by era.
+   Children handle their own background/opacity; this is just the container. */
 .timeline-layer--back {
     --tl-layer-translate: calc(var(--tl-pan-back) * var(--tl-prog-eased));
-    background-image:
-        linear-gradient(to top,
-            rgba(60,40,25,0.55) 0%,
-            rgba(60,40,25,0.0)  35%);
-    /* Add a faint repeating "mountain shape" via SVG so motion is visible
-       before real assets arrive. */
-    background:
-        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 600'><path d='M0,400 L120,260 L260,360 L380,200 L520,340 L660,250 L800,380 L940,220 L1080,340 L1220,260 L1360,360 L1500,240 L1600,360 L1600,600 L0,600 Z' fill='%234e3a25' opacity='0.55'/></svg>") repeat-x 0 70% / auto 60%;
     z-index: 2;
+}
+
+/* Each era strip fills the layer and tiles horizontally so the parallax
+   pan never runs out of image. Stacking top-down by chronology: foothills
+   sits on top (early years), then prairie, with forest as the always-on
+   substrate revealed once prairie fades. */
+.timeline-back-strip {
+    position: absolute;
+    inset: 0;
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    background-position: 0% 100%;
+    will-change: opacity;
+}
+
+.timeline-back-strip--foothills {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/foothills.png');
+    z-index: 3;
+    /* Calgary / Turner Valley / HCS era. Opaque at 0; fades out 0.10→0.20. */
+    opacity: clamp(0, calc((0.20 - var(--tl-prog-eased)) * 10), 1);
+}
+
+.timeline-back-strip--prairie {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/prairie.png');
+    z-index: 2;
+    /* Peace Country prairie — dominant from Teepee Creek through GP. Full
+       through ~0.55, fades out 0.55→0.65 to reveal forest. */
+    opacity: clamp(0, calc((0.65 - var(--tl-prog-eased)) * 10), 1);
+}
+
+.timeline-back-strip--forest {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forest.png');
+    z-index: 1;
+    /* Always opaque underneath; revealed once prairie fades. */
+    opacity: 1;
 }
 
 /* Middle band — RIGHTWARD against the back's leftward (carnival reversal).
