@@ -332,18 +332,14 @@ get_header(); ?>
              images (forest meeting house) so the transition feels like
              the house emerging from the trees rather than a hard cut. -->
         <div class="timeline-layer timeline-layer--back" data-layer="back" aria-hidden="true">
-            <!-- Home slideshow — sits in the back layer, sized smaller
-                 than the viewport. JS drives per-frame opacity using
-                 year-weighted slide centers for the crossfades. -->
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2026" data-finale-frame="4"></div>
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2025" data-finale-frame="3"></div>
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2022" data-finale-frame="2"></div>
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2012" data-finale-frame="1"></div>
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2009" data-finale-frame="0"></div>
-            <!-- Era backdrops behind the slideshow. -->
-            <div class="timeline-back-strip timeline-back-strip--forest"></div>
-            <div class="timeline-back-strip timeline-back-strip--prairie"></div>
+            <!-- Era backdrops, top of stack first (earlier eras fade out
+                 to reveal later ones underneath). Forest tiles through
+                 ~year 2000, then night sky takes over as the backdrop
+                 behind the floating photo frame. -->
             <div class="timeline-back-strip timeline-back-strip--foothills"></div>
+            <div class="timeline-back-strip timeline-back-strip--prairie"></div>
+            <div class="timeline-back-strip timeline-back-strip--forest"></div>
+            <div class="timeline-back-strip timeline-back-strip--night-sky"></div>
         </div>
 
         <!-- Middle band — towns, farms, scattered groups with empty stretches.
@@ -486,6 +482,9 @@ get_header(); ?>
              plugged in). -->
         <div class="timeline-jeep" data-jeep aria-hidden="false">
             <div class="timeline-jeep__shell">
+                <!-- Headlight beam from the front (left side of jeep). -->
+                <div class="timeline-jeep__headlight" aria-hidden="true"></div>
+
                 <!-- Windshield — atmosphere. Currently empty; reserved for
                      "next place" ghost text or weather hint. -->
                 <div class="timeline-jeep__windshield" data-jeep-windshield aria-hidden="true"></div>
@@ -496,11 +495,43 @@ get_header(); ?>
             </div>
         </div>
 
-        <!-- Per-event image surface, extracted from inside the jeep so
-             it stays put when the jeep shrinks/slides during the home-era
-             handoff. Sized + positioned to roughly match where the jeep's
-             windows used to be. -->
-        <div class="timeline-jeep__rear" data-jeep-rear aria-hidden="true"></div>
+        <!-- Floating photo frame — centered slideshow viewer for the
+             home-era photos. Replaces the back-layer house strips. JS
+             sets per-slide opacity using year-weighted asymmetric trapezoid. -->
+        <div class="timeline-photo-frame" data-photo-frame aria-hidden="true">
+            <div class="timeline-photo-frame__viewport">
+                <div class="timeline-photo-frame__slide" data-finale-frame="0">
+                    <img class="timeline-photo-frame__img"
+                         src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png"
+                         alt="" loading="lazy" />
+                    <span class="timeline-photo-frame__year">2009</span>
+                </div>
+                <div class="timeline-photo-frame__slide" data-finale-frame="1">
+                    <img class="timeline-photo-frame__img"
+                         src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png"
+                         alt="" loading="lazy" />
+                    <span class="timeline-photo-frame__year">2012</span>
+                </div>
+                <div class="timeline-photo-frame__slide" data-finale-frame="2">
+                    <img class="timeline-photo-frame__img"
+                         src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png"
+                         alt="" loading="lazy" />
+                    <span class="timeline-photo-frame__year">2022</span>
+                </div>
+                <div class="timeline-photo-frame__slide" data-finale-frame="3">
+                    <img class="timeline-photo-frame__img"
+                         src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2025-house.png"
+                         alt="" loading="lazy" />
+                    <span class="timeline-photo-frame__year">2025</span>
+                </div>
+                <div class="timeline-photo-frame__slide" data-finale-frame="4">
+                    <img class="timeline-photo-frame__img"
+                         src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg"
+                         alt="" loading="lazy" />
+                    <span class="timeline-photo-frame__year">2026</span>
+                </div>
+            </div>
+        </div>
 
         <!-- Persistent prose pill below the road. Holds year + title +
              prose for the current event; styled to echo the sitewide

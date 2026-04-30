@@ -2182,6 +2182,7 @@ function initTimelinePage() {
     const proseEl   = root.querySelector('[data-jeep-prose]');
     const yearJeepEl= root.querySelector('[data-jeep-year]');
     const rearEl    = root.querySelector('[data-jeep-rear]');
+    const jeepEl    = root.querySelector('[data-jeep]');
     const markers   = Array.from(root.querySelectorAll('[data-marker]'));
     const finaleFrames = Array.from(root.querySelectorAll('[data-finale-frame]'))
         .sort(function (a, b) {
@@ -2306,6 +2307,33 @@ function initTimelinePage() {
 
         // --- Position markers along the SVG road ---
         positionMarkers();
+
+        // --- Jeep follows the road ---
+        // Sample the road path's y at the jeep's progress-on-path. The
+        // road is panned so the path point at progress P sits at viewport
+        // x = 75vw; the jeep is anchored at viewport x = 50vw, which
+        // corresponds to a path point ~0.083 progress earlier (the 25vw
+        // offset divided by the 300vw total pan distance).
+        if (roadPath && jeepEl) {
+            const svg = roadPath.ownerSVGElement;
+            if (svg) {
+                const rect = svg.getBoundingClientRect();
+                if (rect.height > 0) {
+                    try {
+                        const len = roadPath.getTotalLength();
+                        const vbox = svg.viewBox.baseVal;
+                        const jeepProgress = Math.max(0, Math.min(1, easedProgress - 0.083));
+                        const t = jeepProgress * len;
+                        const pt = roadPath.getPointAtLength(t);
+                        const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
+                        const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
+                        // -3vh offset puts the jeep's wheels roughly on the road line
+                        // (empirical; tune if the wheels float or sink).
+                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - 3).toFixed(1) + 'vh');
+                    } catch (e) { /* path not ready */ }
+                }
+            }
+        }
 
         // --- Home finale slideshow: per-frame opacity using an asymmetric
         // trapezoidal profile. Each slide is fully opaque for the second

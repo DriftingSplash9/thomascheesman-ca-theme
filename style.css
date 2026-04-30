@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.124
+Version: 1.0.125
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4988,31 +4988,26 @@ body.page-timeline {
 .timeline-back-strip--forest {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/forest.png');
     z-index: 2;
-    /* Pure boreal forest — always-tiling substrate. The home slideshow
-       sits on top of forest from 0.62 onward, so forest peeks out around
-       the smaller-sized house photos as background scenery. */
-    opacity: 1;
+    /* Forest tiles substrate from Little Smokey through ~year 2000.
+       Fades 0.42 → 0.50 to hand off to the night-sky backdrop. */
+    opacity: clamp(0, calc((0.50 - var(--tl-prog-eased)) * 12.5), 1);
 }
 
-/* Home slideshow — sized smaller than the viewport so the road, jeep,
-   prose box, and forest scenery all stay visible around them. Crossfade
-   between five photos (2009 → 2012 → 2022 → 2025 → 2026). Per-frame
-   opacity is set inline by JS using year-weighted asymmetric trapezoid. */
-.timeline-back-strip--house {
+/* Night-sky backdrop — takes over from forest around year 2000 (pos 0.46).
+   Fills the viewport behind the home photos through the rest of the
+   timeline, so the floating photo frame reads as memories suspended in
+   night air. Reuses night-sky.png from the projector lightbox. */
+.timeline-back-strip--night-sky {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/night-sky.png');
+    background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
-    background-position: 50% 100%;
-    background-size: auto 100%;
-    opacity: 0;                  /* JS overrides per frame */
-    will-change: opacity;
+    z-index: 1;             /* below forest so forest fades reveal it */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
 }
 
 /* (Jeep handoff is via shrink + slide-left in the main .timeline-jeep
    rule above — no opacity fade.) */
-.timeline-back-strip--house-2009  { z-index: 5; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png'); }
-.timeline-back-strip--house-2012  { z-index: 6; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png'); }
-.timeline-back-strip--house-2022  { z-index: 7; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png'); }
-.timeline-back-strip--house-2025  { z-index: 8; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2025-house.png'); }
-.timeline-back-strip--house-2026  { z-index: 9; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg'); }
 
 /* Middle band — leftward, faster than back, slower than fore. */
 .timeline-layer--mid {
@@ -5120,15 +5115,13 @@ body.page-timeline {
 /* ---- The jeep ---------------------------------------------------------- */
 .timeline-jeep {
     position: absolute;
-    /* During the home era (progress 0.55 → 0.62) the jeep shrinks to 10%
-       of its size and slides left along the road, ending small at the
-       left edge of the viewport so it stays in view but doesn't obstruct
-       the home photos. */
-    --jeep-shrink: clamp(0, calc((var(--tl-prog-eased) - 0.55) * 14.3), 1);
-    --jeep-scale: calc(1 - var(--jeep-shrink) * 0.8);
-    left: calc(50% - var(--jeep-shrink) * 45vw);
-    bottom: 6vh;
-    transform: translateX(-50%) scale(var(--jeep-scale));
+    /* Jeep stays small (scale 0.3) the whole timeline and rides the road —
+       JS computes road's y at the jeep's progress-on-path and writes it
+       to --jeep-road-y so the jeep visually drives along the curves
+       rather than floating along a flat baseline. */
+    left: 50%;
+    bottom: var(--jeep-road-y, 8vh);
+    transform: translateX(-50%) scale(0.3);
     transform-origin: 50% 100%;
     width: min(1350px, 82vw);
     aspect-ratio: 16 / 9;
@@ -5137,7 +5130,29 @@ body.page-timeline {
     max-height: 80vh;
     z-index: 8;
     pointer-events: none;
-    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.55));
+    transition: bottom 0.18s linear;
+}
+
+/* Headlight beam from the front (left side, since jeep faces left). Lives
+   inside the jeep so it scales with the jeep. mix-blend-mode: screen
+   blends the beam into the night-sky backdrop. */
+.timeline-jeep__headlight {
+    position: absolute;
+    left: 0;
+    top: 60%;
+    width: 60%;
+    height: 14%;
+    transform: translate(-90%, -50%);
+    background:
+        radial-gradient(ellipse at 100% 50%,
+            rgba(255, 240, 200, 0.55) 0%,
+            rgba(255, 240, 200, 0.18) 35%,
+            transparent 75%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    filter: blur(6px);
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.45) * 25), 1);
 }
 
 .timeline-jeep__shell {
@@ -5217,27 +5232,70 @@ body.page-timeline {
     color: #e7dcc1;
 }
 
-/* IMAGE — extracted from inside the jeep so the per-event image stays
-   put when the jeep shrinks/slides during the home era. Positioned at
-   roughly the same screen coordinates the in-jeep window used to occupy
-   (centered on the original jeep, upper-jeep area). */
-.timeline-jeep__rear {
+/* (The standalone .timeline-jeep__rear box was dropped — the floating
+   photo frame .timeline-photo-frame below is the new image surface.) */
+
+/* ---- Floating photo frame ------------------------------------------- */
+/* Centered slideshow viewer styled like a passe-partout photo frame.
+   Holds the home-era slideshow (2009 → 2012 → 2022 → 2025 → 2026).
+   Sits in the foreground over the night-sky backdrop, with subtle drop
+   shadow so it reads as a floating object. JS sets per-slide opacity. */
+.timeline-photo-frame {
     position: absolute;
     left: 50%;
-    top: 33vh;
-    transform: translateX(-58%);     /* slight left bias to mirror in-jeep position */
-    width: min(700px, 36vw);
-    height: 26vh;
-    background-color: rgba(0, 0, 0, 0.55);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    border: 1px solid rgba(20, 12, 6, 0.7);
-    z-index: 8;
+    top: 42%;
+    transform: translate(-50%, -50%);
+    z-index: 7;
+    width: min(720px, 64vw);
+    aspect-ratio: 16 / 9;
+    background: #f5e8c4;       /* cream matte / passe-partout */
+    padding: 14px 14px 42px;
+    border-radius: 4px;
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(0, 0, 0, 0.18) inset;
     pointer-events: none;
-    /* Time-based fade. */
-    opacity: var(--beat-rear-opacity, 1);
+    /* Reveal alongside the jeep settling into night-era position. */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.55) * 14.3), 1);
     transition: opacity 0.45s ease;
+}
+
+.timeline-photo-frame__viewport {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 28px);
+    overflow: hidden;
+    background: #1a1208;
+}
+
+.timeline-photo-frame__slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    will-change: opacity;
+}
+
+.timeline-photo-frame__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Cohesion polish — gentle warm sepia so all five photos read as one
+       continuous family-album set rather than five different captures. */
+    filter: sepia(0.18) saturate(0.92) contrast(1.02);
+}
+
+.timeline-photo-frame__year {
+    position: absolute;
+    bottom: 10px;
+    right: 16px;
+    padding: 4px 10px;
+    font: 600 11px/1 'Courier New', monospace;
+    color: rgba(255, 246, 220, 0.95);
+    letter-spacing: 0.22em;
+    background: rgba(20, 12, 6, 0.6);
+    border-radius: 2px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 .timeline-jeep__wheel {
