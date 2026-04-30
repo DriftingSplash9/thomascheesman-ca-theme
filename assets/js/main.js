@@ -2403,6 +2403,7 @@ function initTimelinePage() {
                     if (poly.classList.contains('timeline-polaroid--active')) {
                         poly.classList.remove('timeline-polaroid--active');
                         poly.style.setProperty('--polaroid-drift', '0vw');
+                        poly.style.setProperty('--polaroid-fade', '1');
                     }
                 } else {
                     if (!poly.classList.contains('timeline-polaroid--active')) {
@@ -2416,6 +2417,20 @@ function initTimelinePage() {
                     // events at the new 4000vh page length.
                     const driftVw = driftElapsed * 350;
                     poly.style.setProperty('--polaroid-drift', driftVw.toFixed(1) + 'vw');
+
+                    // Fade-out as the polaroid drifts past the left 25% of
+                    // the viewport. Per V0.04 feedback — the polaroids were
+                    // crowding once enough piled up. polaroid-x is its
+                    // landing x in vw; current viewport-x = polaroid-x -
+                    // driftVw. Linear fade between 25vw (opacity 1) and
+                    // 0vw (opacity 0).
+                    const polaroidX = parseFloat(poly.dataset.polaroidX);
+                    const currentX = polaroidX - driftVw;
+                    let fade = 1;
+                    if (currentX < 25) {
+                        fade = Math.max(0, currentX / 25);
+                    }
+                    poly.style.setProperty('--polaroid-fade', fade.toFixed(2));
                 }
             }
         }

@@ -57,7 +57,6 @@ $tc_timeline_events = array(
         'title'     => 'Born — look out, Calgary',
         'prose'     => 'Born in Calgary. Look out, Calgary.',
         'image'     => '/wp-content/uploads/2026/04/a-baby-thomas-scaled.jpg',
-        'caption'   => '',
         'pos'       => 0.02,
     ),
     array(
@@ -66,7 +65,6 @@ $tc_timeline_events = array(
         'title'     => 'Headed to Turner Valley',
         'prose'     => 'Out of the city and into the foothills. Six years lived in Turner Valley — mountains close, oil derricks scattered through the trees.',
         'image'     => '/wp-content/uploads/2026/04/derrik-turnervalley.jpg',
-        'caption'   => '',
         'pos'       => 0.06,
         'bearing'   => 205,  // Calgary → Turner Valley (SSW)
         'mark'      => array( 'kind' => 'sign', 'label' => 'Welcome to Turner Valley' ),
@@ -77,7 +75,6 @@ $tc_timeline_events = array(
         'title'     => 'Diagnosed with Hajdu-Cheney',
         'prose'     => 'A bump in the road, before the road had even straightened out. The diagnosis arrived inside the first year in Turner Valley. Life kept moving.',
         'image'     => '/wp-content/uploads/2026/04/hands-and-xray-scaled.png',
-        'caption'   => '',
         'pos'       => 0.085,
         'mark'      => array( 'kind' => 'pothole', 'label' => 'HCS' ),
     ),
@@ -86,8 +83,7 @@ $tc_timeline_events = array(
         'yearStart' => 1990,
         'title'     => 'Parents divorce — Teepee Creek',
         'prose'     => 'Parents divorced. Moved to Teepee Creek, AB — to the Bird Farm. Open prairie, distant trees, a different kind of quiet.',
-        'image'     => '/wp-content/uploads/2026/04/1777567236117-594-farm-Copy.png',
-        'caption'   => '',
+        'image'     => '',
         'pos'       => 0.13,
         'bearing'   => 330,  // Turner Valley → Teepee Creek (NNW, big jump)
         'mark'      => array( 'kind' => 'sign', 'label' => 'Welcome to Teepee Creek' ),
@@ -98,7 +94,6 @@ $tc_timeline_events = array(
         'title'     => 'Edmonton interlude',
         'prose'     => 'Mom remarried. A year later she took a break from it and we moved to Edmonton. First time living in a real city.',
         'image'     => '/wp-content/uploads/2026/04/edmonton-skyline.jpg',
-        'caption'   => '',
         'pos'       => 0.17,
         'bearing'   => 155,  // Teepee Creek → Edmonton (SSE)
     ),
@@ -107,8 +102,7 @@ $tc_timeline_events = array(
         'yearStart' => 1993,
         'title'     => 'Back together — Le Glace',
         'prose'     => 'Lived in Edmonton until Mom and Brian found a place together in Le Glace, AB. Hamlet small.',
-        'image'     => '',
-        'caption'   => '',
+        'image'     => '/wp-content/uploads/2026/04/mom-and-brian.jpg',
         'pos'       => 0.21,
         'bearing'   => 310,  // Edmonton → Le Glace (NW)
     ),
@@ -117,8 +111,7 @@ $tc_timeline_events = array(
         'yearStart' => 1994,
         'title'     => 'The Pig Farm',
         'prose'     => 'Moved on to a different farm near Teepee Creek — the Pig Farm.',
-        'image'     => '/wp-content/uploads/2026/04/1777567236117-878-farm-2-Copy.png',
-        'caption'   => '',
+        'image'     => '',
         'pos'       => 0.245,
         'bearing'   => 50,   // Le Glace → Teepee Creek (NE)
     ),
@@ -127,8 +120,7 @@ $tc_timeline_events = array(
         'yearStart' => 1995,
         'title'     => 'Build, raise, repeat',
         'prose'     => 'Built the Pig Farm out. Cattle, crops, chickens, birds, and quite a few pigs.',
-        'image'     => '/wp-content/uploads/2026/04/1777567236117-967-farm-3-Copy.png',
-        'caption'   => '',
+        'image'     => '',
         'pos'       => 0.28,
     ),
     array(
@@ -136,8 +128,7 @@ $tc_timeline_events = array(
         'yearStart' => 1997,
         'title'     => 'Spirit River, briefly',
         'prose'     => 'A few months in Spirit River before finding a farm near Little Smokey.',
-        'image'     => '/wp-content/uploads/2026/04/spirit-river-sign.png',
-        'caption'   => '',
+        'image'     => '',
         'pos'       => 0.31,
         'bearing'   => 350,  // Pig Farm (Teepee Creek) → Spirit River (~N)
     ),
@@ -146,8 +137,7 @@ $tc_timeline_events = array(
         'yearStart' => 1997,
         'title'     => 'Little Smokey — into the trees',
         'prose'     => 'Boreal forest in every direction. Quiet, layered, alive.',
-        'image'     => '/wp-content/uploads/2026/04/cabin.png',
-        'caption'   => '',
+        'image'     => '',
         'pos'       => 0.345,
         'bearing'   => 135,  // Spirit River → Little Smoky (SE)
     ),
@@ -157,7 +147,6 @@ $tc_timeline_events = array(
         'title'     => 'Grande Prairie — college',
         'prose'     => 'Graduated high school. College in Grande Prairie. Campus housing, late nights.',
         'image'     => '/wp-content/uploads/2026/04/Grande_Prairie_Regional_College_02-scaled.jpg',
-        'caption'   => '',
         'pos'       => 0.39,
         'bearing'   => 315,  // Little Smoky → Grande Prairie (NW)
     ),
@@ -167,7 +156,6 @@ $tc_timeline_events = array(
         'title'     => 'Town of Valleyview',
         'prose'     => 'Worked for the Town of Valleyview. Returned to college dorms after.',
         'image'     => '',
-        'caption'   => '',
         'pos'       => 0.42,
         'bearing'   => 110,  // GP → Valleyview (ESE)
     ),
@@ -176,8 +164,7 @@ $tc_timeline_events = array(
         'yearStart' => 2000,
         'title'     => 'College + summer pharmacy',
         'prose'     => 'College carried on, summers in pharmacy work.',
-        'image'     => '/wp-content/uploads/2026/04/cooking-class-gprc-scaled.jpg',
-        'caption'   => '',
+        'image'     => '',
         'pos'       => 0.445,
         'bearing'   => 290,  // Valleyview → GP (WNW)
     ),
@@ -186,8 +173,7 @@ $tc_timeline_events = array(
         'yearStart' => 2001,
         'title'     => 'Met Melanie',
         'prose'     => 'Met Mel. Started in a restaurant.',
-        'image'     => '/wp-content/uploads/2026/04/mel-18-yrs-old-scaled.jpg',
-        'caption'   => '',
+        'image'     => '/wp-content/uploads/2026/04/mel-18-yrs-old-scaled-e1777577734243.jpg',
         'pos'       => 0.47,
     ),
     array(
@@ -196,7 +182,6 @@ $tc_timeline_events = array(
         'title'     => 'Power engineering — Fort Mac',
         'prose'     => 'Power Engineering training in Fort McMurray.',
         'image'     => '/wp-content/uploads/2026/04/sagd-ft-mac.jpg',
-        'caption'   => '',
         'pos'       => 0.50,
         'bearing'   => 50,   // GP → Fort McMurray (NE, big jump)
     ),
@@ -205,8 +190,7 @@ $tc_timeline_events = array(
         'yearStart' => 2003,
         'title'     => 'Kitchen management',
         'prose'     => 'Climbed into a kitchen-management role.',
-        'image'     => '/wp-content/uploads/2026/04/me-in-the-sait-kitchen.jpg',
-        'caption'   => '',
+        'image'     => '/wp-content/uploads/2026/04/chef-presentation.jpg',
         'pos'       => 0.535,
         'bearing'   => 230,  // Fort McMurray → GP region (SW, return)
     ),
@@ -216,7 +200,6 @@ $tc_timeline_events = array(
         'title'     => 'Living with parents — saving',
         'prose'     => 'Back at parents to save money.',
         'image'     => '',
-        'caption'   => '',
         'pos'       => 0.565,
     ),
     array(
@@ -225,7 +208,6 @@ $tc_timeline_events = array(
         'title'     => 'Move with a friend',
         'prose'     => 'Parents relocated; moved out with a friend.',
         'image'     => '',
-        'caption'   => '',
         'pos'       => 0.59,
     ),
     array(
@@ -234,7 +216,6 @@ $tc_timeline_events = array(
         'title'     => 'The duplex years',
         'prose'     => 'Shared a duplex with roommates.',
         'image'     => '',
-        'caption'   => '',
         'pos'       => 0.615,
     ),
     array(
@@ -243,7 +224,6 @@ $tc_timeline_events = array(
         'title'     => 'Journeyman chef',
         'prose'     => 'Completed culinary arts. Earned the journeyman chef ticket.',
         'image'     => '/wp-content/uploads/2024/09/me.jpg',
-        'caption'   => '',
         'pos'       => 0.645,
     ),
     array(
@@ -252,7 +232,6 @@ $tc_timeline_events = array(
         'title'     => 'Mel, again',
         'prose'     => 'Reconnected with Mel. Cohabitation began late 2012.',
         'image'     => '/wp-content/uploads/2026/04/Hnging-at-the-keg.jpg',
-        'caption'   => '',
         'pos'       => 0.665,
     ),
     array(
@@ -261,7 +240,6 @@ $tc_timeline_events = array(
         'title'     => 'OMG, a baby',
         'prose'     => 'OMG we are having a baby. Quick — get shit together. Bought a house. Stepped up to head chef.',
         'image'     => '/wp-content/uploads/2026/04/newborn-patience.jpg',
-        'caption'   => '',
         'pos'       => 0.69,
     ),
     array(
@@ -270,7 +248,6 @@ $tc_timeline_events = array(
         'title'     => 'Township 71',
         'prose'     => 'Opened Township 71. Taught culinary courses on the side.',
         'image'     => '/wp-content/uploads/2026/04/t71.png',
-        'caption'   => '',
         'pos'       => 0.71,
         'mark'      => array( 'kind' => 'sign', 'label' => 'Township 71' ),
     ),
@@ -280,7 +257,6 @@ $tc_timeline_events = array(
         'title'     => 'Township 71 closes',
         'prose'     => 'Nine months in, the oil bust took most of the room. Township 71 closed.',
         'image'     => '',
-        'caption'   => '',
         'pos'       => 0.735,
     ),
     array(
@@ -289,7 +265,6 @@ $tc_timeline_events = array(
         'title'     => 'Daniel',
         'prose'     => 'Daniel born. Worked at multiple kitchens as head chef.',
         'image'     => '/wp-content/uploads/2026/04/baby-daniel.jpg',
-        'caption'   => '',
         'pos'       => 0.76,
     ),
     array(
@@ -298,7 +273,6 @@ $tc_timeline_events = array(
         'title'     => 'Faith',
         'prose'     => 'Faith born. Kitchen work continued — body began to argue.',
         'image'     => '/wp-content/uploads/2024/10/20180524_163145-scaled.jpg',
-        'caption'   => '',
         'pos'       => 0.79,
     ),
     array(
@@ -307,7 +281,6 @@ $tc_timeline_events = array(
         'title'     => 'Permanent disability',
         'prose'     => 'Went on permanent disability support. Chronic, accumulated.',
         'image'     => '/wp-content/uploads/2026/04/foot-recovery.jpg',
-        'caption'   => '',
         'pos'       => 0.81,
     ),
     array(
@@ -316,7 +289,6 @@ $tc_timeline_events = array(
         'title'     => 'Pandemic',
         'prose'     => 'COVID. Empty streets, masks, the whole thing.',
         'image'     => '/wp-content/uploads/2026/04/covid-xmas-scaled.jpg',
-        'caption'   => '',
         'pos'       => 0.84,
     ),
     array(
@@ -325,7 +297,6 @@ $tc_timeline_events = array(
         'title'     => 'Spinal fusion',
         'prose'     => 'Spinal fusion surgery. Hardware in. A long recovery, and the slow rebuild from there.',
         'image'     => '/wp-content/uploads/2026/04/awake-from-surgery-scaled.jpg',
-        'caption'   => '',
         'pos'       => 0.87,
     ),
     array(
@@ -334,7 +305,6 @@ $tc_timeline_events = array(
         'title'     => 'Coming back',
         'prose'     => 'Return toward normalcy.',
         'image'     => '/wp-content/uploads/2026/04/walk-after-surgery-scaled.jpg',
-        'caption'   => '',
         'pos'       => 0.90,
     ),
     array(
@@ -343,7 +313,6 @@ $tc_timeline_events = array(
         'title'     => 'Settled, twice over',
         'prose'     => 'New roof, furnace, central air, water heater. A 2022 Kia Carnival in the driveway. Patience earned the Award for Excellence again — top of the schoolboard, twice now.',
         'image'     => '/wp-content/uploads/2026/04/royal-chariot-scaled.jpg',
-        'caption'   => '',
         'pos'       => 0.93,
     ),
     array(
@@ -352,7 +321,6 @@ $tc_timeline_events = array(
         'title'     => 'Into the ring',
         'prose'     => 'Daniel started boxing. A couple of months later, Faith laced up too.',
         'image'     => '/wp-content/uploads/2026/04/daniel-ready-to-box-scaled.jpg',
-        'caption'   => '',
         'pos'       => 0.96,
     ),
 );
@@ -592,35 +560,45 @@ get_header(); ?>
                 // Deterministic randoms from the index so each polaroid
                 // lands in the same spot every reload — different from
                 // its neighbors, but consistent for the reader.
+                // y-range expanded (was 26..58vh) now that the prose pill
+                // is parked — polaroids can sit higher and lower in the
+                // viewport for more breathing room.
                 $rot   = ( ( $idx * 73  ) % 17 ) - 8;             // -8 .. +8
                 $xVw   = 28 + ( ( $idx * 137 ) % 44 );            // 28 .. 72 vw
-                $yVh   = 26 + ( ( $idx * 211 ) % 32 );            // 26 .. 58 vh
-                $caption = ! empty( $event['caption'] )
-                    ? $event['caption']
-                    : ( $event['year'] ?? '' );
+                $yVh   = 12 + ( ( $idx * 211 ) % 66 );            // 12 .. 78 vh
             ?>
                 <div class="timeline-polaroid"
                      data-polaroid-trigger="<?php echo esc_attr( $trigger ); ?>"
+                     data-polaroid-x="<?php echo esc_attr( $xVw ); ?>"
                      style="--polaroid-rot: <?php echo esc_attr( $rot ); ?>deg;
                             --polaroid-x: <?php echo esc_attr( $xVw ); ?>vw;
                             --polaroid-y: <?php echo esc_attr( $yVh ); ?>vh;">
+                    <span class="timeline-polaroid__title"><?php echo esc_html( $event['title'] ?? '' ); ?></span>
                     <img class="timeline-polaroid__img"
                          src="<?php echo esc_url( $event['image'] ); ?>"
                          alt="" loading="lazy" />
-                    <span class="timeline-polaroid__caption"><?php echo esc_html( $caption ); ?></span>
                 </div>
             <?php endforeach; ?>
         </div>
 
-        <!-- Persistent prose pill below the road. Holds year + title +
-             prose for the current event; styled to echo the sitewide
-             .tc-capsule. Stays visible the entire timeline so the jeep
-             can shrink/slide off without losing the narration. -->
+        <?php /*
+            PARKED V0.04 — prose pill commented out per Thomas's feedback.
+            The pill was crowding the polaroids and Thomas wants the bottom
+            area free (possibly for menu integration later). The JS that
+            updates [data-jeep-passenger]/[data-jeep-year]/[data-jeep-title]/
+            [data-jeep-prose] becomes a no-op because each querySelector
+            returns null and the if-guards in main.js skip the operations.
+            The full prose still lives in the events array (used by the
+            mobile fallback list and as JSON for any future uses).
+            To revive: remove this PHP comment block.
+
         <div class="timeline-prose-pill" data-jeep-passenger>
             <span class="timeline-jeep__year" data-jeep-year aria-hidden="true">1980</span>
             <h2 class="timeline-jeep__title" data-jeep-title>Born — look out, Calgary</h2>
             <p class="timeline-jeep__prose" data-jeep-prose>Born in Calgary. Look out, Calgary.</p>
         </div>
+
+        */ ?>
 
         <!-- "Roll-Out" sign — appears at the road's end (scroll progress ≈ 1).
              Click → home (or, when BHAG ships, returns to topography). -->

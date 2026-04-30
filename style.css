@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.138
+Version: 1.0.139
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5316,6 +5316,7 @@ body.page-timeline {
     --polaroid-x: 50vw;
     --polaroid-y: 38vh;
     --polaroid-drift: 0vw;
+    --polaroid-fade: 1;
 
     position: absolute;
     /* left subtracts the drift so the polaroid slides leftward as scroll
@@ -5326,7 +5327,10 @@ body.page-timeline {
     width: min(280px, 26vw);
     aspect-ratio: 4 / 5;
     background: #fdfaf2;
-    padding: 14px 14px 44px;
+    /* Title sits at the top of the polaroid (per Thomas V0.04 feedback);
+       extra padding-top to reserve room above the image. Bottom edge is
+       a normal photo border, no caption strip. */
+    padding: 36px 14px 14px;
     border-radius: 2px;
     box-shadow:
         0 22px 44px rgba(0, 0, 0, 0.5),
@@ -5342,8 +5346,27 @@ body.page-timeline {
 }
 
 .timeline-polaroid--active {
-    opacity: 1;
+    /* --polaroid-fade is set per-frame in JS as the polaroid drifts past
+       the left 25% of the viewport, so it fades out instead of piling up
+       off-screen. Default 1 (full opacity) when in middle of viewport. */
+    opacity: var(--polaroid-fade, 1);
     transform: translate(-50%, -50%) rotate(var(--polaroid-rot));
+}
+
+.timeline-polaroid__title {
+    display: block;
+    position: absolute;
+    top: 10px;
+    left: 14px;
+    right: 14px;
+    text-align: center;
+    font: 400 16px/1.1 'Caveat', 'Marker Felt', 'Brush Script MT', cursive;
+    color: #2a1a08;
+    letter-spacing: 0.02em;
+    /* Long titles get truncated rather than wrapping into the photo. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .timeline-polaroid__img {
@@ -5352,17 +5375,6 @@ body.page-timeline {
     height: 100%;
     object-fit: cover;
     background: #1a1208;
-}
-
-.timeline-polaroid__caption {
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font: 400 18px/1 'Caveat', 'Marker Felt', 'Brush Script MT', cursive;
-    color: #2a1a08;
-    letter-spacing: 0.04em;
 }
 
 /* PARKED — Spinning wheel rotors. Clip-path circle over a copy of the
