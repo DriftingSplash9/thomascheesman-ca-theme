@@ -2182,6 +2182,7 @@ function initTimelinePage() {
     const proseEl   = root.querySelector('[data-jeep-prose]');
     const yearJeepEl= root.querySelector('[data-jeep-year]');
     const rearEl    = root.querySelector('[data-jeep-rear]');
+    const jeepEl    = root.querySelector('[data-jeep]');
     const polaroidEl       = root.querySelector('[data-polaroid]');
     const polaroidImgEl    = root.querySelector('[data-polaroid-img]');
     const polaroidCaptionEl= root.querySelector('[data-polaroid-caption]');
@@ -2190,11 +2191,12 @@ function initTimelinePage() {
         .sort(function (a, b) {
             return parseInt(a.dataset.finaleFrame, 10) - parseInt(b.dataset.finaleFrame, 10);
         });
-    // Slide centers for the home-photo finale, ordered by data-finale-frame
-    // index (2009 → 2012 → 2022 → 2025 → 2026). Year-weighted positions so
-    // each image lands roughly where its year shows on the counter.
-    const FINALE_SLIDE_POSITIONS = [0.62, 0.70, 0.84, 0.92, 0.99];
-    const FINALE_FIRST_BAND_START = 0.55;
+    // Slide centers for the home-photo slideshow, ordered by data-finale-frame
+    // index (2012 → 2022 → 2025 → 2026). Year-weighted positions so each
+    // image lands roughly where its year shows on the counter. 2009 photo
+    // dropped — Thomas didn't live in the house yet.
+    const FINALE_SLIDE_POSITIONS = [0.70, 0.86, 0.93, 0.99];
+    const FINALE_FIRST_BAND_START = 0.62;
 
     // ---- Projector lightbox ----
     const projector = root.querySelector('[data-projector]');
@@ -2309,6 +2311,45 @@ function initTimelinePage() {
 
         // --- Position markers along the SVG road ---
         positionMarkers();
+
+        // --- Jeep follows the road when shrunk ---
+        // The jeep slides leftward across the viewport as it shrinks
+        // (CSS sets left:50% → 10% via --jeep-shrink). Compute the road
+        // path's progress at the jeep's CURRENT visual viewport-x:
+        //
+        //   road translates so the path point at progress P sits at
+        //   viewport_x = 75vw. The jeep's visual center sits at:
+        //     50vw - (jeepShrink * 40vw)
+        //   so the path point at the jeep's x corresponds to:
+        //     P_path = easedProgress + (jeep_x_vw - 75) / 300
+        //
+        // Sample the road at that path-progress and write the screen-y
+        // (in vh from bottom) to --jeep-road-y. CSS interpolates the
+        // jeep's `bottom` between the fixed 6vh (full size) and this
+        // value (small size) using --jeep-shrink as the mix factor.
+        if (roadPath && jeepEl) {
+            const svg = roadPath.ownerSVGElement;
+            if (svg) {
+                const rect = svg.getBoundingClientRect();
+                if (rect.height > 0) {
+                    try {
+                        const len = roadPath.getTotalLength();
+                        const vbox = svg.viewBox.baseVal;
+                        const jeepShrink = Math.max(0, Math.min(1, (easedProgress - 0.65) * 20));
+                        const jeepCenterVw = 50 - jeepShrink * 40;
+                        const pPath = Math.max(0, Math.min(1,
+                            easedProgress + (jeepCenterVw - 75) / 300
+                        ));
+                        const t  = pPath * len;
+                        const pt = roadPath.getPointAtLength(t);
+                        const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
+                        const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
+                        // -2vh empirical wheel offset.
+                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - 2).toFixed(1) + 'vh');
+                    } catch (e) { /* path not ready */ }
+                }
+            }
+        }
 
         // --- Home finale slideshow: per-frame opacity using an asymmetric
         // trapezoidal profile. Each slide is fully opaque for the second

@@ -334,12 +334,12 @@ get_header(); ?>
         <div class="timeline-layer timeline-layer--back" data-layer="back" aria-hidden="true">
             <!-- Home photos (highest z, fade in newest-on-top). JS sets
                  per-slide opacity using FINALE_SLIDE_POSITIONS. Night sky
-                 + forest tile around them where they don't reach. -->
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2026" data-finale-frame="4"></div>
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2025" data-finale-frame="3"></div>
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2022" data-finale-frame="2"></div>
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2012" data-finale-frame="1"></div>
-            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2009" data-finale-frame="0"></div>
+                 fills the gap before 2012 (the move-in year) and tiles
+                 around the photos where they don't reach. -->
+            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2026" data-finale-frame="3"></div>
+            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2025" data-finale-frame="2"></div>
+            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2022" data-finale-frame="1"></div>
+            <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2012" data-finale-frame="0"></div>
             <!-- Era backdrops behind the home photos. -->
             <div class="timeline-back-strip timeline-back-strip--foothills"></div>
             <div class="timeline-back-strip timeline-back-strip--prairie"></div>

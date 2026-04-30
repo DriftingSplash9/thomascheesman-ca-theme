@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.127
+Version: 1.0.128
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5019,7 +5019,8 @@ body.page-timeline {
        as one continuous family album. */
     filter: sepia(0.18) saturate(0.92) contrast(1.02);
 }
-.timeline-back-strip--house-2009 { z-index: 5; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2009-house.png'); }
+/* 2009 photo dropped — Thomas didn't live in this house yet, so the
+   slideshow now starts at 2012 (move-in era). Night sky fills the gap. */
 .timeline-back-strip--house-2012 { z-index: 6; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png'); }
 .timeline-back-strip--house-2022 { z-index: 7; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png'); }
 .timeline-back-strip--house-2025 { z-index: 8; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2025-house.png'); }
@@ -5131,9 +5132,20 @@ body.page-timeline {
 /* ---- The jeep ---------------------------------------------------------- */
 .timeline-jeep {
     position: absolute;
-    left: 50%;
-    bottom: 6vh;
-    transform: translateX(-50%);
+    /* Shrink + slide-left over progress 0.65 → 0.70 (~year 2012, when
+       Thomas moved into the home). Ends at scale 0.21, left ~10vw.
+       Bottom position interpolates between fixed (6vh, full size) and
+       the road-y CSS variable (set by JS when shrunk) so the small jeep
+       rides along the road's curves. */
+    --jeep-shrink: clamp(0, calc((var(--tl-prog-eased) - 0.65) * 20), 1);
+    --jeep-scale: calc(1 - var(--jeep-shrink) * 0.79);
+    left: calc(50% - var(--jeep-shrink) * 40vw);
+    bottom: calc(
+        (1 - var(--jeep-shrink)) * 6vh +
+        var(--jeep-shrink) * var(--jeep-road-y, 6vh)
+    );
+    transform: translateX(-50%) scale(var(--jeep-scale));
+    transform-origin: 50% 100%;
     width: min(1350px, 82vw);
     aspect-ratio: 16 / 9;
     /* Belt: never let the jeep overflow short viewports. aspect-ratio
