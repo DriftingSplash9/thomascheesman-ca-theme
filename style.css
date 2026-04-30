@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.132
+Version: 1.0.133
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5055,9 +5055,12 @@ body.page-timeline {
    timeline. Reuses night-sky.png from the projector lightbox. */
 .timeline-back-strip--night-sky {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/night-sky.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    /* Render at viewport width once, repeat to fill the 200vw extended
+       layer. Earlier `cover` was scaling the image ~3× too large because
+       it was sized to fill the doubled-width parent. */
+    background-size: 100vw auto;
+    background-position: center top;
+    background-repeat: repeat;
     z-index: 1;             /* below forest so forest fades reveal it */
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
 }
@@ -5357,17 +5360,22 @@ body.page-timeline {
 }
 
 /* Visible spoked wheels overlaid on the jeep image's drawn wheels.
-   Positions re-derived from good-jeep.png (5:3 image inside 16:9 box,
-   so image fills box height with ~3% empty-space L/R; image's wheel
-   centers at ~18% / ~78% map to box positions ~19% / ~76% with the
-   wheel size 13% of box-width). The conic-gradient gives 8 alternating
-   dark/transparent spokes; mix-blend multiply darkens into the existing
-   wheel color so spokes read as spinning detail rather than floating
-   circles on the body. */
+   Re-derived from actual pixel measurements of good-jeep.png (1103×608,
+   content fills nearly the whole canvas):
+     - rear wheel center at 26% of image width
+     - front wheel center at 85% of image width
+     - wheels touch the image bottom (only 0.2% empty space below)
+     - wheel diameter ~12% of image width
+   The image is wider than tall (aspect 1.814) versus the 16/9 box
+   (1.778), so it fills box width with ~1% empty top, leaving wheel
+   x-positions essentially the same as image-space %. The conic-gradient
+   gives 8 alternating dark/transparent spokes; mix-blend multiply
+   darkens into the existing wheel color so spokes read as spinning
+   detail rather than floating circles on the body. */
 .timeline-jeep__wheel {
     position: absolute;
-    bottom: 8%;
-    width: 13%;
+    bottom: 1%;
+    width: 12%;
     aspect-ratio: 1;
     border-radius: 50%;
     background: conic-gradient(
@@ -5396,8 +5404,8 @@ body.page-timeline {
     pointer-events: none;
 }
 
-.timeline-jeep__wheel--front { left: 70%; }
-.timeline-jeep__wheel--rear  { left: 13%; }
+.timeline-jeep__wheel--front { left: 79%; }
+.timeline-jeep__wheel--rear  { left: 20%; }
 
 /* Headlight beam — child of the jeep shell so it scales + slides with
    the jeep automatically. Originates at the jeep's right edge (front of

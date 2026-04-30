@@ -2369,18 +2369,17 @@ function initTimelinePage() {
                         const pt = roadPath.getPointAtLength((lo + hi) / 2);
                         const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
                         const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
-                        // Scale-aware wheel offset. good-jeep.png is 5:3
-                        // inside a 16:9 box, so the image fills box height
-                        // and the wheels in the image at ~92% from image
-                        // top → 8% from box bottom. (Was using 0.15 from
-                        // V0.02, which assumed the wheels were 15% above
-                        // box bottom — that lifted the jeep ~6–10vh too
-                        // high and made it hover above the road.)
-                        const jeepBoxWidthPx  = Math.min(1350, window.innerWidth * 0.82);
-                        const jeepBoxHeightPx = Math.min(jeepBoxWidthPx * 9 / 16, window.innerHeight * 0.80);
-                        const jeepBoxHeightVh = jeepBoxHeightPx / window.innerHeight * 100;
-                        const wheelOffsetVh   = 0.08 * jeepScale * jeepBoxHeightVh;
-                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - wheelOffsetVh).toFixed(1) + 'vh');
+                        // No wheel offset. Measured the actual PNG
+                        // (1103×608, content fills nearly the whole canvas
+                        // with only 0.2% empty space at the bottom) — the
+                        // wheel touchpoint sits at the very bottom of the
+                        // image. With background-size:contain + position
+                        // bottom, the image bottom lines up with the box
+                        // bottom, so putting the box bottom AT the sampled
+                        // road-y puts the wheels AT the road. Earlier
+                        // offsets (0.08, 0.15) assumed empty space that
+                        // doesn't exist in the asset.
+                        jeepEl.style.setProperty('--jeep-road-y', fromBottomVh.toFixed(1) + 'vh');
                     } catch (e) { /* path not ready */ }
                 }
             }
