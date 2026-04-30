@@ -247,7 +247,7 @@ $tc_timeline_events = array(
         'yearStart' => 2014,
         'title'     => 'Township 71',
         'prose'     => 'Opened Township 71. Taught culinary courses on the side.',
-        'image'     => '/wp-content/uploads/2026/04/t71.png',
+        'image'     => '/wp-content/uploads/2026/04/township-71-logo.png',
         'pos'       => 0.71,
         'mark'      => array( 'kind' => 'sign', 'label' => 'Township 71' ),
     ),
