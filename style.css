@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.133
+Version: 1.0.134
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5062,6 +5062,12 @@ body.page-timeline {
     background-position: center top;
     background-repeat: repeat;
     z-index: 1;             /* below forest so forest fades reveal it */
+    /* Edge feathering — a subtle Gaussian blur softens the seam where
+       tile right meets tile left. Stars pick up a slight glow that
+       reads as atmosphere rather than as a defect. The proper fix is
+       a seamless tileable source PNG; this is the no-asset-change
+       version. */
+    filter: blur(1.2px);
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
 }
 
@@ -5359,53 +5365,52 @@ body.page-timeline {
     letter-spacing: 0.04em;
 }
 
-/* Visible spoked wheels overlaid on the jeep image's drawn wheels.
-   Re-derived from actual pixel measurements of good-jeep.png (1103×608,
-   content fills nearly the whole canvas):
-     - rear wheel center at 26% of image width
-     - front wheel center at 85% of image width
-     - wheels touch the image bottom (only 0.2% empty space below)
-     - wheel diameter ~12% of image width
-   The image is wider than tall (aspect 1.814) versus the 16/9 box
-   (1.778), so it fills box width with ~1% empty top, leaving wheel
-   x-positions essentially the same as image-space %. The conic-gradient
-   gives 8 alternating dark/transparent spokes; mix-blend multiply
-   darkens into the existing wheel color so spokes read as spinning
-   detail rather than floating circles on the body. */
+/* Spoked wheel highlights on the jeep image's drawn wheels.
+   Bright cream spokes with screen blend so highlights ride over the
+   dark image wheels (multiply blend was invisible against dark-on-dark).
+   Opacity is gated to scroll velocity: the JS pumps --tl-wheel-opacity
+   up while scrolling, decays it on rest, so wheels visibly spin during
+   movement and fade away when stopped.
+   Positions from measured pixel data on good-jeep.png:
+     - rear wheel center 26% of image width (21% of box left edge)
+     - front wheel center 85% of image width (78% of box left edge)
+     - wheels at image bottom = box bottom
+     - wheel diameter ~12% of box width */
 .timeline-jeep__wheel {
     position: absolute;
-    bottom: 1%;
+    bottom: 0.5%;
     width: 12%;
     aspect-ratio: 1;
     border-radius: 50%;
     background: conic-gradient(
         from 0deg,
-        rgba(0, 0, 0, 0)    0deg,
-        rgba(0, 0, 0, 0.55) 22deg,
-        rgba(0, 0, 0, 0)    45deg,
-        rgba(0, 0, 0, 0.55) 67deg,
-        rgba(0, 0, 0, 0)    90deg,
-        rgba(0, 0, 0, 0.55) 112deg,
-        rgba(0, 0, 0, 0)    135deg,
-        rgba(0, 0, 0, 0.55) 157deg,
-        rgba(0, 0, 0, 0)    180deg,
-        rgba(0, 0, 0, 0.55) 202deg,
-        rgba(0, 0, 0, 0)    225deg,
-        rgba(0, 0, 0, 0.55) 247deg,
-        rgba(0, 0, 0, 0)    270deg,
-        rgba(0, 0, 0, 0.55) 292deg,
-        rgba(0, 0, 0, 0)    315deg,
-        rgba(0, 0, 0, 0.55) 337deg,
-        rgba(0, 0, 0, 0)    360deg
+        rgba(255, 230, 180, 0)    0deg,
+        rgba(255, 230, 180, 0.45) 22deg,
+        rgba(255, 230, 180, 0)    45deg,
+        rgba(255, 230, 180, 0.45) 67deg,
+        rgba(255, 230, 180, 0)    90deg,
+        rgba(255, 230, 180, 0.45) 112deg,
+        rgba(255, 230, 180, 0)    135deg,
+        rgba(255, 230, 180, 0.45) 157deg,
+        rgba(255, 230, 180, 0)    180deg,
+        rgba(255, 230, 180, 0.45) 202deg,
+        rgba(255, 230, 180, 0)    225deg,
+        rgba(255, 230, 180, 0.45) 247deg,
+        rgba(255, 230, 180, 0)    270deg,
+        rgba(255, 230, 180, 0.45) 292deg,
+        rgba(255, 230, 180, 0)    315deg,
+        rgba(255, 230, 180, 0.45) 337deg,
+        rgba(255, 230, 180, 0)    360deg
     );
     transform: rotate(var(--tl-wheel-spin));
-    mix-blend-mode: multiply;
-    opacity: 0.75;
+    mix-blend-mode: screen;
+    opacity: var(--tl-wheel-opacity, 0);
+    transition: opacity 0.35s ease;
     pointer-events: none;
 }
 
-.timeline-jeep__wheel--front { left: 79%; }
-.timeline-jeep__wheel--rear  { left: 20%; }
+.timeline-jeep__wheel--front { left: 78%; }
+.timeline-jeep__wheel--rear  { left: 21%; }
 
 /* Headlight beam — child of the jeep shell so it scales + slides with
    the jeep automatically. Originates at the jeep's right edge (front of
@@ -5413,22 +5418,29 @@ body.page-timeline {
    good-jeep.png), extends past the jeep using width > 100%. Gated to
    the night-sky era (post-forest, ~year 2000+) so the beam doesn't
    shine in daylight. mix-blend-mode: screen so it cuts through dark
-   without washing out lit areas. */
+   without washing out lit areas.
+   The clip-path triangle (apex at left-center, base at right edge)
+   gives the beam its actual cone shape — the radial gradient inside
+   the box was reading as a rectangular block before. */
 .timeline-jeep__headlight {
     position: absolute;
     left: 88%;
     top: 50%;
-    width: 220%;
-    height: 70%;
+    width: 240%;
+    height: 80%;
     transform: translateY(-50%);
     transform-origin: 0% 50%;
     pointer-events: none;
     background: radial-gradient(ellipse at 0% 50%,
-        rgba(255, 240, 200, 0.55) 0%,
-        rgba(255, 220, 150, 0.28) 22%,
-        rgba(255, 200, 120, 0.10) 50%,
+        rgba(255, 240, 200, 0.65) 0%,
+        rgba(255, 220, 150, 0.35) 25%,
+        rgba(255, 200, 120, 0.12) 55%,
         rgba(255, 200, 120, 0)    100%);
-    filter: blur(6px);
+    /* Cone shape: triangle from apex (left-center) flaring to base
+       (right edge). Slight chamfer at the tip so it doesn't feel
+       knife-pointed. */
+    clip-path: polygon(0% 45%, 0% 55%, 100% 0%, 100% 100%);
+    filter: blur(4px);
     mix-blend-mode: screen;
     /* Fade in as forest hands off to night-sky (0.42 → 0.50). */
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);

@@ -2227,6 +2227,7 @@ function initTimelinePage() {
     let targetProgress = 0;
     let easedProgress  = 0;
     let totalSpin      = 0;
+    let wheelMomentum  = 0;
     let compassDeg     = 0;
     let currentBeatIndex = -1;
     let beatTimer = null;
@@ -2271,10 +2272,19 @@ function initTimelinePage() {
         // floor so the jeep never looks parked while the page is open.
         totalSpin += dProgress * 14000 + wheelFloorPerFrame;
 
+        // Wheel-overlay opacity rides scroll velocity: pump up on movement,
+        // decay on rest. The spoke highlights fade in as the jeep starts
+        // rolling and disappear when it stops, instead of always-on which
+        // looks static.
+        wheelMomentum *= 0.92;
+        wheelMomentum += Math.abs(dProgress) * 220;
+        if (wheelMomentum > 1) wheelMomentum = 1;
+
         // --- Publish to CSS custom properties ---
         html.style.setProperty('--tl-progress',     targetProgress.toFixed(4));
         html.style.setProperty('--tl-prog-eased',   easedProgress.toFixed(4));
         html.style.setProperty('--tl-wheel-spin',   totalSpin.toFixed(1) + 'deg');
+        html.style.setProperty('--tl-wheel-opacity', wheelMomentum.toFixed(2));
 
         // --- Compass — driven by real geographic bearings ---
         // Each event has a `bearing` (degrees, 0=N, 90=E) representing the
