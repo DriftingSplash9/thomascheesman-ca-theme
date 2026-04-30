@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.145
+Version: 1.0.146
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5207,12 +5207,12 @@ body.page-timeline {
     color: #fff;
     border: 4px solid #fff;
     border-radius: 8px;
-    /* Tight padding — Thomas wants the photo right up against the green
-       border on the right side ("push them right closer to the edge"). */
-    padding: 8px;
-    /* Sized like a real highway sign you'd pass on the way into a town.
-       clamp keeps it sensible on narrow viewports. */
-    width: clamp(300px, 26vw, 440px);
+    /* Tight padding — photo sits as close to the right green border as
+       the white frame allows ("less green space on the signs right"). */
+    padding: 6px;
+    /* 20% bigger than V0.16 per Thomas. clamp keeps it sane on narrow
+       viewports. */
+    width: clamp(360px, 31vw, 528px);
     height: auto;
     box-shadow:
         0 14px 28px rgba(0, 0, 0, 0.55),
@@ -5220,24 +5220,30 @@ body.page-timeline {
     /* Layout: text left, photo right. */
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
     /* Reset the base font (was Courier monospace). */
-    font: 700 19px/1.1 'Helvetica Neue', Arial, sans-serif;
+    font: 700 23px/1.1 'Helvetica Neue', Arial, sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    /* V0.04 follow-up: raise the sign to windshield height. The base
+       transform translate(-50%, -100%) puts sign-bottom at road level;
+       extending by -30vh pushes the whole sign UP by 30vh of the
+       viewport so its center lands at the jeep's windshield region. */
+    transform: translate(-50%, calc(-100% - 30vh));
 }
 
 .timeline-marker--highway:hover {
-    transform: translate(-50%, -106%);
+    transform: translate(-50%, calc(-106% - 30vh));
     box-shadow:
         0 22px 40px rgba(0, 0, 0, 0.7),
         inset 0 0 0 1px rgba(255, 255, 255, 0.32);
 }
 
 .timeline-marker--highway::after {
-    /* Thicker post for a heftier sign. */
+    /* Long post bridging sign-bottom down to the road. Matches the
+       30vh raise above. */
     width: 5px;
-    height: 36px;
+    height: 30vh;
     background: rgba(40, 30, 18, 0.85);
 }
 
@@ -5247,19 +5253,18 @@ body.page-timeline {
     text-align: left;
     /* Allow wrapping for longer names (Le Glace, Township 71). */
     word-wrap: break-word;
-    padding-left: 6px;
+    padding-left: 4px;
 }
 
 .timeline-marker__photo {
     flex-shrink: 0;
     display: block;
-    /* Photo fills nearly the full sign height, sits flush against the
-       green border on the right side. */
-    width: 110px;
-    height: 110px;
+    /* 20% larger and flush against the green frame (no extra border
+       so the photo butts right up against the white sign border). */
+    width: 132px;
+    height: 132px;
     object-fit: cover;
     border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.85);
     background: #1a1208;
 }
 
@@ -5274,15 +5279,13 @@ body.page-timeline {
     /* Sized to stand at peer height with the highway-style signs so the
        road doesn't read with mismatched scales. The sign-kind sprites
        (Spirit River, Roll-Out-style) are vertical compositions, so we
-       size by height; the pothole-kind override below sets its own
-       smaller dimensions since it's a hazard, not a sign. */
+       size by height. 20% bumped from 140px in V0.16. */
     width: auto;
-    height: 140px;
+    height: 168px;
 }
 
 .timeline-marker--image:hover {
     /* No box-shadow change (no box) — instead a subtle lift + glow. */
-    transform: translate(-50%, -106%);
     box-shadow: none;
     filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.55));
 }
@@ -5297,20 +5300,41 @@ body.page-timeline {
     transition: filter 0.25s ease;
 }
 
-/* Pothole-kind image markers: hazard on the road, no post. */
+/* Image-only sign sprites (Spirit River-style, freestanding signs)
+   raised to windshield height to match the highway-style markers.
+   Same 30vh offset, with a long thin post bridging down to the road. */
+.timeline-marker--sign.timeline-marker--image {
+    transform: translate(-50%, calc(-100% - 30vh));
+}
+
+.timeline-marker--sign.timeline-marker--image:hover {
+    transform: translate(-50%, calc(-106% - 30vh));
+}
+
+.timeline-marker--sign.timeline-marker--image::after {
+    /* Inherit width/background from base marker post but extend the
+       length to span the 30vh gap up to the sign. */
+    width: 4px;
+    height: 30vh;
+}
+
+/* Pothole-kind image markers: hazard above the road surface, no post.
+   Sits ABOVE the road instead of being half-sunk on it (V0.16 had it
+   centered on the road which made the pothole sprite mostly invisible
+   under the brown road stroke). Now sits with bottom near road level. */
 .timeline-marker--pothole.timeline-marker--image {
     /* Override the dark circle background from .timeline-marker--pothole. */
     background: transparent;
     border-radius: 0;
-    /* Pothole stays smaller — it's a hazard, not a billboard. */
-    width: 80px;
+    /* Bigger so it actually reads — Thomas didn't see it at 80px. */
+    width: 110px;
     height: auto;
-    /* Anchor flush with the road instead of floating above it. */
-    transform: translate(-50%, -50%);
+    /* Bottom of pothole sprite sits at road level. */
+    transform: translate(-50%, -90%);
 }
 
 .timeline-marker--pothole.timeline-marker--image:hover {
-    transform: translate(-50%, -55%);
+    transform: translate(-50%, -94%);
 }
 
 .timeline-marker--pothole.timeline-marker--image::after {

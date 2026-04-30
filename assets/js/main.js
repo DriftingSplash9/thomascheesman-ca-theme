@@ -2543,13 +2543,33 @@ function initTimelinePage() {
                 const pt = roadPath.getPointAtLength(pos * len);
                 const cx = rect.left + (pt.x - vbox.x) * scaleX;
                 const cy = rect.top  + (pt.y - vbox.y) * scaleY;
-                m.style.setProperty('--m-x', (cx / window.innerWidth  * 100).toFixed(2) + 'vw');
+                const xVw = cx / window.innerWidth * 100;
+                m.style.setProperty('--m-x', xVw.toFixed(2) + 'vw');
                 m.style.setProperty('--m-y', (cy / window.innerHeight * 100).toFixed(2) + 'vh');
-                // Hide markers that fall well outside the viewport so we
-                // don't trigger their hover styles off-screen.
-                const inView = cx > -200 && cx < window.innerWidth + 200;
-                m.style.opacity = inView ? '1' : '0';
-                m.style.pointerEvents = inView ? 'auto' : 'none';
+
+                // V0.04 follow-up: signs fade out as they approach the
+                // center of the viewport (where the jeep sits) — Thomas
+                // wants the sign visible while it's still "ahead" on
+                // the right, gone by the time the jeep passes it.
+                // Pothole is exempt because it's a hazard the jeep
+                // drives over — it should be visible at the center.
+                const isPothole = m.classList.contains('timeline-marker--pothole');
+                let opacity;
+                if (isPothole) {
+                    opacity = (xVw > -10 && xVw < 110) ? 1 : 0;
+                } else {
+                    if (xVw > 100) {
+                        opacity = 0;          // off-screen right
+                    } else if (xVw > 70) {
+                        opacity = 1;          // visible incoming
+                    } else if (xVw > 50) {
+                        opacity = (xVw - 50) / 20;  // fade as approaching jeep
+                    } else {
+                        opacity = 0;          // past jeep
+                    }
+                }
+                m.style.opacity = opacity.toFixed(2);
+                m.style.pointerEvents = (opacity > 0.1) ? 'auto' : 'none';
             } catch (e) { /* path geometry not ready */ }
         });
     }
