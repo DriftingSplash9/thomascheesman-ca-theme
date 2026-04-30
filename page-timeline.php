@@ -560,14 +560,31 @@ get_header(); ?>
                 // Deterministic randoms from the index so each polaroid
                 // lands in the same spot every reload — different from
                 // its neighbors, but consistent for the reader.
-                // y-range expanded (was 26..58vh) now that the prose pill
-                // is parked — polaroids can sit higher and lower in the
-                // viewport for more breathing room.
+                // y-range tightened back to keep the polaroid frame fully
+                // on-screen — polaroid is ~58vh tall and centered on
+                // --polaroid-y, so center < 28vh clips the title slot
+                // above the viewport (V0.04 Patience-newborn bug).
                 $rot   = ( ( $idx * 73  ) % 17 ) - 8;             // -8 .. +8
                 $xVw   = 28 + ( ( $idx * 137 ) % 44 );            // 28 .. 72 vw
-                $yVh   = 12 + ( ( $idx * 211 ) % 66 );            // 12 .. 78 vh
+                $yVh   = 28 + ( ( $idx * 211 ) % 44 );            // 28 .. 72 vh
+
+                // Pull the description from the WP attachment for this
+                // image (Media Library → image → Description field).
+                // Thomas authors descriptions per-image in WP so they
+                // auto-update if he edits them later. Falls back to ''
+                // when the URL doesn't resolve to an attachment or the
+                // description is blank.
+                $description = '';
+                $image_url = $event['image'];
+                if ( strpos( $image_url, 'http' ) !== 0 ) {
+                    $image_url = home_url( $image_url );
+                }
+                $attachment_id = attachment_url_to_postid( $image_url );
+                if ( $attachment_id ) {
+                    $description = get_post_field( 'post_content', $attachment_id );
+                }
             ?>
-                <div class="timeline-polaroid"
+                <div class="timeline-polaroid<?php echo $description ? ' timeline-polaroid--has-description' : ''; ?>"
                      data-polaroid-trigger="<?php echo esc_attr( $trigger ); ?>"
                      data-polaroid-x="<?php echo esc_attr( $xVw ); ?>"
                      style="--polaroid-rot: <?php echo esc_attr( $rot ); ?>deg;
@@ -577,6 +594,9 @@ get_header(); ?>
                     <img class="timeline-polaroid__img"
                          src="<?php echo esc_url( $event['image'] ); ?>"
                          alt="" loading="lazy" />
+                    <?php if ( $description ) : ?>
+                        <span class="timeline-polaroid__description"><?php echo esc_html( $description ); ?></span>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         </div>

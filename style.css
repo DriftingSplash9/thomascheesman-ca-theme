@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.139
+Version: 1.0.140
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5375,6 +5375,28 @@ body.page-timeline {
     height: 100%;
     object-fit: cover;
     background: #1a1208;
+}
+
+/* Description (pulled from WP attachment Description field). Renders as
+   a museum-label strip overlaid on the bottom of the image when present.
+   Polaroids without a description don't render this element at all. */
+.timeline-polaroid__description {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    right: 14px;
+    padding: 5px 8px;
+    background: rgba(20, 14, 6, 0.72);
+    color: #f4ead2;
+    font: 400 11px/1.35 'Fraunces', Georgia, serif;
+    text-align: center;
+    border-radius: 1px;
+    /* Truncate long descriptions to two lines. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 /* PARKED — Spinning wheel rotors. Clip-path circle over a copy of the

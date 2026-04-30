@@ -2395,6 +2395,17 @@ function initTimelinePage() {
         // jeep. Off-screen polaroids hide via the same opacity transition
         // when scroll moves backward past their trigger.
         if (polaroids.length) {
+            // Time-based fade — Thomas's V0.04 follow-up note: the
+            // distance-based fade felt jerky when scroll paused (fade
+            // froze at whatever opacity scroll position dictated). Time
+            // makes the fade smooth regardless of scroll cadence. Each
+            // polaroid stays full-opacity for POLAROID_HOLD_MS, then
+            // fades to 0 over POLAROID_FADE_MS. Total active lifespan
+            // POLAROID_HOLD_MS + POLAROID_FADE_MS. Reset on re-entry
+            // (scroll back past the trigger).
+            const POLAROID_HOLD_MS = 7000;
+            const POLAROID_FADE_MS = 3000;
+            const now = performance.now();
             for (let p = 0; p < polaroids.length; p++) {
                 const poly = polaroids[p];
                 const trigger = parseFloat(poly.dataset.polaroidTrigger);
@@ -2404,10 +2415,12 @@ function initTimelinePage() {
                         poly.classList.remove('timeline-polaroid--active');
                         poly.style.setProperty('--polaroid-drift', '0vw');
                         poly.style.setProperty('--polaroid-fade', '1');
+                        poly._activatedAt = 0;
                     }
                 } else {
                     if (!poly.classList.contains('timeline-polaroid--active')) {
                         poly.classList.add('timeline-polaroid--active');
+                        poly._activatedAt = now;
                     }
                     // Settle window: hold position for ~0.005 progress so the
                     // CSS drop-in transition reads cleanly before drift starts.
@@ -2418,17 +2431,14 @@ function initTimelinePage() {
                     const driftVw = driftElapsed * 350;
                     poly.style.setProperty('--polaroid-drift', driftVw.toFixed(1) + 'vw');
 
-                    // Fade-out as the polaroid drifts past the left 25% of
-                    // the viewport. Per V0.04 feedback — the polaroids were
-                    // crowding once enough piled up. polaroid-x is its
-                    // landing x in vw; current viewport-x = polaroid-x -
-                    // driftVw. Linear fade between 25vw (opacity 1) and
-                    // 0vw (opacity 0).
-                    const polaroidX = parseFloat(poly.dataset.polaroidX);
-                    const currentX = polaroidX - driftVw;
-                    let fade = 1;
-                    if (currentX < 25) {
-                        fade = Math.max(0, currentX / 25);
+                    const ageMs = now - (poly._activatedAt || now);
+                    let fade;
+                    if (ageMs < POLAROID_HOLD_MS) {
+                        fade = 1;
+                    } else if (ageMs < POLAROID_HOLD_MS + POLAROID_FADE_MS) {
+                        fade = 1 - (ageMs - POLAROID_HOLD_MS) / POLAROID_FADE_MS;
+                    } else {
+                        fade = 0;
                     }
                     poly.style.setProperty('--polaroid-fade', fade.toFixed(2));
                 }
