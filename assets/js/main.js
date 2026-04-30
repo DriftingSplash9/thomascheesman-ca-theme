@@ -2182,7 +2182,9 @@ function initTimelinePage() {
     const proseEl   = root.querySelector('[data-jeep-prose]');
     const yearJeepEl= root.querySelector('[data-jeep-year]');
     const rearEl    = root.querySelector('[data-jeep-rear]');
-    const jeepEl    = root.querySelector('[data-jeep]');
+    const polaroidEl       = root.querySelector('[data-polaroid]');
+    const polaroidImgEl    = root.querySelector('[data-polaroid-img]');
+    const polaroidCaptionEl= root.querySelector('[data-polaroid-caption]');
     const markers   = Array.from(root.querySelectorAll('[data-marker]'));
     const finaleFrames = Array.from(root.querySelectorAll('[data-finale-frame]'))
         .sort(function (a, b) {
@@ -2308,33 +2310,6 @@ function initTimelinePage() {
         // --- Position markers along the SVG road ---
         positionMarkers();
 
-        // --- Jeep follows the road ---
-        // Sample the road path's y at the jeep's progress-on-path. The
-        // road is panned so the path point at progress P sits at viewport
-        // x = 75vw; the jeep is anchored at viewport x = 50vw, which
-        // corresponds to a path point ~0.083 progress earlier (the 25vw
-        // offset divided by the 300vw total pan distance).
-        if (roadPath && jeepEl) {
-            const svg = roadPath.ownerSVGElement;
-            if (svg) {
-                const rect = svg.getBoundingClientRect();
-                if (rect.height > 0) {
-                    try {
-                        const len = roadPath.getTotalLength();
-                        const vbox = svg.viewBox.baseVal;
-                        const jeepProgress = Math.max(0, Math.min(1, easedProgress - 0.083));
-                        const t = jeepProgress * len;
-                        const pt = roadPath.getPointAtLength(t);
-                        const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
-                        const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
-                        // -3vh offset puts the jeep's wheels roughly on the road line
-                        // (empirical; tune if the wheels float or sink).
-                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - 3).toFixed(1) + 'vh');
-                    } catch (e) { /* path not ready */ }
-                }
-            }
-        }
-
         // --- Home finale slideshow: per-frame opacity using an asymmetric
         // trapezoidal profile. Each slide is fully opaque for the second
         // half of its leftward range and the first half of its rightward
@@ -2388,6 +2363,10 @@ function initTimelinePage() {
         if (passenger) passenger.style.setProperty('--beat-passenger-opacity', '0');
         if (rearEl)    rearEl.style.setProperty('--beat-rear-opacity', '0');
 
+        // Hide the polaroid first so the next event's image can drop in
+        // cleanly. (If the next event has no image, it stays hidden.)
+        if (polaroidEl) polaroidEl.classList.remove('timeline-polaroid--visible');
+
         if (beatTimer) clearTimeout(beatTimer);
         beatTimer = setTimeout(function () {
             if (yearJeepEl) yearJeepEl.textContent = evt.year || '';
@@ -2399,6 +2378,28 @@ function initTimelinePage() {
                     rearEl.style.backgroundImage = 'url("' + evt.image + '")';
                 } else {
                     rearEl.style.backgroundImage = '';
+                }
+            }
+
+            // Polaroid drop — only when this event has a paired image.
+            // Random landing position + rotation so each one feels like a
+            // photo tossed onto a craft-album page.
+            if (polaroidEl && polaroidImgEl) {
+                if (evt.image) {
+                    polaroidImgEl.src = evt.image;
+                    if (polaroidCaptionEl) {
+                        polaroidCaptionEl.textContent = evt.year || '';
+                    }
+                    const rotDeg = (Math.random() - 0.5) * 16;          // -8° to +8°
+                    const xVw    = 28 + Math.random() * 44;             // 28vw – 72vw
+                    const yVh    = 26 + Math.random() * 32;             // 26vh – 58vh
+                    polaroidEl.style.setProperty('--polaroid-rot', rotDeg.toFixed(1) + 'deg');
+                    polaroidEl.style.setProperty('--polaroid-x', xVw.toFixed(1) + 'vw');
+                    polaroidEl.style.setProperty('--polaroid-y', yVh.toFixed(1) + 'vh');
+                    // Force a frame so the transition picks up the new transform values.
+                    requestAnimationFrame(function () {
+                        polaroidEl.classList.add('timeline-polaroid--visible');
+                    });
                 }
             }
 
