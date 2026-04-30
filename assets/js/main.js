@@ -2312,12 +2312,10 @@ function initTimelinePage() {
         // --- Position markers along the SVG road ---
         positionMarkers();
 
-        // --- Jeep follows the road when shrunk ---
-        // The jeep slides leftward as it shrinks (CSS: left 50% → 10%).
-        // To find the path point under the jeep, we need the path's t
-        // (arc-length) where getPointAtLength(t).x equals the SVG viewBox-x
-        // beneath the jeep's viewport position. Path is curvy so arc length
-        // and horizontal position diverge — binary-search to invert it.
+        // --- Jeep follows the road (both full-size and shrunk) ---
+        // Find the path point under the jeep's viewport-x and feed its y
+        // back to CSS via --jeep-road-y. Path is curvy so arc length and
+        // horizontal position diverge — binary-search to invert it.
         if (roadPath && jeepEl) {
             const svg = roadPath.ownerSVGElement;
             if (svg) {
@@ -2326,7 +2324,10 @@ function initTimelinePage() {
                     try {
                         const len = roadPath.getTotalLength();
                         const vbox = svg.viewBox.baseVal;
-                        const jeepShrink = Math.max(0, Math.min(1, (easedProgress - 0.65) * 20));
+                        // Mirrors the CSS shrink curve (0.74 → 0.78). Keep
+                        // these two formulas in sync if the window moves.
+                        const jeepShrink = Math.max(0, Math.min(1, (easedProgress - 0.74) * 25));
+                        const jeepScale  = 1 - jeepShrink * 0.79;
                         const jeepCenterVw = 50 - jeepShrink * 40;
                         // Convert jeep's viewport-x to SVG viewBox-x:
                         //   road.element_left_vw = -25 - 300 * progress
@@ -2346,12 +2347,16 @@ function initTimelinePage() {
                         const pt = roadPath.getPointAtLength((lo + hi) / 2);
                         const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
                         const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
-                        // -2vh empirical wheel offset. The jeep image's wheel
-                        // touchpoint sits ~2.2vh above its bottom edge at
-                        // scale 0.21 (15% of the 14.7vh scaled height), so
-                        // pulling the bottom up by ~2vh lands the wheels on
-                        // the road's drawn line rather than below it.
-                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - 2).toFixed(1) + 'vh');
+                        // Scale-aware wheel offset. The image's wheel touch-
+                        // point sits ~15% above the box's bottom edge — that
+                        // distance scales with the jeep, so the offset has
+                        // to scale too. (Was hard-coded -2vh, which only
+                        // worked at the small-jeep scale of 0.21.)
+                        const jeepBoxWidthPx  = Math.min(1350, window.innerWidth * 0.82);
+                        const jeepBoxHeightPx = Math.min(jeepBoxWidthPx * 9 / 16, window.innerHeight * 0.80);
+                        const jeepBoxHeightVh = jeepBoxHeightPx / window.innerHeight * 100;
+                        const wheelOffsetVh   = 0.15 * jeepScale * jeepBoxHeightVh;
+                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - wheelOffsetVh).toFixed(1) + 'vh');
                     } catch (e) { /* path not ready */ }
                 }
             }

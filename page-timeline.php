@@ -208,7 +208,7 @@ $tc_timeline_events = array(
         'yearStart' => 2010,
         'title'     => 'Journeyman chef',
         'prose'     => 'Completed culinary arts. Earned the journeyman chef ticket.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2024/09/me.jpg',
         'pos'       => 0.645,
     ),
     array(
@@ -224,7 +224,7 @@ $tc_timeline_events = array(
         'yearStart' => 2013,
         'title'     => 'OMG, a baby',
         'prose'     => 'OMG we are having a baby. Quick — get shit together. Bought a house. Stepped up to head chef.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/04/newborn-patience.jpg',
         'pos'       => 0.69,
     ),
     array(
@@ -232,7 +232,7 @@ $tc_timeline_events = array(
         'yearStart' => 2014,
         'title'     => 'Township 71',
         'prose'     => 'Opened Township 71. Taught culinary courses on the side.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/04/t71.png',
         'pos'       => 0.71,
         'mark'      => array( 'kind' => 'sign', 'label' => 'Township 71' ),
     ),
@@ -249,7 +249,7 @@ $tc_timeline_events = array(
         'yearStart' => 2015,
         'title'     => 'Daniel',
         'prose'     => 'Daniel born. Worked at multiple kitchens as head chef.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/04/baby-daniel.jpg',
         'pos'       => 0.76,
     ),
     array(
@@ -257,7 +257,7 @@ $tc_timeline_events = array(
         'yearStart' => 2017,
         'title'     => 'Faith',
         'prose'     => 'Faith born. Kitchen work continued — body began to argue.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2024/10/20180524_163145-scaled.jpg',
         'pos'       => 0.79,
     ),
     array(
@@ -311,6 +311,17 @@ $tc_timeline_events = array(
 );
 
 get_header(); ?>
+
+<!-- Entrance: full-viewport intro the reader scrolls past before the
+     parallax stage begins. Sits outside the timeline-page main so it
+     doesn't add to the progress-driving height of the parallax. -->
+<section class="timeline-intro" aria-label="Introduction">
+    <div class="timeline-intro__inner">
+        <h1 class="timeline-intro__title">The Long Drive</h1>
+        <p class="timeline-intro__sub">Forty-six years, one road. Scroll to drive.</p>
+        <span class="timeline-intro__chevron" aria-hidden="true">⌄</span>
+    </div>
+</section>
 
 <main id="primary" class="site-main timeline-page" data-timeline-root>
 
@@ -373,13 +384,13 @@ get_header(); ?>
                  the viewport is never half-empty at scroll progress 0.
                  NOT used for marker positioning (events still index along
                  the main #tc-road-path only). -->
-            <path d="M -4000 540 L 0 520"
+            <path d="M -4000 540 L 0 540"
                   fill="none"
                   stroke="#3b2c1a"
                   stroke-width="38"
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
-            <path d="M -4000 540 L 0 520"
+            <path d="M -4000 540 L 0 540"
                   fill="none"
                   stroke="rgba(245, 230, 200, 0.55)"
                   stroke-width="2"
@@ -392,12 +403,12 @@ get_header(); ?>
                  their --pos custom properties. -->
             <path id="tc-road-path" data-road-path
                   d="
-                    M 0 520
-                    C 400 510, 700 500, 1000 480
-                    S 1500 360, 1900 380
+                    M 0 540
+                    C 200 360, 500 280, 800 360
+                    S 1300 540, 1700 380
                     S 2400 520, 2700 460
                     S 3100 320, 3500 360
-                    S 4000 500, 4400 470
+                    S 3900 240, 4400 470
                     S 4900 380, 5300 400
                     S 5800 460, 6200 430
                     S 6700 360, 7100 380
@@ -415,12 +426,12 @@ get_header(); ?>
 
             <!-- Center dashed line. -->
             <path d="
-                    M 0 520
-                    C 400 510, 700 500, 1000 480
-                    S 1500 360, 1900 380
+                    M 0 540
+                    C 200 360, 500 280, 800 360
+                    S 1300 540, 1700 380
                     S 2400 520, 2700 460
                     S 3100 320, 3500 360
-                    S 4000 500, 4400 470
+                    S 3900 240, 4400 470
                     S 4900 380, 5300 400
                     S 5800 460, 6200 430
                     S 6700 360, 7100 380
@@ -490,6 +501,11 @@ get_header(); ?>
                 <!-- Windshield — atmosphere. Currently empty; reserved for
                      "next place" ghost text or weather hint. -->
                 <div class="timeline-jeep__windshield" data-jeep-windshield aria-hidden="true"></div>
+
+                <!-- Headlight beam — gated to night-sky era via CSS. Front
+                     of the jeep faces right (SAFARI text + grille on right
+                     edge of good-jeep.png), so the beam shines right. -->
+                <div class="timeline-jeep__headlight" aria-hidden="true"></div>
 
                 <!-- Wheels — CSS-spun by JS per scroll velocity. -->
                 <span class="timeline-jeep__wheel timeline-jeep__wheel--front" data-jeep-wheel aria-hidden="true"></span>

@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.130
+Version: 1.0.131
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4896,6 +4896,63 @@ body.page-timeline {
     background: #0c1628;  /* night-ish until JS tints by era */
 }
 
+/* ---- Entrance / intro -------------------------------------------------- */
+/* Full-viewport landing the reader scrolls past before the parallax stage
+   takes over. Lives outside the .timeline-page main so its height does
+   NOT count toward the progress-driving scroll range. */
+.timeline-intro {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 6vw;
+    color: #f1ead8;
+    background:
+        radial-gradient(ellipse at 50% 100%,
+            #b89c66 0%,
+            #6e5230 28%,
+            #2b1f12 65%,
+            #0c1628 100%);
+}
+
+.timeline-intro__inner {
+    max-width: 720px;
+}
+
+.timeline-intro__title {
+    margin: 0 0 18px;
+    font: 700 clamp(38px, 6.4vw, 72px) / 1.05 'Fraunces', Georgia, serif;
+    letter-spacing: 0.005em;
+    color: #fff5dc;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.timeline-intro__sub {
+    margin: 0 0 36px;
+    font: 400 clamp(16px, 2vw, 22px) / 1.5 'Fraunces', Georgia, serif;
+    color: #e7dcc1;
+    letter-spacing: 0.01em;
+}
+
+.timeline-intro__chevron {
+    display: inline-block;
+    font-size: 36px;
+    line-height: 1;
+    color: #f0c98a;
+    animation: tlIntroBounce 1.8s ease-in-out infinite;
+}
+
+@keyframes tlIntroBounce {
+    0%, 100% { transform: translateY(0);   opacity: 1; }
+    50%      { transform: translateY(8px); opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .timeline-intro__chevron { animation: none; }
+}
+
 .timeline-page {
     position: relative;
     height: var(--tl-length);
@@ -5132,18 +5189,17 @@ body.page-timeline {
 /* ---- The jeep ---------------------------------------------------------- */
 .timeline-jeep {
     position: absolute;
-    /* Shrink + slide-left over progress 0.65 → 0.70 (~year 2012, when
-       Thomas moved into the home). Ends at scale 0.21, left ~10vw.
-       Bottom position interpolates between fixed (6vh, full size) and
-       the road-y CSS variable (set by JS when shrunk) so the small jeep
-       rides along the road's curves. */
-    --jeep-shrink: clamp(0, calc((var(--tl-prog-eased) - 0.65) * 20), 1);
+    /* Shrink + slide-left over progress 0.74 → 0.78 (just after the
+       "Township 71 closes" beat at 0.735). Keeps the jeep full-size
+       through the T71 prose window so the marker visually passes the
+       centered jeep instead of sitting alone on the right. Ends at
+       scale 0.21, left ~10vw.
+       Bottom always tracks --jeep-road-y now (set by JS each frame) so
+       both the full-size and shrunk jeep ride the road's curves. */
+    --jeep-shrink: clamp(0, calc((var(--tl-prog-eased) - 0.74) * 25), 1);
     --jeep-scale: calc(1 - var(--jeep-shrink) * 0.79);
     left: calc(50% - var(--jeep-shrink) * 40vw);
-    bottom: calc(
-        (1 - var(--jeep-shrink)) * 6vh +
-        var(--jeep-shrink) * var(--jeep-road-y, 6vh)
-    );
+    bottom: var(--jeep-road-y, 6vh);
     transform: translateX(-50%) scale(var(--jeep-scale));
     transform-origin: 50% 100%;
     width: min(1350px, 82vw);
@@ -5291,21 +5347,74 @@ body.page-timeline {
     letter-spacing: 0.04em;
 }
 
+/* Visible spoked wheels overlaid on the jeep image's drawn wheels. The
+   conic-gradient gives 8 alternating dark/transparent spokes; mix-blend
+   multiply darkens into the existing wheel color so the spokes read as
+   spinning detail rather than floating circles on the body. Positions
+   are eyeballed against good-jeep.png — nudge the left % values if they
+   slip on a fresh deploy. */
 .timeline-jeep__wheel {
     position: absolute;
-    bottom: 4%;
-    width: 14%;
+    bottom: 6%;
+    width: 12%;
     aspect-ratio: 1;
     border-radius: 50%;
-    background: radial-gradient(circle, #2a1d10 0%, #1a1209 60%, #000 100%);
+    background: conic-gradient(
+        from 0deg,
+        rgba(0, 0, 0, 0)    0deg,
+        rgba(0, 0, 0, 0.55) 22deg,
+        rgba(0, 0, 0, 0)    45deg,
+        rgba(0, 0, 0, 0.55) 67deg,
+        rgba(0, 0, 0, 0)    90deg,
+        rgba(0, 0, 0, 0.55) 112deg,
+        rgba(0, 0, 0, 0)    135deg,
+        rgba(0, 0, 0, 0.55) 157deg,
+        rgba(0, 0, 0, 0)    180deg,
+        rgba(0, 0, 0, 0.55) 202deg,
+        rgba(0, 0, 0, 0)    225deg,
+        rgba(0, 0, 0, 0.55) 247deg,
+        rgba(0, 0, 0, 0)    270deg,
+        rgba(0, 0, 0, 0.55) 292deg,
+        rgba(0, 0, 0, 0)    315deg,
+        rgba(0, 0, 0, 0.55) 337deg,
+        rgba(0, 0, 0, 0)    360deg
+    );
     transform: rotate(var(--tl-wheel-spin));
-    /* The jeep image already shows wheels — these spin transparently
-       overlaid. Until tuned to align, we keep them invisible. */
-    opacity: 0;
+    mix-blend-mode: multiply;
+    opacity: 0.75;
+    pointer-events: none;
 }
 
 .timeline-jeep__wheel--front { left: 78%; }
 .timeline-jeep__wheel--rear  { left: 8%; }
+
+/* Headlight beam — child of the jeep shell so it scales + slides with
+   the jeep automatically. Originates at the jeep's right edge (front of
+   the vehicle: SAFARI text + windshield + grille all face right in
+   good-jeep.png), extends past the jeep using width > 100%. Gated to
+   the night-sky era (post-forest, ~year 2000+) so the beam doesn't
+   shine in daylight. mix-blend-mode: screen so it cuts through dark
+   without washing out lit areas. */
+.timeline-jeep__headlight {
+    position: absolute;
+    left: 88%;
+    top: 50%;
+    width: 220%;
+    height: 70%;
+    transform: translateY(-50%);
+    transform-origin: 0% 50%;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 0% 50%,
+        rgba(255, 240, 200, 0.55) 0%,
+        rgba(255, 220, 150, 0.28) 22%,
+        rgba(255, 200, 120, 0.10) 50%,
+        rgba(255, 200, 120, 0)    100%);
+    filter: blur(6px);
+    mix-blend-mode: screen;
+    /* Fade in as forest hands off to night-sky (0.42 → 0.50). */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
+    transition: opacity 0.6s ease;
+}
 
 /* The home era is handled by adding stitched landscape images (forest +
    house at different years) as additional back-strips in the era-band
@@ -5321,9 +5430,11 @@ body.page-timeline {
     text-decoration: none;
     pointer-events: auto;
     /* Hidden until past the 2026 final image is fully visible, then
-       fades in like a sign hammered into the lawn at the very end. */
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.99) * 100), 1);
-    transform: translateY(calc((1 - clamp(0, calc((var(--tl-prog-eased) - 0.99) * 100), 1)) * 24px));
+       fades in like a sign hammered into the lawn at the very end.
+       Wider window (0.97 → 1.0) so it has room to land before scroll
+       reaches the floor. */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.97) * 33.34), 1);
+    transform: translateY(calc((1 - clamp(0, calc((var(--tl-prog-eased) - 0.97) * 33.34), 1)) * 24px));
     transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
