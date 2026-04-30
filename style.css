@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.125
+Version: 1.0.126
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4970,7 +4970,7 @@ body.page-timeline {
 
 .timeline-back-strip--foothills {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/foothills.png');
-    z-index: 3;
+    z-index: 4;             /* top of the era stack — fades out earliest */
     /* Calgary / Turner Valley / HCS era. Opaque at 0; fades out 0.05→0.13
        (gone by Teepee Creek divorce). */
     opacity: clamp(0, calc((0.13 - var(--tl-prog-eased)) * 12.5), 1);
@@ -4978,7 +4978,7 @@ body.page-timeline {
 
 .timeline-back-strip--prairie {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/prairie.png');
-    z-index: 2;
+    z-index: 3;             /* above forest so it's not hidden when both opaque */
     /* Peace Country prairie — Teepee Creek through Pig Farm. Fades out
        0.25→0.35, fully gone by Little Smokey ("boreal forest in every
        direction") so the forest takes over. */
@@ -5131,21 +5131,24 @@ body.page-timeline {
     z-index: 8;
     pointer-events: none;
     filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.55));
-    transition: bottom 0.18s linear;
+    /* No `transition: bottom` — JS already smooths progress via lerp,
+       so applying the road-y directly per frame stays fluid without
+       creating an animation lag that reads as "doesn't follow." */
 }
 
-/* Headlight beam from the front (left side, since jeep faces left). Lives
-   inside the jeep so it scales with the jeep. mix-blend-mode: screen
-   blends the beam into the night-sky backdrop. */
+/* Headlight beam from the front of the jeep — the truck faces RIGHT
+   (windshield/grille on the right side of the image), so the beam
+   originates at the shell's right edge and extends rightward. Scales
+   with the jeep since it lives inside .timeline-jeep__shell. */
 .timeline-jeep__headlight {
     position: absolute;
-    left: 0;
+    right: 0;
     top: 60%;
     width: 60%;
     height: 14%;
-    transform: translate(-90%, -50%);
+    transform: translate(90%, -50%);
     background:
-        radial-gradient(ellipse at 100% 50%,
+        radial-gradient(ellipse at 0% 50%,
             rgba(255, 240, 200, 0.55) 0%,
             rgba(255, 240, 200, 0.18) 35%,
             transparent 75%);
