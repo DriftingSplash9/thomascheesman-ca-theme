@@ -227,12 +227,14 @@ $tc_timeline_events = array(
         'pos'       => 0.645,
     ),
     array(
-        'year'      => '2011–13',
-        'yearStart' => 2011,
-        'title'     => 'Mel, again',
-        'prose'     => 'Reconnected with Mel. Cohabitation began late 2012.',
-        'image'     => '/wp-content/uploads/2026/04/Hnging-at-the-keg.jpg',
-        'pos'       => 0.665,
+        'year'          => '2011–13',
+        'yearStart'     => 2011,
+        'title'         => 'Mel, again',
+        'prose'         => 'Reconnected with Mel. Cohabitation began late 2012.',
+        'image'         => '/wp-content/uploads/2026/04/Hnging-at-the-keg.jpg',
+        'polaroid_title'=> 'Relaxing after a hard day\'s work',
+        'image_rotate'  => -90,
+        'pos'           => 0.665,
     ),
     array(
         'year'      => '2013',
@@ -247,7 +249,7 @@ $tc_timeline_events = array(
         'yearStart' => 2014,
         'title'     => 'Township 71',
         'prose'     => 'Opened Township 71. Taught culinary courses on the side.',
-        'image'     => '/wp-content/uploads/2026/04/township-71-logo.png',
+        'image'     => '/wp-content/uploads/2026/04/t71logo.png',
         'pos'       => 0.71,
         'mark'      => array( 'kind' => 'sign', 'label' => 'Township 71' ),
     ),
@@ -568,6 +570,21 @@ get_header(); ?>
                 $xVw   = 28 + ( ( $idx * 137 ) % 44 );            // 28 .. 72 vw
                 $yVh   = 28 + ( ( $idx * 211 ) % 44 );            // 28 .. 72 vh
 
+                // polaroid_title overrides event['title'] for the polaroid
+                // label only — useful when the chosen photo doesn't match
+                // the event's narrative title (e.g. "Mel, again" event
+                // with a Thomas-relaxing-at-the-keg photo).
+                $polaroid_title = ! empty( $event['polaroid_title'] )
+                    ? $event['polaroid_title']
+                    : ( $event['title'] ?? '' );
+
+                // image_rotate (degrees, e.g. -90, 90, 180) for photos
+                // that were uploaded sideways. Applied as a CSS transform
+                // on the img inside the polaroid.
+                $image_rotate = isset( $event['image_rotate'] )
+                    ? (int) $event['image_rotate']
+                    : 0;
+
                 // Pull the description from the WP attachment for this
                 // image (Media Library → image → Description field).
                 // Thomas authors descriptions per-image in WP so they
@@ -589,9 +606,13 @@ get_header(); ?>
                      data-polaroid-x="<?php echo esc_attr( $xVw ); ?>"
                      style="--polaroid-rot: <?php echo esc_attr( $rot ); ?>deg;
                             --polaroid-x: <?php echo esc_attr( $xVw ); ?>vw;
-                            --polaroid-y: <?php echo esc_attr( $yVh ); ?>vh;">
-                    <span class="timeline-polaroid__title"><?php echo esc_html( $event['title'] ?? '' ); ?></span>
-                    <img class="timeline-polaroid__img"
+                            --polaroid-y: <?php echo esc_attr( $yVh ); ?>vh;<?php
+                            if ( $image_rotate ) {
+                                echo ' --img-rotate: ' . esc_attr( $image_rotate ) . 'deg;';
+                            }
+                            ?>">
+                    <span class="timeline-polaroid__title"><?php echo esc_html( $polaroid_title ); ?></span>
+                    <img class="timeline-polaroid__img<?php echo $image_rotate ? ' timeline-polaroid__img--rotated' : ''; ?>"
                          src="<?php echo esc_url( $event['image'] ); ?>"
                          alt="" loading="lazy" />
                     <?php if ( $description ) : ?>

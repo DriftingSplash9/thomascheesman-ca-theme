@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.141
+Version: 1.0.142
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5375,6 +5375,28 @@ body.page-timeline {
     height: 100%;
     object-fit: cover;
     background: #1a1208;
+}
+
+/* Rotated photo (sideways upload). --img-rotate is set inline per-event
+   when image_rotate is populated in $tc_timeline_events. The rotated img
+   is sized to fill the polaroid box on the rotated axis — when rotated
+   90deg either way, the image's natural width fills the polaroid HEIGHT
+   and vice versa, so we swap to width:100% height:100% and let cover
+   crop to the polaroid frame. Without this swap the rotated image only
+   fills a small inner square (rotated within its un-swapped box). */
+.timeline-polaroid__img--rotated {
+    transform: rotate(var(--img-rotate, 0deg));
+    /* For -90 / 90 rotations the visual axes swap, so we re-aim the
+       sizing: width is what was height, height is what was width. The
+       polaroid box is portrait-ish (4:5); a landscape source rotated
+       into portrait should fill the frame. */
+    width: 100%;
+    height: 100%;
+    /* contain prevents the rotated image from ballooning past the
+       polaroid frame; the trade-off is potential whitespace bands. If
+       the source aspect ratio matches the polaroid, no whitespace. */
+    object-fit: contain;
+    background: #fdfaf2;  /* matches polaroid paper, hides letterbox */
 }
 
 /* Description (pulled from WP attachment Description field). Renders as
