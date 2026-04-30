@@ -2227,7 +2227,6 @@ function initTimelinePage() {
     let targetProgress = 0;
     let easedProgress  = 0;
     let totalSpin      = 0;
-    let wheelMomentum  = 0;
     let compassDeg     = 0;
     let currentBeatIndex = -1;
     let beatTimer = null;
@@ -2251,7 +2250,6 @@ function initTimelinePage() {
     // 0.06 = ~280ms to settle from a wheel-flick; smooth enough to read,
     // responsive enough not to feel sluggish on slow input.
     const lerpFactor = reduceMotion ? 1 : 0.06;
-    const wheelFloorPerFrame = reduceMotion ? 0 : 0.4;
 
     function tick() {
         if (!isVisible) return;
@@ -2268,23 +2266,17 @@ function initTimelinePage() {
         easedProgress += (targetProgress - easedProgress) * lerpFactor;
         const dProgress = easedProgress - prev;
 
-        // Wheel rotation accumulates. Velocity-driven plus a small idle
-        // floor so the jeep never looks parked while the page is open.
-        totalSpin += dProgress * 14000 + wheelFloorPerFrame;
-
-        // Wheel-overlay opacity rides scroll velocity: pump up on movement,
-        // decay on rest. The spoke highlights fade in as the jeep starts
-        // rolling and disappear when it stops, instead of always-on which
-        // looks static.
-        wheelMomentum *= 0.92;
-        wheelMomentum += Math.abs(dProgress) * 220;
-        if (wheelMomentum > 1) wheelMomentum = 1;
+        // Wheel rotation accumulates only on actual scroll motion. No idle
+        // floor — at rest the wheel freezes at its last angle, matching
+        // the rotor's "pause when stopped" behaviour. (The base shell is
+        // always covered by the opaque rotor so the freeze isn't a fade
+        // back to the static base — just a held angle.)
+        totalSpin += dProgress * 14000;
 
         // --- Publish to CSS custom properties ---
         html.style.setProperty('--tl-progress',     targetProgress.toFixed(4));
         html.style.setProperty('--tl-prog-eased',   easedProgress.toFixed(4));
         html.style.setProperty('--tl-wheel-spin',   totalSpin.toFixed(1) + 'deg');
-        html.style.setProperty('--tl-wheel-opacity', wheelMomentum.toFixed(2));
 
         // --- Compass — driven by real geographic bearings ---
         // Each event has a `bearing` (degrees, 0=N, 90=E) representing the

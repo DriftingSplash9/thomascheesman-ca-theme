@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.135
+Version: 1.0.136
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5386,11 +5386,12 @@ body.page-timeline {
     background-position: center bottom;
     background-repeat: no-repeat;
     pointer-events: none;
-    /* Faded by default; JS pumps this up with scroll velocity, decays
-       when the page is at rest. Brand-new rotor + base shell match
-       perfectly when opacity 0, so the swap is invisible. */
-    opacity: var(--tl-wheel-opacity, 0);
-    transition: opacity 0.35s ease;
+    /* Always opaque so the rotor fully covers the base shell's static
+       wheel — no double-exposure during fade transitions. The rotor
+       angle matches the base at angle 0 and just freezes at the last
+       accumulated angle when scrolling stops (JS no longer ticks the
+       accumulator at rest). */
+    opacity: 1;
     /* Update spin angle from the JS accumulator. */
     transform: rotate(var(--tl-wheel-spin));
     will-change: transform;
@@ -5418,9 +5419,15 @@ body.page-timeline {
    the box was reading as a rectangular block before. */
 .timeline-jeep__headlight {
     position: absolute;
-    left: 90%;
+    /* Apex sits inside the jeep body (~85% of box width = ~5% / ~67px
+       back from where it was). The apex region overlaps the tan paint;
+       screen-blend over light pixels does nothing there, so the cone
+       only becomes visible once it passes the jeep silhouette into the
+       night sky. Reads as "beam emerging from the headlight" instead
+       of "beam floating off the front bumper". */
+    left: 85%;
     top: 55%;
-    width: 280%;
+    width: 300%;
     height: 70%;
     transform: translateY(-50%);
     transform-origin: 0% 50%;
