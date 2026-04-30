@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.136
+Version: 1.0.137
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5365,19 +5365,12 @@ body.page-timeline {
     letter-spacing: 0.04em;
 }
 
-/* Spinning wheels — clipped rotors of the jeep image.
-   Each rotor is a shell-sized copy of good-jeep.png positioned identically
-   to the base shell. clip-path masks it down to just the wheel area; the
-   element rotates around the wheel's center. Result: the painted wheel
-   visibly spins. The base shell is unchanged — when the rotor's opacity
-   is 0 (at rest), the static base wheel shows through.
-   Wheel center positions in box space (derived from the measured PNG —
-   image content fills box height with ~3% empty L/R, so image-space %s
-   project onto box %s with that small inset):
-     rear  center ≈ (28%, 95%)
-     front center ≈ (83%, 95%)
-   Clip radius ~7% of the box's "circle reference" (mean side length),
-   which corresponds to wheel diameter ~12% of box width. */
+/* PARKED — Spinning wheel rotors. Clip-path circle over a copy of the
+   jeep image, transform-rotate around wheel center. Visual artifacts
+   (double-exposure during fades, bolt-symmetry desync when stopped)
+   never settled. Backburned per Thomas after V0.08. PHP markup in
+   page-timeline.php is also commented out. Re-enable both to revisit.
+
 .timeline-jeep__wheel-spin {
     position: absolute;
     inset: 0;
@@ -5386,13 +5379,7 @@ body.page-timeline {
     background-position: center bottom;
     background-repeat: no-repeat;
     pointer-events: none;
-    /* Always opaque so the rotor fully covers the base shell's static
-       wheel — no double-exposure during fade transitions. The rotor
-       angle matches the base at angle 0 and just freezes at the last
-       accumulated angle when scrolling stops (JS no longer ticks the
-       accumulator at rest). */
     opacity: 1;
-    /* Update spin angle from the JS accumulator. */
     transform: rotate(var(--tl-wheel-spin));
     will-change: transform;
 }
@@ -5406,25 +5393,16 @@ body.page-timeline {
     clip-path: circle(7% at 83% 95%);
     transform-origin: 83% 95%;
 }
+*/
 
-/* Headlight beam — child of the jeep shell so it scales + slides with
-   the jeep automatically. Originates at the jeep's right edge (front of
-   the vehicle: SAFARI text + windshield + grille all face right in
-   good-jeep.png), extends past the jeep using width > 100%. Gated to
-   the night-sky era (post-forest, ~year 2000+) so the beam doesn't
-   shine in daylight. mix-blend-mode: screen so it cuts through dark
-   without washing out lit areas.
-   The clip-path triangle (apex at left-center, base at right edge)
-   gives the beam its actual cone shape — the radial gradient inside
-   the box was reading as a rectangular block before. */
+/* PARKED — Headlight beam. Tried radial-gradient on a rectangle, then
+   clip-path cone, then apex shifts, then dual-layer gradient with hot
+   core + halo. Never read cleanly as a beam — felt blocky or detached
+   from the jeep. Backburned per Thomas after V0.08. PHP markup in
+   page-timeline.php is also commented out. Re-enable both to revisit.
+
 .timeline-jeep__headlight {
     position: absolute;
-    /* Apex sits inside the jeep body (~85% of box width = ~5% / ~67px
-       back from where it was). The apex region overlaps the tan paint;
-       screen-blend over light pixels does nothing there, so the cone
-       only becomes visible once it passes the jeep silhouette into the
-       night sky. Reads as "beam emerging from the headlight" instead
-       of "beam floating off the front bumper". */
     left: 85%;
     top: 55%;
     width: 300%;
@@ -5432,9 +5410,6 @@ body.page-timeline {
     transform: translateY(-50%);
     transform-origin: 0% 50%;
     pointer-events: none;
-    /* Two stacked gradients: a tight hot core from the lamp itself and
-       a wider soft halo around it. Together they fall off with depth
-       instead of one flat fade. */
     background:
         radial-gradient(ellipse 55% 60% at 0% 50%,
             rgba(255, 248, 225, 0.85)  0%,
@@ -5445,15 +5420,13 @@ body.page-timeline {
             rgba(255, 220, 170, 0.32) 0%,
             rgba(255, 215, 160, 0.12) 50%,
             rgba(255, 215, 160, 0)   100%);
-    /* Tighter apex (2% chamfer) so the beam reads as a proper cone
-       rather than a wedge with a flat tip. */
     clip-path: polygon(0% 49%, 0% 51%, 100% 0%, 100% 100%);
     filter: blur(3px);
     mix-blend-mode: screen;
-    /* Fade in as forest hands off to night-sky (0.42 → 0.50). */
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
     transition: opacity 0.6s ease;
 }
+*/
 
 /* The home era is handled by adding stitched landscape images (forest +
    house at different years) as additional back-strips in the era-band

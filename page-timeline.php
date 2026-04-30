@@ -517,20 +517,28 @@ get_header(); ?>
                      "next place" ghost text or weather hint. -->
                 <div class="timeline-jeep__windshield" data-jeep-windshield aria-hidden="true"></div>
 
-                <!-- Headlight beam — gated to night-sky era via CSS. Front
-                     of the jeep faces right (SAFARI text + grille on right
-                     edge of good-jeep.png), so the beam shines right. -->
-                <div class="timeline-jeep__headlight" aria-hidden="true"></div>
+                <?php /*
+                    PARKED — HEADLIGHT
+                    Tried multiple times across V0.04 → V0.08 (radial
+                    gradient, two-layer gradient, clip-path cone, apex
+                    shifts). Never read as a clean beam — felt blocky
+                    or detached from the jeep. Decision was to park and
+                    move on. CSS `.timeline-jeep__headlight` block is
+                    also commented out in style.css. Re-enable here +
+                    there to revisit.
+                    <div class="timeline-jeep__headlight" aria-hidden="true"></div>
 
-                <!-- Spinning wheels: two shell-sized copies of the jeep
-                     image, each clip-pathed down to just one wheel and
-                     rotated around that wheel's center. The painted
-                     wheel from the photo rotates in place — with 6-bolt
-                     symmetry the rotation visibly cycles through bolt
-                     positions. Visible only while scrolling, faded in
-                     via --tl-wheel-opacity from JS. -->
-                <span class="timeline-jeep__wheel-spin timeline-jeep__wheel-spin--rear"  aria-hidden="true"></span>
-                <span class="timeline-jeep__wheel-spin timeline-jeep__wheel-spin--front" aria-hidden="true"></span>
+                    PARKED — WHEEL ROTOR
+                    Tried full-shell-sized copies of good-jeep.png with
+                    clip-path: circle() at each wheel center, rotated
+                    around the wheel pivot, opacity gated to scroll
+                    velocity. Visual artifacts (double-exposure during
+                    fades, bolt-symmetry mismatch when scrolling stopped)
+                    didn't resolve. Parked. CSS `.timeline-jeep__wheel-
+                    spin` is commented out in style.css.
+                    <span class="timeline-jeep__wheel-spin timeline-jeep__wheel-spin--rear"  aria-hidden="true"></span>
+                    <span class="timeline-jeep__wheel-spin timeline-jeep__wheel-spin--front" aria-hidden="true"></span>
+                */ ?>
             </div>
         </div>
 
