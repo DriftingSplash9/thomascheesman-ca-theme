@@ -2183,9 +2183,9 @@ function initTimelinePage() {
     const yearJeepEl= root.querySelector('[data-jeep-year]');
     const rearEl    = root.querySelector('[data-jeep-rear]');
     const jeepEl    = root.querySelector('[data-jeep]');
-    const polaroidEl       = root.querySelector('[data-polaroid]');
-    const polaroidImgEl    = root.querySelector('[data-polaroid-img]');
-    const polaroidCaptionEl= root.querySelector('[data-polaroid-caption]');
+    // Polaroid field — one per event with an image. Each tracks its own
+    // trigger pos (the previous event's pos) baked in via PHP.
+    const polaroids = Array.from(root.querySelectorAll('[data-polaroid-trigger]'));
     const markers   = Array.from(root.querySelectorAll('[data-marker]'));
     const finaleFrames = Array.from(root.querySelectorAll('[data-finale-frame]'))
         .sort(function (a, b) {
@@ -2227,10 +2227,24 @@ function initTimelinePage() {
     let targetProgress = 0;
     let easedProgress  = 0;
     let totalSpin      = 0;
+    let compassDeg     = 0;
     let currentBeatIndex = -1;
     let beatTimer = null;
     let rafId = 0;
     let isVisible = !document.hidden;
+
+    // ---- Bearing inheritance ----
+    // For events without an explicit `bearing`, inherit from the most recent
+    // event that does have one. Stationary events (HCS diagnosis, kitchen-mgmt,
+    // kids born) keep the compass pointing the same way as the last move.
+    let _lastBearing = null;
+    events.forEach(function (e) {
+        if (typeof e.bearing === 'number' && !isNaN(e.bearing)) {
+            _lastBearing = e.bearing;
+        } else if (_lastBearing !== null) {
+            e.bearing = _lastBearing;
+        }
+    });
 
     // Reduced motion: skip lerp, snap to scroll, no idle wheel rotation.
     // 0.06 = ~280ms to settle from a wheel-flick; smooth enough to read,
@@ -2262,27 +2276,35 @@ function initTimelinePage() {
         html.style.setProperty('--tl-prog-eased',   easedProgress.toFixed(4));
         html.style.setProperty('--tl-wheel-spin',   totalSpin.toFixed(1) + 'deg');
 
-        // --- Compass (road-tangent direction) ---
-        // Once the home-era slideshow starts at 0.55, lock the compass
-        // to north. The house faces south — the photo POV is looking
-        // north, so the needle settles on N as the home era takes over.
-        if (easedProgress >= 0.55) {
-            html.style.setProperty('--tl-compass-deg', '0deg');
-        } else if (roadPath) {
-            try {
-                const len = roadPath.getTotalLength();
-                const t   = easedProgress * len;
-                const p1  = roadPath.getPointAtLength(t);
-                const p2  = roadPath.getPointAtLength(Math.min(len, t + 1));
-                // SVG y-axis is inverted vs. screen up. atan2 returns angle
-                // in radians where 0 = pointing right (east). We want
-                // needle convention where 0deg = up (north) and rotation
-                // increases clockwise. So east => 90deg, road-rising
-                // (negative SVG dy) => slightly less than 90 (NE).
-                const angRad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-                const compassDeg = (angRad * 180 / Math.PI) + 90;
-                html.style.setProperty('--tl-compass-deg', compassDeg.toFixed(1) + 'deg');
-            } catch (e) { /* path may not be ready */ }
+        // --- Compass — driven by real geographic bearings ---
+        // Each event has a `bearing` (degrees, 0=N, 90=E) representing the
+        // direction Thomas was actually heading from the previous location
+        // to this one. Events without movement inherit the prior bearing
+        // (handled at init). The needle lerps toward the current event's
+        // bearing each frame so it changes smoothly across event flips.
+        // Falls back to road-tangent direction if no bearing data exists.
+        let bearingTarget = (events[currentBeatIndex < 0 ? 0 : currentBeatIndex] || {}).bearing;
+        if (typeof bearingTarget !== 'number') {
+            // Compute road-tangent fallback (early events before any bearing).
+            if (roadPath) {
+                try {
+                    const len = roadPath.getTotalLength();
+                    const t   = easedProgress * len;
+                    const p1  = roadPath.getPointAtLength(t);
+                    const p2  = roadPath.getPointAtLength(Math.min(len, t + 1));
+                    const angRad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                    bearingTarget = (angRad * 180 / Math.PI) + 90;
+                } catch (e) { bearingTarget = compassDeg; }
+            }
+        }
+        if (typeof bearingTarget === 'number') {
+            // Shortest-path interpolation, handling wrap at 0/360.
+            let delta = ((bearingTarget - compassDeg + 540) % 360) - 180;
+            compassDeg += delta * 0.05;
+            // Normalise to [-180, 540) so toFixed doesn't drift unbounded.
+            if (compassDeg >  720) compassDeg -= 360;
+            if (compassDeg < -720) compassDeg += 360;
+            html.style.setProperty('--tl-compass-deg', compassDeg.toFixed(1) + 'deg');
         }
 
         // --- Beat update (which event's prose should be shown?) ---
@@ -2347,17 +2369,52 @@ function initTimelinePage() {
                         const pt = roadPath.getPointAtLength((lo + hi) / 2);
                         const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
                         const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
-                        // Scale-aware wheel offset. The image's wheel touch-
-                        // point sits ~15% above the box's bottom edge — that
-                        // distance scales with the jeep, so the offset has
-                        // to scale too. (Was hard-coded -2vh, which only
-                        // worked at the small-jeep scale of 0.21.)
+                        // Scale-aware wheel offset. good-jeep.png is 5:3
+                        // inside a 16:9 box, so the image fills box height
+                        // and the wheels in the image at ~92% from image
+                        // top → 8% from box bottom. (Was using 0.15 from
+                        // V0.02, which assumed the wheels were 15% above
+                        // box bottom — that lifted the jeep ~6–10vh too
+                        // high and made it hover above the road.)
                         const jeepBoxWidthPx  = Math.min(1350, window.innerWidth * 0.82);
                         const jeepBoxHeightPx = Math.min(jeepBoxWidthPx * 9 / 16, window.innerHeight * 0.80);
                         const jeepBoxHeightVh = jeepBoxHeightPx / window.innerHeight * 100;
-                        const wheelOffsetVh   = 0.15 * jeepScale * jeepBoxHeightVh;
+                        const wheelOffsetVh   = 0.08 * jeepScale * jeepBoxHeightVh;
                         jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - wheelOffsetVh).toFixed(1) + 'vh');
                     } catch (e) { /* path not ready */ }
+                }
+            }
+        }
+
+        // --- Polaroid field — drop in + drift leftward ---
+        // Each polaroid sits dormant until easedProgress passes its trigger.
+        // On activation (class toggle) the CSS transition handles the drop;
+        // after a brief settle window we increment --polaroid-drift each
+        // frame so the polaroid slides leftward off-screen "behind" the
+        // jeep. Off-screen polaroids hide via the same opacity transition
+        // when scroll moves backward past their trigger.
+        if (polaroids.length) {
+            for (let p = 0; p < polaroids.length; p++) {
+                const poly = polaroids[p];
+                const trigger = parseFloat(poly.dataset.polaroidTrigger);
+                const elapsed = easedProgress - trigger;
+                if (elapsed < 0) {
+                    if (poly.classList.contains('timeline-polaroid--active')) {
+                        poly.classList.remove('timeline-polaroid--active');
+                        poly.style.setProperty('--polaroid-drift', '0vw');
+                    }
+                } else {
+                    if (!poly.classList.contains('timeline-polaroid--active')) {
+                        poly.classList.add('timeline-polaroid--active');
+                    }
+                    // Settle window: hold position for ~0.005 progress so the
+                    // CSS drop-in transition reads cleanly before drift starts.
+                    const driftElapsed = Math.max(0, elapsed - 0.005);
+                    // 350vw per progress unit ≈ 70vw per 0.20 progress, so a
+                    // polaroid lands and clears the viewport over roughly 5–6
+                    // events at the new 4000vh page length.
+                    const driftVw = driftElapsed * 350;
+                    poly.style.setProperty('--polaroid-drift', driftVw.toFixed(1) + 'vw');
                 }
             }
         }
@@ -2415,10 +2472,6 @@ function initTimelinePage() {
         if (passenger) passenger.style.setProperty('--beat-passenger-opacity', '0');
         if (rearEl)    rearEl.style.setProperty('--beat-rear-opacity', '0');
 
-        // Hide the polaroid first so the next event's image can drop in
-        // cleanly. (If the next event has no image, it stays hidden.)
-        if (polaroidEl) polaroidEl.classList.remove('timeline-polaroid--visible');
-
         if (beatTimer) clearTimeout(beatTimer);
         beatTimer = setTimeout(function () {
             if (yearJeepEl) yearJeepEl.textContent = evt.year || '';
@@ -2430,28 +2483,6 @@ function initTimelinePage() {
                     rearEl.style.backgroundImage = 'url("' + evt.image + '")';
                 } else {
                     rearEl.style.backgroundImage = '';
-                }
-            }
-
-            // Polaroid drop — only when this event has a paired image.
-            // Random landing position + rotation so each one feels like a
-            // photo tossed onto a craft-album page.
-            if (polaroidEl && polaroidImgEl) {
-                if (evt.image) {
-                    polaroidImgEl.src = evt.image;
-                    if (polaroidCaptionEl) {
-                        polaroidCaptionEl.textContent = evt.year || '';
-                    }
-                    const rotDeg = (Math.random() - 0.5) * 16;          // -8° to +8°
-                    const xVw    = 28 + Math.random() * 44;             // 28vw – 72vw
-                    const yVh    = 26 + Math.random() * 32;             // 26vh – 58vh
-                    polaroidEl.style.setProperty('--polaroid-rot', rotDeg.toFixed(1) + 'deg');
-                    polaroidEl.style.setProperty('--polaroid-x', xVw.toFixed(1) + 'vw');
-                    polaroidEl.style.setProperty('--polaroid-y', yVh.toFixed(1) + 'vh');
-                    // Force a frame so the transition picks up the new transform values.
-                    requestAnimationFrame(function () {
-                        polaroidEl.classList.add('timeline-polaroid--visible');
-                    });
                 }
             }
 

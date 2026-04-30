@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.131
+Version: 1.0.132
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4874,9 +4874,9 @@ body:has(.person-spoke--faith) {
     --tl-compass-deg: 90deg;
 
     /* Page geometry — total scrollable height of the timeline page.
-       29 events spread over ~11 viewports gives roughly ~38vh of scroll
-       per event so each one has room to land before the next arrives. */
-    --tl-length: 2000vh;
+       Doubled in V0.04 to give events more breathing room and let the
+       polaroid drift system actually pile up imagery on screen. */
+    --tl-length: 4000vh;
 
     /* How far each layer travels across the full scroll. The carnival-duck
        reversal: even-indexed layers go left (negative), odd go right.
@@ -5289,20 +5289,30 @@ body.page-timeline {
     color: #e7dcc1;
 }
 
-/* ---- Polaroid for per-event imagery --------------------------------- */
-/* When an event's prose has a paired image (event.image populated), JS
-   pops a polaroid onto the screen with a randomized landing position +
-   rotation + drop animation. Replaces on next event change. Reads like
-   someone tossing photos onto a road-trip craft-album page. */
+/* ---- Polaroid field — persistent + drifting --------------------------- */
+/* One polaroid per event with an image. Each lives in the page from start
+   to finish, hidden above-viewport until scroll reaches its trigger. JS
+   adds .--active to drop it onto its landing spot, then sets --polaroid-
+   drift (vw) every frame so it slides leftward and out of view, like a
+   roadside sign passing the jeep. Multiple polaroids on screen at once. */
+.timeline-polaroid-field {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9;             /* above the jeep — Thomas explicitly OK with overlap */
+}
+
 .timeline-polaroid {
     --polaroid-rot: 0deg;
     --polaroid-x: 50vw;
     --polaroid-y: 38vh;
+    --polaroid-drift: 0vw;
 
     position: absolute;
-    left: var(--polaroid-x);
+    /* left subtracts the drift so the polaroid slides leftward as scroll
+       advances past its trigger. */
+    left: calc(var(--polaroid-x) - var(--polaroid-drift));
     top: var(--polaroid-y);
-    z-index: 9;             /* above the jeep — Thomas explicitly OK with overlap */
 
     width: min(280px, 26vw);
     aspect-ratio: 4 / 5;
@@ -5314,16 +5324,15 @@ body.page-timeline {
         0 6px 12px rgba(0, 0, 0, 0.25);
     pointer-events: none;
 
-    /* Initial state: high above viewport, no rotation yet. The "drop"
-       animation eases to the landed position with the random rotation. */
+    /* Initial state: high above viewport, opacity 0, no rotation. */
     transform: translate(-50%, -50%) translateY(-90vh) rotate(0deg);
     opacity: 0;
     transition:
-        opacity 0.3s ease,
-        transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        opacity 0.35s ease,
+        transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.timeline-polaroid--visible {
+.timeline-polaroid--active {
     opacity: 1;
     transform: translate(-50%, -50%) rotate(var(--polaroid-rot));
 }
@@ -5347,16 +5356,18 @@ body.page-timeline {
     letter-spacing: 0.04em;
 }
 
-/* Visible spoked wheels overlaid on the jeep image's drawn wheels. The
-   conic-gradient gives 8 alternating dark/transparent spokes; mix-blend
-   multiply darkens into the existing wheel color so the spokes read as
-   spinning detail rather than floating circles on the body. Positions
-   are eyeballed against good-jeep.png — nudge the left % values if they
-   slip on a fresh deploy. */
+/* Visible spoked wheels overlaid on the jeep image's drawn wheels.
+   Positions re-derived from good-jeep.png (5:3 image inside 16:9 box,
+   so image fills box height with ~3% empty-space L/R; image's wheel
+   centers at ~18% / ~78% map to box positions ~19% / ~76% with the
+   wheel size 13% of box-width). The conic-gradient gives 8 alternating
+   dark/transparent spokes; mix-blend multiply darkens into the existing
+   wheel color so spokes read as spinning detail rather than floating
+   circles on the body. */
 .timeline-jeep__wheel {
     position: absolute;
-    bottom: 6%;
-    width: 12%;
+    bottom: 8%;
+    width: 13%;
     aspect-ratio: 1;
     border-radius: 50%;
     background: conic-gradient(
@@ -5385,8 +5396,8 @@ body.page-timeline {
     pointer-events: none;
 }
 
-.timeline-jeep__wheel--front { left: 78%; }
-.timeline-jeep__wheel--rear  { left: 8%; }
+.timeline-jeep__wheel--front { left: 70%; }
+.timeline-jeep__wheel--rear  { left: 13%; }
 
 /* Headlight beam — child of the jeep shell so it scales + slides with
    the jeep automatically. Originates at the jeep's right edge (front of

@@ -38,8 +38,11 @@
  *   - yearStart    integer — what the capsule odometer should show
  *   - title        short heading (passenger window header)
  *   - prose        body text (passenger window body)
- *   - image        URL or empty (rear window)
+ *   - image        URL or empty (drives the polaroid for this event)
  *   - pos          0..1 along the road
+ *   - bearing      optional — degrees (0=N, 90=E) Thomas was heading FROM
+ *                  the previous event's location TO this one. Stationary
+ *                  events omit it and JS inherits the previous value.
  *   - mark         optional — { kind: 'sign'|'mailbox'|'pothole'|...,
  *                                label: 'Township 71',
  *                                eg: [{ type: 'image'|'video', src: ... }] }
@@ -63,6 +66,7 @@ $tc_timeline_events = array(
         'prose'     => 'Out of the city and into the foothills. Six years lived in Turner Valley — mountains close, oil derricks scattered through the trees.',
         'image'     => '',
         'pos'       => 0.06,
+        'bearing'   => 205,  // Calgary → Turner Valley (SSW)
         'mark'      => array( 'kind' => 'sign', 'label' => 'Welcome to Turner Valley' ),
     ),
     array(
@@ -81,6 +85,7 @@ $tc_timeline_events = array(
         'prose'     => 'Parents divorced. Moved to Teepee Creek, AB — to the Bird Farm. Open prairie, distant trees, a different kind of quiet.',
         'image'     => '',
         'pos'       => 0.13,
+        'bearing'   => 330,  // Turner Valley → Teepee Creek (NNW, big jump)
         'mark'      => array( 'kind' => 'sign', 'label' => 'Welcome to Teepee Creek' ),
     ),
     array(
@@ -90,6 +95,7 @@ $tc_timeline_events = array(
         'prose'     => 'Mom remarried. A year later she took a break from it and we moved to Edmonton. First time living in a real city.',
         'image'     => '',
         'pos'       => 0.17,
+        'bearing'   => 155,  // Teepee Creek → Edmonton (SSE)
     ),
     array(
         'year'      => '1993–94',
@@ -98,6 +104,7 @@ $tc_timeline_events = array(
         'prose'     => 'Lived in Edmonton until Mom and Brian found a place together in Le Glace, AB. Hamlet small.',
         'image'     => '',
         'pos'       => 0.21,
+        'bearing'   => 310,  // Edmonton → Le Glace (NW)
     ),
     array(
         'year'      => '1994–95',
@@ -106,6 +113,7 @@ $tc_timeline_events = array(
         'prose'     => 'Moved on to a different farm near Teepee Creek — the Pig Farm.',
         'image'     => '',
         'pos'       => 0.245,
+        'bearing'   => 50,   // Le Glace → Teepee Creek (NE)
     ),
     array(
         'year'      => '1995–97',
@@ -122,6 +130,7 @@ $tc_timeline_events = array(
         'prose'     => 'A few months in Spirit River before finding a farm near Little Smokey.',
         'image'     => '',
         'pos'       => 0.31,
+        'bearing'   => 350,  // Pig Farm (Teepee Creek) → Spirit River (~N)
     ),
     array(
         'year'      => '1997–99',
@@ -130,6 +139,7 @@ $tc_timeline_events = array(
         'prose'     => 'Boreal forest in every direction. Quiet, layered, alive.',
         'image'     => '',
         'pos'       => 0.345,
+        'bearing'   => 135,  // Spirit River → Little Smoky (SE)
     ),
     array(
         'year'      => '1999–2000',
@@ -138,6 +148,7 @@ $tc_timeline_events = array(
         'prose'     => 'Graduated high school. College in Grande Prairie. Campus housing, late nights.',
         'image'     => '',
         'pos'       => 0.39,
+        'bearing'   => 315,  // Little Smoky → Grande Prairie (NW)
     ),
     array(
         'year'      => '2000',
@@ -146,6 +157,7 @@ $tc_timeline_events = array(
         'prose'     => 'Worked for the Town of Valleyview. Returned to college dorms after.',
         'image'     => '',
         'pos'       => 0.42,
+        'bearing'   => 110,  // GP → Valleyview (ESE)
     ),
     array(
         'year'      => '2000–01',
@@ -154,6 +166,7 @@ $tc_timeline_events = array(
         'prose'     => 'College carried on, summers in pharmacy work.',
         'image'     => '',
         'pos'       => 0.445,
+        'bearing'   => 290,  // Valleyview → GP (WNW)
     ),
     array(
         'year'      => '2001–02',
@@ -170,6 +183,7 @@ $tc_timeline_events = array(
         'prose'     => 'Power Engineering training in Fort McMurray.',
         'image'     => '',
         'pos'       => 0.50,
+        'bearing'   => 50,   // GP → Fort McMurray (NE, big jump)
     ),
     array(
         'year'      => '2003–05',
@@ -178,6 +192,7 @@ $tc_timeline_events = array(
         'prose'     => 'Climbed into a kitchen-management role.',
         'image'     => '',
         'pos'       => 0.535,
+        'bearing'   => 230,  // Fort McMurray → GP region (SW, return)
     ),
     array(
         'year'      => '2005–07',
@@ -404,19 +419,19 @@ get_header(); ?>
             <path id="tc-road-path" data-road-path
                   d="
                     M 0 540
-                    C 200 360, 500 280, 800 360
-                    S 1300 540, 1700 380
-                    S 2400 520, 2700 460
-                    S 3100 320, 3500 360
-                    S 3900 240, 4400 470
-                    S 4900 380, 5300 400
-                    S 5800 460, 6200 430
-                    S 6700 360, 7100 380
-                    S 7600 470, 8000 440
-                    S 8500 360, 8900 380
-                    S 9400 480, 9800 430
-                    S 10400 360, 10800 400
-                    S 11500 460, 12000 440
+                    C 200 380, 500 220, 800 380
+                    S 1300 560, 1700 320
+                    S 2200 560, 2600 280
+                    S 3100 200, 3500 360
+                    S 3900 200, 4400 480
+                    S 4900 240, 5300 400
+                    S 5800 560, 6200 320
+                    S 6700 200, 7100 380
+                    S 7600 560, 8000 280
+                    S 8500 220, 8900 380
+                    S 9400 560, 9800 300
+                    S 10400 200, 10800 400
+                    S 11500 280, 12000 440
                   "
                   fill="none"
                   stroke="#3b2c1a"
@@ -427,19 +442,19 @@ get_header(); ?>
             <!-- Center dashed line. -->
             <path d="
                     M 0 540
-                    C 200 360, 500 280, 800 360
-                    S 1300 540, 1700 380
-                    S 2400 520, 2700 460
-                    S 3100 320, 3500 360
-                    S 3900 240, 4400 470
-                    S 4900 380, 5300 400
-                    S 5800 460, 6200 430
-                    S 6700 360, 7100 380
-                    S 7600 470, 8000 440
-                    S 8500 360, 8900 380
-                    S 9400 480, 9800 430
-                    S 10400 360, 10800 400
-                    S 11500 460, 12000 440
+                    C 200 380, 500 220, 800 380
+                    S 1300 560, 1700 320
+                    S 2200 560, 2600 280
+                    S 3100 200, 3500 360
+                    S 3900 200, 4400 480
+                    S 4900 240, 5300 400
+                    S 5800 560, 6200 320
+                    S 6700 200, 7100 380
+                    S 7600 560, 8000 280
+                    S 8500 220, 8900 380
+                    S 9400 560, 9800 300
+                    S 10400 200, 10800 400
+                    S 11500 280, 12000 440
                   "
                   fill="none"
                   stroke="rgba(245, 230, 200, 0.55)"
@@ -513,13 +528,42 @@ get_header(); ?>
             </div>
         </div>
 
-        <!-- Polaroid: drops in with random rotation when an event's prose
-             has a paired image. JS reads event.image, sets src + caption,
-             generates random landing position + rotation, and toggles
-             .timeline-polaroid--visible. Replaces on next event change. -->
-        <div class="timeline-polaroid" data-polaroid aria-hidden="true">
-            <img class="timeline-polaroid__img" data-polaroid-img src="" alt="" />
-            <span class="timeline-polaroid__caption" data-polaroid-caption></span>
+        <!-- Polaroid field: one per event with an image. Each polaroid
+             drops in when scroll passes its trigger (the previous event's
+             pos), then drifts leftward off-screen as scroll continues —
+             so the album piles up behind us instead of replacing on every
+             beat. Random landing position + rotation are baked in
+             server-side from the event index so they're stable across
+             reloads but feel hand-tossed. -->
+        <div class="timeline-polaroid-field" aria-hidden="true">
+            <?php
+            foreach ( $tc_timeline_events as $idx => $event ) :
+                if ( empty( $event['image'] ) ) {
+                    continue;
+                }
+                // Trigger: the prior event's pos (or 0 for the very first).
+                $trigger = ( $idx === 0 ) ? 0 : floatval( $tc_timeline_events[ $idx - 1 ]['pos'] );
+                // Deterministic randoms from the index so each polaroid
+                // lands in the same spot every reload — different from
+                // its neighbors, but consistent for the reader.
+                $rot   = ( ( $idx * 73  ) % 17 ) - 8;             // -8 .. +8
+                $xVw   = 28 + ( ( $idx * 137 ) % 44 );            // 28 .. 72 vw
+                $yVh   = 26 + ( ( $idx * 211 ) % 32 );            // 26 .. 58 vh
+                $caption = ! empty( $event['caption'] )
+                    ? $event['caption']
+                    : ( $event['year'] ?? '' );
+            ?>
+                <div class="timeline-polaroid"
+                     data-polaroid-trigger="<?php echo esc_attr( $trigger ); ?>"
+                     style="--polaroid-rot: <?php echo esc_attr( $rot ); ?>deg;
+                            --polaroid-x: <?php echo esc_attr( $xVw ); ?>vw;
+                            --polaroid-y: <?php echo esc_attr( $yVh ); ?>vh;">
+                    <img class="timeline-polaroid__img"
+                         src="<?php echo esc_url( $event['image'] ); ?>"
+                         alt="" loading="lazy" />
+                    <span class="timeline-polaroid__caption"><?php echo esc_html( $caption ); ?></span>
+                </div>
+            <?php endforeach; ?>
         </div>
 
         <!-- Persistent prose pill below the road. Holds year + title +
