@@ -2346,8 +2346,12 @@ function initTimelinePage() {
                         const pt = roadPath.getPointAtLength((lo + hi) / 2);
                         const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
                         const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
-                        // -3vh empirical wheel offset (image bottom → wheel touchpoint).
-                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - 3).toFixed(1) + 'vh');
+                        // -2vh empirical wheel offset. The jeep image's wheel
+                        // touchpoint sits ~2.2vh above its bottom edge at
+                        // scale 0.21 (15% of the 14.7vh scaled height), so
+                        // pulling the bottom up by ~2vh lands the wheels on
+                        // the road's drawn line rather than below it.
+                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - 2).toFixed(1) + 'vh');
                     } catch (e) { /* path not ready */ }
                 }
             }
