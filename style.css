@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.143
+Version: 1.0.144
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5195,12 +5195,70 @@ body.page-timeline {
     padding: 4px 8px;
 }
 
-/* ---- Image markers (Phase 3) ---------------------------------------------
-   When a mark.image is provided in the events array, the button renders a
-   sprite instead of the text label. The button itself loses its background
-   chrome; only the sprite (and, for sign-kinds, the post-pole) is visible.
-   Sign sprites sit above the road, anchored at the pole's base; pothole
-   sprites sit centered ON the road with no post. */
+/* ---- Highway sign markers (Phase 3 — green AB-highway style) -------------
+   Used for the place markers (Turner Valley, Teepee Creek, Spirit River,
+   Township 71). Composite: white-bordered green sign with the destination
+   text on the left and a small photo on the right. Sized like a real sign
+   you'd pass on the way into a town — visibly bigger than the original
+   label badge. Sits above the road on a post (the existing ::after). */
+.timeline-marker--highway {
+    /* Override the cream-paper base. */
+    background: #1a5c2e;          /* AB highway green */
+    color: #fff;
+    border: 3px solid #fff;
+    border-radius: 6px;
+    padding: 10px 14px;
+    width: 240px;
+    height: auto;
+    box-shadow:
+        0 10px 22px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+    /* Layout: text left, photo right. */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /* Reset the base font (was Courier monospace). */
+    font: 700 15px/1.1 'Helvetica Neue', Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.timeline-marker--highway:hover {
+    transform: translate(-50%, -106%);
+    box-shadow:
+        0 16px 30px rgba(0, 0, 0, 0.65),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+.timeline-marker--highway::after {
+    /* Thicker post for a heftier sign. */
+    width: 4px;
+    height: 30px;
+    background: rgba(40, 30, 18, 0.85);
+}
+
+.timeline-marker__text {
+    flex: 1;
+    color: #fff;
+    text-align: left;
+    /* Two-line wrapping so longer place names still fit. */
+    word-wrap: break-word;
+}
+
+.timeline-marker__photo {
+    flex-shrink: 0;
+    display: block;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    background: #1a1208;
+}
+
+/* ---- Image-only markers (Phase 3) ----------------------------------------
+   For sprite-only kinds (currently just the HCS pothole). The button loses
+   its chrome; only the sprite (and, for sign-kinds, the post-pole) shows. */
 .timeline-marker--image {
     background: transparent;
     border: 0;

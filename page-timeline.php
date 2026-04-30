@@ -68,8 +68,9 @@ $tc_timeline_events = array(
         'pos'       => 0.06,
         'bearing'   => 205,  // Calgary → Turner Valley (SSW)
         'mark'      => array(
-            'kind'  => 'sign',
-            'label' => 'Welcome to Turner Valley',
+            'kind'  => 'highway',
+            'label' => 'Turner Valley',
+            'text'  => 'Turner Valley 1km',
             'image' => '/wp-content/uploads/2026/04/turner-valley.jpg',
         ),
     ),
@@ -95,8 +96,9 @@ $tc_timeline_events = array(
         'pos'       => 0.13,
         'bearing'   => 330,  // Turner Valley → Teepee Creek (NNW, big jump)
         'mark'      => array(
-            'kind'  => 'sign',
-            'label' => 'Welcome to Teepee Creek',
+            'kind'  => 'highway',
+            'label' => 'Teepee Creek',
+            'text'  => 'Teepee Creek 1km',
             'image' => '/wp-content/uploads/2026/04/teepee-creek-scaled.jpg',
         ),
     ),
@@ -144,8 +146,9 @@ $tc_timeline_events = array(
         'pos'       => 0.31,
         'bearing'   => 350,  // Pig Farm (Teepee Creek) → Spirit River (~N)
         'mark'      => array(
-            'kind'  => 'sign',
-            'label' => 'Welcome to Spirit River',
+            'kind'  => 'highway',
+            'label' => 'Spirit River',
+            'text'  => 'Spirit River 1km',
             'image' => '/wp-content/uploads/2026/04/spirit-river-sign.png',
         ),
     ),
@@ -268,8 +271,9 @@ $tc_timeline_events = array(
         'image'     => '/wp-content/uploads/2026/04/t71logo.png',
         'pos'       => 0.71,
         'mark'      => array(
-            'kind'  => 'sign',
+            'kind'  => 'highway',
             'label' => 'Township 71',
+            'text'  => 'Township 71 1km',
             'image' => '/wp-content/uploads/2026/04/t71logo.png',
         ),
     ),
@@ -513,18 +517,35 @@ get_header(); ?>
                 if ( empty( $event['mark'] ) ) {
                     continue;
                 }
-                $kind     = esc_attr( $event['mark']['kind'] );
-                $label    = esc_html( $event['mark']['label'] ?? '' );
-                $mark_img = $event['mark']['image'] ?? '';
-                $pos      = floatval( $event['pos'] );
+                $kind_raw   = $event['mark']['kind'];
+                $kind       = esc_attr( $kind_raw );
+                $label      = esc_html( $event['mark']['label'] ?? '' );
+                $mark_img   = $event['mark']['image'] ?? '';
+                $mark_text  = $event['mark']['text'] ?? '';
+                $is_highway = ( $kind_raw === 'highway' );
+                $pos        = floatval( $event['pos'] );
                 $marker_idx++;
+                // Build the class string. Highway markers have their own
+                // visual treatment (green sign + text + photo), so they
+                // don't get the bare-sprite --image modifier.
+                $css_class = 'timeline-marker timeline-marker--' . $kind;
+                if ( ! $is_highway && $mark_img ) {
+                    $css_class .= ' timeline-marker--image';
+                }
             ?>
                 <button type="button"
-                        class="timeline-marker timeline-marker--<?php echo $kind; ?><?php echo $mark_img ? ' timeline-marker--image' : ''; ?>"
+                        class="<?php echo esc_attr( $css_class ); ?>"
                         data-marker
                         data-marker-pos="<?php echo esc_attr( $pos ); ?>"
                         aria-label="<?php echo esc_attr( $label ?: 'Roadside marker' ); ?>">
-                    <?php if ( $mark_img ) : ?>
+                    <?php if ( $is_highway ) : ?>
+                        <span class="timeline-marker__text"><?php echo esc_html( $mark_text ?: $label ); ?></span>
+                        <?php if ( $mark_img ) : ?>
+                            <img class="timeline-marker__photo"
+                                 src="<?php echo esc_url( $mark_img ); ?>"
+                                 alt="" loading="lazy" />
+                        <?php endif; ?>
+                    <?php elseif ( $mark_img ) : ?>
                         <img class="timeline-marker__sprite"
                              src="<?php echo esc_url( $mark_img ); ?>"
                              alt="" loading="lazy" />
