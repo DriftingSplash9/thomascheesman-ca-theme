@@ -522,9 +522,15 @@ get_header(); ?>
                      edge of good-jeep.png), so the beam shines right. -->
                 <div class="timeline-jeep__headlight" aria-hidden="true"></div>
 
-                <!-- Wheels — CSS-spun by JS per scroll velocity. -->
-                <span class="timeline-jeep__wheel timeline-jeep__wheel--front" data-jeep-wheel aria-hidden="true"></span>
-                <span class="timeline-jeep__wheel timeline-jeep__wheel--rear"  data-jeep-wheel aria-hidden="true"></span>
+                <!-- Spinning wheels: two shell-sized copies of the jeep
+                     image, each clip-pathed down to just one wheel and
+                     rotated around that wheel's center. The painted
+                     wheel from the photo rotates in place — with 6-bolt
+                     symmetry the rotation visibly cycles through bolt
+                     positions. Visible only while scrolling, faded in
+                     via --tl-wheel-opacity from JS. -->
+                <span class="timeline-jeep__wheel-spin timeline-jeep__wheel-spin--rear"  aria-hidden="true"></span>
+                <span class="timeline-jeep__wheel-spin timeline-jeep__wheel-spin--front" aria-hidden="true"></span>
             </div>
         </div>
 

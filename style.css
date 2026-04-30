@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.134
+Version: 1.0.135
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5365,52 +5365,46 @@ body.page-timeline {
     letter-spacing: 0.04em;
 }
 
-/* Spoked wheel highlights on the jeep image's drawn wheels.
-   Bright cream spokes with screen blend so highlights ride over the
-   dark image wheels (multiply blend was invisible against dark-on-dark).
-   Opacity is gated to scroll velocity: the JS pumps --tl-wheel-opacity
-   up while scrolling, decays it on rest, so wheels visibly spin during
-   movement and fade away when stopped.
-   Positions from measured pixel data on good-jeep.png:
-     - rear wheel center 26% of image width (21% of box left edge)
-     - front wheel center 85% of image width (78% of box left edge)
-     - wheels at image bottom = box bottom
-     - wheel diameter ~12% of box width */
-.timeline-jeep__wheel {
+/* Spinning wheels — clipped rotors of the jeep image.
+   Each rotor is a shell-sized copy of good-jeep.png positioned identically
+   to the base shell. clip-path masks it down to just the wheel area; the
+   element rotates around the wheel's center. Result: the painted wheel
+   visibly spins. The base shell is unchanged — when the rotor's opacity
+   is 0 (at rest), the static base wheel shows through.
+   Wheel center positions in box space (derived from the measured PNG —
+   image content fills box height with ~3% empty L/R, so image-space %s
+   project onto box %s with that small inset):
+     rear  center ≈ (28%, 95%)
+     front center ≈ (83%, 95%)
+   Clip radius ~7% of the box's "circle reference" (mean side length),
+   which corresponds to wheel diameter ~12% of box width. */
+.timeline-jeep__wheel-spin {
     position: absolute;
-    bottom: 0.5%;
-    width: 12%;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: conic-gradient(
-        from 0deg,
-        rgba(255, 230, 180, 0)    0deg,
-        rgba(255, 230, 180, 0.45) 22deg,
-        rgba(255, 230, 180, 0)    45deg,
-        rgba(255, 230, 180, 0.45) 67deg,
-        rgba(255, 230, 180, 0)    90deg,
-        rgba(255, 230, 180, 0.45) 112deg,
-        rgba(255, 230, 180, 0)    135deg,
-        rgba(255, 230, 180, 0.45) 157deg,
-        rgba(255, 230, 180, 0)    180deg,
-        rgba(255, 230, 180, 0.45) 202deg,
-        rgba(255, 230, 180, 0)    225deg,
-        rgba(255, 230, 180, 0.45) 247deg,
-        rgba(255, 230, 180, 0)    270deg,
-        rgba(255, 230, 180, 0.45) 292deg,
-        rgba(255, 230, 180, 0)    315deg,
-        rgba(255, 230, 180, 0.45) 337deg,
-        rgba(255, 230, 180, 0)    360deg
-    );
-    transform: rotate(var(--tl-wheel-spin));
-    mix-blend-mode: screen;
+    inset: 0;
+    background-image: url('/wp-content/uploads/2026/04/good-jeep.png');
+    background-size: contain;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    /* Faded by default; JS pumps this up with scroll velocity, decays
+       when the page is at rest. Brand-new rotor + base shell match
+       perfectly when opacity 0, so the swap is invisible. */
     opacity: var(--tl-wheel-opacity, 0);
     transition: opacity 0.35s ease;
-    pointer-events: none;
+    /* Update spin angle from the JS accumulator. */
+    transform: rotate(var(--tl-wheel-spin));
+    will-change: transform;
 }
 
-.timeline-jeep__wheel--front { left: 78%; }
-.timeline-jeep__wheel--rear  { left: 21%; }
+.timeline-jeep__wheel-spin--rear {
+    clip-path: circle(7% at 28% 95%);
+    transform-origin: 28% 95%;
+}
+
+.timeline-jeep__wheel-spin--front {
+    clip-path: circle(7% at 83% 95%);
+    transform-origin: 83% 95%;
+}
 
 /* Headlight beam — child of the jeep shell so it scales + slides with
    the jeep automatically. Originates at the jeep's right edge (front of
@@ -5424,23 +5418,30 @@ body.page-timeline {
    the box was reading as a rectangular block before. */
 .timeline-jeep__headlight {
     position: absolute;
-    left: 88%;
-    top: 50%;
-    width: 240%;
-    height: 80%;
+    left: 90%;
+    top: 55%;
+    width: 280%;
+    height: 70%;
     transform: translateY(-50%);
     transform-origin: 0% 50%;
     pointer-events: none;
-    background: radial-gradient(ellipse at 0% 50%,
-        rgba(255, 240, 200, 0.65) 0%,
-        rgba(255, 220, 150, 0.35) 25%,
-        rgba(255, 200, 120, 0.12) 55%,
-        rgba(255, 200, 120, 0)    100%);
-    /* Cone shape: triangle from apex (left-center) flaring to base
-       (right edge). Slight chamfer at the tip so it doesn't feel
-       knife-pointed. */
-    clip-path: polygon(0% 45%, 0% 55%, 100% 0%, 100% 100%);
-    filter: blur(4px);
+    /* Two stacked gradients: a tight hot core from the lamp itself and
+       a wider soft halo around it. Together they fall off with depth
+       instead of one flat fade. */
+    background:
+        radial-gradient(ellipse 55% 60% at 0% 50%,
+            rgba(255, 248, 225, 0.85)  0%,
+            rgba(255, 240, 200, 0.45) 20%,
+            rgba(255, 230, 180, 0.15) 50%,
+            rgba(255, 230, 180, 0)   100%),
+        radial-gradient(ellipse 100% 95% at 0% 50%,
+            rgba(255, 220, 170, 0.32) 0%,
+            rgba(255, 215, 160, 0.12) 50%,
+            rgba(255, 215, 160, 0)   100%);
+    /* Tighter apex (2% chamfer) so the beam reads as a proper cone
+       rather than a wedge with a flat tip. */
+    clip-path: polygon(0% 49%, 0% 51%, 100% 0%, 100% 100%);
+    filter: blur(3px);
     mix-blend-mode: screen;
     /* Fade in as forest hands off to night-sky (0.42 → 0.50). */
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
