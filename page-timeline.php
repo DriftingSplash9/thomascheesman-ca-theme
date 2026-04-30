@@ -67,7 +67,11 @@ $tc_timeline_events = array(
         'image'     => '/wp-content/uploads/2026/04/derrik-turnervalley.jpg',
         'pos'       => 0.06,
         'bearing'   => 205,  // Calgary → Turner Valley (SSW)
-        'mark'      => array( 'kind' => 'sign', 'label' => 'Welcome to Turner Valley' ),
+        'mark'      => array(
+            'kind'  => 'sign',
+            'label' => 'Welcome to Turner Valley',
+            'image' => '/wp-content/uploads/2026/04/turner-valley.jpg',
+        ),
     ),
     array(
         'year'      => '1985',
@@ -76,7 +80,11 @@ $tc_timeline_events = array(
         'prose'     => 'A bump in the road, before the road had even straightened out. The diagnosis arrived inside the first year in Turner Valley. Life kept moving.',
         'image'     => '/wp-content/uploads/2026/04/hands-and-xray-scaled.png',
         'pos'       => 0.085,
-        'mark'      => array( 'kind' => 'pothole', 'label' => 'HCS' ),
+        'mark'      => array(
+            'kind'  => 'pothole',
+            'label' => 'HCS',
+            'image' => '/wp-content/uploads/2026/04/pothole.png',
+        ),
     ),
     array(
         'year'      => '1990–91',
@@ -86,7 +94,11 @@ $tc_timeline_events = array(
         'image'     => '',
         'pos'       => 0.13,
         'bearing'   => 330,  // Turner Valley → Teepee Creek (NNW, big jump)
-        'mark'      => array( 'kind' => 'sign', 'label' => 'Welcome to Teepee Creek' ),
+        'mark'      => array(
+            'kind'  => 'sign',
+            'label' => 'Welcome to Teepee Creek',
+            'image' => '/wp-content/uploads/2026/04/teepee-creek-scaled.jpg',
+        ),
     ),
     array(
         'year'      => '1991–93',
@@ -131,6 +143,11 @@ $tc_timeline_events = array(
         'image'     => '',
         'pos'       => 0.31,
         'bearing'   => 350,  // Pig Farm (Teepee Creek) → Spirit River (~N)
+        'mark'      => array(
+            'kind'  => 'sign',
+            'label' => 'Welcome to Spirit River',
+            'image' => '/wp-content/uploads/2026/04/spirit-river-sign.png',
+        ),
     ),
     array(
         'year'      => '1997–99',
@@ -233,7 +250,6 @@ $tc_timeline_events = array(
         'prose'         => 'Reconnected with Mel. Cohabitation began late 2012.',
         'image'         => '/wp-content/uploads/2026/04/Hnging-at-the-keg.jpg',
         'polaroid_title'=> 'Relaxing after a hard day\'s work',
-        'image_rotate'  => -90,
         'pos'           => 0.665,
     ),
     array(
@@ -251,7 +267,11 @@ $tc_timeline_events = array(
         'prose'     => 'Opened Township 71. Taught culinary courses on the side.',
         'image'     => '/wp-content/uploads/2026/04/t71logo.png',
         'pos'       => 0.71,
-        'mark'      => array( 'kind' => 'sign', 'label' => 'Township 71' ),
+        'mark'      => array(
+            'kind'  => 'sign',
+            'label' => 'Township 71',
+            'image' => '/wp-content/uploads/2026/04/t71logo.png',
+        ),
     ),
     array(
         'year'      => '2014–15',
@@ -493,17 +513,24 @@ get_header(); ?>
                 if ( empty( $event['mark'] ) ) {
                     continue;
                 }
-                $kind  = esc_attr( $event['mark']['kind'] );
-                $label = esc_html( $event['mark']['label'] ?? '' );
-                $pos   = floatval( $event['pos'] );
+                $kind     = esc_attr( $event['mark']['kind'] );
+                $label    = esc_html( $event['mark']['label'] ?? '' );
+                $mark_img = $event['mark']['image'] ?? '';
+                $pos      = floatval( $event['pos'] );
                 $marker_idx++;
             ?>
                 <button type="button"
-                        class="timeline-marker timeline-marker--<?php echo $kind; ?>"
+                        class="timeline-marker timeline-marker--<?php echo $kind; ?><?php echo $mark_img ? ' timeline-marker--image' : ''; ?>"
                         data-marker
                         data-marker-pos="<?php echo esc_attr( $pos ); ?>"
                         aria-label="<?php echo esc_attr( $label ?: 'Roadside marker' ); ?>">
-                    <span class="timeline-marker__label" aria-hidden="true"><?php echo $label; ?></span>
+                    <?php if ( $mark_img ) : ?>
+                        <img class="timeline-marker__sprite"
+                             src="<?php echo esc_url( $mark_img ); ?>"
+                             alt="" loading="lazy" />
+                    <?php else : ?>
+                        <span class="timeline-marker__label" aria-hidden="true"><?php echo $label; ?></span>
+                    <?php endif; ?>
                 </button>
             <?php endforeach; ?>
         </div>
@@ -646,7 +673,7 @@ get_header(); ?>
         <a class="timeline-rollout" data-rollout href="<?php echo esc_url( home_url( '/' ) ); ?>"
            aria-label="Roll out — return home">
             <img class="timeline-rollout__sign"
-                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/roll-out.png"
+                 src="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/PixelBin-AI-Image-Editor-1777582716109-1-scaled.png"
                  alt=""
                  aria-hidden="true" />
         </a>

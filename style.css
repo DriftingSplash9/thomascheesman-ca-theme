@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.142
+Version: 1.0.143
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5193,6 +5193,58 @@ body.page-timeline {
     color: #f0e1b3;
     border-radius: 50%;
     padding: 4px 8px;
+}
+
+/* ---- Image markers (Phase 3) ---------------------------------------------
+   When a mark.image is provided in the events array, the button renders a
+   sprite instead of the text label. The button itself loses its background
+   chrome; only the sprite (and, for sign-kinds, the post-pole) is visible.
+   Sign sprites sit above the road, anchored at the pole's base; pothole
+   sprites sit centered ON the road with no post. */
+.timeline-marker--image {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+    /* Generous tap target without needing visible chrome. */
+    width: 88px;
+    height: auto;
+}
+
+.timeline-marker--image:hover {
+    /* No box-shadow change (no box) — instead a subtle lift + glow. */
+    transform: translate(-50%, -106%);
+    box-shadow: none;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.55));
+}
+
+.timeline-marker__sprite {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* Drop shadow gives the sprite depth against busy backdrops without
+       the boxy frame look of a CSS box-shadow on the button. */
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
+    transition: filter 0.25s ease;
+}
+
+/* Pothole-kind image markers: hazard on the road, no post. */
+.timeline-marker--pothole.timeline-marker--image {
+    /* Override the dark circle background from .timeline-marker--pothole. */
+    background: transparent;
+    border-radius: 0;
+    width: 56px;  /* smaller — it's a hazard, not a billboard */
+    /* Anchor flush with the road instead of floating above it. */
+    transform: translate(-50%, -50%);
+}
+
+.timeline-marker--pothole.timeline-marker--image:hover {
+    transform: translate(-50%, -55%);
+}
+
+.timeline-marker--pothole.timeline-marker--image::after {
+    /* Potholes have no post. */
+    display: none;
 }
 
 /* ---- The jeep ---------------------------------------------------------- */
