@@ -119,6 +119,13 @@ $tc_timeline_events = array(
         'image'     => '/wp-content/uploads/2026/04/mom-and-brian.jpg',
         'pos'       => 0.21,
         'bearing'   => 310,  // Edmonton → Le Glace (NW)
+        'mark'      => array(
+            'kind'  => 'highway',
+            'label' => 'Le Glace',
+            'text'  => 'Le Glace 1km',
+            // No place-photo available; highway sign renders text-only
+            // (the photo slot is conditional on mark.image).
+        ),
     ),
     array(
         'year'      => '1994–95',
@@ -146,9 +153,12 @@ $tc_timeline_events = array(
         'pos'       => 0.31,
         'bearing'   => 350,  // Pig Farm (Teepee Creek) → Spirit River (~N)
         'mark'      => array(
-            'kind'  => 'highway',
-            'label' => 'Spirit River',
-            'text'  => 'Spirit River 1km',
+            'kind'  => 'sign',
+            'label' => 'Welcome to Spirit River',
+            // The spirit-river-sign.png asset IS a freestanding sign with
+            // its own painted treatment (transparent background) — same
+            // category as the Roll-Out sign. So this marker renders as a
+            // bare image sprite, NOT inside the highway green-sign frame.
             'image' => '/wp-content/uploads/2026/04/spirit-river-sign.png',
         ),
     ),
@@ -292,6 +302,20 @@ $tc_timeline_events = array(
         'prose'     => 'Daniel born. Worked at multiple kitchens as head chef.',
         'image'     => '/wp-content/uploads/2026/04/baby-daniel.jpg',
         'pos'       => 0.76,
+    ),
+    array(
+        'year'      => '2015–21',
+        'yearStart' => 2015,
+        'title'     => 'Major\'s / Tractor Jack\'s',
+        'prose'     => 'Long stretch in the kitchen at Major\'s Homestyle and Tractor Jack\'s — same kitchen, two front-of-house personalities (diner + bar). Anchored 2015–19, then a little here and there to 2021.',
+        'image'     => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
+        'pos'       => 0.775,
+        'mark'      => array(
+            'kind'  => 'highway',
+            'label' => 'Major\'s / Tractor Jack\'s',
+            'text'  => 'Major\'s 1km',
+            'image' => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
+        ),
     ),
     array(
         'year'      => '2017',
