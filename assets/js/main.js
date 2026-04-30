@@ -2313,20 +2313,11 @@ function initTimelinePage() {
         positionMarkers();
 
         // --- Jeep follows the road when shrunk ---
-        // The jeep slides leftward across the viewport as it shrinks
-        // (CSS sets left:50% → 10% via --jeep-shrink). Compute the road
-        // path's progress at the jeep's CURRENT visual viewport-x:
-        //
-        //   road translates so the path point at progress P sits at
-        //   viewport_x = 75vw. The jeep's visual center sits at:
-        //     50vw - (jeepShrink * 40vw)
-        //   so the path point at the jeep's x corresponds to:
-        //     P_path = easedProgress + (jeep_x_vw - 75) / 300
-        //
-        // Sample the road at that path-progress and write the screen-y
-        // (in vh from bottom) to --jeep-road-y. CSS interpolates the
-        // jeep's `bottom` between the fixed 6vh (full size) and this
-        // value (small size) using --jeep-shrink as the mix factor.
+        // The jeep slides leftward as it shrinks (CSS: left 50% → 10%).
+        // To find the path point under the jeep, we need the path's t
+        // (arc-length) where getPointAtLength(t).x equals the SVG viewBox-x
+        // beneath the jeep's viewport position. Path is curvy so arc length
+        // and horizontal position diverge — binary-search to invert it.
         if (roadPath && jeepEl) {
             const svg = roadPath.ownerSVGElement;
             if (svg) {
@@ -2337,15 +2328,26 @@ function initTimelinePage() {
                         const vbox = svg.viewBox.baseVal;
                         const jeepShrink = Math.max(0, Math.min(1, (easedProgress - 0.65) * 20));
                         const jeepCenterVw = 50 - jeepShrink * 40;
-                        const pPath = Math.max(0, Math.min(1,
-                            easedProgress + (jeepCenterVw - 75) / 300
-                        ));
-                        const t  = pPath * len;
-                        const pt = roadPath.getPointAtLength(t);
+                        // Convert jeep's viewport-x to SVG viewBox-x:
+                        //   road.element_left_vw = -25 - 300 * progress
+                        //   element_x_vw         = viewport_x - element_left_vw
+                        //   vbx                  = element_x_vw * (20000/500) - 4000
+                        //                        = 40 * element_x_vw - 4000
+                        const elementXvw = jeepCenterVw + 25 + 300 * easedProgress;
+                        const targetVbx  = elementXvw * 40 - 4000;
+                        // Binary search path length where pt.x ≈ targetVbx.
+                        let lo = 0, hi = len;
+                        for (let i = 0; i < 16; i++) {
+                            const mid = (lo + hi) / 2;
+                            const pm  = roadPath.getPointAtLength(mid);
+                            if (pm.x < targetVbx) lo = mid;
+                            else                  hi = mid;
+                        }
+                        const pt = roadPath.getPointAtLength((lo + hi) / 2);
                         const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
                         const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
-                        // -2vh empirical wheel offset.
-                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - 2).toFixed(1) + 'vh');
+                        // -3vh empirical wheel offset (image bottom → wheel touchpoint).
+                        jeepEl.style.setProperty('--jeep-road-y', (fromBottomVh - 3).toFixed(1) + 'vh');
                     } catch (e) { /* path not ready */ }
                 }
             }
