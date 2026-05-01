@@ -2580,25 +2580,22 @@ function initTimelinePage() {
      * the jeep's center the way directional signs do.
      */
     /**
-     * V0.05+++ — Pin the jeep to the road. Sample the road path at the
-     * point currently passing viewport-center, convert to screen pixels,
-     * and compute tangent angle in SCREEN space (after the SVG's
-     * preserveAspectRatio="xMinYMax slice" non-uniform scaling).
+     * V0.05+++.2 — Pin the jeep to the road. Sample the road path at the
+     * point currently passing viewport-center, convert to screen pixels
+     * via getScreenCTM (the canonical SVG API — handles viewBox,
+     * preserveAspectRatio, AND any parent transforms in one matrix),
+     * compute tangent from two close points, cap the angle so wild
+     * local Bezier tangents can't tip the jeep onto its nose.
      *
-     * MotionPathPlugin.getPositionOnPath returned angle in path-local
-     * coord space, which is near-zero for our 20000×600 viewBox even
-     * when the visual tangent on screen is steep. Dropped that path;
-     * vanilla getPointAtLength + manual screen-space atan2 gives the
-     * actual visible tilt. (MotionPathPlugin still loaded — leaving
-     * enqueued in case we use it for other things.)
+     * Earlier attempt did naive scale conversion (rect.width/vbox.width)
+     * which is wrong with preserveAspectRatio="xMinYMax slice" — the
+     * actual rendered scale is uniform at max(naiveX, naiveY).
+     * getScreenCTM handles all that.
      */
     function positionJeep() {
         if (!roadPath || !jeepEl) return;
-        const svg = roadPath.ownerSVGElement;
-        if (!svg) return;
-        const rect = svg.getBoundingClientRect();
-        if (rect.width === 0) return;
-
+        const ctm = roadPath.getScreenCTM();
+        if (!ctm) return;
         const len = roadPath.getTotalLength();
         if (!len) return;
 
@@ -2613,18 +2610,16 @@ function initTimelinePage() {
             pt1 = roadPath.getPointAtLength(lookF * len);
         } catch (e) { return; }
 
-        const vbox = svg.viewBox.baseVal;
-        const scaleX = rect.width / vbox.width;
-        const scaleY = rect.height / vbox.height;
+        // matrixTransform converts path-local coords to screen pixels.
+        const sp0 = pt0.matrixTransform(ctm);
+        const sp1 = pt1.matrixTransform(ctm);
 
-        const x0 = rect.left + (pt0.x - vbox.x) * scaleX;
-        const y0 = rect.top  + (pt0.y - vbox.y) * scaleY;
-        const x1 = rect.left + (pt1.x - vbox.x) * scaleX;
-        const y1 = rect.top  + (pt1.y - vbox.y) * scaleY;
+        let angleDeg = Math.atan2(sp1.y - sp0.y, sp1.x - sp0.x) * 180 / Math.PI;
+        // Cap so wild local Bezier tangents can't tip the jeep over.
+        angleDeg = Math.max(-10, Math.min(10, angleDeg));
 
-        const angleDeg = Math.atan2(y1 - y0, x1 - x0) * 180 / Math.PI;
-        const xVw = x0 / window.innerWidth * 100;
-        const yVh = (window.innerHeight - y0) / window.innerHeight * 100;
+        const xVw = sp0.x / window.innerWidth * 100;
+        const yVh = (window.innerHeight - sp0.y) / window.innerHeight * 100;
 
         jeepEl.style.setProperty('--jeep-x',   xVw.toFixed(2) + 'vw');
         jeepEl.style.setProperty('--jeep-y',   yVh.toFixed(2) + 'vh');
