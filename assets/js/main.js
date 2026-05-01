@@ -2251,6 +2251,16 @@ function initTimelinePage() {
     let rafId = 0;
     let isVisible = !document.hidden;
 
+    // ---- Scroll-idle decor fade (V0.06.5) ----
+    // After 3s of no scrolling, fade the props layer + mid layer to clear
+    // the screen for reading the prose / signs / polaroids. Fades back in
+    // when the user resumes scrolling. CSS handles the smooth transition.
+    const SCROLL_IDLE_DELAY_MS = 3000;
+    let lastScrollMoveTime = performance.now();
+    window.addEventListener('scroll', function () {
+        lastScrollMoveTime = performance.now();
+    }, { passive: true });
+
     // ---- Bearing inheritance ----
     // For events without an explicit `bearing`, inherit from the most recent
     // event that does have one. Stationary events (HCS diagnosis, kitchen-mgmt,
@@ -2318,6 +2328,15 @@ function initTimelinePage() {
         html.style.setProperty('--tl-progress',     targetProgress.toFixed(4));
         html.style.setProperty('--tl-prog-eased',   easedProgress.toFixed(4));
         html.style.setProperty('--tl-wheel-spin',   totalSpin.toFixed(1) + 'deg');
+
+        // --- Scroll-idle decor fade ---
+        // 1 while user is scrolling (or within 3s of last scroll); 0 once
+        // idle. CSS transition on .timeline-props / .timeline-layer--mid
+        // does the smooth fade-in/out. Reduced-motion users keep decor
+        // visible at all times.
+        const idleMs = performance.now() - lastScrollMoveTime;
+        const decorOpacity = (reduceMotion || idleMs < SCROLL_IDLE_DELAY_MS) ? 1 : 0;
+        html.style.setProperty('--decor-opacity', decorOpacity.toString());
 
         // --- Compass — driven by real geographic bearings ---
         // Each event has a `bearing` (degrees, 0=N, 90=E) representing the
