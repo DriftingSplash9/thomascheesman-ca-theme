@@ -94,8 +94,8 @@ $tc_timeline_events = array(
     array(
         'year'      => '1990–91',
         'yearStart' => 1990,
-        'title'     => 'Parents divorce — Teepee Creek',
-        'prose'     => 'Parents divorced. Moved to Teepee Creek, AB — to the Bird Farm. Open prairie, distant trees, a different kind of quiet.',
+        'title'     => 'The Big Migration North',
+        'prose'     => 'Parents split, then a long drive north to Teepee Creek — the Bird Farm. Open prairie, distant trees, a different kind of quiet.',
         'image'     => '',
         'pos'       => 0.13,
         'bearing'   => 330,  // Turner Valley → Teepee Creek (NNW, big jump)
@@ -128,8 +128,6 @@ $tc_timeline_events = array(
         'yearStart' => 1993,
         'title'     => 'Back together — LaGlace',
         'prose'     => 'Lived in Edmonton until Mom and Brian found a place together in LaGlace, AB. Hamlet small.',
-        // mom-and-brian.jpg moved to the 2015 'Grand Parents visiting'
-        // event — that photo is actually from Daniel's birth, not LaGlace.
         'image'     => '',
         'pos'       => 0.21,
         'bearing'   => 310,  // Edmonton → LaGlace (NW)
@@ -143,33 +141,22 @@ $tc_timeline_events = array(
         ),
     ),
     array(
-        'year'      => '1994–95',
+        'year'      => '1994–97',
         'yearStart' => 1994,
-        'title'     => 'The Pig Farm',
-        'prose'     => 'Moved on to a different farm near Teepee Creek — the Pig Farm.',
+        'title'     => 'Building the Pig Farm',
+        'prose'     => 'Three years building out a different farm near Teepee Creek. Cattle, crops, chickens, birds, and quite a few pigs.',
         'image'     => '',
-        'pos'       => 0.245,
-        'bearing'   => 50,   // Le Glace → Teepee Creek (NE)
-    ),
-    array(
-        'year'      => '1995–97',
-        'yearStart' => 1995,
-        'title'     => 'Build, raise, repeat',
-        'prose'     => 'Built the Pig Farm out. Cattle, crops, chickens, birds, and quite a few pigs.',
-        'image'     => '',
-        'pos'       => 0.28,
+        'pos'       => 0.26,
+        'bearing'   => 50,   // LaGlace → Teepee Creek (NE)
     ),
     array(
         'year'      => '1997',
         'yearStart' => 1997,
         'title'     => 'Spirit River, briefly',
-        'prose'     => 'A few months in Spirit River before finding a farm near Little Smokey.',
+        'prose'     => 'A month in Spirit River before finding a farm near Little Smokey.',
         'image'     => '',
-        'pos'       => 0.31,
+        'pos'       => 0.30,
         'bearing'   => 350,  // Pig Farm (Teepee Creek) → Spirit River (~N)
-        // Spirit River sign marker removed — Thomas decided the sign asset
-        // wasn't earning its place. Event itself stays; prose narrates the
-        // brief stop without a roadside marker.
     ),
     array(
         'year'      => '1997–99',
@@ -184,87 +171,96 @@ $tc_timeline_events = array(
         ),
     ),
     array(
-        'year'      => '1999–2000',
+        'year'      => 'Summer 1999',
         'yearStart' => 1999,
-        'title'     => 'Grande Prairie — college',
-        'prose'     => 'Graduated high school. College in Grande Prairie. Campus housing, late nights.',
-        'image'     => '/wp-content/uploads/2026/04/Grande_Prairie_Regional_College_02-scaled.jpg',
-        'pos'       => 0.39,
-        'bearing'   => 315,  // Little Smoky → Grande Prairie (NW)
-    ),
-    array(
-        'year'      => '2000',
-        'yearStart' => 2000,
-        'title'     => 'Town of Valleyview',
-        'prose'     => 'Worked for the Town of Valleyview. Returned to college dorms after.',
+        'title'     => 'Horizon Valleyview',
+        'prose'     => 'Summer serving at the Horizon — alongside Mom, brother Christopher, and Uncle Dave (Brian\'s brother).',
         'image'     => '',
-        'pos'       => 0.42,
-        'bearing'   => 110,  // GP → Valleyview (ESE)
+        'pos'       => 0.37,
+        'bearing'   => 110,  // Little Smokey → Valleyview (E/SE)
         'prop'      => array(
             'image' => '/wp-content/uploads/2026/04/1777567236118-164-diner-sign.png',
         ),
     ),
     array(
-        'year'      => '2000–01',
-        'yearStart' => 2000,
-        'title'     => 'College + summer pharmacy',
-        'prose'     => 'College carried on, summers in pharmacy work.',
-        'image'     => '',
-        'pos'       => 0.445,
-        'bearing'   => 290,  // Valleyview → GP (WNW)
+        'year'      => 'Fall 1999',
+        'yearStart' => 1999,
+        'title'     => 'Grande Prairie — college',
+        'prose'     => 'Graduated high school. College in Grande Prairie. Campus housing, late nights.',
+        'image'     => '/wp-content/uploads/2026/04/Grande_Prairie_Regional_College_02-scaled.jpg',
+        'pos'       => 0.39,
+        'bearing'   => 290,  // Valleyview → Grande Prairie (WNW)
     ),
     array(
-        'year'      => '2001–02',
+        'year'      => 'Summer 2000',
+        'yearStart' => 2000,
+        'title'     => 'Pharmacy in Valleyview',
+        'prose'     => 'Summer at the local pharmacy.',
+        'image'     => '',
+        'pos'       => 0.41,
+        'bearing'   => 110,  // GP → Valleyview
+    ),
+    array(
+        'year'      => 'Summer 2001',
         'yearStart' => 2001,
+        'title'     => 'Town of Valleyview',
+        'prose'     => 'Worked for the Town of Valleyview that summer.',
+        'image'     => '',
+        'pos'       => 0.43,
+    ),
+    array(
+        'year'      => 'Winter 2002',
+        'yearStart' => 2002,
+        'title'     => 'The Keg, part-time',
+        'prose'     => 'Started at The Keg in the winter — part-time while finishing college.',
+        'image'     => '',
+        'pos'       => 0.46,
+        'bearing'   => 290,  // back toward GP
+    ),
+    array(
+        'year'      => '2002',
+        'yearStart' => 2002,
         'title'     => 'Met Melanie',
         'prose'     => 'Met Mel. Started in a restaurant.',
         'image'     => '/wp-content/uploads/2026/04/mel-18-yrs-old-scaled-e1777577734243.jpg',
-        'pos'       => 0.47,
+        'pos'       => 0.48,
     ),
     array(
         'year'      => '2002–03',
         'yearStart' => 2002,
-        'title'     => 'Power engineering — Fort Mac',
-        'prose'     => 'Power Engineering training in Fort McMurray.',
+        'title'     => 'Power Engineering — final year',
+        'prose'     => 'Final year of college. Power Engineering — the technical career path.',
+        'image'     => '',
+        'pos'       => 0.51,
+    ),
+    array(
+        'year'      => 'Winter 2003',
+        'yearStart' => 2003,
+        'title'     => 'Ft McMurray — SAGD practicum',
+        'prose'     => 'One month in Fort McMurray for the practicum at the Petro Canada SAGD plant. Wish I had pictures.',
         'image'     => '/wp-content/uploads/2026/04/sagd-ft-mac.jpg',
-        'pos'       => 0.50,
+        'pos'       => 0.53,
+        'bearing'   => 50,   // GP → Fort McMurray (NE)
         'prop'      => array(
             'image' => '/wp-content/uploads/2026/04/1777567236118-247-Winnebago-.png',
         ),
-        'bearing'   => 50,   // GP → Fort McMurray (NE, big jump)
     ),
     array(
-        'year'      => '2003–05',
+        'year'      => '2003',
         'yearStart' => 2003,
-        'title'     => 'Kitchen management',
-        'prose'     => 'Climbed into a kitchen-management role.',
-        'image'     => '/wp-content/uploads/2026/04/chef-presentation.jpg',
-        'pos'       => 0.535,
+        'title'     => 'HCS sidelines, kitchen calls',
+        'prose'     => 'Insurance won\'t cover power engineers with HCS — career done before it started. The Keg promoted me to Asst Kitchen Manager that fall. Cooking it is.',
+        'image'     => '',
+        'pos'       => 0.55,
         'bearing'   => 230,  // Fort McMurray → GP region (SW, return)
     ),
     array(
-        'year'      => '2005–07',
-        'yearStart' => 2005,
-        'title'     => 'Living with parents — saving',
-        'prose'     => 'Back at parents to save money.',
-        'image'     => '',
-        'pos'       => 0.565,
-    ),
-    array(
-        'year'      => '2007–08',
-        'yearStart' => 2007,
-        'title'     => 'Move with a friend',
-        'prose'     => 'Parents relocated; moved out with a friend.',
-        'image'     => '',
-        'pos'       => 0.59,
-    ),
-    array(
-        'year'      => '2008–11',
-        'yearStart' => 2008,
-        'title'     => 'The duplex years',
-        'prose'     => 'Shared a duplex with roommates.',
-        'image'     => '',
-        'pos'       => 0.615,
+        'year'      => '2003–13',
+        'yearStart' => 2003,
+        'title'     => 'Getting a Groove On',
+        'prose'     => 'Twelve years grinding through Keg kitchens — line cook to senior, paying off student loans, building the chops.',
+        'image'     => '/wp-content/uploads/2026/04/chef-presentation.jpg',
+        'pos'       => 0.58,
     ),
     array(
         'year'      => '2010–13',
@@ -272,7 +268,7 @@ $tc_timeline_events = array(
         'title'     => 'Journeyman chef',
         'prose'     => 'Completed culinary arts. Earned the journeyman chef ticket.',
         'image'     => '/wp-content/uploads/2024/09/me.jpg',
-        'pos'       => 0.645,
+        'pos'       => 0.62,
     ),
     array(
         'year'          => '2011–13',
@@ -281,7 +277,7 @@ $tc_timeline_events = array(
         'prose'         => 'Reconnected with Mel. Cohabitation began late 2012.',
         'image'         => '/wp-content/uploads/2026/04/Hnging-at-the-keg.jpg',
         'polaroid_title'=> 'Relaxing after a hard day\'s work',
-        'pos'           => 0.665,
+        'pos'           => 0.65,
     ),
     array(
         'year'      => '2013',
@@ -289,15 +285,23 @@ $tc_timeline_events = array(
         'title'     => 'OMG, a baby',
         'prose'     => 'OMG we are having a baby. Quick — get shit together. Bought a house. Stepped up to head chef.',
         'image'     => '/wp-content/uploads/2026/04/newborn-patience.jpg',
-        'pos'       => 0.69,
+        'pos'       => 0.68,
     ),
     array(
-        'year'      => '2014',
+        'year'      => 'Sept 2013',
+        'yearStart' => 2013,
+        'title'     => 'Rics Grill',
+        'prose'     => 'Started at Rics Grill on Sept 24 — Patience\'s birthday. Stayed until we shut down to transform into Township 71.',
+        'image'     => '',
+        'pos'       => 0.70,
+    ),
+    array(
+        'year'      => 'Nov 2014',
         'yearStart' => 2014,
         'title'     => 'Township 71',
         'prose'     => 'Opened Township 71. Taught culinary courses on the side.',
         'image'     => '/wp-content/uploads/2026/04/t71logo.png',
-        'pos'       => 0.71,
+        'pos'       => 0.72,
         'mark'      => array(
             'kind'     => 'highway',
             'label'    => 'Township 71',
@@ -307,15 +311,15 @@ $tc_timeline_events = array(
         ),
     ),
     array(
-        'year'      => '2014–15',
-        'yearStart' => 2014,
-        'title'     => 'Township 71 closes',
-        'prose'     => 'Nine months in, the oil bust took most of the room. Township 71 closed.',
+        'year'      => '2015',
+        'yearStart' => 2015,
+        'title'     => 'A new chapter',
+        'prose'     => 'Township 71 closed in June. First time since childhood without farming or working — new dad, taking time, plan in pocket.',
         'image'     => '',
-        'pos'       => 0.735,
+        'pos'       => 0.74,
     ),
     array(
-        'year'      => '2015',
+        'year'      => 'June 2015',
         'yearStart' => 2015,
         'title'     => 'Daniel',
         'prose'     => 'Daniel born. Worked at multiple kitchens as head chef.',
@@ -336,14 +340,14 @@ $tc_timeline_events = array(
         'title'     => 'Major\'s / Tractor Jack\'s',
         'prose'     => 'Long stretch in the kitchen at Major\'s Homestyle and Tractor Jack\'s — same kitchen, two front-of-house personalities (diner + bar). Anchored 2015–19, then a little here and there to 2021.',
         'image'     => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
-        'pos'       => 0.775,
+        'pos'       => 0.78,
         'mark'      => array(
             'kind'     => 'highway',
             'label'    => 'Major\'s / Tractor Jack\'s',
             'text'     => 'Major\'s',
             'distance' => '1km',
             'image'    => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
-            'offset'   => 160,  // raised so it doesn't stack on Township 71 at pos 0.71
+            'offset'   => 160,  // raised so it doesn't stack on Township 71
         ),
     ),
     array(
@@ -352,7 +356,7 @@ $tc_timeline_events = array(
         'title'     => 'Faith',
         'prose'     => 'Faith born. Kitchen work continued — body began to argue.',
         'image'     => '/wp-content/uploads/2024/10/20180524_163145-scaled.jpg',
-        'pos'       => 0.79,
+        'pos'       => 0.80,
     ),
     array(
         'year'      => '2019',
@@ -360,7 +364,7 @@ $tc_timeline_events = array(
         'title'     => 'Permanent disability',
         'prose'     => 'Went on permanent disability support. Chronic, accumulated.',
         'image'     => '/wp-content/uploads/2026/04/foot-recovery.jpg',
-        'pos'       => 0.81,
+        'pos'       => 0.82,
     ),
     array(
         'year'      => '2020',
@@ -368,7 +372,7 @@ $tc_timeline_events = array(
         'title'     => 'Pandemic',
         'prose'     => 'COVID. Empty streets, masks, the whole thing.',
         'image'     => '/wp-content/uploads/2026/04/covid-xmas-scaled.jpg',
-        'pos'       => 0.84,
+        'pos'       => 0.85,
     ),
     array(
         'year'      => '2022',
