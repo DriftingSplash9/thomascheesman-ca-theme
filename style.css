@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.163
+Version: 1.0.164
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5060,9 +5060,14 @@ body.page-timeline {
        image. If a seam is visible after deploy, we can add a tiny
        0.5px blur back, but the cropped edges should tile invisibly. */
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/night-sky-cropped.png');
-    background-size: 100vw auto;
+    /* V0.06.2 — fit to viewport HEIGHT and tile horizontally. Was
+       100vw auto which sized to viewport width and made the image
+       overflow vertically (1920×1565 on 1920×1080 = 145% of viewport
+       height). Now scales to viewport-height with width preserving
+       aspect, repeating horizontally. */
+    background-size: auto 100vh;
     background-position: center top;
-    background-repeat: repeat;
+    background-repeat: repeat-x;
     z-index: 1;             /* below forest so forest fades reveal it */
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
 }
