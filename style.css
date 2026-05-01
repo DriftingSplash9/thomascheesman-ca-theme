@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.162
+Version: 1.0.163
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5054,24 +5054,16 @@ body.page-timeline {
    Fills the viewport behind the home photos through the rest of the
    timeline. Reuses night-sky.png from the projector lightbox. */
 .timeline-back-strip--night-sky {
-    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/night-sky.png');
-    /* Render at viewport width once, repeat to fill the 200vw extended
-       layer. Earlier `cover` was scaling the image ~3× too large because
-       it was sized to fill the doubled-width parent. */
+    /* V0.06.1 — switched to night-sky-cropped.png (883×720, dark edges
+       cropped so both sides sit at ~60 luminance for clean tiling).
+       Filter blur dropped entirely — Thomas wants max detail in the
+       image. If a seam is visible after deploy, we can add a tiny
+       0.5px blur back, but the cropped edges should tile invisibly. */
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/night-sky-cropped.png');
     background-size: 100vw auto;
     background-position: center top;
     background-repeat: repeat;
     z-index: 1;             /* below forest so forest fades reveal it */
-    /* Edge feathering — a subtle Gaussian blur softens the seam where
-       tile right meets tile left. Stars pick up a slight glow that
-       reads as atmosphere rather than as a defect. The proper fix is
-       a seamless tileable source PNG; this is the no-asset-change
-       version. */
-    /* V0.06 — bumped 1.2px → 3.5px to mask the dark-edge seam more
-       aggressively. A cropped version (night-sky-cropped.png, edges
-       balanced at ~60 luminance) is staged for WP upload — once
-       Thomas uploads, wire the new URL here and dial blur back. */
-    filter: blur(3.5px);
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
 }
 
