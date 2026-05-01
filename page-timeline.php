@@ -487,28 +487,22 @@ get_header(); ?>
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
 
-            <!-- Road body. V0.05+++ — modest curves restored (y range
-                 460–540, ~8vh swing). Jeep is pinned to this path via
-                 GSAP MotionPath, which gives it x, y, and tangent
-                 rotation as scroll advances. Sprites and signs are
-                 NOT tracked to the road — they sit at constant viewport
-                 y, decoupled from these curves. -->
+            <!-- Road body. V0.05+++.4 — simplified to 3 explicit gentle
+                 bumps (Q quadratics) with flat sections between. The
+                 prior 14-segment chained-S path produced compounding
+                 local tangent wildness that read as "the jeep is acting
+                 nuts" even with a tilt cap. Three discrete bumps are
+                 predictable and match what the reader sees. -->
             <path id="tc-road-path" data-road-path
                   d="
                     M 0 540
-                    C 200 480, 500 470, 800 510
-                    S 1400 540, 1900 540
-                    S 2400 540, 2800 540
-                    S 3200 470, 3600 490
-                    S 4000 460, 4400 510
-                    S 4900 480, 5300 510
-                    S 5800 520, 6200 490
-                    S 6700 470, 7100 510
-                    S 7600 520, 8000 480
-                    S 8500 480, 8900 520
-                    S 9400 540, 9800 540
-                    S 10400 540, 10800 540
-                    S 11500 540, 12000 540
+                    L 800 540
+                    Q 1100 510, 1400 540
+                    L 4000 540
+                    Q 4400 500, 4800 540
+                    L 8000 540
+                    Q 8400 510, 8800 540
+                    L 12000 540
                   "
                   fill="none"
                   stroke="#3b2c1a"
@@ -516,22 +510,16 @@ get_header(); ?>
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
 
-            <!-- Center dashed line — same curved path as main road. -->
+            <!-- Center dashed line — same simplified path as main road. -->
             <path d="
                     M 0 540
-                    C 200 480, 500 470, 800 510
-                    S 1400 540, 1900 540
-                    S 2400 540, 2800 540
-                    S 3200 470, 3600 490
-                    S 4000 460, 4400 510
-                    S 4900 480, 5300 510
-                    S 5800 520, 6200 490
-                    S 6700 470, 7100 510
-                    S 7600 520, 8000 480
-                    S 8500 480, 8900 520
-                    S 9400 540, 9800 540
-                    S 10400 540, 10800 540
-                    S 11500 540, 12000 540
+                    L 800 540
+                    Q 1100 510, 1400 540
+                    L 4000 540
+                    Q 4400 500, 4800 540
+                    L 8000 540
+                    Q 8400 510, 8800 540
+                    L 12000 540
                   "
                   fill="none"
                   stroke="rgba(245, 230, 200, 0.55)"

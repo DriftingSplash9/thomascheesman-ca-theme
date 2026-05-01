@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.156
+Version: 1.0.157
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5406,7 +5406,12 @@ body.page-timeline {
     --jeep-scale: calc(1 - var(--jeep-shrink) * 0.30);
     left: var(--jeep-x, 50vw);
     bottom: var(--jeep-y, 6vh);
-    transform: translate(-50%, 0) rotate(var(--jeep-rot, 0deg)) scale(var(--jeep-scale));
+    /* V0.05+++.4 — rotation dropped. Even capped at ±10°, tilting on
+       every micro-bump read as "the jeep is acting nuts." Jeep stays
+       level; just follows road Y. JS still computes --jeep-rot but
+       it's unused — easy to re-add the rotate() if we want tilt back
+       with a smaller multiplier. */
+    transform: translate(-50%, 0) scale(var(--jeep-scale));
     transform-origin: 50% 100%;
     width: 30vw;
     max-width: 540px;
