@@ -5393,30 +5393,30 @@ body.page-timeline {
 /* ---- The jeep ---------------------------------------------------------- */
 .timeline-jeep {
     position: absolute;
-    /* Shrink + slide-left over progress 0.74 → 0.78 (just after the
-       "Township 71 closes" beat at 0.735). Keeps the jeep full-size
-       through the T71 prose window so the marker visually passes the
-       centered jeep instead of sitting alone on the right. Ends at
-       scale 0.21, left ~10vw.
-       Bottom always tracks --jeep-road-y now (set by JS each frame) so
-       both the full-size and shrunk jeep ride the road's curves. */
+    /* V0.05+++ — pinned to road via GSAP MotionPath. JS sets:
+         --jeep-x   (left, vw — sampled from road path)
+         --jeep-y   (bottom, vh — sampled from road path)
+         --jeep-rot (deg — tangent angle along road)
+       Jeep is now SMALL (30vw baseline) so it reads as a vehicle on a
+       road, not a centerpiece dominating the diorama. Jeep also no
+       longer slides left at the home era — it stays pinned to the road
+       and the road is what curves; just shrinks slightly during the
+       home-era beat. */
     --jeep-shrink: clamp(0, calc((var(--tl-prog-eased) - 0.74) * 25), 1);
-    --jeep-scale: calc(1 - var(--jeep-shrink) * 0.79);
-    left: calc(50% - var(--jeep-shrink) * 40vw);
-    /* V0.05++ — constant. Jeep no longer tracks road y (road is straight
-       at y=540 now; the binary-search lookup that used to feed
-       --jeep-road-y was removed from main.js). */
-    bottom: 6vh;
-    transform: translateX(-50%) scale(var(--jeep-scale));
+    --jeep-scale: calc(1 - var(--jeep-shrink) * 0.30);
+    left: var(--jeep-x, 50vw);
+    bottom: var(--jeep-y, 6vh);
+    transform: translate(-50%, 0) rotate(var(--jeep-rot, 0deg)) scale(var(--jeep-scale));
     transform-origin: 50% 100%;
-    width: min(1350px, 82vw);
+    width: 30vw;
+    max-width: 540px;
     aspect-ratio: 16 / 9;
-    /* Belt: never let the jeep overflow short viewports. aspect-ratio
-       reduces width to maintain 16:9 when this max-height clamps. */
-    max-height: 80vh;
+    max-height: 32vh;
     z-index: 8;
     pointer-events: none;
-    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.5));
+    /* Smooth out per-frame jitter from path sampling. */
+    transition: transform 0.04s linear;
 }
 
 .timeline-jeep__shell {

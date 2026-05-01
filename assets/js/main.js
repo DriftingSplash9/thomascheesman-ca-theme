@@ -2203,6 +2203,19 @@ function initTimelinePage() {
     const FINALE_SLIDE_POSITIONS = [0.70, 0.86, 0.93, 0.99];
     const FINALE_FIRST_BAND_START = 0.62;
 
+    // ---- GSAP MotionPath registration (for jeep-on-road following) ----
+    // V0.05+++ — replaced the vanilla binary-search getPointAtLength
+    // approach with MotionPathPlugin.getPositionOnPath utility, which
+    // returns x, y, AND tangent angle in one call. The jeep then rotates
+    // to match road tangent (front lifts going up hills, dips going down).
+    let _motionPathReady = false;
+    if (typeof gsap !== 'undefined' && typeof MotionPathPlugin !== 'undefined') {
+        try {
+            gsap.registerPlugin(MotionPathPlugin);
+            _motionPathReady = true;
+        } catch (e) { /* registration shouldn't fail */ }
+    }
+
     // ---- Projector lightbox ----
     const projector = root.querySelector('[data-projector]');
     const projectorApi = projector ? createProjectorLightbox(projector) : null;
@@ -2364,14 +2377,11 @@ function initTimelinePage() {
         // --- Position markers along the SVG road ---
         positionMarkers();
 
-        // --- Position Phase 4 props (telephone-pole-with-hung-sprite) ---
+        // --- Position Phase 4 props (sprite-on-ground at road position) ---
         positionProps();
 
-        // V0.05++ — jeep no longer tracks road y. Road is now a straight
-        // line at y=540, so the jeep sits at constant bottom: 6vh (set
-        // directly in CSS). Removes the binary-search arc-length lookup
-        // and all the curve-following math that came with it. Shrink +
-        // slide-left at progress 0.74→0.78 still happens (CSS-only).
+        // --- Pin the jeep to the road via MotionPath (x / y / tangent) ---
+        positionJeep();
 
         // --- Polaroid field — drop in + drift leftward ---
         // Each polaroid sits dormant until easedProgress passes its trigger.
@@ -2531,7 +2541,10 @@ function initTimelinePage() {
                 const cy = rect.top  + (pt.y - vbox.y) * scaleY;
                 const xVw = cx / window.innerWidth * 100;
                 m.style.setProperty('--m-x', xVw.toFixed(2) + 'vw');
-                m.style.setProperty('--m-y', (cy / window.innerHeight * 100).toFixed(2) + 'vh');
+                // V0.05+++ — markers no longer track road y. Constant
+                // viewport y (94vh ≈ where the road sits at rest) so the
+                // road can curve underneath without dragging signs along.
+                m.style.setProperty('--m-y', '94vh');
 
                 // V0.04 follow-up: signs fade out as they approach the
                 // center of the viewport (where the jeep sits) — Thomas
@@ -2566,6 +2579,42 @@ function initTimelinePage() {
      * stay visible the whole time they're on-screen instead of fading at
      * the jeep's center the way directional signs do.
      */
+    /**
+     * V0.05+++ — Pin the jeep to the road via GSAP MotionPath.
+     * The road CSS places path-progress P at viewport-x 75vw. The jeep
+     * sits at viewport-x 50vw (visual center). The path point currently
+     * passing through 50vw is at f = P - (25vw/300vw) ≈ P - 0.0833.
+     * Sample that point and feed x / y / tangent angle to CSS via
+     * --jeep-x / --jeep-y / --jeep-rot.
+     */
+    function positionJeep() {
+        if (!_motionPathReady || !roadPath || !jeepEl) return;
+        const svg = roadPath.ownerSVGElement;
+        if (!svg) return;
+        const rect = svg.getBoundingClientRect();
+        if (rect.width === 0) return;
+
+        const jeepF = Math.max(0, Math.min(1, easedProgress - 0.0833));
+
+        let p;
+        try {
+            p = MotionPathPlugin.getPositionOnPath(roadPath, jeepF, true);
+        } catch (e) { return; }
+
+        const vbox = svg.viewBox.baseVal;
+        const scaleX = rect.width / vbox.width;
+        const scaleY = rect.height / vbox.height;
+        const cx = rect.left + (p.x - vbox.x) * scaleX;
+        const cy = rect.top  + (p.y - vbox.y) * scaleY;
+
+        const xVw = cx / window.innerWidth * 100;
+        const yVh = (window.innerHeight - cy) / window.innerHeight * 100;
+
+        jeepEl.style.setProperty('--jeep-x',   xVw.toFixed(2) + 'vw');
+        jeepEl.style.setProperty('--jeep-y',   yVh.toFixed(2) + 'vh');
+        jeepEl.style.setProperty('--jeep-rot', p.angle.toFixed(2) + 'deg');
+    }
+
     function positionProps() {
         if (!roadPath || !props.length) return;
         const svg = roadPath.ownerSVGElement;
@@ -2587,7 +2636,9 @@ function initTimelinePage() {
                 const cy = rect.top  + (pt.y - vbox.y) * scaleY;
                 const xVw = cx / window.innerWidth * 100;
                 p.style.setProperty('--p-x', xVw.toFixed(2) + 'vw');
-                p.style.setProperty('--p-y', (cy / window.innerHeight * 100).toFixed(2) + 'vh');
+                // V0.05+++ — props decoupled from road y. Constant viewport
+                // y so sprites sit at a stable level while road curves under.
+                p.style.setProperty('--p-y', '94vh');
 
                 // Visible whenever the prop is roughly on-screen (with
                 // small margin so fade-in/out happens off the visible edge).

@@ -487,23 +487,52 @@ get_header(); ?>
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
 
-            <!-- Road body. V0.05 follow-up: STRAIGHT line at y=540 across
-                 the whole event range. The earlier biographical curves
-                 (foothills hump, prairie flat, Little Smokey hill, etc.)
-                 created stacking/positioning headaches that weren't worth
-                 the subtle storytelling. Every object now lives on a
-                 predictable grid — sprites sit at one y, signs sit at
-                 windshield-y, jeep stays put. -->
+            <!-- Road body. V0.05+++ — modest curves restored (y range
+                 460–540, ~8vh swing). Jeep is pinned to this path via
+                 GSAP MotionPath, which gives it x, y, and tangent
+                 rotation as scroll advances. Sprites and signs are
+                 NOT tracked to the road — they sit at constant viewport
+                 y, decoupled from these curves. -->
             <path id="tc-road-path" data-road-path
-                  d="M 0 540 L 12000 540"
+                  d="
+                    M 0 540
+                    C 200 480, 500 470, 800 510
+                    S 1400 540, 1900 540
+                    S 2400 540, 2800 540
+                    S 3200 470, 3600 490
+                    S 4000 460, 4400 510
+                    S 4900 480, 5300 510
+                    S 5800 520, 6200 490
+                    S 6700 470, 7100 510
+                    S 7600 520, 8000 480
+                    S 8500 480, 8900 520
+                    S 9400 540, 9800 540
+                    S 10400 540, 10800 540
+                    S 11500 540, 12000 540
+                  "
                   fill="none"
                   stroke="#3b2c1a"
                   stroke-width="38"
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
 
-            <!-- Center dashed line — same straight path as main road. -->
-            <path d="M 0 540 L 12000 540"
+            <!-- Center dashed line — same curved path as main road. -->
+            <path d="
+                    M 0 540
+                    C 200 480, 500 470, 800 510
+                    S 1400 540, 1900 540
+                    S 2400 540, 2800 540
+                    S 3200 470, 3600 490
+                    S 4000 460, 4400 510
+                    S 4900 480, 5300 510
+                    S 5800 520, 6200 490
+                    S 6700 470, 7100 510
+                    S 7600 520, 8000 480
+                    S 8500 480, 8900 520
+                    S 9400 540, 9800 540
+                    S 10400 540, 10800 540
+                    S 11500 540, 12000 540
+                  "
                   fill="none"
                   stroke="rgba(245, 230, 200, 0.55)"
                   stroke-width="2"

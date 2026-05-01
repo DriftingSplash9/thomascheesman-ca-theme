@@ -87,6 +87,17 @@ function tc_ventures_enqueue_scripts() {
         false
     );
 
+    // GSAP MotionPathPlugin — pins elements to an SVG path with x/y/rotation
+    // computed from arc length. Used by /timeline to attach the jeep to
+    // the curving road. Free in GSAP 3.12+. Depends on GSAP core.
+    wp_enqueue_script(
+        'gsap-motion-path',
+        'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js',
+        array( 'gsap-core' ),
+        '3.12.2',
+        false
+    );
+
     // Three.js (UMD build) — used by main.js to drive the WebGL background.
     // Pinned to r128 because it's widely cached on cdnjs and definitively
     // has the UMD `three.min.js` artifact. Newer releases (r150+) shifted
@@ -106,7 +117,7 @@ function tc_ventures_enqueue_scripts() {
     wp_enqueue_script(
         'tc-ventures-main',
         get_stylesheet_directory_uri() . '/assets/js/main.js',
-        array( 'gsap-core', 'gsap-scroll-trigger', 'three-js' ),
+        array( 'gsap-core', 'gsap-scroll-trigger', 'gsap-motion-path', 'three-js' ),
         wp_get_theme()->get( 'Version' ),
         true
     );
