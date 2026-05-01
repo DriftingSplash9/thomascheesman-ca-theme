@@ -2243,7 +2243,17 @@ function initTimelinePage() {
     const html = document.documentElement;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let targetProgress = 0;
-    let easedProgress  = 0;
+    // V0.07 — accumulator (smoothed but pre-entrance-remap).
+    let rawEasedProgress = 0;
+    // easedProgress is the REMAPPED value used for all visual rendering
+    // (layers, road, markers, props, polaroids). entranceProgress is the
+    // 0→1 ramp during the entrance phase. Both are recomputed every tick.
+    let easedProgress = 0;
+    let entranceProgress = 0;
+    // Entrance phase: first 2% of scroll. Jeep slides in from the left
+    // edge to viewport center; scene stays frozen. After that, normal
+    // scene panning kicks in.
+    const ENTRANCE_PHASE = 0.02;
     let totalSpin      = 0;
     let compassDeg     = 0;
     let currentBeatIndex = -1;
@@ -2335,11 +2345,20 @@ function initTimelinePage() {
         // density of 1–2 events nearby: full speed. As density climbs,
         // the divisor grows so the lerp factor shrinks proportionally,
         // giving a smooth ease in/out around heavy parts of the timeline.
-        const prev = easedProgress;
+        const prev = rawEasedProgress;
         const density = reduceMotion ? 1 : getLocalDensity(targetProgress);
         const lerpFactor = baseLerpFactor / Math.max(1, density / 2);
-        easedProgress += (targetProgress - easedProgress) * lerpFactor;
-        const dProgress = easedProgress - prev;
+        rawEasedProgress += (targetProgress - rawEasedProgress) * lerpFactor;
+
+        // --- Entrance-phase remap (writes to outer-scope easedProgress / entranceProgress) ---
+        entranceProgress = Math.max(0, Math.min(1, rawEasedProgress / ENTRANCE_PHASE));
+        easedProgress = Math.max(0, Math.min(1,
+            (rawEasedProgress - ENTRANCE_PHASE) / (1 - ENTRANCE_PHASE)
+        ));
+        // dProgress derived from the raw value so wheels still spin during
+        // the entrance phase (when easedProgress is pinned at 0 but the
+        // jeep is visibly moving).
+        const dProgress = rawEasedProgress - prev;
 
         // Wheel rotation accumulates only on actual scroll motion. No idle
         // floor — at rest the wheel freezes at its last angle, matching
@@ -2654,6 +2673,20 @@ function initTimelinePage() {
      */
     function positionJeep() {
         if (!roadPath || !jeepEl) return;
+
+        // V0.07 — entrance phase. Before the scene starts panning, slide
+        // the jeep from the left edge to viewport center. Linear lerp on
+        // entranceProgress (0 at scroll start, 1 once the entrance phase
+        // completes). Scene stays frozen during this period; rotation 0,
+        // y at default road level. Skip the SVG sampling entirely.
+        if (entranceProgress < 1) {
+            const xVw = entranceProgress * 50;  // 0vw → 50vw
+            jeepEl.style.setProperty('--jeep-x',   xVw.toFixed(2) + 'vw');
+            jeepEl.style.setProperty('--jeep-y',   '6vh');
+            jeepEl.style.setProperty('--jeep-rot', '0deg');
+            return;
+        }
+
         const svg = roadPath.ownerSVGElement;
         if (!svg) return;
         const rect = svg.getBoundingClientRect();
