@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.150
+Version: 1.0.151
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5100,11 +5100,14 @@ body.page-timeline {
     z-index: 3;
 }
 
-/* Foreground — closest, fastest. Tufts and posts with most of the strip empty. */
+/* Foreground — closest, fastest. V0.05: post silhouettes removed (would
+   clash with the prop telephone poles which are the dedicated
+   pole-and-wire infrastructure). Now just ground tufts repeating
+   along the bottom for atmospheric density. */
 .timeline-layer--fore {
     --tl-layer-translate: calc(var(--tl-pan-fore) * var(--tl-prog-eased));
     background:
-        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200'><g fill='%231e1610'><circle cx='80' cy='180' r='14'/><circle cx='100' cy='178' r='10'/><rect x='320' y='150' width='4' height='40'/><rect x='340' y='140' width='4' height='50'/><circle cx='620' cy='178' r='12'/><rect x='980' y='148' width='4' height='44'/><circle cx='1180' cy='178' r='10'/><circle cx='1320' cy='176' r='14'/></g></svg>") repeat-x 0 100% / auto 35%;
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 200'><g fill='%231e1610'><circle cx='80' cy='190' r='10'/><circle cx='180' cy='192' r='8'/><circle cx='400' cy='190' r='9'/><circle cx='620' cy='190' r='10'/><circle cx='820' cy='192' r='8'/><circle cx='1100' cy='190' r='9'/><circle cx='1320' cy='190' r='10'/><circle cx='1480' cy='192' r='8'/></g></svg>") repeat-x 0 100% / auto 35%;
     z-index: 5;
 }
 
@@ -5347,6 +5350,115 @@ body.page-timeline {
 .timeline-marker--pothole.timeline-marker--image::after {
     /* Potholes have no post. */
     display: none;
+}
+
+/* ---- Phase 4 props (V0.05) ---------------------------------------------
+   Era sprites hung from clothespins on a wire crossing a telephone pole
+   at each event's road position. Pole + crossbars + wire are CSS; sprite
+   is the era PNG. Each prop is self-contained — short wire extension on
+   each side reads as "wire continues off-screen." Sprite hangs straight
+   down from the pin with a small deterministic rotation per event. */
+.timeline-props {
+    position: absolute;
+    inset: 0;
+    /* Above road (z=4) and foreground tufts (z=5). Below jeep (z=8) so
+       the jeep drives in front of props when overlapping. Below polaroids
+       (z=9) so polaroid drops land in front of any prop they overlap. */
+    z-index: 6;
+    pointer-events: none;
+}
+
+.timeline-prop {
+    position: absolute;
+    /* JS sets --p-x and --p-y each frame from the road path point at
+       data-prop-pos. Bottom of the container sits at the road point —
+       pole base meets road, sprite hangs from pole top. */
+    left: var(--p-x, 50%);
+    top:  var(--p-y, 70%);
+    transform: translate(-50%, -100%);
+    width: 280px;       /* wide enough for the hung sprite to sit centered */
+    height: 32vh;       /* pole height */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.timeline-prop--visible {
+    opacity: 1;
+}
+
+.timeline-prop__pole {
+    position: absolute;
+    /* Centered horizontally within the wide container. */
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg,
+        #1f1408 0%,
+        #4a3018 45%,
+        #5a3a20 55%,
+        #1f1408 100%);
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.45),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.timeline-prop__crossbar {
+    position: absolute;
+    left: 50%;
+    width: 56px;
+    height: 4px;
+    background: linear-gradient(180deg, #2a1a08, #4a3018);
+    transform: translateX(-50%);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+.timeline-prop__crossbar--upper { top: 7%; }
+.timeline-prop__crossbar--lower { top: 13%; }
+
+.timeline-prop__wire {
+    position: absolute;
+    left: 50%;
+    /* Sits just above the upper crossbar. */
+    top: 5%;
+    width: 200px;
+    height: 1px;
+    background: rgba(30, 22, 12, 0.7);
+    transform: translateX(-50%);
+}
+
+.timeline-prop__hung {
+    /* Hangs from the wire — anchored at the wire's level, slightly tilted
+       per --prop-rot for the casually-pinned look. */
+    position: absolute;
+    left: 50%;
+    top: 5%;
+    transform: translateX(-50%) rotate(var(--prop-rot, 0deg));
+    transform-origin: 50% 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.timeline-prop__pin {
+    /* Wooden clothespin head — small block with a hint of grain. */
+    width: 14px;
+    height: 10px;
+    background: linear-gradient(180deg, #c8995f 0%, #8a6135 70%, #6a4825 100%);
+    border-radius: 2px;
+    box-shadow:
+        0 2px 3px rgba(0, 0, 0, 0.45),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.25);
+}
+
+.timeline-prop__sprite {
+    display: block;
+    height: 22vh;
+    width: auto;
+    /* Nestled into the pin (slight overlap so they read as one unit). */
+    margin-top: -2px;
+    filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.5));
 }
 
 /* ---- The jeep ---------------------------------------------------------- */

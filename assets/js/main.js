@@ -2187,6 +2187,11 @@ function initTimelinePage() {
     // trigger pos (the previous event's pos) baked in via PHP.
     const polaroids = Array.from(root.querySelectorAll('[data-polaroid-trigger]'));
     const markers   = Array.from(root.querySelectorAll('[data-marker]'));
+    // Phase 4 props (V0.05) — telephone-pole-with-clothespinned-sprite per
+    // event with a `prop` field. Same road-pos lookup as markers; different
+    // visibility band (props are scenery so they stay visible on-screen
+    // rather than fading at the jeep's center the way signs do).
+    const props     = Array.from(root.querySelectorAll('[data-prop]'));
     const finaleFrames = Array.from(root.querySelectorAll('[data-finale-frame]'))
         .sort(function (a, b) {
             return parseInt(a.dataset.finaleFrame, 10) - parseInt(b.dataset.finaleFrame, 10);
@@ -2358,6 +2363,9 @@ function initTimelinePage() {
 
         // --- Position markers along the SVG road ---
         positionMarkers();
+
+        // --- Position Phase 4 props (telephone-pole-with-hung-sprite) ---
+        positionProps();
 
         // --- Jeep follows the road (both full-size and shrunk) ---
         // Find the path point under the jeep's viewport-x and feed its y
@@ -2599,6 +2607,44 @@ function initTimelinePage() {
                 }
                 m.style.opacity = opacity.toFixed(2);
                 m.style.pointerEvents = (opacity > 0.1) ? 'auto' : 'none';
+            } catch (e) { /* path geometry not ready */ }
+        });
+    }
+
+    /**
+     * Phase 4 (V0.05) — position props the same way as markers (road-pos
+     * lookup) but with a wider visibility band: props are scenery, so they
+     * stay visible the whole time they're on-screen instead of fading at
+     * the jeep's center the way directional signs do.
+     */
+    function positionProps() {
+        if (!roadPath || !props.length) return;
+        const svg = roadPath.ownerSVGElement;
+        if (!svg) return;
+        const rect = svg.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+
+        const len = roadPath.getTotalLength();
+        const vbox = svg.viewBox.baseVal;
+        const scaleX = rect.width  / vbox.width;
+        const scaleY = rect.height / vbox.height;
+
+        props.forEach(function (p) {
+            const pos = parseFloat(p.dataset.propPos);
+            if (isNaN(pos)) return;
+            try {
+                const pt = roadPath.getPointAtLength(pos * len);
+                const cx = rect.left + (pt.x - vbox.x) * scaleX;
+                const cy = rect.top  + (pt.y - vbox.y) * scaleY;
+                const xVw = cx / window.innerWidth * 100;
+                p.style.setProperty('--p-x', xVw.toFixed(2) + 'vw');
+                p.style.setProperty('--p-y', (cy / window.innerHeight * 100).toFixed(2) + 'vh');
+
+                // Visible whenever the prop is roughly on-screen (with
+                // small margin so fade-in/out happens off the visible edge).
+                // No fade-around-jeep — props are scenery, jeep drives past.
+                const onScreen = (xVw > -15 && xVw < 115);
+                p.classList.toggle('timeline-prop--visible', onScreen);
             } catch (e) { /* path geometry not ready */ }
         });
     }

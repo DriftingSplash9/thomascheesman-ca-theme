@@ -85,6 +85,9 @@ $tc_timeline_events = array(
         // mark removed V0.04 — pothole sprite was a bad image. The HCS
         // beat is still narrated via the polaroid + prose; doesn't need
         // a roadside marker. If revisited, source a cleaner pothole asset.
+        'prop'      => array(
+            'image' => '/wp-content/uploads/2026/04/1777567236118-52-kodak-projector.png',
+        ),
     ),
     array(
         'year'      => '1990–91',
@@ -100,6 +103,9 @@ $tc_timeline_events = array(
             'text'  => 'Teepee Creek 1km',
             'image' => '/wp-content/uploads/2026/04/teepee-creek-scaled.jpg',
         ),
+        'prop'      => array(
+            'image' => '/wp-content/uploads/2026/04/1777567236118-142-telephone.png',
+        ),
     ),
     array(
         'year'      => '1991–93',
@@ -109,6 +115,9 @@ $tc_timeline_events = array(
         'image'     => '/wp-content/uploads/2026/04/edmonton-skyline.jpg',
         'pos'       => 0.17,
         'bearing'   => 155,  // Teepee Creek → Edmonton (SSE)
+        'prop'      => array(
+            'image' => '/wp-content/uploads/2026/04/1777567236118-332-boom-box.png',
+        ),
     ),
     array(
         'year'      => '1993–94',
@@ -169,6 +178,9 @@ $tc_timeline_events = array(
         'image'     => '',
         'pos'       => 0.345,
         'bearing'   => 135,  // Spirit River → Little Smoky (SE)
+        'prop'      => array(
+            'image' => '/wp-content/uploads/2026/04/cabin.png',
+        ),
     ),
     array(
         'year'      => '1999–2000',
@@ -187,6 +199,9 @@ $tc_timeline_events = array(
         'image'     => '',
         'pos'       => 0.42,
         'bearing'   => 110,  // GP → Valleyview (ESE)
+        'prop'      => array(
+            'image' => '/wp-content/uploads/2026/04/1777567236118-164-diner-sign.png',
+        ),
     ),
     array(
         'year'      => '2000–01',
@@ -212,6 +227,9 @@ $tc_timeline_events = array(
         'prose'     => 'Power Engineering training in Fort McMurray.',
         'image'     => '/wp-content/uploads/2026/04/sagd-ft-mac.jpg',
         'pos'       => 0.50,
+        'prop'      => array(
+            'image' => '/wp-content/uploads/2026/04/1777567236118-247-Winnebago-.png',
+        ),
         'bearing'   => 50,   // GP → Fort McMurray (NE, big jump)
     ),
     array(
@@ -583,6 +601,51 @@ get_header(); ?>
                         <span class="timeline-marker__label" aria-hidden="true"><?php echo $label; ?></span>
                     <?php endif; ?>
                 </button>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Phase 4 props (V0.05) — era sprites hung from clothespins on a
+             wire crossing a telephone pole at each event's road position.
+             Pole + crossbars + wire are CSS; clothespin is CSS; sprite is
+             the era PNG. Each prop is self-contained (no continuous wire
+             between props) — the short wire extension on each side of the
+             pole reads as "wire continues off-screen." Sprite hangs straight
+             down from the pin with a small deterministic rotation so it
+             reads as casually pinned, not rigidly hung. -->
+        <div class="timeline-props" data-props>
+            <?php
+            $prop_idx = 0;
+            foreach ( $tc_timeline_events as $event ) :
+                if ( empty( $event['prop'] ) || empty( $event['prop']['image'] ) ) {
+                    continue;
+                }
+                $prop_idx++;
+                $prop_pos   = floatval( $event['pos'] );
+                $prop_img   = $event['prop']['image'];
+                $prop_label = esc_attr( $event['title'] ?? '' );
+                // Deterministic small rotation per prop (-3..+3 degrees) so
+                // sprites read as casually clipped to the wire, not rigidly
+                // pinned. Stable across reloads; varies between props.
+                $prop_rot   = ( ( $prop_idx * 37 + 11 ) % 7 ) - 3;
+            ?>
+                <div class="timeline-prop"
+                     data-prop
+                     data-prop-pos="<?php echo esc_attr( $prop_pos ); ?>"
+                     style="--prop-rot: <?php echo esc_attr( $prop_rot ); ?>deg;"
+                     aria-hidden="true">
+                    <div class="timeline-prop__pole">
+                        <div class="timeline-prop__crossbar timeline-prop__crossbar--upper"></div>
+                        <div class="timeline-prop__crossbar timeline-prop__crossbar--lower"></div>
+                    </div>
+                    <div class="timeline-prop__wire"></div>
+                    <div class="timeline-prop__hung">
+                        <div class="timeline-prop__pin"></div>
+                        <img class="timeline-prop__sprite"
+                             src="<?php echo esc_url( $prop_img ); ?>"
+                             alt="<?php echo $prop_label; ?>"
+                             loading="lazy" />
+                    </div>
+                </div>
             <?php endforeach; ?>
         </div>
 
