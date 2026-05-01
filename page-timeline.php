@@ -332,10 +332,11 @@ $tc_timeline_events = array(
         'image'     => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
         'pos'       => 0.775,
         'mark'      => array(
-            'kind'  => 'highway',
-            'label' => 'Major\'s / Tractor Jack\'s',
-            'text'  => 'Major\'s 1km',
-            'image' => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
+            'kind'   => 'highway',
+            'label'  => 'Major\'s / Tractor Jack\'s',
+            'text'   => 'Major\'s 1km',
+            'image'  => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
+            'offset' => 120,  // raised so it doesn't stack on Township 71 at pos 0.71
         ),
     ),
     array(
