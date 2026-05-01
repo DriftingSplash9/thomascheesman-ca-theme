@@ -124,7 +124,9 @@ $tc_timeline_events = array(
         'yearStart' => 1993,
         'title'     => 'Back together — LaGlace',
         'prose'     => 'Lived in Edmonton until Mom and Brian found a place together in LaGlace, AB. Hamlet small.',
-        'image'     => '/wp-content/uploads/2026/04/mom-and-brian.jpg',
+        // mom-and-brian.jpg moved to the 2015 'Grand Parents visiting'
+        // event — that photo is actually from Daniel's birth, not LaGlace.
+        'image'     => '',
         'pos'       => 0.21,
         'bearing'   => 310,  // Edmonton → LaGlace (NW)
         'mark'      => array(
@@ -160,15 +162,9 @@ $tc_timeline_events = array(
         'image'     => '',
         'pos'       => 0.31,
         'bearing'   => 350,  // Pig Farm (Teepee Creek) → Spirit River (~N)
-        'mark'      => array(
-            'kind'  => 'sign',
-            'label' => 'Welcome to Spirit River',
-            // The spirit-river-sign.png asset IS a freestanding sign with
-            // its own painted treatment (transparent background) — same
-            // category as the Roll-Out sign. So this marker renders as a
-            // bare image sprite, NOT inside the highway green-sign frame.
-            'image' => '/wp-content/uploads/2026/04/spirit-river-sign.png',
-        ),
+        // Spirit River sign marker removed — Thomas decided the sign asset
+        // wasn't earning its place. Event itself stays; prose narrates the
+        // brief stop without a roadside marker.
     ),
     array(
         'year'      => '1997–99',
@@ -319,6 +315,14 @@ $tc_timeline_events = array(
         'prose'     => 'Daniel born. Worked at multiple kitchens as head chef.',
         'image'     => '/wp-content/uploads/2026/04/baby-daniel.jpg',
         'pos'       => 0.76,
+    ),
+    array(
+        'year'      => '2015',
+        'yearStart' => 2015,
+        'title'     => 'Grand Parents visiting to help out',
+        'prose'     => 'Mom and Brian came to help with the new arrival.',
+        'image'     => '/wp-content/uploads/2026/04/mom-and-brian.jpg',
+        'pos'       => 0.765,
     ),
     array(
         'year'      => '2015–21',
@@ -604,14 +608,12 @@ get_header(); ?>
             <?php endforeach; ?>
         </div>
 
-        <!-- Phase 4 props (V0.05) — era sprites hung from clothespins on a
-             wire crossing a telephone pole at each event's road position.
-             Pole + crossbars + wire are CSS; clothespin is CSS; sprite is
-             the era PNG. Each prop is self-contained (no continuous wire
-             between props) — the short wire extension on each side of the
-             pole reads as "wire continues off-screen." Sprite hangs straight
-             down from the pin with a small deterministic rotation so it
-             reads as casually pinned, not rigidly hung. -->
+        <!-- Phase 4 props (V0.05+) — era sprite mounted on a short wooden
+             stake at each event's road position. Stake is CSS; sprite is
+             the era PNG. Sits BEHIND the road (z=3) so the road runs in
+             front of the stake, reading as "stake planted in the ground
+             the road is paved on." Small deterministic per-prop rotation
+             (-3..+3 deg) gives a casual, hand-placed feel. -->
         <div class="timeline-props" data-props>
             <?php
             $prop_idx = 0;
@@ -623,9 +625,6 @@ get_header(); ?>
                 $prop_pos   = floatval( $event['pos'] );
                 $prop_img   = $event['prop']['image'];
                 $prop_label = esc_attr( $event['title'] ?? '' );
-                // Deterministic small rotation per prop (-3..+3 degrees) so
-                // sprites read as casually clipped to the wire, not rigidly
-                // pinned. Stable across reloads; varies between props.
                 $prop_rot   = ( ( $prop_idx * 37 + 11 ) % 7 ) - 3;
             ?>
                 <div class="timeline-prop"
@@ -633,18 +632,11 @@ get_header(); ?>
                      data-prop-pos="<?php echo esc_attr( $prop_pos ); ?>"
                      style="--prop-rot: <?php echo esc_attr( $prop_rot ); ?>deg;"
                      aria-hidden="true">
-                    <div class="timeline-prop__pole">
-                        <div class="timeline-prop__crossbar timeline-prop__crossbar--upper"></div>
-                        <div class="timeline-prop__crossbar timeline-prop__crossbar--lower"></div>
-                    </div>
-                    <div class="timeline-prop__wire"></div>
-                    <div class="timeline-prop__hung">
-                        <div class="timeline-prop__pin"></div>
-                        <img class="timeline-prop__sprite"
-                             src="<?php echo esc_url( $prop_img ); ?>"
-                             alt="<?php echo $prop_label; ?>"
-                             loading="lazy" />
-                    </div>
+                    <div class="timeline-prop__stake"></div>
+                    <img class="timeline-prop__sprite"
+                         src="<?php echo esc_url( $prop_img ); ?>"
+                         alt="<?php echo $prop_label; ?>"
+                         loading="lazy" />
                 </div>
             <?php endforeach; ?>
         </div>
