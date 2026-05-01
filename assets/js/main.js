@@ -2262,13 +2262,28 @@ function initTimelinePage() {
         lastScrollMoveTime = performance.now();
     }, { passive: true });
 
+    // V0.06.7 — wider threshold range (2-5s) AND per-element fade duration
+    // (2-3s) so the dissolve feels natural and unhurried. Each prop is
+    // assigned both at init via deterministic-per-index seeds.
     const propIdleThresholds = props.map(function (_, i) {
-        // Deterministic pseudo-random in [3000, 4500] per prop index.
         const seed = ((i * 9301 + 49297) % 233280) / 233280;
-        return 3000 + seed * 1500;
+        return 2000 + seed * 3000;  // 2000-5000ms
     });
+    const propFadeDurations = props.map(function (_, i) {
+        const seed = ((i * 7919 + 11) % 1000) / 1000;
+        return 2000 + seed * 1000;  // 2000-3000ms
+    });
+    // Apply per-prop fade duration via CSS var (CSS uses it in transition).
+    for (let i = 0; i < props.length; i++) {
+        props[i].style.setProperty('--prop-fade-duration', propFadeDurations[i] + 'ms');
+    }
+
     const midLayerEl = root.querySelector('.timeline-layer--mid');
-    const midIdleThreshold = 3000 + Math.random() * 1500;
+    const midIdleThreshold = 2000 + Math.random() * 3000;
+    const midFadeDuration = 2000 + Math.random() * 1000;
+    if (midLayerEl) {
+        midLayerEl.style.setProperty('--mid-fade-duration', midFadeDuration + 'ms');
+    }
 
     // ---- Bearing inheritance ----
     // For events without an explicit `bearing`, inherit from the most recent
