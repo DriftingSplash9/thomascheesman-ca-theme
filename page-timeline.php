@@ -339,14 +339,14 @@ $tc_timeline_events = array(
         'yearStart' => 2015,
         'title'     => 'Major\'s / Tractor Jack\'s',
         'prose'     => 'Long stretch in the kitchen at Major\'s Homestyle and Tractor Jack\'s — same kitchen, two front-of-house personalities (diner + bar). Anchored 2015–19, then a little here and there to 2021.',
-        'image'     => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
+        'image'     => '/wp-content/uploads/2026/05/tractor-jacks-logo.png',
         'pos'       => 0.78,
         'mark'      => array(
             'kind'     => 'highway',
             'label'    => 'Major\'s / Tractor Jack\'s',
             'text'     => 'Major\'s',
             'distance' => '1km',
-            'image'    => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
+            'image'    => '/wp-content/uploads/2026/05/majors-homestyle-logo.png',
             'offset'   => 160,  // raised so it doesn't stack on Township 71
         ),
     ),
