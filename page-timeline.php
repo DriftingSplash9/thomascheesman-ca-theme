@@ -68,11 +68,13 @@ $tc_timeline_events = array(
         'pos'       => 0.06,
         'bearing'   => 205,  // Calgary → Turner Valley (SSW)
         'mark'      => array(
-            'kind'   => 'highway',
-            'label'  => 'Turner Valley',
-            'text'   => 'Turner Valley 1km',
-            'image'  => '/wp-content/uploads/2026/04/turner-valley.jpg',
-            'offset' => 60,  // px raised above the default windshield height
+            'kind'     => 'highway',
+            'label'    => 'Turner Valley',
+            'text'     => 'Turner Valley',
+            'distance' => '1km',
+            'image'    => '/wp-content/uploads/2026/04/turner-valley.jpg',
+            // No offset — Turner Valley sits at default height; the
+            // following sign (Teepee Creek) gets raised to clear it.
         ),
     ),
     array(
@@ -98,10 +100,12 @@ $tc_timeline_events = array(
         'pos'       => 0.13,
         'bearing'   => 330,  // Turner Valley → Teepee Creek (NNW, big jump)
         'mark'      => array(
-            'kind'  => 'highway',
-            'label' => 'Teepee Creek',
-            'text'  => 'Teepee Creek 1km',
-            'image' => '/wp-content/uploads/2026/04/teepee-creek-scaled.jpg',
+            'kind'     => 'highway',
+            'label'    => 'Teepee Creek',
+            'text'     => 'Teepee Creek',
+            'distance' => '1km',
+            'image'    => '/wp-content/uploads/2026/04/teepee-creek-scaled.jpg',
+            'offset'   => 160,  // raised so it doesn't stack on Turner Valley (pos 0.06)
         ),
         'prop'      => array(
             'image' => '/wp-content/uploads/2026/04/1777567236118-142-telephone.png',
@@ -130,9 +134,10 @@ $tc_timeline_events = array(
         'pos'       => 0.21,
         'bearing'   => 310,  // Edmonton → LaGlace (NW)
         'mark'      => array(
-            'kind'  => 'highway',
-            'label' => 'LaGlace',
-            'text'  => 'LaGlace 5km',
+            'kind'     => 'highway',
+            'label'    => 'LaGlace',
+            'text'     => 'LaGlace',
+            'distance' => '5km',
             // No place-photo available; highway sign renders text-only
             // (the photo slot is conditional on mark.image).
         ),
@@ -294,10 +299,11 @@ $tc_timeline_events = array(
         'image'     => '/wp-content/uploads/2026/04/t71logo.png',
         'pos'       => 0.71,
         'mark'      => array(
-            'kind'  => 'highway',
-            'label' => 'Township 71',
-            'text'  => 'Township 71 1km',
-            'image' => '/wp-content/uploads/2026/04/t71logo.png',
+            'kind'     => 'highway',
+            'label'    => 'Township 71',
+            'text'     => 'Township 71',
+            'distance' => '1km',
+            'image'    => '/wp-content/uploads/2026/04/t71logo.png',
         ),
     ),
     array(
@@ -332,11 +338,12 @@ $tc_timeline_events = array(
         'image'     => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
         'pos'       => 0.775,
         'mark'      => array(
-            'kind'   => 'highway',
-            'label'  => 'Major\'s / Tractor Jack\'s',
-            'text'   => 'Major\'s 1km',
-            'image'  => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
-            'offset' => 120,  // raised so it doesn't stack on Township 71 at pos 0.71
+            'kind'     => 'highway',
+            'label'    => 'Major\'s / Tractor Jack\'s',
+            'text'     => 'Major\'s',
+            'distance' => '1km',
+            'image'    => '/wp-content/uploads/2026/04/helper-at-majors-scaled.jpg',
+            'offset'   => 160,  // raised so it doesn't stack on Township 71 at pos 0.71
         ),
     ),
     array(
@@ -559,11 +566,12 @@ get_header(); ?>
                 if ( empty( $event['mark'] ) ) {
                     continue;
                 }
-                $kind_raw   = $event['mark']['kind'];
-                $kind       = esc_attr( $kind_raw );
-                $label      = esc_html( $event['mark']['label'] ?? '' );
-                $mark_img   = $event['mark']['image'] ?? '';
-                $mark_text  = $event['mark']['text'] ?? '';
+                $kind_raw    = $event['mark']['kind'];
+                $kind        = esc_attr( $kind_raw );
+                $label       = esc_html( $event['mark']['label'] ?? '' );
+                $mark_img    = $event['mark']['image'] ?? '';
+                $mark_text   = $event['mark']['text'] ?? '';
+                $mark_dist   = $event['mark']['distance'] ?? '';
                 $mark_offset = isset( $event['mark']['offset'] )
                     ? floatval( $event['mark']['offset'] )
                     : 0;
@@ -585,7 +593,12 @@ get_header(); ?>
                         <?php if ( $mark_offset ) : ?>style="--m-offset: <?php echo esc_attr( $mark_offset ); ?>px;"<?php endif; ?>
                         aria-label="<?php echo esc_attr( $label ?: 'Roadside marker' ); ?>">
                     <?php if ( $is_highway ) : ?>
-                        <span class="timeline-marker__text"><?php echo esc_html( $mark_text ?: $label ); ?></span>
+                        <span class="timeline-marker__text">
+                            <span class="timeline-marker__name"><?php echo esc_html( $mark_text ?: $label ); ?></span>
+                            <?php if ( $mark_dist ) : ?>
+                                <span class="timeline-marker__distance"><?php echo esc_html( $mark_dist ); ?></span>
+                            <?php endif; ?>
+                        </span>
                         <?php if ( $mark_img ) : ?>
                             <img class="timeline-marker__photo"
                                  src="<?php echo esc_url( $mark_img ); ?>"
