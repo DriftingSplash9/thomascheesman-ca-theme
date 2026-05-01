@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.161
+Version: 1.0.162
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5067,7 +5067,11 @@ body.page-timeline {
        reads as atmosphere rather than as a defect. The proper fix is
        a seamless tileable source PNG; this is the no-asset-change
        version. */
-    filter: blur(1.2px);
+    /* V0.06 — bumped 1.2px → 3.5px to mask the dark-edge seam more
+       aggressively. A cropped version (night-sky-cropped.png, edges
+       balanced at ~60 luminance) is staged for WP upload — once
+       Thomas uploads, wire the new URL here and dial blur back. */
+    filter: blur(3.5px);
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
 }
 
@@ -5280,13 +5284,17 @@ body.page-timeline {
 .timeline-marker__photo {
     flex-shrink: 0;
     display: block;
-    /* 20% larger and flush against the green frame (no extra border
-       so the photo butts right up against the white sign border). */
-    width: 132px;
+    /* V0.06 — height-locked, width auto so landscape logos (Major's
+       wordmark) show in full instead of getting cropped. max-width caps
+       absurdly-wide images so they don't blow out the sign chrome.
+       contain (was cover) preserves the whole image; transparent
+       background lets logo PNGs sit on the green sign cleanly. */
     height: 132px;
-    object-fit: cover;
+    width: auto;
+    max-width: 240px;
+    object-fit: contain;
     border-radius: 4px;
-    background: #1a1208;
+    background: transparent;
 }
 
 /* ---- Image-only markers (Phase 3) ----------------------------------------
@@ -5362,27 +5370,29 @@ body.page-timeline {
     display: none;
 }
 
-/* ---- Phase 4 props (V0.05++) -------------------------------------------
-   Era sprite sitting on the ground at each event's road position. Stakes
-   abandoned — with the road now straight, every sprite lives at the same
-   y-level (road bottom) so they read as roadside objects on a predictable
-   grid. Sits at z=3 (above mid layer in DOM order, below the road). */
+/* ---- Phase 4 props (V0.06) ---------------------------------------------
+   Props are now a TOP-of-viewport parallax layer. JS sets --p-x and --p-y
+   per frame; props drift leftward at a faster rate than the road, decoupled
+   from event positions. Year-locking abandoned — props are atmospheric
+   scenery passing overhead rather than era-specific roadside objects.
+
+   z=10 sits above the road (z=4), markers (z=11 still wins for sign
+   chrome), and jeep (z=8). Above polaroids (z=9) so polaroid drops don't
+   visually obscure drifting props. */
 .timeline-props {
     position: absolute;
     inset: 0;
-    z-index: 3;
+    z-index: 10;
     pointer-events: none;
 }
 
 .timeline-prop {
     position: absolute;
-    /* JS sets --p-x and --p-y each frame from the road path point at
-       data-prop-pos. Bottom of the container sits at the road point. */
     left: var(--p-x, 50%);
-    top:  var(--p-y, 70%);
-    transform: translate(-50%, -100%);
-    width: 280px;
-    height: 22vh;
+    top:  var(--p-y, 5vh);
+    transform: translateX(-50%);
+    width: 200px;
+    height: 16vh;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -5393,15 +5403,12 @@ body.page-timeline {
 }
 
 .timeline-prop__sprite {
-    /* Sits on the ground at the road point. Bottom of sprite at container
-       bottom (= road point). Tiny deterministic rotation pivoting on the
-       sprite base so it reads as casually placed, not perfectly upright. */
     position: absolute;
     left: 50%;
-    bottom: 0;
+    top: 0;
     transform: translateX(-50%) rotate(var(--prop-rot, 0deg));
-    transform-origin: 50% 100%;
-    height: 22vh;
+    transform-origin: 50% 50%;
+    height: 16vh;
     width: auto;
     filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.5));
 }

@@ -2442,37 +2442,35 @@ function initTimelinePage() {
         }
 
         // --- Home finale slideshow: per-frame opacity using an asymmetric
-        // trapezoidal profile. Each slide is fully opaque for the second
-        // half of its leftward range and the first half of its rightward
-        // range, ramping to 0 at the midpoint with each neighbor — so
-        // adjacent slides crossfade through their midpoint with summed
-        // opacity ≈ 1. The last slide holds at 1 past its center so the
-        // 2026 photo is the resting frame.
+        // V0.06 — TRUE crossfade. Each slide ramps from 0 at the previous
+        // slide's center, peaks at 1 at its own center, and ramps to 0 at
+        // the next slide's center. Adjacent slides overlap fully — at the
+        // midpoint between centers, both are at 0.5, summing to 1.0. No
+        // hard cuts through the backdrop between slides.
+        // Last slide holds at 1 past its center (resting frame).
         if (finaleFrames.length) {
             const N = FINALE_SLIDE_POSITIONS.length;
             for (let i = 0; i < N; i++) {
                 if (!finaleFrames[i]) continue;
                 const center = FINALE_SLIDE_POSITIONS[i];
-                const leftMid = i === 0
+                const prevCenter = i === 0
                     ? FINALE_FIRST_BAND_START
-                    : (FINALE_SLIDE_POSITIONS[i - 1] + center) / 2;
-                const rightMid = i === N - 1
-                    ? 1.5  // sentinel; last slide holds at 1 past its center
-                    : (center + FINALE_SLIDE_POSITIONS[i + 1]) / 2;
+                    : FINALE_SLIDE_POSITIONS[i - 1];
+                const nextCenter = i === N - 1
+                    ? null
+                    : FINALE_SLIDE_POSITIONS[i + 1];
 
                 let op;
-                if (i === N - 1 && easedProgress >= center) {
-                    op = 1;
-                } else if (easedProgress < leftMid || easedProgress > rightMid) {
+                if (easedProgress < prevCenter) {
                     op = 0;
-                } else if (easedProgress <= center) {
-                    const leftHalf = center - leftMid;
-                    const t = (easedProgress - leftMid) / leftHalf;
-                    op = Math.min(1, t * 2);
+                } else if (easedProgress < center) {
+                    op = (easedProgress - prevCenter) / (center - prevCenter);
+                } else if (nextCenter === null) {
+                    op = 1;
+                } else if (easedProgress < nextCenter) {
+                    op = 1 - (easedProgress - center) / (nextCenter - center);
                 } else {
-                    const rightHalf = rightMid - center;
-                    const t = (rightMid - easedProgress) / rightHalf;
-                    op = Math.min(1, t * 2);
+                    op = 0;
                 }
                 finaleFrames[i].style.opacity = op.toFixed(3);
             }
@@ -2636,38 +2634,40 @@ function initTimelinePage() {
         jeepEl.style.setProperty('--jeep-rot', angleDeg.toFixed(2) + 'deg');
     }
 
+    /**
+     * V0.06 — Props are now a TOP-of-viewport parallax layer, decoupled from
+     * event pos. Each prop spawns at a deterministic scroll-progress (evenly
+     * spread across 0..1) and drifts leftward at PROP_PAN_RATE vw per scroll
+     * unit (faster than the road's 300vw). Y is varied per prop in a small
+     * band near the top so they read as scattered scenery passing overhead
+     * rather than a single horizontal queue.
+     *
+     * Year-locking dropped — Thomas decided era-specificity wasn't worth the
+     * stacking-into-the-road problems. Props are now atmospheric.
+     */
     function positionProps() {
-        if (!roadPath || !props.length) return;
-        const svg = roadPath.ownerSVGElement;
-        if (!svg) return;
-        const rect = svg.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) return;
+        if (!props.length) return;
+        const N = props.length;
+        const PROP_PAN_RATE = 380;   // vw per progress unit, > road's 300vw
+        const PROP_TOP_BASE = 4;     // vh from top (lowest y offset)
+        const PROP_TOP_RANGE = 22;   // vh — y varies in [BASE, BASE+RANGE]
 
-        const len = roadPath.getTotalLength();
-        const vbox = svg.viewBox.baseVal;
-        const scaleX = rect.width  / vbox.width;
-        const scaleY = rect.height / vbox.height;
+        for (let i = 0; i < N; i++) {
+            const p = props[i];
+            // Spawn evenly across [0..1], offset by half-step so first prop
+            // doesn't appear exactly at progress 0.
+            const spawn = (i + 0.5) / N;
+            const elapsed = easedProgress - spawn;
+            const xVw = 110 - elapsed * PROP_PAN_RATE;
+            // Deterministic per-prop y in the top band.
+            const yVh = PROP_TOP_BASE + ((i * 7919) % 100) / 100 * PROP_TOP_RANGE;
 
-        props.forEach(function (p) {
-            const pos = parseFloat(p.dataset.propPos);
-            if (isNaN(pos)) return;
-            try {
-                const pt = roadPath.getPointAtLength(pos * len);
-                const cx = rect.left + (pt.x - vbox.x) * scaleX;
-                const cy = rect.top  + (pt.y - vbox.y) * scaleY;
-                const xVw = cx / window.innerWidth * 100;
-                p.style.setProperty('--p-x', xVw.toFixed(2) + 'vw');
-                // V0.05+++ — props decoupled from road y. Constant viewport
-                // y so sprites sit at a stable level while road curves under.
-                p.style.setProperty('--p-y', '94vh');
+            p.style.setProperty('--p-x', xVw.toFixed(2) + 'vw');
+            p.style.setProperty('--p-y', yVh.toFixed(2) + 'vh');
 
-                // Visible whenever the prop is roughly on-screen (with
-                // small margin so fade-in/out happens off the visible edge).
-                // No fade-around-jeep — props are scenery, jeep drives past.
-                const onScreen = (xVw > -15 && xVw < 115);
-                p.classList.toggle('timeline-prop--visible', onScreen);
-            } catch (e) { /* path geometry not ready */ }
-        });
+            const onScreen = (xVw > -30 && xVw < 130);
+            p.classList.toggle('timeline-prop--visible', onScreen);
+        }
     }
 
     // ---- Visibility / focus management (perf) ----
