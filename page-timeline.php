@@ -450,14 +450,19 @@ get_header(); ?>
             <!-- Lead-in: visual road extension before the first event so
                  the viewport is never half-empty at scroll progress 0.
                  NOT used for marker positioning (events still index along
-                 the main #tc-road-path only). -->
-            <path d="M -4000 540 L 0 540"
+                 the main #tc-road-path only). V0.04 — curved as an
+                 on-ramp descending from upper-left into the main road
+                 at vbx 0. Quadratic Bezier with the control point held
+                 at the start y so the curve hugs the top before sweeping
+                 down, then approaches y=540 nearly horizontally to
+                 avoid a kink where lead-in meets the main road. -->
+            <path d="M -4000 280 Q -1500 280, 0 540"
                   fill="none"
                   stroke="#3b2c1a"
                   stroke-width="38"
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
-            <path d="M -4000 540 L 0 540"
+            <path d="M -4000 280 Q -1500 280, 0 540"
                   fill="none"
                   stroke="rgba(245, 230, 200, 0.55)"
                   stroke-width="2"
