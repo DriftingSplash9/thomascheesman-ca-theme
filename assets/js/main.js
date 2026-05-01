@@ -2251,15 +2251,24 @@ function initTimelinePage() {
     let rafId = 0;
     let isVisible = !document.hidden;
 
-    // ---- Scroll-idle decor fade (V0.06.5) ----
-    // After 3s of no scrolling, fade the props layer + mid layer to clear
-    // the screen for reading the prose / signs / polaroids. Fades back in
-    // when the user resumes scrolling. CSS handles the smooth transition.
-    const SCROLL_IDLE_DELAY_MS = 3000;
+    // ---- Scroll-idle decor fade (V0.06.6) ----
+    // Each prop + the mid layer fade out at slightly different times in the
+    // 3000-4500ms range so they don't all vanish at once (which Thomas
+    // flagged as too abrupt for a timeline that's otherwise smooth).
+    // Per-prop thresholds are deterministic per index; mid-layer threshold
+    // is randomized once at init.
     let lastScrollMoveTime = performance.now();
     window.addEventListener('scroll', function () {
         lastScrollMoveTime = performance.now();
     }, { passive: true });
+
+    const propIdleThresholds = props.map(function (_, i) {
+        // Deterministic pseudo-random in [3000, 4500] per prop index.
+        const seed = ((i * 9301 + 49297) % 233280) / 233280;
+        return 3000 + seed * 1500;
+    });
+    const midLayerEl = root.querySelector('.timeline-layer--mid');
+    const midIdleThreshold = 3000 + Math.random() * 1500;
 
     // ---- Bearing inheritance ----
     // For events without an explicit `bearing`, inherit from the most recent
@@ -2329,14 +2338,30 @@ function initTimelinePage() {
         html.style.setProperty('--tl-prog-eased',   easedProgress.toFixed(4));
         html.style.setProperty('--tl-wheel-spin',   totalSpin.toFixed(1) + 'deg');
 
-        // --- Scroll-idle decor fade ---
-        // 1 while user is scrolling (or within 3s of last scroll); 0 once
-        // idle. CSS transition on .timeline-props / .timeline-layer--mid
-        // does the smooth fade-in/out. Reduced-motion users keep decor
-        // visible at all times.
-        const idleMs = performance.now() - lastScrollMoveTime;
-        const decorOpacity = (reduceMotion || idleMs < SCROLL_IDLE_DELAY_MS) ? 1 : 0;
-        html.style.setProperty('--decor-opacity', decorOpacity.toString());
+        // --- Scroll-idle decor fade (per-element staggered) ---
+        // Each prop and the mid layer have their own threshold in
+        // [3000, 4500]ms. Once idle exceeds a given element's threshold,
+        // its inline opacity is cleared back to "" (lets CSS class take
+        // over) → ".timeline-prop--visible" sets opacity 1 → BUT we
+        // override that with inline 0 for idle elements. Reduced-motion
+        // users skip the fade entirely.
+        if (!reduceMotion) {
+            const idleMs = performance.now() - lastScrollMoveTime;
+            for (let i = 0; i < props.length; i++) {
+                if (idleMs >= propIdleThresholds[i]) {
+                    if (props[i].style.opacity !== '0') props[i].style.opacity = '0';
+                } else {
+                    if (props[i].style.opacity === '0') props[i].style.opacity = '';
+                }
+            }
+            if (midLayerEl) {
+                if (idleMs >= midIdleThreshold) {
+                    if (midLayerEl.style.opacity !== '0') midLayerEl.style.opacity = '0';
+                } else {
+                    if (midLayerEl.style.opacity === '0') midLayerEl.style.opacity = '';
+                }
+            }
+        }
 
         // --- Compass — driven by real geographic bearings ---
         // Each event has a `bearing` (degrees, 0=N, 90=E) representing the

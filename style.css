@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.167
+Version: 1.0.168
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5125,9 +5125,10 @@ body.page-timeline {
     background:
         url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 400'><g fill='%2336261a'><rect x='100' y='240' width='40' height='160'/><rect x='160' y='220' width='80' height='180'/><polygon points='180,220 200,180 220,220'/><rect x='480' y='250' width='120' height='150'/><rect x='960' y='200' width='30' height='200'/><rect x='1180' y='260' width='100' height='140'/><rect x='1310' y='240' width='60' height='160'/></g></svg>") repeat-x 0 80% / auto 55%;
     z-index: 3;
-    /* V0.06.5 — scroll-idle fade (same as .timeline-props). */
-    opacity: var(--decor-opacity, 1);
-    transition: opacity 1s ease;
+    /* V0.06.6 — scroll-idle fade. JS sets inline opacity to 0 once
+       idle exceeds this layer's randomized threshold (3000-4500ms).
+       Transition smooths the cross. */
+    transition: opacity 0.8s ease;
 }
 
 /* Foreground — closest, fastest. V0.05: post silhouettes removed (would
@@ -5410,11 +5411,9 @@ body.page-timeline {
     inset: 0;
     z-index: 10;
     pointer-events: none;
-    /* V0.06.5 — scroll-idle fade. JS sets --decor-opacity to 0 after 3s
-       of no scrolling, 1 while scrolling. Container opacity multiplies
-       down through individual prop --visible classes. */
-    opacity: var(--decor-opacity, 1);
-    transition: opacity 1s ease;
+    /* V0.06.6 — container no longer fades as a unit. Each prop has its
+       own staggered idle threshold (3000-4500ms) set via JS inline
+       opacity. The transition lives on .timeline-prop. */
 }
 
 .timeline-prop {
@@ -5426,7 +5425,9 @@ body.page-timeline {
     height: 16vh;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    /* V0.06.6 — bumped 0.3s → 0.8s so the per-prop staggered idle
+       fade-out reads as a smooth dissolve, not a snap. */
+    transition: opacity 0.8s ease;
 }
 
 .timeline-prop--visible {
