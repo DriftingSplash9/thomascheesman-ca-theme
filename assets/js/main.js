@@ -2580,22 +2580,28 @@ function initTimelinePage() {
      * the jeep's center the way directional signs do.
      */
     /**
-     * V0.05+++.2 — Pin the jeep to the road. Sample the road path at the
-     * point currently passing viewport-center, convert to screen pixels
-     * via getScreenCTM (the canonical SVG API — handles viewBox,
-     * preserveAspectRatio, AND any parent transforms in one matrix),
-     * compute tangent from two close points, cap the angle so wild
-     * local Bezier tangents can't tip the jeep onto its nose.
+     * V0.05+++.3 — Pin the jeep to the road.
      *
-     * Earlier attempt did naive scale conversion (rect.width/vbox.width)
-     * which is wrong with preserveAspectRatio="xMinYMax slice" — the
-     * actual rendered scale is uniform at max(naiveX, naiveY).
-     * getScreenCTM handles all that.
+     * Use the same naive scale (rect.width/vbox.width, rect.height/vbox.height)
+     * that the road's CSS layout was designed against. Even though the
+     * SVG declares preserveAspectRatio="xMinYMax slice" (which technically
+     * implies uniform scale at max of the two), the actual rendered road
+     * sits at the naive scale because of how the browser composes CSS
+     * dimensions with viewBox. Using getScreenCTM "correctly" puts the
+     * jeep at the technically-right scale — but the ROAD is at the naive
+     * scale, so the jeep ends up several thousand px off-screen. Match
+     * the road's actual visual scale, even if the math is "wrong."
+     *
+     * Cap the displayed angle to ±10° so wild local Bezier tangents
+     * (especially around chained S commands) can't tip the jeep over.
      */
     function positionJeep() {
         if (!roadPath || !jeepEl) return;
-        const ctm = roadPath.getScreenCTM();
-        if (!ctm) return;
+        const svg = roadPath.ownerSVGElement;
+        if (!svg) return;
+        const rect = svg.getBoundingClientRect();
+        if (rect.width === 0) return;
+
         const len = roadPath.getTotalLength();
         if (!len) return;
 
@@ -2610,16 +2616,20 @@ function initTimelinePage() {
             pt1 = roadPath.getPointAtLength(lookF * len);
         } catch (e) { return; }
 
-        // matrixTransform converts path-local coords to screen pixels.
-        const sp0 = pt0.matrixTransform(ctm);
-        const sp1 = pt1.matrixTransform(ctm);
+        const vbox = svg.viewBox.baseVal;
+        const scaleX = rect.width / vbox.width;
+        const scaleY = rect.height / vbox.height;
 
-        let angleDeg = Math.atan2(sp1.y - sp0.y, sp1.x - sp0.x) * 180 / Math.PI;
-        // Cap so wild local Bezier tangents can't tip the jeep over.
+        const x0 = rect.left + (pt0.x - vbox.x) * scaleX;
+        const y0 = rect.top  + (pt0.y - vbox.y) * scaleY;
+        const x1 = rect.left + (pt1.x - vbox.x) * scaleX;
+        const y1 = rect.top  + (pt1.y - vbox.y) * scaleY;
+
+        let angleDeg = Math.atan2(y1 - y0, x1 - x0) * 180 / Math.PI;
         angleDeg = Math.max(-10, Math.min(10, angleDeg));
 
-        const xVw = sp0.x / window.innerWidth * 100;
-        const yVh = (window.innerHeight - sp0.y) / window.innerHeight * 100;
+        const xVw = x0 / window.innerWidth * 100;
+        const yVh = (window.innerHeight - y0) / window.innerHeight * 100;
 
         jeepEl.style.setProperty('--jeep-x',   xVw.toFixed(2) + 'vw');
         jeepEl.style.setProperty('--jeep-y',   yVh.toFixed(2) + 'vh');
