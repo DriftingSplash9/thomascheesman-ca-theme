@@ -82,13 +82,9 @@ $tc_timeline_events = array(
         'prose'     => 'A bump in the road, before the road had even straightened out. The diagnosis arrived inside the first year in Turner Valley. Life kept moving.',
         'image'     => '/wp-content/uploads/2026/04/hands-and-xray-scaled.png',
         'pos'       => 0.085,
-        'mark'      => array(
-            'kind'  => 'pothole',
-            'label' => 'HCS',
-            // pothole.png 404s on Hostinger — WP appended -1 because a
-            // same-named upload already existed. Use the actual file.
-            'image' => '/wp-content/uploads/2026/04/pothole-1.png',
-        ),
+        // mark removed V0.04 — pothole sprite was a bad image. The HCS
+        // beat is still narrated via the polaroid + prose; doesn't need
+        // a roadside marker. If revisited, source a cleaner pothole asset.
     ),
     array(
         'year'      => '1990–91',
@@ -450,20 +446,18 @@ get_header(); ?>
 
             <!-- Lead-in: visual road extension before the first event so
                  the viewport is never half-empty at scroll progress 0.
-                 NOT used for marker positioning (events still index along
-                 the main #tc-road-path only). V0.04 — curved as an
-                 on-ramp descending from upper-left into the main road
-                 at vbx 0. Quadratic Bezier with the control point held
-                 at the start y so the curve hugs the top before sweeping
-                 down, then approaches y=540 nearly horizontally to
-                 avoid a kink where lead-in meets the main road. -->
-            <path d="M -4000 280 Q -1500 280, 0 540"
+                 Flat-line per V0.04 PARKED decision — the curved on-ramp
+                 + jeep-follows-curve combo (V0.19/V0.20) didn't land
+                 cleanly enough; Thomas chose to ship straight track and
+                 backburner the curve. Don't reactivate without explicit
+                 go from Thomas (see V0.04.md PARKED list). -->
+            <path d="M -4000 540 L 0 540"
                   fill="none"
                   stroke="#3b2c1a"
                   stroke-width="38"
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
-            <path d="M -4000 280 Q -1500 280, 0 540"
+            <path d="M -4000 540 L 0 540"
                   fill="none"
                   stroke="rgba(245, 230, 200, 0.55)"
                   stroke-width="2"
