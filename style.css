@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.152
+Version: 1.0.153
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5171,15 +5171,11 @@ body.page-timeline {
 }
 
 .timeline-marker::after {
-    /* Tiny post under the sign. */
+    /* V0.05++ — post abandoned across all marker kinds. Pseudo-element
+       still defined (so subclasses that override it have something to
+       override) but rendered nothing by default. */
     content: '';
-    position: absolute;
-    left: 50%;
-    top: 100%;
-    width: 2px;
-    height: 14px;
-    background: rgba(60, 40, 20, 0.75);
-    transform: translateX(-50%);
+    display: none;
 }
 
 .timeline-marker:hover {
@@ -5249,11 +5245,11 @@ body.page-timeline {
 }
 
 .timeline-marker--highway::after {
-    /* Long post bridging sign-bottom down to the road. Matches the
-       30vh raise above plus any per-marker offset. */
-    width: 5px;
-    height: calc(30vh + var(--m-offset, 0px));
-    background: rgba(40, 30, 18, 0.85);
+    /* V0.05++ — post abandoned. Highway sign floats as a billboard at
+       windshield height with no visible pole connecting to the road.
+       Pseudo-element kept (inherits from base .timeline-marker::after)
+       but suppressed here. */
+    display: none;
 }
 
 .timeline-marker__text {
@@ -5322,10 +5318,8 @@ body.page-timeline {
 }
 
 .timeline-marker--sign.timeline-marker--image::after {
-    /* Inherit width/background from base marker post but extend the
-       length to span the 30vh gap (plus per-marker offset) up to the sign. */
-    width: 4px;
-    height: calc(30vh + var(--m-offset, 0px));
+    /* V0.05++ — post abandoned. Image-sign floats with no pole to road. */
+    display: none;
 }
 
 /* Pothole-kind image markers: hazard above the road surface, no post.
@@ -5352,19 +5346,14 @@ body.page-timeline {
     display: none;
 }
 
-/* ---- Phase 4 props (V0.05+) --------------------------------------------
-   Era sprite mounted on a short wooden stake at each event's road
-   position. V0.05 first attempt was a full telephone pole + wire +
-   clothespin + hung sprite — Thomas decided that was overworked.
-   Simplified to: short stake from road up, sprite mounted on top.
-   Sits BEHIND the road (z=3) so the road runs in front of the stake,
-   reading as "stake planted in the ground the road is paved on." */
+/* ---- Phase 4 props (V0.05++) -------------------------------------------
+   Era sprite sitting on the ground at each event's road position. Stakes
+   abandoned — with the road now straight, every sprite lives at the same
+   y-level (road bottom) so they read as roadside objects on a predictable
+   grid. Sits at z=3 (above mid layer in DOM order, below the road). */
 .timeline-props {
     position: absolute;
     inset: 0;
-    /* Behind road (z=4) so the road appears in front. Same z as mid
-       layer (z=3); props render later in the DOM so they sit in front
-       of mid silhouettes — correct (props are nearer than mid scenery). */
     z-index: 3;
     pointer-events: none;
 }
@@ -5377,7 +5366,7 @@ body.page-timeline {
     top:  var(--p-y, 70%);
     transform: translate(-50%, -100%);
     width: 280px;
-    height: 32vh;
+    height: 22vh;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -5387,29 +5376,13 @@ body.page-timeline {
     opacity: 1;
 }
 
-.timeline-prop__stake {
-    /* Short wooden stake from road level up to the sprite bottom. */
+.timeline-prop__sprite {
+    /* Sits on the ground at the road point. Bottom of sprite at container
+       bottom (= road point). Tiny deterministic rotation pivoting on the
+       sprite base so it reads as casually placed, not perfectly upright. */
     position: absolute;
     left: 50%;
     bottom: 0;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 10vh;
-    background: linear-gradient(90deg,
-        #1f1408 0%,
-        #4a3018 45%,
-        #5a3a20 55%,
-        #1f1408 100%);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45);
-}
-
-.timeline-prop__sprite {
-    /* Mounted on top of the stake, centered horizontally, with a tiny
-       deterministic rotation around the bottom-center (i.e. pivots on
-       the stake top, not floating mid-air). */
-    position: absolute;
-    left: 50%;
-    bottom: 10vh;
     transform: translateX(-50%) rotate(var(--prop-rot, 0deg));
     transform-origin: 50% 100%;
     height: 22vh;
@@ -5430,7 +5403,10 @@ body.page-timeline {
     --jeep-shrink: clamp(0, calc((var(--tl-prog-eased) - 0.74) * 25), 1);
     --jeep-scale: calc(1 - var(--jeep-shrink) * 0.79);
     left: calc(50% - var(--jeep-shrink) * 40vw);
-    bottom: var(--jeep-road-y, 6vh);
+    /* V0.05++ — constant. Jeep no longer tracks road y (road is straight
+       at y=540 now; the binary-search lookup that used to feed
+       --jeep-road-y was removed from main.js). */
+    bottom: 6vh;
     transform: translateX(-50%) scale(var(--jeep-scale));
     transform-origin: 50% 100%;
     width: min(1350px, 82vw);

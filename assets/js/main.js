@@ -2367,62 +2367,11 @@ function initTimelinePage() {
         // --- Position Phase 4 props (telephone-pole-with-hung-sprite) ---
         positionProps();
 
-        // --- Jeep follows the road (both full-size and shrunk) ---
-        // Find the path point under the jeep's viewport-x and feed its y
-        // back to CSS via --jeep-road-y. Path is curvy so arc length and
-        // horizontal position diverge — binary-search to invert it.
-        if (roadPath && jeepEl) {
-            const svg = roadPath.ownerSVGElement;
-            if (svg) {
-                const rect = svg.getBoundingClientRect();
-                if (rect.height > 0) {
-                    try {
-                        const len = roadPath.getTotalLength();
-                        const vbox = svg.viewBox.baseVal;
-                        // Mirrors the CSS shrink curve (0.74 → 0.78). Keep
-                        // these two formulas in sync if the window moves.
-                        const jeepShrink = Math.max(0, Math.min(1, (easedProgress - 0.74) * 25));
-                        const jeepScale  = 1 - jeepShrink * 0.79;
-                        const jeepCenterVw = 50 - jeepShrink * 40;
-                        // Convert jeep's viewport-x to SVG viewBox-x:
-                        //   road.element_left_vw = -25 - 300 * progress
-                        //   element_x_vw         = viewport_x - element_left_vw
-                        //   vbx                  = element_x_vw * (20000/500) - 4000
-                        //                        = 40 * element_x_vw - 4000
-                        const elementXvw = jeepCenterVw + 25 + 300 * easedProgress;
-                        const targetVbx  = elementXvw * 40 - 4000;
-                        // Binary search path length where pt.x ≈ targetVbx.
-                        // For vbx < 0 (lead-in zone) this clamps to length 0
-                        // and the jeep sits at the main road's start point —
-                        // flat y=540 — which is what we want now that the
-                        // lead-in is back to straight track. PARKED V0.04:
-                        // the on-ramp + jeep-follows-curve combo (V0.19/20)
-                        // is backburned. See V0.04.md.
-                        let lo = 0, hi = len;
-                        for (let i = 0; i < 16; i++) {
-                            const mid = (lo + hi) / 2;
-                            const pm  = roadPath.getPointAtLength(mid);
-                            if (pm.x < targetVbx) lo = mid;
-                            else                  hi = mid;
-                        }
-                        const pt = roadPath.getPointAtLength((lo + hi) / 2);
-                        const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
-                        const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
-                        // No wheel offset. Measured the actual PNG
-                        // (1103×608, content fills nearly the whole canvas
-                        // with only 0.2% empty space at the bottom) — the
-                        // wheel touchpoint sits at the very bottom of the
-                        // image. With background-size:contain + position
-                        // bottom, the image bottom lines up with the box
-                        // bottom, so putting the box bottom AT the sampled
-                        // road-y puts the wheels AT the road. Earlier
-                        // offsets (0.08, 0.15) assumed empty space that
-                        // doesn't exist in the asset.
-                        jeepEl.style.setProperty('--jeep-road-y', fromBottomVh.toFixed(1) + 'vh');
-                    } catch (e) { /* path not ready */ }
-                }
-            }
-        }
+        // V0.05++ — jeep no longer tracks road y. Road is now a straight
+        // line at y=540, so the jeep sits at constant bottom: 6vh (set
+        // directly in CSS). Removes the binary-search arc-length lookup
+        // and all the curve-following math that came with it. Shrink +
+        // slide-left at progress 0.74→0.78 still happens (CSS-only).
 
         // --- Polaroid field — drop in + drift leftward ---
         // Each polaroid sits dormant until easedProgress passes its trigger.

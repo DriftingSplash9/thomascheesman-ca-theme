@@ -487,49 +487,23 @@ get_header(); ?>
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
 
-            <!-- Road body. Tuned by hand to bend at biographical inflections.
-                 If you re-tune, also retune the marker positions in CSS via
-                 their --pos custom properties. -->
+            <!-- Road body. V0.05 follow-up: STRAIGHT line at y=540 across
+                 the whole event range. The earlier biographical curves
+                 (foothills hump, prairie flat, Little Smokey hill, etc.)
+                 created stacking/positioning headaches that weren't worth
+                 the subtle storytelling. Every object now lives on a
+                 predictable grid — sprites sit at one y, signs sit at
+                 windshield-y, jeep stays put. -->
             <path id="tc-road-path" data-road-path
-                  d="
-                    M 0 540
-                    C 200 480, 500 470, 800 510
-                    S 1400 540, 1900 540
-                    S 2400 540, 2800 540
-                    S 3200 460, 3600 480
-                    S 4000 440, 4400 510
-                    S 4900 470, 5300 500
-                    S 5800 510, 6200 480
-                    S 6700 460, 7100 500
-                    S 7600 510, 8000 470
-                    S 8500 470, 8900 510
-                    S 9400 530, 9800 530
-                    S 10400 540, 10800 530
-                    S 11500 540, 12000 540
-                  "
+                  d="M 0 540 L 12000 540"
                   fill="none"
                   stroke="#3b2c1a"
                   stroke-width="38"
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
 
-            <!-- Center dashed line. -->
-            <path d="
-                    M 0 540
-                    C 200 480, 500 470, 800 510
-                    S 1400 540, 1900 540
-                    S 2400 540, 2800 540
-                    S 3200 460, 3600 480
-                    S 4000 440, 4400 510
-                    S 4900 470, 5300 500
-                    S 5800 510, 6200 480
-                    S 6700 460, 7100 500
-                    S 7600 510, 8000 470
-                    S 8500 470, 8900 510
-                    S 9400 530, 9800 530
-                    S 10400 540, 10800 530
-                    S 11500 540, 12000 540
-                  "
+            <!-- Center dashed line — same straight path as main road. -->
+            <path d="M 0 540 L 12000 540"
                   fill="none"
                   stroke="rgba(245, 230, 200, 0.55)"
                   stroke-width="2"
@@ -537,14 +511,16 @@ get_header(); ?>
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
 
-            <!-- Lead-out: visual road extension past the last event. -->
-            <path d="M 12000 440 L 16000 440"
+            <!-- Lead-out: visual road extension past the last event.
+                 V0.05 follow-up: y=540 (was 440) for continuity with the
+                 now-straight main road. -->
+            <path d="M 12000 540 L 16000 540"
                   fill="none"
                   stroke="#3b2c1a"
                   stroke-width="38"
                   stroke-linecap="round"
                   vector-effect="non-scaling-stroke"/>
-            <path d="M 12000 440 L 16000 440"
+            <path d="M 12000 540 L 16000 540"
                   fill="none"
                   stroke="rgba(245, 230, 200, 0.55)"
                   stroke-width="2"
@@ -608,12 +584,12 @@ get_header(); ?>
             <?php endforeach; ?>
         </div>
 
-        <!-- Phase 4 props (V0.05+) — era sprite mounted on a short wooden
-             stake at each event's road position. Stake is CSS; sprite is
-             the era PNG. Sits BEHIND the road (z=3) so the road runs in
-             front of the stake, reading as "stake planted in the ground
-             the road is paved on." Small deterministic per-prop rotation
-             (-3..+3 deg) gives a casual, hand-placed feel. -->
+        <!-- Phase 4 props (V0.05++) — era sprite sitting on the ground
+             at each event's road position. Stakes/poles abandoned —
+             with a straight road, every sprite lives at the exact same
+             y-level (road bottom) so they read as roadside objects.
+             Small deterministic per-prop rotation (-3..+3 deg) keeps
+             them from looking rigidly placed. -->
         <div class="timeline-props" data-props>
             <?php
             $prop_idx = 0;
@@ -632,7 +608,6 @@ get_header(); ?>
                      data-prop-pos="<?php echo esc_attr( $prop_pos ); ?>"
                      style="--prop-rot: <?php echo esc_attr( $prop_rot ); ?>deg;"
                      aria-hidden="true">
-                    <div class="timeline-prop__stake"></div>
                     <img class="timeline-prop__sprite"
                          src="<?php echo esc_url( $prop_img ); ?>"
                          alt="<?php echo $prop_label; ?>"
