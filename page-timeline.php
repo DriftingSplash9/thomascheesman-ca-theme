@@ -84,7 +84,9 @@ $tc_timeline_events = array(
         'mark'      => array(
             'kind'  => 'pothole',
             'label' => 'HCS',
-            'image' => '/wp-content/uploads/2026/04/pothole.png',
+            // pothole.png 404s on Hostinger — WP appended -1 because a
+            // same-named upload already existed. Use the actual file.
+            'image' => '/wp-content/uploads/2026/04/pothole-1.png',
         ),
     ),
     array(

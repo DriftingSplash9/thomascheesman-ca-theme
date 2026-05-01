@@ -2249,7 +2249,25 @@ function initTimelinePage() {
     // Reduced motion: skip lerp, snap to scroll, no idle wheel rotation.
     // 0.06 = ~280ms to settle from a wheel-flick; smooth enough to read,
     // responsive enough not to feel sluggish on slow input.
-    const lerpFactor = reduceMotion ? 1 : 0.06;
+    // V0.04 follow-up — Thomas wants the scene to slow down through
+    // dense clusters of events (e.g., 2013–17 baby/T71/Daniel/Faith,
+    // surgery/recovery 2019–23). We drop the lerp factor when many
+    // events sit near the current target so the rendered scene catches
+    // up slower — eases naturally in/out as density rises and falls.
+    const baseLerpFactor = reduceMotion ? 1 : 0.06;
+
+    // Window for "nearby events" — ±DENSITY_WINDOW around targetProgress.
+    // 0.04 means events within 4% of progress count toward density. At
+    // 4000vh page length, that's ±160vh of scroll. Density 1 = baseline,
+    // density 4 halves the lerp, density 8 quarters it.
+    const DENSITY_WINDOW = 0.04;
+    function getLocalDensity(progress) {
+        let count = 0;
+        for (let i = 0; i < events.length; i++) {
+            if (Math.abs(events[i].pos - progress) < DENSITY_WINDOW) count++;
+        }
+        return count;
+    }
 
     function tick() {
         if (!isVisible) return;
@@ -2261,8 +2279,13 @@ function initTimelinePage() {
             ? Math.max(0, Math.min(1, -rect.top / scrollable))
             : 0;
 
-        // --- Lerp ---
+        // --- Lerp (density-scaled) ---
+        // density of 1–2 events nearby: full speed. As density climbs,
+        // the divisor grows so the lerp factor shrinks proportionally,
+        // giving a smooth ease in/out around heavy parts of the timeline.
         const prev = easedProgress;
+        const density = reduceMotion ? 1 : getLocalDensity(targetProgress);
+        const lerpFactor = baseLerpFactor / Math.max(1, density / 2);
         easedProgress += (targetProgress - easedProgress) * lerpFactor;
         const dProgress = easedProgress - prev;
 

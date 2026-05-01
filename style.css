@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.146
+Version: 1.0.147
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5135,7 +5135,11 @@ body.page-timeline {
 .timeline-markers {
     position: absolute;
     inset: 0;
-    z-index: 6;
+    /* Above the polaroid field (z-index: 9) so highway signs at windshield
+       height aren't buried by drifting polaroids during overlap. Pothole
+       sits below polaroids if they pile up near year 1985, but markers
+       are signage and polaroids are content — signs read in front. */
+    z-index: 11;
     pointer-events: none;
     /* Markers themselves get pointer-events back below. */
 }
