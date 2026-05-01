@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.165
+Version: 1.0.166
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5053,49 +5053,49 @@ body.page-timeline {
 /* Night-sky backdrop — takes over from forest around year 2000 (pos 0.46).
    Fills the viewport behind the home photos through the rest of the
    timeline. Reuses night-sky.png from the projector lightbox. */
-.timeline-back-strip--night-sky {
-    /* V0.06.1 — switched to night-sky-cropped.png (883×720, dark edges
-       cropped so both sides sit at ~60 luminance for clean tiling).
-       Filter blur dropped entirely — Thomas wants max detail in the
-       image. If a seam is visible after deploy, we can add a tiny
-       0.5px blur back, but the cropped edges should tile invisibly. */
-    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/night-sky-cropped.png');
-    /* V0.06.2 — fit to viewport HEIGHT and tile horizontally. Was
-       100vw auto which sized to viewport width and made the image
-       overflow vertically (1920×1565 on 1920×1080 = 145% of viewport
-       height). Now scales to viewport-height with width preserving
-       aspect, repeating horizontally. */
-    background-size: auto 100vh;
-    background-position: center top;
-    background-repeat: repeat-x;
-    z-index: 1;             /* below forest so forest fades reveal it */
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
-}
+/* Keg / night-sky backdrop chain (V0.06.4) — Thomas's chronological order:
+   Price is Right → Keg Family → Night Sky, no tiling, each fades in over
+   the previous one. Each strip is a single non-repeating image sized to
+   viewport height, centered in the back layer.
 
-/* Keg-era back-strips (V0.06.3) — Thomas's photos covering 2003-2013.
-   Sit at z=5: above all era strips (foothills/prairie/forest/night-sky)
-   and below the home photos (z=6+). They fade in during the Keg years
-   to replace the night-sky dominance through that long stretch. */
-.timeline-back-strip--keg-family {
-    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/the-keg-family.png');
-    background-size: auto 100vh;
-    background-position: center top;
-    background-repeat: repeat-x;
-    z-index: 5;
-    /* Fade in 0.46 → 0.50 (Keg part-time start). Holds at 1 until
-       keg-price covers it, and eventually home photos cover that. */
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.46) * 25), 1);
-}
-
+   z-stack (bottom → top of fade-in chain):
+     z=2 forest (existing era strip, fades OUT around 0.50)
+     z=3 prairie / z=4 foothills (existing earliest eras)
+     z=5 keg-price       fades in 0.50 → 0.54
+     z=6 keg-family      fades in 0.56 → 0.60
+     z=7 night-sky       fades in 0.60 → 0.62 (brief, before home photos)
+     z=8-11 house photos (covers night-sky as they fade in)
+*/
 .timeline-back-strip--keg-price {
     background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/price-is-right-keg.png');
-    background-size: auto 100vh;
-    background-position: center top;
-    background-repeat: no-repeat;  /* posed photo with edge text — don't tile */
-    background-color: #1a1208;     /* dark fill on either side of the no-repeat */
-    z-index: 5;                    /* same as keg-family but rendered later in DOM = on top when faded in */
-    /* Fade in 0.58 → 0.62 (later Keg years) — covers keg-family. */
-    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.58) * 25), 1);
+    background-size: auto 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: #1a1208;
+    z-index: 5;
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.50) * 25), 1);
+}
+
+.timeline-back-strip--keg-family {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/the-keg-family.png');
+    background-size: auto 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: #1a1208;
+    z-index: 6;
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.56) * 25), 1);
+}
+
+.timeline-back-strip--night-sky {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/night-sky-cropped.png');
+    background-size: auto 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: #06080c;
+    z-index: 7;
+    /* Fades in 0.60 → 0.62 (last backdrop before home photos start
+       fading in at 0.62). Brief night-before-settling-in moment. */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.60) * 50), 1);
 }
 
 /* Home photos as back-strips — 5 stacked images of the house through the
@@ -5114,10 +5114,10 @@ body.page-timeline {
 }
 /* 2009 photo dropped — Thomas didn't live in this house yet, so the
    slideshow now starts at 2012 (move-in era). Night sky fills the gap. */
-.timeline-back-strip--house-2012 { z-index: 6; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png'); }
-.timeline-back-strip--house-2022 { z-index: 7; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png'); }
-.timeline-back-strip--house-2025 { z-index: 8; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2025-house.png'); }
-.timeline-back-strip--house-2026 { z-index: 9; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg'); }
+.timeline-back-strip--house-2012 { z-index: 8;  background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2012-house.png'); }
+.timeline-back-strip--house-2022 { z-index: 9;  background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2022-house.png'); }
+.timeline-back-strip--house-2025 { z-index: 10; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/2025-house.png'); }
+.timeline-back-strip--house-2026 { z-index: 11; background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/IMG_4219-1-scaled.jpeg'); }
 
 /* Middle band — leftward, faster than back, slower than fore. */
 .timeline-layer--mid {
