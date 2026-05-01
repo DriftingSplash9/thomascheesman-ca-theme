@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.164
+Version: 1.0.165
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5070,6 +5070,32 @@ body.page-timeline {
     background-repeat: repeat-x;
     z-index: 1;             /* below forest so forest fades reveal it */
     opacity: clamp(0, calc((var(--tl-prog-eased) - 0.42) * 12.5), 1);
+}
+
+/* Keg-era back-strips (V0.06.3) — Thomas's photos covering 2003-2013.
+   Sit at z=5: above all era strips (foothills/prairie/forest/night-sky)
+   and below the home photos (z=6+). They fade in during the Keg years
+   to replace the night-sky dominance through that long stretch. */
+.timeline-back-strip--keg-family {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/the-keg-family.png');
+    background-size: auto 100vh;
+    background-position: center top;
+    background-repeat: repeat-x;
+    z-index: 5;
+    /* Fade in 0.46 → 0.50 (Keg part-time start). Holds at 1 until
+       keg-price covers it, and eventually home photos cover that. */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.46) * 25), 1);
+}
+
+.timeline-back-strip--keg-price {
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/price-is-right-keg.png');
+    background-size: auto 100vh;
+    background-position: center top;
+    background-repeat: no-repeat;  /* posed photo with edge text — don't tile */
+    background-color: #1a1208;     /* dark fill on either side of the no-repeat */
+    z-index: 5;                    /* same as keg-family but rendered later in DOM = on top when faded in */
+    /* Fade in 0.58 → 0.62 (later Keg years) — covers keg-family. */
+    opacity: clamp(0, calc((var(--tl-prog-eased) - 0.58) * 25), 1);
 }
 
 /* Home photos as back-strips — 5 stacked images of the house through the

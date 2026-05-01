@@ -263,6 +263,14 @@ $tc_timeline_events = array(
         'pos'       => 0.58,
     ),
     array(
+        'year'      => '2009',
+        'yearStart' => 2009,
+        'title'     => 'Movember \'Stache',
+        'prose'     => 'November tradition — chef hat on, mustache up, kitchen in full swing.',
+        'image'     => '/wp-content/uploads/2026/05/chef-thomas.png',
+        'pos'       => 0.60,
+    ),
+    array(
         'year'      => '2010–13',
         'yearStart' => 2010,
         'title'     => 'Journeyman chef',
@@ -449,6 +457,11 @@ get_header(); ?>
             <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2025" data-finale-frame="2"></div>
             <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2022" data-finale-frame="1"></div>
             <div class="timeline-back-strip timeline-back-strip--house timeline-back-strip--house-2012" data-finale-frame="0"></div>
+            <!-- Keg-era backdrops (z=5, above era strips, below home photos).
+                 Fade in during Keg years to push back the night-sky era
+                 across the long 2003-2013 stretch. -->
+            <div class="timeline-back-strip timeline-back-strip--keg-price"></div>
+            <div class="timeline-back-strip timeline-back-strip--keg-family"></div>
             <!-- Era backdrops behind the home photos. -->
             <div class="timeline-back-strip timeline-back-strip--foothills"></div>
             <div class="timeline-back-strip timeline-back-strip--prairie"></div>
