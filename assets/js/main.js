@@ -2580,39 +2580,55 @@ function initTimelinePage() {
      * the jeep's center the way directional signs do.
      */
     /**
-     * V0.05+++ — Pin the jeep to the road via GSAP MotionPath.
-     * The road CSS places path-progress P at viewport-x 75vw. The jeep
-     * sits at viewport-x 50vw (visual center). The path point currently
-     * passing through 50vw is at f = P - (25vw/300vw) ≈ P - 0.0833.
-     * Sample that point and feed x / y / tangent angle to CSS via
-     * --jeep-x / --jeep-y / --jeep-rot.
+     * V0.05+++ — Pin the jeep to the road. Sample the road path at the
+     * point currently passing viewport-center, convert to screen pixels,
+     * and compute tangent angle in SCREEN space (after the SVG's
+     * preserveAspectRatio="xMinYMax slice" non-uniform scaling).
+     *
+     * MotionPathPlugin.getPositionOnPath returned angle in path-local
+     * coord space, which is near-zero for our 20000×600 viewBox even
+     * when the visual tangent on screen is steep. Dropped that path;
+     * vanilla getPointAtLength + manual screen-space atan2 gives the
+     * actual visible tilt. (MotionPathPlugin still loaded — leaving
+     * enqueued in case we use it for other things.)
      */
     function positionJeep() {
-        if (!_motionPathReady || !roadPath || !jeepEl) return;
+        if (!roadPath || !jeepEl) return;
         const svg = roadPath.ownerSVGElement;
         if (!svg) return;
         const rect = svg.getBoundingClientRect();
         if (rect.width === 0) return;
 
-        const jeepF = Math.max(0, Math.min(1, easedProgress - 0.0833));
+        const len = roadPath.getTotalLength();
+        if (!len) return;
 
-        let p;
+        // Road CSS places path-progress P at viewport-x 75vw. Jeep sits at
+        // viewport-x 50vw — that's the path point at f = P - 0.0833.
+        const jeepF = Math.max(0, Math.min(1, easedProgress - 0.0833));
+        const lookF = Math.min(1, jeepF + 0.005);
+
+        let pt0, pt1;
         try {
-            p = MotionPathPlugin.getPositionOnPath(roadPath, jeepF, true);
+            pt0 = roadPath.getPointAtLength(jeepF * len);
+            pt1 = roadPath.getPointAtLength(lookF * len);
         } catch (e) { return; }
 
         const vbox = svg.viewBox.baseVal;
         const scaleX = rect.width / vbox.width;
         const scaleY = rect.height / vbox.height;
-        const cx = rect.left + (p.x - vbox.x) * scaleX;
-        const cy = rect.top  + (p.y - vbox.y) * scaleY;
 
-        const xVw = cx / window.innerWidth * 100;
-        const yVh = (window.innerHeight - cy) / window.innerHeight * 100;
+        const x0 = rect.left + (pt0.x - vbox.x) * scaleX;
+        const y0 = rect.top  + (pt0.y - vbox.y) * scaleY;
+        const x1 = rect.left + (pt1.x - vbox.x) * scaleX;
+        const y1 = rect.top  + (pt1.y - vbox.y) * scaleY;
+
+        const angleDeg = Math.atan2(y1 - y0, x1 - x0) * 180 / Math.PI;
+        const xVw = x0 / window.innerWidth * 100;
+        const yVh = (window.innerHeight - y0) / window.innerHeight * 100;
 
         jeepEl.style.setProperty('--jeep-x',   xVw.toFixed(2) + 'vw');
         jeepEl.style.setProperty('--jeep-y',   yVh.toFixed(2) + 'vh');
-        jeepEl.style.setProperty('--jeep-rot', p.angle.toFixed(2) + 'deg');
+        jeepEl.style.setProperty('--jeep-rot', angleDeg.toFixed(2) + 'deg');
     }
 
     function positionProps() {
