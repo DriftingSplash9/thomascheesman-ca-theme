@@ -68,10 +68,11 @@ $tc_timeline_events = array(
         'pos'       => 0.06,
         'bearing'   => 205,  // Calgary → Turner Valley (SSW)
         'mark'      => array(
-            'kind'  => 'highway',
-            'label' => 'Turner Valley',
-            'text'  => 'Turner Valley 1km',
-            'image' => '/wp-content/uploads/2026/04/turner-valley.jpg',
+            'kind'   => 'highway',
+            'label'  => 'Turner Valley',
+            'text'   => 'Turner Valley 1km',
+            'image'  => '/wp-content/uploads/2026/04/turner-valley.jpg',
+            'offset' => 60,  // px raised above the default windshield height
         ),
     ),
     array(
@@ -116,15 +117,15 @@ $tc_timeline_events = array(
     array(
         'year'      => '1993–94',
         'yearStart' => 1993,
-        'title'     => 'Back together — Le Glace',
-        'prose'     => 'Lived in Edmonton until Mom and Brian found a place together in Le Glace, AB. Hamlet small.',
+        'title'     => 'Back together — LaGlace',
+        'prose'     => 'Lived in Edmonton until Mom and Brian found a place together in LaGlace, AB. Hamlet small.',
         'image'     => '/wp-content/uploads/2026/04/mom-and-brian.jpg',
         'pos'       => 0.21,
-        'bearing'   => 310,  // Edmonton → Le Glace (NW)
+        'bearing'   => 310,  // Edmonton → LaGlace (NW)
         'mark'      => array(
             'kind'  => 'highway',
-            'label' => 'Le Glace',
-            'text'  => 'Le Glace 1km',
+            'label' => 'LaGlace',
+            'text'  => 'LaGlace 5km',
             // No place-photo available; highway sign renders text-only
             // (the photo slot is conditional on mark.image).
         ),
@@ -553,6 +554,9 @@ get_header(); ?>
                 $label      = esc_html( $event['mark']['label'] ?? '' );
                 $mark_img   = $event['mark']['image'] ?? '';
                 $mark_text  = $event['mark']['text'] ?? '';
+                $mark_offset = isset( $event['mark']['offset'] )
+                    ? floatval( $event['mark']['offset'] )
+                    : 0;
                 $is_highway = ( $kind_raw === 'highway' );
                 $pos        = floatval( $event['pos'] );
                 $marker_idx++;
@@ -568,6 +572,7 @@ get_header(); ?>
                         class="<?php echo esc_attr( $css_class ); ?>"
                         data-marker
                         data-marker-pos="<?php echo esc_attr( $pos ); ?>"
+                        <?php if ( $mark_offset ) : ?>style="--m-offset: <?php echo esc_attr( $mark_offset ); ?>px;"<?php endif; ?>
                         aria-label="<?php echo esc_attr( $label ?: 'Roadside marker' ); ?>">
                     <?php if ( $is_highway ) : ?>
                         <span class="timeline-marker__text"><?php echo esc_html( $mark_text ?: $label ); ?></span>

@@ -2383,15 +2383,43 @@ function initTimelinePage() {
                         //                        = 40 * element_x_vw - 4000
                         const elementXvw = jeepCenterVw + 25 + 300 * easedProgress;
                         const targetVbx  = elementXvw * 40 - 4000;
-                        // Binary search path length where pt.x ≈ targetVbx.
-                        let lo = 0, hi = len;
-                        for (let i = 0; i < 16; i++) {
-                            const mid = (lo + hi) / 2;
-                            const pm  = roadPath.getPointAtLength(mid);
-                            if (pm.x < targetVbx) lo = mid;
-                            else                  hi = mid;
+
+                        // V0.04 follow-up — for early scroll where the
+                        // target lands in the lead-in zone (vbx < 0),
+                        // sample the lead-in Bezier directly so the
+                        // jeep follows the curved on-ramp down into the
+                        // main road. The main #tc-road-path starts at
+                        // vbx 0 so binary-searching it for vbx < 0 just
+                        // pinned the jeep at flat y=540, which made the
+                        // visible lead-in curve look disconnected.
+                        // Lead-in: M -4000 280 Q -1500 280, 0 540
+                        //   x(t) = -4000 + 7000t - 3000t^2
+                        //   y(t) = 280 + 260*t^2
+                        let pt;
+                        if (targetVbx < 0) {
+                            // Solve quadratic for t given target x.
+                            // 3000t^2 - 7000t + (targetVbx + 4000) = 0
+                            const c = targetVbx + 4000;
+                            const disc = 49000000 - 12000 * c;
+                            if (disc >= 0 && c >= 0) {
+                                const t = (7000 - Math.sqrt(disc)) / 6000;
+                                const tC = Math.max(0, Math.min(1, t));
+                                pt = { x: targetVbx, y: 280 + 260 * tC * tC };
+                            } else {
+                                // Off the lead-in's left end — pin to start.
+                                pt = { x: -4000, y: 280 };
+                            }
+                        } else {
+                            // Binary search the main road for pt.x ≈ targetVbx.
+                            let lo = 0, hi = len;
+                            for (let i = 0; i < 16; i++) {
+                                const mid = (lo + hi) / 2;
+                                const pm  = roadPath.getPointAtLength(mid);
+                                if (pm.x < targetVbx) lo = mid;
+                                else                  hi = mid;
+                            }
+                            pt = roadPath.getPointAtLength((lo + hi) / 2);
                         }
-                        const pt = roadPath.getPointAtLength((lo + hi) / 2);
                         const cy = rect.top + (pt.y - vbox.y) * (rect.height / vbox.height);
                         const fromBottomVh = (window.innerHeight - cy) / window.innerHeight * 100;
                         // No wheel offset. Measured the actual PNG

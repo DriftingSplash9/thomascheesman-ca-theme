@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.148
+Version: 1.0.149
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5232,12 +5232,14 @@ body.page-timeline {
     /* V0.04 follow-up: raise the sign to windshield height. The base
        transform translate(-50%, -100%) puts sign-bottom at road level;
        extending by -30vh pushes the whole sign UP by 30vh of the
-       viewport so its center lands at the jeep's windshield region. */
-    transform: translate(-50%, calc(-100% - 30vh));
+       viewport so its center lands at the jeep's windshield region.
+       --m-offset is per-marker extra rise (px) so signs can be
+       staggered to avoid colliding when their pos values are close. */
+    transform: translate(-50%, calc(-100% - 30vh - var(--m-offset, 0px)));
 }
 
 .timeline-marker--highway:hover {
-    transform: translate(-50%, calc(-106% - 30vh));
+    transform: translate(-50%, calc(-106% - 30vh - var(--m-offset, 0px)));
     box-shadow:
         0 22px 40px rgba(0, 0, 0, 0.7),
         inset 0 0 0 1px rgba(255, 255, 255, 0.32);
@@ -5245,9 +5247,9 @@ body.page-timeline {
 
 .timeline-marker--highway::after {
     /* Long post bridging sign-bottom down to the road. Matches the
-       30vh raise above. */
+       30vh raise above plus any per-marker offset. */
     width: 5px;
-    height: 30vh;
+    height: calc(30vh + var(--m-offset, 0px));
     background: rgba(40, 30, 18, 0.85);
 }
 
@@ -5306,20 +5308,21 @@ body.page-timeline {
 
 /* Image-only sign sprites (Spirit River-style, freestanding signs)
    raised to windshield height to match the highway-style markers.
-   Same 30vh offset, with a long thin post bridging down to the road. */
+   Same 30vh offset (+ per-marker --m-offset for staggering), with a
+   long thin post bridging down to the road. */
 .timeline-marker--sign.timeline-marker--image {
-    transform: translate(-50%, calc(-100% - 30vh));
+    transform: translate(-50%, calc(-100% - 30vh - var(--m-offset, 0px)));
 }
 
 .timeline-marker--sign.timeline-marker--image:hover {
-    transform: translate(-50%, calc(-106% - 30vh));
+    transform: translate(-50%, calc(-106% - 30vh - var(--m-offset, 0px)));
 }
 
 .timeline-marker--sign.timeline-marker--image::after {
     /* Inherit width/background from base marker post but extend the
-       length to span the 30vh gap up to the sign. */
+       length to span the 30vh gap (plus per-marker offset) up to the sign. */
     width: 4px;
-    height: 30vh;
+    height: calc(30vh + var(--m-offset, 0px));
 }
 
 /* Pothole-kind image markers: hazard above the road surface, no post.
