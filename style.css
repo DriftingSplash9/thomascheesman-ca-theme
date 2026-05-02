@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.176
+Version: 1.0.177
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5140,13 +5140,12 @@ body.page-timeline {
 }
 
 /* Foreground — closest, fastest.
-   V0.07.5 — replaced SVG tufts placeholder with the panoramic prairie +
-   fence + roadside photo. Single instance, no tile. Sized to bottom-40%
-   of the layer for a near-roadside scenery feel. */
+   V0.07.6 — fore-layer image removed (was obscuring road signs and content
+   on the right side of viewport). Layer kept in DOM with empty background
+   so the parallax stack stays intact and a future image can drop in here. */
 .timeline-layer--fore {
     --tl-layer-translate: calc(var(--tl-pan-fore) * var(--tl-prog-eased));
-    background:
-        url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/farm-road-e1777690665845.jpg') center bottom / auto 40% no-repeat;
+    background: none;
     z-index: 5;
 }
 
