@@ -2674,16 +2674,36 @@ function initTimelinePage() {
     function positionJeep() {
         if (!roadPath || !jeepEl) return;
 
-        // V0.07 — entrance phase. Before the scene starts panning, slide
-        // the jeep from the left edge to viewport center. Linear lerp on
-        // entranceProgress (0 at scroll start, 1 once the entrance phase
-        // completes). Scene stays frozen during this period; rotation 0,
-        // y at default road level. Skip the SVG sampling entirely.
+        // V0.07.2 — entrance phase with drag-racer wheelie. Jeep slides
+        // from left edge to viewport center while popping a wheelie.
+        // Tilt schedule (in entranceProgress 0..1, mapped from Thomas's
+        // jeep-x positions 0..50vw):
+        //   0.00 - 0.30   : -45°  (initial wheelie up)
+        //   0.30 - 0.50   : -30°  (drop down)
+        //   0.50 - 0.80   : -45°  (back up)
+        //   0.80 - 1.00   : -45° → 0°  (smooth settle)
+        // Rotation pivots at the REAR WHEEL (25% 100%) during the wheelie
+        // so the front lifts dramatically while the rear stays planted.
+        // Negative rotation = front lifts (CSS rotate is clockwise+, jeep
+        // faces right so counter-clockwise lifts the front).
         if (entranceProgress < 1) {
             const xVw = entranceProgress * 50;  // 0vw → 50vw
-            jeepEl.style.setProperty('--jeep-x',   xVw.toFixed(2) + 'vw');
-            jeepEl.style.setProperty('--jeep-y',   '6vh');
-            jeepEl.style.setProperty('--jeep-rot', '0deg');
+            let tilt;
+            if (entranceProgress < 0.30) {
+                tilt = -45;
+            } else if (entranceProgress < 0.50) {
+                tilt = -30;
+            } else if (entranceProgress < 0.80) {
+                tilt = -45;
+            } else {
+                // Smooth -45 → 0 over [0.80, 1.0]
+                const t = (entranceProgress - 0.80) / 0.20;
+                tilt = -45 + 45 * t;
+            }
+            jeepEl.style.setProperty('--jeep-x',      xVw.toFixed(2) + 'vw');
+            jeepEl.style.setProperty('--jeep-y',      '6vh');
+            jeepEl.style.setProperty('--jeep-rot',    tilt.toFixed(2) + 'deg');
+            jeepEl.style.setProperty('--jeep-origin', '25% 100%');
             return;
         }
 
@@ -2722,9 +2742,13 @@ function initTimelinePage() {
         const xVw = x0 / window.innerWidth * 100;
         const yVh = (window.innerHeight - y0) / window.innerHeight * 100;
 
-        jeepEl.style.setProperty('--jeep-x',   xVw.toFixed(2) + 'vw');
-        jeepEl.style.setProperty('--jeep-y',   yVh.toFixed(2) + 'vh');
-        jeepEl.style.setProperty('--jeep-rot', angleDeg.toFixed(2) + 'deg');
+        jeepEl.style.setProperty('--jeep-x',      xVw.toFixed(2) + 'vw');
+        jeepEl.style.setProperty('--jeep-y',      yVh.toFixed(2) + 'vh');
+        // Path-tangent rotation parked (read as nuts on small bumps).
+        // Lock to 0 post-entrance; reset origin to center-bottom for
+        // the home-era shrink to feel right.
+        jeepEl.style.setProperty('--jeep-rot',    '0deg');
+        jeepEl.style.setProperty('--jeep-origin', '50% 100%');
     }
 
     /**
