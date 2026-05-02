@@ -2354,9 +2354,25 @@ function initTimelinePage() {
 
         // --- Entrance-phase remap (writes to outer-scope easedProgress / entranceProgress) ---
         entranceProgress = Math.max(0, Math.min(1, rawEasedProgress / ENTRANCE_PHASE));
-        easedProgress = Math.max(0, Math.min(1,
-            (rawEasedProgress - ENTRANCE_PHASE) / (1 - ENTRANCE_PHASE)
-        ));
+
+        // V0.07.3 — ease-in on scene start so the jeep-entrance and scene-pan
+        // velocities meet at zero at the transition (no more 3× speed jump).
+        // Quadratic ease-in over [ENTRANCE_PHASE, ENTRANCE_PHASE + SCENE_RAMP]
+        // followed by linear; scaled so easedProgress reaches 1 at rawEased=1.
+        const SCENE_RAMP = 0.025;
+        const SCENE_DURATION = 1 - ENTRANCE_PHASE;
+        const SCENE_NORMALIZER = 1 - SCENE_RAMP / (2 * SCENE_DURATION);
+        const post = rawEasedProgress - ENTRANCE_PHASE;
+        let scenePos;
+        if (post <= 0) {
+            scenePos = 0;
+        } else if (post < SCENE_RAMP) {
+            const t = post / SCENE_RAMP;
+            scenePos = (SCENE_RAMP * t * t / 2) / SCENE_DURATION;
+        } else {
+            scenePos = (post - SCENE_RAMP / 2) / SCENE_DURATION;
+        }
+        easedProgress = Math.max(0, Math.min(1, scenePos / SCENE_NORMALIZER));
         // dProgress derived from the raw value so wheels still spin during
         // the entrance phase (when easedProgress is pinned at 0 but the
         // jeep is visibly moving).
@@ -2689,7 +2705,12 @@ function initTimelinePage() {
         // Negative rotation = front lifts (CSS rotate is clockwise+, jeep
         // faces right so counter-clockwise lifts the front).
         if (entranceProgress < 1) {
-            const xVw = entranceProgress * 50;  // 0vw → 50vw
+            // V0.07.3 — ease-out on jeep position (quadratic). Jeep accelerates
+            // off the line drag-racer style, then decelerates to a STOP at
+            // viewport center. Combined with the scene's ease-in, both
+            // velocities meet at zero at the transition point.
+            const ePEased = 1 - (1 - entranceProgress) * (1 - entranceProgress);
+            const xVw = ePEased * 50;  // 0vw → 50vw with ease-out curve
             let tilt;
             if (entranceProgress < 0.30) {
                 tilt = -45;
