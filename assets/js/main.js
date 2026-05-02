@@ -2250,10 +2250,12 @@ function initTimelinePage() {
     // 0→1 ramp during the entrance phase. Both are recomputed every tick.
     let easedProgress = 0;
     let entranceProgress = 0;
-    // Entrance phase: first 2% of scroll. Jeep slides in from the left
-    // edge to viewport center; scene stays frozen. After that, normal
-    // scene panning kicks in.
-    const ENTRANCE_PHASE = 0.02;
+    // Entrance phase: first 5% of scroll (~200vh of page scroll given the
+    // 4000vh page length). Jeep slides in from the left edge to viewport
+    // center while popping the wheelie; scene stays frozen. After that,
+    // normal scene panning kicks in. Bumped from 0.02 → 0.05 because the
+    // wheelie was reading as too snappy.
+    const ENTRANCE_PHASE = 0.05;
     let totalSpin      = 0;
     let compassDeg     = 0;
     let currentBeatIndex = -1;
