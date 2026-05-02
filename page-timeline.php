@@ -87,9 +87,7 @@ $tc_timeline_events = array(
         // mark removed V0.04 — pothole sprite was a bad image. The HCS
         // beat is still narrated via the polaroid + prose; doesn't need
         // a roadside marker. If revisited, source a cleaner pothole asset.
-        'prop'      => array(
-            'image' => '/wp-content/uploads/2026/04/1777567236118-52-kodak-projector.png',
-        ),
+        // prop dropped V0.07.4 — sprites read as bolted-on for a road trip.
     ),
     array(
         'year'      => '1990–91',
@@ -107,9 +105,6 @@ $tc_timeline_events = array(
             'image'    => '/wp-content/uploads/2026/04/teepee-creek-scaled.jpg',
             'offset'   => 160,  // raised so it doesn't stack on Turner Valley (pos 0.06)
         ),
-        'prop'      => array(
-            'image' => '/wp-content/uploads/2026/04/1777567236118-142-telephone.png',
-        ),
     ),
     array(
         'year'      => '1991–93',
@@ -119,9 +114,6 @@ $tc_timeline_events = array(
         'image'     => '/wp-content/uploads/2026/04/edmonton-skyline.jpg',
         'pos'       => 0.17,
         'bearing'   => 155,  // Teepee Creek → Edmonton (SSE)
-        'prop'      => array(
-            'image' => '/wp-content/uploads/2026/04/1777567236118-332-boom-box.png',
-        ),
     ),
     array(
         'year'      => '1993–94',
@@ -166,9 +158,6 @@ $tc_timeline_events = array(
         'image'     => '',
         'pos'       => 0.345,
         'bearing'   => 135,  // Spirit River → Little Smoky (SE)
-        'prop'      => array(
-            'image' => '/wp-content/uploads/2026/04/cabin.png',
-        ),
     ),
     array(
         'year'      => 'Summer 1999',
@@ -178,9 +167,6 @@ $tc_timeline_events = array(
         'image'     => '',
         'pos'       => 0.37,
         'bearing'   => 110,  // Little Smokey → Valleyview (E/SE)
-        'prop'      => array(
-            'image' => '/wp-content/uploads/2026/04/1777567236118-164-diner-sign.png',
-        ),
     ),
     array(
         'year'      => 'Fall 1999',
@@ -241,9 +227,6 @@ $tc_timeline_events = array(
         'image'     => '/wp-content/uploads/2026/04/sagd-ft-mac.jpg',
         'pos'       => 0.53,
         'bearing'   => 50,   // GP → Fort McMurray (NE)
-        'prop'      => array(
-            'image' => '/wp-content/uploads/2026/04/1777567236118-247-Winnebago-.png',
-        ),
     ),
     array(
         'year'      => '2003',
