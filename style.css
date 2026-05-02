@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.170
+Version: 1.0.171
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5155,13 +5155,15 @@ body.page-timeline {
     height: 60vh;
     z-index: 4;
     pointer-events: none;
-    /* Transform places the main-path point at pos=current_progress at
-       viewport_x = 75vw (right of jeep center) at every P, so the sign for
-       the currently-narrated event stays in front of the jeep through its
-       prose window. Path is panned from element_left = -25vw (P=0) to
-       -325vw (P=1) — leaves lead-in covering the left half of viewport at
-       start, lead-out covering the right half at end. */
-    transform: translate3d(calc(-25vw - var(--tl-pan-road) * var(--tl-prog-eased)), 0, 0);
+    /* V0.07 — transform shifted from -25vw to -50vw so the main-path point
+       at pos=current_progress sits at viewport_x = 50vw (jeep center) at
+       every P. This eliminates the entrance-phase teleport: the jeep is
+       at 50vw both during entrance (slide from left) AND post-entrance
+       (path-derived). Side effect: signs reach the jeep at exactly the
+       moment scroll progress equals event.pos, so polaroids and signs
+       are perfectly synced. Path is panned from element_left = -50vw (P=0)
+       to -350vw (P=1). */
+    transform: translate3d(calc(-50vw - var(--tl-pan-road) * var(--tl-prog-eased)), 0, 0);
     will-change: transform;
 }
 

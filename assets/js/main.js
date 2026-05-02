@@ -2695,9 +2695,10 @@ function initTimelinePage() {
         const len = roadPath.getTotalLength();
         if (!len) return;
 
-        // Road CSS places path-progress P at viewport-x 75vw. Jeep sits at
-        // viewport-x 50vw — that's the path point at f = P - 0.0833.
-        const jeepF = Math.max(0, Math.min(1, easedProgress - 0.0833));
+        // V0.07 — Road CSS now places path-progress P at viewport-x 50vw
+        // (= jeep center) directly, so jeepF = easedProgress with no
+        // offset. Eliminates the entrance-phase teleport.
+        const jeepF = easedProgress;
         const lookF = Math.min(1, jeepF + 0.005);
 
         let pt0, pt1;
