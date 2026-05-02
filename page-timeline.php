@@ -94,7 +94,7 @@ $tc_timeline_events = array(
         'yearStart' => 1990,
         'title'     => 'The Big Migration North',
         'prose'     => 'Parents split, then a long drive north to Teepee Creek — the Bird Farm. Open prairie, distant trees, a different kind of quiet.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/04/vicious-geese-scaled-e1777693090234.jpg',
         'pos'       => 0.13,
         'bearing'   => 330,  // Turner Valley → Teepee Creek (NNW, big jump)
         'mark'      => array(
@@ -120,7 +120,7 @@ $tc_timeline_events = array(
         'yearStart' => 1993,
         'title'     => 'Back together — LaGlace',
         'prose'     => 'Lived in Edmonton until Mom and Brian found a place together in LaGlace, AB. Hamlet small.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/05/laglace.png',
         'pos'       => 0.21,
         'bearing'   => 310,  // Edmonton → LaGlace (NW)
         'mark'      => array(
@@ -137,7 +137,7 @@ $tc_timeline_events = array(
         'yearStart' => 1994,
         'title'     => 'Building the Pig Farm',
         'prose'     => 'Three years building out a different farm near Teepee Creek. Cattle, crops, chickens, birds, and quite a few pigs.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/05/farm-teepee-e1777693689505.png',
         'pos'       => 0.26,
         'bearing'   => 50,   // LaGlace → Teepee Creek (NE)
     ),
@@ -155,7 +155,7 @@ $tc_timeline_events = array(
         'yearStart' => 1997,
         'title'     => 'Little Smokey — into the trees',
         'prose'     => 'Boreal forest in every direction. Quiet, layered, alive.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/05/little-smoky.jpg',
         'pos'       => 0.345,
         'bearing'   => 135,  // Spirit River → Little Smoky (SE)
     ),
@@ -182,7 +182,7 @@ $tc_timeline_events = array(
         'yearStart' => 2000,
         'title'     => 'Pharmacy in Valleyview',
         'prose'     => 'Summer at the local pharmacy.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/05/rexall-pharmacy.png',
         'pos'       => 0.41,
         'bearing'   => 110,  // GP → Valleyview
     ),
@@ -216,7 +216,7 @@ $tc_timeline_events = array(
         'yearStart' => 2002,
         'title'     => 'Power Engineering — final year',
         'prose'     => 'Final year of college. Power Engineering — the technical career path.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/05/Grande_Prairie_Regional_College_02.jpg',
         'pos'       => 0.51,
     ),
     array(
@@ -233,7 +233,7 @@ $tc_timeline_events = array(
         'yearStart' => 2003,
         'title'     => 'HCS sidelines, kitchen calls',
         'prose'     => 'Insurance won\'t cover power engineers with HCS — career done before it started. The Keg promoted me to Asst Kitchen Manager that fall. Cooking it is.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/05/young-and-reflective.png',
         'pos'       => 0.55,
         'bearing'   => 230,  // Fort McMurray → GP region (SW, return)
     ),
@@ -283,7 +283,7 @@ $tc_timeline_events = array(
         'yearStart' => 2013,
         'title'     => 'Rics Grill',
         'prose'     => 'Started at Rics Grill on Sept 24 — Patience\'s birthday. Stayed until we shut down to transform into Township 71.',
-        'image'     => '',
+        'image'     => '/wp-content/uploads/2026/05/rics-grill-buffet.jpg',
         'pos'       => 0.70,
     ),
     array(
@@ -305,8 +305,8 @@ $tc_timeline_events = array(
         'year'      => '2015',
         'yearStart' => 2015,
         'title'     => 'A new chapter',
-        'prose'     => 'Township 71 closed in June. First time since childhood without farming or working — new dad, taking time, plan in pocket.',
-        'image'     => '',
+        'prose'     => 'Township 71 closed in June. First time since childhood without farming or working — new dad, taking time, plan in pocket. (Photo: starting at Major\'s, second-time dad.)',
+        'image'     => '/wp-content/uploads/2026/05/majors-dad.png',
         'pos'       => 0.74,
     ),
     array(
