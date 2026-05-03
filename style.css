@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.179
+Version: 1.0.180
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6554,5 +6554,112 @@ body.page-passport .entry-content {
     .passport-stamp--ticket {
         width: 100%;
         max-width: 280px;
+    }
+}
+
+
+/* =============================================================
+   PASSPORT — COMMIT 3 polish (era dividers + corner ornaments)
+   ============================================================= */
+
+/* ---- Era divider between spread groups ---------------------- */
+.passport-era-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: min(720px, 80vw);
+    margin: 16px auto 4px;
+    color: var(--pp-gold, #c9a86a);
+    font: 600 13px/1 'Fraunces', serif;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+.passport-era-divider__rule {
+    flex: 1 1 auto;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(201, 168, 106, 0.55) 30%,
+        rgba(201, 168, 106, 0.85) 50%,
+        rgba(201, 168, 106, 0.55) 70%,
+        transparent 100%
+    );
+    box-shadow: 0 0 6px rgba(201, 168, 106, 0.32);
+}
+
+.passport-era-divider__label {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 0 4px;
+}
+
+/* ---- Corner ornaments on each interior page ---------------- */
+.passport-spread > .passport-page--left::before,
+.passport-spread > .passport-page--right::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    width: 28px;
+    height: 28px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><g fill='none' stroke='%238c6d2c' stroke-width='1.2' stroke-linecap='round'><path d='M2 2 L14 2 M2 2 L2 14'/><path d='M5 5 L11 5 M5 5 L5 11'/><circle cx='14' cy='14' r='1.5' fill='%238c6d2c' stroke='none' opacity='0.4'/></g></svg>");
+    background-repeat: no-repeat;
+    background-size: contain;
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.passport-spread > .passport-page--left::before {
+    left: 12px;
+}
+
+.passport-spread > .passport-page--right::before {
+    right: 12px;
+    transform: scaleX(-1);
+}
+
+/* ---- Lightbox cursor cue on stamps ------------------------- */
+/* The sitewide initLightbox auto-wraps stamp images in <a.lightbox-link>.
+   Ensure the wrapping anchor doesn't break stamp layout — anchors are
+   inline by default; force them to follow the stamp's inner geometry. */
+.passport-stamp a.lightbox-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    cursor: zoom-in;
+    text-decoration: none;
+    color: inherit;
+}
+
+.passport-stamp--circular a.lightbox-link {
+    border-radius: 50%;
+    inset: 12px;
+    width: calc(100% - 24px);
+    height: calc(100% - 24px);
+}
+
+.passport-stamp a.lightbox-link img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ---- Mobile tweaks ----------------------------------------- */
+@media (max-width: 768px) {
+    .passport-era-divider {
+        gap: 14px;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        margin: 8px auto 0;
+    }
+    .passport-spread > .passport-page--left::before,
+    .passport-spread > .passport-page--right::before {
+        display: none;
     }
 }

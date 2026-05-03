@@ -171,6 +171,27 @@ $tc_passport_events = array(
 $tc_passport_stamp_variants = array( 'postmark', 'polaroid', 'ticket' );
 
 /**
+ * Era bucket for an event year. Used to render section dividers between
+ * spreads when the era changes. Year strings can be "1990-91",
+ * "Summer 1999", "Nov 2014", etc — extract the first 4-digit number.
+ */
+function tc_passport_era_for( $year_label ) {
+    if ( preg_match( '/(\d{4})/', $year_label, $m ) ) {
+        $y = intval( $m[1] );
+    } else {
+        $y = 9999;
+    }
+    if ( $y < 1990 ) return 'Calgary & The Foothills';
+    if ( $y < 1993 ) return 'The Migration North';
+    if ( $y < 1999 ) return 'Reunion & The Farm';
+    if ( $y < 2003 ) return 'College & The Keg Start';
+    if ( $y < 2013 ) return 'The Keg Years';
+    if ( $y < 2015 ) return 'New Restaurants, New Family';
+    if ( $y < 2025 ) return 'Family, Body, Recovery';
+    return 'Settled';
+}
+
+/**
  * Render one passport page (single event).
  */
 function tc_passport_render_page( $event, $page_num, $side, $stamp_variants ) {
@@ -233,14 +254,28 @@ get_header();
 
     <!-- Interior spreads — 2 events per spread (left + right page), in
          chronological order. Total spreads = ceil(events / 2). Single
-         tail event (odd count) renders alone on the left of its spread. -->
+         tail event (odd count) renders alone on the left of its spread.
+         Era dividers print between spreads when the era changes (Calgary
+         & The Foothills → The Migration North → Reunion & The Farm → ...). -->
     <?php
     $events_total = count( $tc_passport_events );
+    $current_era  = '';
     for ( $i = 0; $i < $events_total; $i += 2 ) :
         $left  = $tc_passport_events[ $i ];
         $right = isset( $tc_passport_events[ $i + 1 ] ) ? $tc_passport_events[ $i + 1 ] : null;
-    ?>
-        <section class="passport-spread" aria-label="Spread <?php echo esc_attr( ( $i / 2 ) + 1 ); ?>">
+        // Era of the spread = era of its left (first) event.
+        $spread_era = tc_passport_era_for( $left['year'] );
+        $era_changed = ( $spread_era !== $current_era );
+        if ( $era_changed ) {
+            $current_era = $spread_era;
+        ?>
+            <aside class="passport-era-divider" aria-label="<?php echo esc_attr( $spread_era ); ?>">
+                <span class="passport-era-divider__rule" aria-hidden="true"></span>
+                <span class="passport-era-divider__label"><?php echo esc_html( $spread_era ); ?></span>
+                <span class="passport-era-divider__rule" aria-hidden="true"></span>
+            </aside>
+        <?php } ?>
+        <section class="passport-spread" aria-label="Spread <?php echo esc_attr( ( $i / 2 ) + 1 ); ?> — <?php echo esc_attr( $spread_era ); ?>">
             <?php tc_passport_render_page( $left,  $i + 1,         'left',  $tc_passport_stamp_variants ); ?>
             <?php if ( $right ) : ?>
                 <?php tc_passport_render_page( $right, $i + 2,     'right', $tc_passport_stamp_variants ); ?>
