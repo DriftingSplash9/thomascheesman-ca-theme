@@ -7,80 +7,220 @@
  * The /passport page is Thomas's life rendered as the interior of a
  * well-traveled passport, opened on a wood table. The reader scrolls
  * vertically through stacked spreads (facing pages); each spread holds
- * a few stamps representing eras / locations / jobs / family beats.
- * Stamps are styled in the language of a real passport — circular ink
- * stamps, rectangular postmarks, ticket stubs paperclipped to the
- * page, hand-written margin notes. Photos sit inside the stamp shapes.
+ * two events as stamps. Single-image events get a circular ink stamp;
+ * multi-image events get a primary circular stamp plus secondary
+ * stamps in mixed styles (rectangular postmark, polaroid, ticket stub)
+ * — like a real passport page where multiple stamps got crammed in
+ * over time.
  *
  * Visual continuity with the existing footer passport: same
  * passport-bg.png wood-table image, same --pp-* color palette
- * (cream paper, navy + gold cover, dark inks). The footer passport
- * sits at the bottom of this page like the same passport closed up
- * after the reader's been through it.
+ * (cream paper, navy + gold cover, dark inks).
  *
- * Replaces the parallax-jeep timeline at /timeline (page-timeline.php).
- * The jeep version is preserved at page-timeline-jeep.php as an
- * archive. Possible BHAG revival.
- *
- * BUILD STATUS: Commit 1 of 4 — foundation scaffold. Wood-table
- * background, passport book centered, all 36 events laid out as
- * page text with ONE prototype stamp at top showing the target
- * format. Stamps + spreads come in commit 2.
+ * BUILD STATUS: Commit 2 of 4 — real stamps + spread groupings.
+ * 50 events laid out across 25 facing-page spreads. Stamp variants
+ * implemented (circular / postmark / polaroid / ticket). PhotoSwipe
+ * lightbox integration + margin doodles + era headers + view
+ * transitions land in commit 3.
  */
 
 /**
- * Passport events.
- *
- * Same data as the jeep timeline (titles, prose, dates, photos, place
- * names, employer logos). For commit 1 the array is duplicated here;
- * a future commit will extract to a shared include so both templates
- * (and the eventual BHAG bridge) read from one source.
+ * Passport events — chronological. Each entry:
+ *   year   display label (string — supports ranges like "1990-91")
+ *   place  short geographic label
+ *   title  page heading
+ *   note   short prose block
+ *   images array of one or more image URLs
+ *            - first image renders as the primary circular ink stamp
+ *            - subsequent images render as secondary stamps in mixed
+ *              styles (postmark, polaroid, ticket) cycling by index
  */
 $tc_passport_events = array(
-    array( 'year' => '1980',         'place' => 'Calgary',           'title' => 'Born',                                 'image' => '/wp-content/uploads/2026/04/a-baby-thomas-scaled.jpg',                       'note'  => 'Look out, Calgary.' ),
-    array( 'year' => '1984',         'place' => 'Turner Valley',     'title' => 'Out of the city',                      'image' => '/wp-content/uploads/2026/04/derrik-turnervalley.jpg',                        'note'  => 'Six years in the foothills — mountains close, oil derricks scattered through the trees.' ),
-    array( 'year' => '1985',         'place' => 'Turner Valley',     'title' => 'Diagnosed — Hajdu-Cheney',             'image' => '/wp-content/uploads/2026/04/hands-and-xray-scaled.png',                      'note'  => 'A bump in the road, before the road had even straightened out.' ),
-    array( 'year' => '1990–91',      'place' => 'Teepee Creek',      'title' => 'The Big Migration North',              'image' => '/wp-content/uploads/2026/04/vicious-geese-scaled-e1777693090234.jpg',        'note'  => 'A long drive north — open prairie, distant trees, a different kind of quiet.' ),
-    array( 'year' => '1991–93',      'place' => 'Edmonton',          'title' => 'First city',                           'image' => '/wp-content/uploads/2026/04/edmonton-skyline.jpg',                           'note'  => 'Mom remarried; a year later, a break. First time living in a real city.' ),
-    array( 'year' => '1993–94',      'place' => 'LaGlace',           'title' => 'Back together',                        'image' => '/wp-content/uploads/2026/05/laglace.png',                                    'note'  => 'Mom and Brian found a place together. Hamlet small.' ),
-    array( 'year' => '1994–97',      'place' => 'Teepee Creek',      'title' => 'Building the Pig Farm',                'image' => '/wp-content/uploads/2026/05/farm-teepee-e1777693689505.png',                 'note'  => 'Three years building it out. Cattle, crops, chickens, birds, and quite a few pigs.' ),
-    array( 'year' => '1997',         'place' => 'Spirit River',      'title' => 'Briefly',                              'image' => '',                                                                            'note'  => 'A month, then on to Little Smokey.' ),
-    array( 'year' => '1997–99',      'place' => 'Little Smokey',     'title' => 'Into the trees',                       'image' => '/wp-content/uploads/2026/05/little-smoky.jpg',                               'note'  => 'Boreal forest in every direction. Quiet, layered, alive.' ),
-    array( 'year' => 'Summer 1999',  'place' => 'Valleyview',        'title' => 'Horizon — server',                     'image' => '',                                                                            'note'  => 'Serving alongside Mom, brother Christopher, Uncle Dave (Brian\'s brother).' ),
-    array( 'year' => 'Fall 1999',    'place' => 'Grande Prairie',    'title' => 'College',                              'image' => '/wp-content/uploads/2026/04/Grande_Prairie_Regional_College_02-scaled.jpg', 'note'  => 'Graduated. Campus housing, late nights.' ),
-    array( 'year' => 'Summer 2000',  'place' => 'Valleyview',        'title' => 'Pharmacy',                             'image' => '/wp-content/uploads/2026/05/rexall-pharmacy.png',                            'note'  => 'Summer at the local Rexall.' ),
-    array( 'year' => 'Summer 2001',  'place' => 'Valleyview',        'title' => 'Town crew',                            'image' => '',                                                                            'note'  => 'Worked for the Town of Valleyview.' ),
-    array( 'year' => 'Winter 2002',  'place' => 'Grande Prairie',    'title' => 'The Keg — part-time',                  'image' => '',                                                                            'note'  => 'Part-time while finishing college.' ),
-    array( 'year' => '2002',         'place' => 'Grande Prairie',    'title' => 'Met Melanie',                          'image' => '/wp-content/uploads/2026/04/mel-18-yrs-old-scaled-e1777577734243.jpg',      'note'  => 'Started in a restaurant.' ),
-    array( 'year' => '2002–03',      'place' => 'Grande Prairie',    'title' => 'Power Engineering — final year',       'image' => '/wp-content/uploads/2026/05/Grande_Prairie_Regional_College_02.jpg',        'note'  => 'The technical career path.' ),
-    array( 'year' => 'Winter 2003',  'place' => 'Fort McMurray',     'title' => 'Petro-Canada SAGD practicum',          'image' => '/wp-content/uploads/2026/04/sagd-ft-mac.jpg',                                'note'  => 'One month at the SAGD plant. Wish I had pictures.' ),
-    array( 'year' => '2003',         'place' => 'Grande Prairie',    'title' => 'HCS sidelines, kitchen calls',         'image' => '/wp-content/uploads/2026/05/young-and-reflective.png',                       'note'  => 'Insurance won\'t cover power engineers with HCS. The Keg promoted me to Asst Kitchen Manager that fall. Cooking it is.' ),
-    array( 'year' => '2003–13',      'place' => 'The Keg',           'title' => 'Getting a Groove On',                  'image' => '/wp-content/uploads/2026/04/chef-presentation.jpg',                          'note'  => 'Twelve years grinding through Keg kitchens — line cook to senior, paying off student loans, building the chops.' ),
-    array( 'year' => '2009',         'place' => 'The Keg',           'title' => 'Movember \'Stache',                    'image' => '/wp-content/uploads/2026/05/chef-thomas.png',                                'note'  => 'November tradition — chef hat on, mustache up.' ),
-    array( 'year' => '2010–13',      'place' => 'Grande Prairie',    'title' => 'Journeyman chef',                      'image' => '/wp-content/uploads/2024/09/me.jpg',                                         'note'  => 'Earned the journeyman chef ticket.' ),
-    array( 'year' => '2011–13',      'place' => 'The Keg',           'title' => 'Mel, again',                           'image' => '/wp-content/uploads/2026/04/Hnging-at-the-keg.jpg',                          'note'  => 'Reconnected. Cohabitation began late 2012.' ),
-    array( 'year' => '2013',         'place' => 'Grande Prairie',    'title' => 'OMG, a baby (Patience)',               'image' => '/wp-content/uploads/2026/04/newborn-patience.jpg',                           'note'  => 'Quick — get shit together. Bought a house. Stepped up to head chef.' ),
-    array( 'year' => 'Sept 2013',    'place' => 'Grande Prairie',    'title' => 'Rics Grill',                           'image' => '/wp-content/uploads/2026/05/rics-grill-buffet.jpg',                          'note'  => 'Started Sept 24 — Patience\'s birthday. Stayed until we shut down to transform into Township 71.' ),
-    array( 'year' => 'Nov 2014',     'place' => 'Grande Prairie',    'title' => 'Township 71',                          'image' => '/wp-content/uploads/2026/04/t71logo.png',                                    'note'  => 'Opened Township 71. Taught culinary courses on the side.' ),
-    array( 'year' => '2015',         'place' => 'Grande Prairie',    'title' => 'A new chapter',                        'image' => '/wp-content/uploads/2026/05/majors-dad.png',                                 'note'  => 'T71 closed in June. First time since childhood without farming or working — new dad, taking time, plan in pocket. (Photo: Major\'s, second-time dad.)' ),
-    array( 'year' => 'June 2015',    'place' => 'Grande Prairie',    'title' => 'Daniel',                               'image' => '/wp-content/uploads/2026/04/baby-daniel.jpg',                                'note'  => 'Daniel born.' ),
-    array( 'year' => '2015',         'place' => 'Grande Prairie',    'title' => 'Grand Parents visiting',               'image' => '/wp-content/uploads/2026/04/mom-and-brian.jpg',                              'note'  => 'Mom and Brian came to help with the new arrival.' ),
-    array( 'year' => '2015–21',      'place' => 'Major\'s / Tractor Jack\'s', 'title' => 'Long stretch in the kitchen', 'image' => '/wp-content/uploads/2026/05/tractor-jacks-logo.png',                         'note'  => 'Same kitchen, two front-of-house personalities. Anchored 2015–19, then a little here and there to 2021.' ),
-    array( 'year' => '2017',         'place' => 'Grande Prairie',    'title' => 'Faith',                                'image' => '/wp-content/uploads/2024/10/20180524_163145-scaled.jpg',                     'note'  => 'Faith born. Kitchen work continued — body began to argue.' ),
-    array( 'year' => '2019',         'place' => 'Grande Prairie',    'title' => 'Permanent disability',                 'image' => '/wp-content/uploads/2026/04/foot-recovery.jpg',                              'note'  => 'Chronic, accumulated.' ),
-    array( 'year' => '2020',         'place' => 'Grande Prairie',    'title' => 'Pandemic',                             'image' => '/wp-content/uploads/2026/04/covid-xmas-scaled.jpg',                          'note'  => 'Empty streets, masks, the whole thing.' ),
-    array( 'year' => '2022',         'place' => 'Grande Prairie',    'title' => 'Spinal fusion',                        'image' => '/wp-content/uploads/2026/04/awake-from-surgery-scaled.jpg',                  'note'  => 'Hardware in. A long recovery, and the slow rebuild.' ),
-    array( 'year' => '2023–24',      'place' => 'Grande Prairie',    'title' => 'Coming back',                          'image' => '/wp-content/uploads/2026/04/walk-after-surgery-scaled.jpg',                  'note'  => 'Return toward normalcy.' ),
-    array( 'year' => '2025',         'place' => 'Grande Prairie',    'title' => 'Settled, twice over',                  'image' => '/wp-content/uploads/2026/04/royal-chariot-scaled.jpg',                       'note'  => 'New roof, furnace, central air, water heater. A 2022 Kia Carnival in the driveway. Patience earned the Award for Excellence again — top of the schoolboard, twice now.' ),
-    array( 'year' => '2026',         'place' => 'Grande Prairie',    'title' => 'Into the ring',                        'image' => '/wp-content/uploads/2026/04/daniel-ready-to-box-scaled.jpg',                 'note'  => 'Daniel started boxing. A couple of months later, Faith laced up too.' ),
+    array( 'year' => '1980',         'place' => 'Calgary',                     'title' => 'Born',                                'note' => 'Look out, Calgary.',
+        'images' => array(
+            '/wp-content/uploads/2026/04/a-baby-thomas-scaled.jpg',
+            '/wp-content/uploads/2026/05/grandpa-lakeman-1.jpg',
+        )),
+    array( 'year' => '1982',         'place' => 'Turner Valley',               'title' => 'Laundry day',                         'note' => 'I tried — but a nap was in order.',
+        'images' => array( '/wp-content/uploads/2026/05/Life-is-hard-already-scaled.png' )),
+    array( 'year' => '1982',         'place' => 'Turner Valley',               'title' => 'Auntie',                              'note' => 'Christopher and I crawling on Auntie Eleanor.',
+        'images' => array( '/wp-content/uploads/2026/05/keg-2002-1.jpg' )),
+    array( 'year' => '1982',         'place' => 'Calgary',                     'title' => 'Mom napping',                         'note' => 'Mom was trying to nap. I wasn\'t letting her.',
+        'images' => array( '/wp-content/uploads/2026/05/me-and-mom-calgary.jpg' )),
+    array( 'year' => '1982',         'place' => 'Calgary',                     'title' => 'With Father and Chris',               'note' => 'Father, Thomas, and Christopher.',
+        'images' => array( '/wp-content/uploads/2026/05/father-and-2yr-old-me.jpg' )),
+    array( 'year' => '1983',         'place' => 'Calgary',                     'title' => 'Granny visits',                       'note' => 'Always glad to help, even then.',
+        'images' => array( '/wp-content/uploads/2026/05/Granny-Docherty.jpg' )),
+    array( 'year' => '1984',         'place' => 'Turner Valley',               'title' => 'Out of the city',                     'note' => 'Six years in the foothills — mountains close, oil derricks scattered through the trees.',
+        'images' => array( '/wp-content/uploads/2026/04/derrik-turnervalley.jpg' )),
+    array( 'year' => '1985',         'place' => 'Turner Valley',               'title' => 'Diagnosed — Hajdu-Cheney',            'note' => 'A bump in the road, before the road had even straightened out.',
+        'images' => array( '/wp-content/uploads/2026/04/hands-and-xray-scaled.png' )),
+    array( 'year' => '1986',         'place' => 'Turner Valley',               'title' => 'Kindergarten class photo',            'note' => 'Class of 1986/87.',
+        'images' => array( '/wp-content/uploads/2026/05/my-kindergarten-class.png' )),
+    array( 'year' => '1986',         'place' => 'Turner Valley',               'title' => 'Learning to skate',                   'note' => 'One of my first memories. Forward was OK; turning and stopping were horrible. My ankles had limits other kids didn\'t. I just did things my way.',
+        'images' => array( '/wp-content/uploads/2026/05/me-skating-in-turner-valley.png' )),
+    array( 'year' => '1986',         'place' => 'Turner Valley',               'title' => 'In the sun with Grandma Lakeman',     'note' => 'I can tell it\'s Turner Valley by the fence — I remember that fence well.',
+        'images' => array( '/wp-content/uploads/2026/05/gramma-lakeman-in-turner-valley.jpg' )),
+    array( 'year' => '1988',         'place' => 'Turner Valley',               'title' => '8th birthday',                        'note' => 'Happy birthday, Thomas.',
+        'images' => array( '/wp-content/uploads/2026/05/my-birthday-8th-I-think-scaled.png' )),
+    array( 'year' => '1980',         'place' => 'Turner Valley',               'title' => 'Don\'t mess with my family',          'note' => 'Mom won competitions for being the strongest in her weight class.',
+        'images' => array(
+            '/wp-content/uploads/2026/05/mom-competing.jpg',
+            '/wp-content/uploads/2026/05/mom-body-built-with-kids-in-turner-valley.jpg',
+        )),
+    array( 'year' => '1990-91',      'place' => 'Teepee Creek',                'title' => 'The Big Migration North',             'note' => 'A long drive north — open prairie, distant trees, a different kind of quiet.',
+        'images' => array(
+            '/wp-content/uploads/2026/04/vicious-geese-scaled-e1777693090234.jpg',
+            '/wp-content/uploads/2026/05/me-in-teepee-halloween.png',
+            '/wp-content/uploads/2026/05/teepee-with-mom.jpg',
+        )),
+    array( 'year' => '1990',         'place' => 'Teepee Creek',                'title' => 'The double wedding',                  'note' => 'Brian and Dave proposed around the same time. They had a double wedding.',
+        'images' => array( '/wp-content/uploads/2026/05/mom-and-brians-wedding-day.jpg' )),
+    array( 'year' => '1991-93',      'place' => 'Edmonton',                    'title' => 'First city',                          'note' => 'Mom remarried; a year later, a break. First time living in a real city.',
+        'images' => array( '/wp-content/uploads/2026/04/edmonton-skyline.jpg' )),
+    array( 'year' => '1993-94',      'place' => 'LaGlace',                     'title' => 'Back together',                       'note' => 'Mom and Brian found a place together. Hamlet small.',
+        'images' => array( '/wp-content/uploads/2026/05/laglace.png' )),
+    array( 'year' => '1994-97',      'place' => 'Teepee Creek / Sexsmith',     'title' => 'A farm, a barn, and corrals',         'note' => 'Three years building it out. Cattle, chickens, and pigs.',
+        'images' => array( '/wp-content/uploads/2026/05/farm-teepee-Creek-.png' )),
+    array( 'year' => '1997-99',      'place' => 'Little Smokey',               'title' => 'Into the trees',                      'note' => 'Boreal forest in every direction. Quiet, layered, alive.',
+        'images' => array( '/wp-content/uploads/2026/05/little-smoky.jpg' )),
+    array( 'year' => 'Summer 1999',  'place' => 'Valleyview',                  'title' => 'Graduated high school',               'note' => 'Hillside Jr/Sr High.',
+        'images' => array( '/wp-content/uploads/2026/05/graduation.png' )),
+    array( 'year' => 'Fall 1999',    'place' => 'Grande Prairie',              'title' => 'College — Swan City',                 'note' => 'Graduated. Campus housing, late nights. Welcome to Swan City.',
+        'images' => array(
+            '/wp-content/uploads/2026/04/Grande_Prairie_Regional_College_02-scaled.jpg',
+            '/wp-content/uploads/2026/05/swan-1.jpg',
+        )),
+    array( 'year' => 'Summer 2000',  'place' => 'Valleyview',                  'title' => 'Pharmacy',                            'note' => 'Summer at the local Rexall.',
+        'images' => array( '/wp-content/uploads/2026/05/rexall-pharmacy.png' )),
+    array( 'year' => '2001',         'place' => 'Grande Prairie',              'title' => 'Chef Darrel Johanson',                'note' => 'I owe a lot of my culinary education to this man — the great Chef Darrel.',
+        'images' => array( '/wp-content/uploads/2026/05/Chef-Darrel-the-Great-Johanson.png' )),
+    array( 'year' => '2001',         'place' => 'Grande Prairie',              'title' => 'Met Melanie',                         'note' => 'Started in a restaurant.',
+        'images' => array( '/wp-content/uploads/2026/04/mel-18-yrs-old-scaled-e1777577734243.jpg' )),
+    array( 'year' => 'Winter 2002',  'place' => 'Grande Prairie',              'title' => 'The Keg — part-time',                 'note' => 'Part-time while finishing college.',
+        'images' => array( '/wp-content/uploads/2026/05/young-and-reflective.png' )),
+    array( 'year' => '2002-03',      'place' => 'Grande Prairie',              'title' => 'Power Engineering — final year',      'note' => 'The technical career path.',
+        'images' => array( '/wp-content/uploads/2026/05/Grande_Prairie_Regional_College_02.jpg' )),
+    array( 'year' => 'Winter 2003',  'place' => 'Fort McMurray',               'title' => 'Petro-Canada SAGD practicum',         'note' => 'One month at the SAGD plant. Wish I had pictures.',
+        'images' => array( '/wp-content/uploads/2026/04/sagd-ft-mac.jpg' )),
+    array( 'year' => '2003',         'place' => 'Grande Prairie',              'title' => 'HCS sidelines, kitchen calls',        'note' => 'Insurance won\'t cover power engineers with HCS. The Keg promoted me to Asst Kitchen Manager that fall. Cooking it is.',
+        'images' => array(
+            '/wp-content/uploads/2026/05/young-and-reflective.png',
+            '/wp-content/uploads/2026/05/keg-2002-e1777754187492.jpg',
+        )),
+    array( 'year' => '2003-13',      'place' => 'The Keg',                     'title' => 'Getting a Groove On',                 'note' => 'Twelve years grinding through Keg kitchens — line cook to senior, paying off student loans, building the chops.',
+        'images' => array(
+            '/wp-content/uploads/2026/04/chef-presentation.jpg',
+            '/wp-content/uploads/2026/05/keg-cup.png',
+            '/wp-content/uploads/2026/05/ian-and-micheal.jpg',
+            '/wp-content/uploads/2026/05/keg-2002-e1777754187492.jpg',
+        )),
+    array( 'year' => '2006',         'place' => 'Grande Prairie',              'title' => 'Family united again',                 'note' => 'Mom and Dad moved up to GP. Chris came up from Vancouver. Dave, Shannon, Marlee, Kristina, and Clarisa visited. What a reunion.',
+        'images' => array(
+            '/wp-content/uploads/2026/05/gp-with-family.jpg',
+            '/wp-content/uploads/2026/05/gp-chill.png',
+            '/wp-content/uploads/2026/05/brian-and-dave-gp-years.jpg',
+            '/wp-content/uploads/2026/05/cute-cousins.jpg',
+        )),
+    array( 'year' => '2007',         'place' => 'Calgary',                     'title' => 'Visiting Father',                     'note' => 'JP, Chris, and Thomas — goofing around as usual.',
+        'images' => array( '/wp-content/uploads/2026/05/me-and-the-boys.jpg' )),
+    array( 'year' => '2009',         'place' => 'The Keg',                     'title' => 'Movember \'Stache',                   'note' => 'November tradition — chef hat on, mustache up.',
+        'images' => array( '/wp-content/uploads/2026/05/chef-thomas.png' )),
+    array( 'year' => '2010',         'place' => 'The Keg',                     'title' => 'Movember \'Stache, year two',         'note' => 'Same tradition, another year.',
+        'images' => array( '/wp-content/uploads/2026/05/Chef-Thomasc-.png' )),
+    array( 'year' => '2010-13',      'place' => 'Grande Prairie',              'title' => 'Journeyman chef',                     'note' => 'Earned the journeyman chef ticket.',
+        'images' => array( '/wp-content/uploads/2024/09/me.jpg' )),
+    array( 'year' => '2011-13',      'place' => 'The Keg',                     'title' => 'Mel, again',                          'note' => 'Reconnected. Cohabitation began late 2012.',
+        'images' => array( '/wp-content/uploads/2026/04/Hnging-at-the-keg.jpg' )),
+    array( 'year' => '2013',         'place' => 'Grande Prairie',              'title' => 'OMG, a baby (Patience)',              'note' => 'Quick — get shit together. Bought a house. Stepped up to head chef.',
+        'images' => array( '/wp-content/uploads/2026/04/newborn-patience.jpg' )),
+    array( 'year' => 'Sept 2013',    'place' => 'Grande Prairie',              'title' => 'Rics Grill',                          'note' => 'Started Sept 24 — Patience\'s birthday. Stayed until we shut down to transform into Township 71.',
+        'images' => array( '/wp-content/uploads/2026/05/rics-grill-buffet.jpg' )),
+    array( 'year' => 'Nov 2014',     'place' => 'Grande Prairie',              'title' => 'Township 71',                         'note' => 'Opened Township 71. Taught culinary courses on the side.',
+        'images' => array( '/wp-content/uploads/2026/04/t71logo.png' )),
+    array( 'year' => '2015',         'place' => 'Grande Prairie',              'title' => 'A new chapter',                       'note' => 'T71 closed in June. First time since childhood without farming or working — new dad, taking time, plan in pocket.',
+        'images' => array( '/wp-content/uploads/2026/05/majors-dad.png' )),
+    array( 'year' => 'June 2015',    'place' => 'Grande Prairie',              'title' => 'Daniel',                              'note' => 'Daniel born.',
+        'images' => array( '/wp-content/uploads/2026/04/baby-daniel.jpg' )),
+    array( 'year' => '2015',         'place' => 'Grande Prairie',              'title' => 'Grand Parents visiting',              'note' => 'Mom and Brian came to help with the new arrival.',
+        'images' => array( '/wp-content/uploads/2026/04/mom-and-brian.jpg' )),
+    array( 'year' => '2015-21',      'place' => 'Major\'s / Tractor Jack\'s',  'title' => 'Long stretch in the kitchen',         'note' => 'Same kitchen, two front-of-house personalities. Anchored 2015-19, then a little here and there to 2021.',
+        'images' => array( '/wp-content/uploads/2026/05/tractor-jacks-logo.png' )),
+    array( 'year' => '2016',         'place' => 'Teepee Creek',                'title' => 'The wedding',                         'note' => 'Married in Teepee Creek.',
+        'images' => array( '/wp-content/uploads/2026/05/DSC0256-scaled.jpg' )),
+    array( 'year' => '2017',         'place' => 'Grande Prairie',              'title' => 'Faith',                               'note' => 'Faith born. Kitchen work continued — body began to argue.',
+        'images' => array( '/wp-content/uploads/2024/10/20180524_163145-scaled.jpg' )),
+    array( 'year' => '2019',         'place' => 'Grande Prairie',              'title' => 'Permanent disability',                'note' => 'Chronic, accumulated.',
+        'images' => array( '/wp-content/uploads/2026/04/foot-recovery.jpg' )),
+    array( 'year' => '2020',         'place' => 'Grande Prairie',              'title' => 'Pandemic',                            'note' => 'Empty streets, masks, the whole thing.',
+        'images' => array( '/wp-content/uploads/2026/04/covid-xmas-scaled.jpg' )),
+    array( 'year' => '2022',         'place' => 'Grande Prairie',              'title' => 'Spinal fusion',                       'note' => 'Hardware in. A long recovery, and the slow rebuild.',
+        'images' => array( '/wp-content/uploads/2026/04/awake-from-surgery-scaled.jpg' )),
+    array( 'year' => '2023-24',      'place' => 'Grande Prairie',              'title' => 'Coming back',                         'note' => 'Return toward normalcy.',
+        'images' => array( '/wp-content/uploads/2026/04/walk-after-surgery-scaled.jpg' )),
+    array( 'year' => '2025',         'place' => 'Grande Prairie',              'title' => 'Settled, twice over',                 'note' => 'New roof, furnace, central air, water heater. A 2022 Kia Carnival in the driveway. Patience earned the Award for Excellence again — top of the schoolboard, twice now.',
+        'images' => array( '/wp-content/uploads/2026/04/royal-chariot-scaled.jpg' )),
+    array( 'year' => '2026',         'place' => 'Grande Prairie',              'title' => 'Into the ring',                       'note' => 'Daniel started boxing. A couple of months later, Faith laced up too.',
+        'images' => array( '/wp-content/uploads/2026/04/daniel-ready-to-box-scaled.jpg' )),
 );
 
-get_header(); ?>
+/**
+ * Stamp variant cycle for SECONDARY images on a multi-image event
+ * (the primary image always renders as a circular ink stamp).
+ */
+$tc_passport_stamp_variants = array( 'postmark', 'polaroid', 'ticket' );
+
+/**
+ * Render one passport page (single event).
+ */
+function tc_passport_render_page( $event, $page_num, $side, $stamp_variants ) {
+    if ( ! $event ) {
+        return;
+    }
+    $images       = isset( $event['images'] ) ? $event['images'] : array();
+    $primary_img  = ! empty( $images[0] ) ? $images[0] : '';
+    $extra_images = array_slice( $images, 1 );
+    ?>
+    <article class="passport-page passport-page--<?php echo esc_attr( $side ); ?>">
+        <div class="passport-page__num"><?php echo esc_html( $page_num ); ?></div>
+        <header class="passport-page__heading">
+            <h2 class="passport-page__title"><?php echo esc_html( $event['title'] ); ?></h2>
+            <p class="passport-page__meta">
+                <span class="passport-page__place"><?php echo esc_html( $event['place'] ); ?></span>
+                <span class="passport-page__year"><?php echo esc_html( $event['year'] ); ?></span>
+            </p>
+        </header>
+
+        <div class="passport-stamps passport-stamps--count-<?php echo count( $images ); ?>">
+            <?php if ( $primary_img ) : ?>
+                <div class="passport-stamp passport-stamp--circular">
+                    <img class="passport-stamp__photo" src="<?php echo esc_url( $primary_img ); ?>" alt="" loading="lazy" />
+                    <div class="passport-stamp__ring" aria-hidden="true"></div>
+                    <span class="passport-stamp__place"><?php echo esc_html( $event['place'] ); ?></span>
+                    <span class="passport-stamp__year"><?php echo esc_html( $event['year'] ); ?></span>
+                </div>
+            <?php endif; ?>
+
+            <?php foreach ( $extra_images as $idx => $img_url ) : ?>
+                <?php $variant = $stamp_variants[ $idx % count( $stamp_variants ) ]; ?>
+                <div class="passport-stamp passport-stamp--<?php echo esc_attr( $variant ); ?>">
+                    <img class="passport-stamp__photo" src="<?php echo esc_url( $img_url ); ?>" alt="" loading="lazy" />
+                    <span class="passport-stamp__caption"><?php echo esc_html( $event['place'] ); ?> · <?php echo esc_html( $event['year'] ); ?></span>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <p class="passport-page__note"><?php echo esc_html( $event['note'] ); ?></p>
+    </article>
+    <?php
+}
+
+get_header();
+?>
 
 <main id="primary" class="site-main passport-page" data-passport-root>
 
-    <!-- Cover / title spread — the front of the passport, before the
-         interior pages begin. -->
+    <!-- Cover spread — front of the passport, before the interior pages -->
     <section class="passport-spread passport-spread--cover" aria-label="Passport — title spread">
         <div class="passport-cover">
             <div class="passport-cover__crest" aria-hidden="true">TC</div>
@@ -91,61 +231,24 @@ get_header(); ?>
         </div>
     </section>
 
-    <!-- COMMIT 1 PROTOTYPE — single sample stamp showing the target
-         visual format. The full set of stamps + spreads ships in
-         commit 2. For now, all 36 events are listed below in plain
-         text on placeholder pages so the layout reads end-to-end. -->
-    <section class="passport-spread" aria-label="Sample stamp">
-        <div class="passport-page passport-page--left">
-            <div class="passport-page__num">1</div>
-            <div class="passport-page__header">Alberta — 1980</div>
-
-            <?php $sample = $tc_passport_events[0]; ?>
-            <article class="passport-stamp passport-stamp--circular">
-                <?php if ( ! empty( $sample['image'] ) ) : ?>
-                    <img class="passport-stamp__photo" src="<?php echo esc_url( $sample['image'] ); ?>" alt="" loading="lazy" />
-                <?php endif; ?>
-                <div class="passport-stamp__ring">
-                    <span class="passport-stamp__place"><?php echo esc_html( $sample['place'] ); ?></span>
-                    <span class="passport-stamp__year"><?php echo esc_html( $sample['year'] ); ?></span>
-                </div>
-                <div class="passport-stamp__title"><?php echo esc_html( $sample['title'] ); ?></div>
-            </article>
-
-            <p class="passport-page__note">
-                <?php echo esc_html( $sample['note'] ); ?>
-            </p>
-        </div>
-
-        <div class="passport-page passport-page--right">
-            <div class="passport-page__num">2</div>
-            <div class="passport-page__header">Sample stamp · prototype</div>
-            <p class="passport-page__note passport-page__note--muted">
-                The circular stamp on the facing page is a prototype for the
-                stamp format the rest of the timeline will use. Photo inside
-                a ringed border, place + year on the ring, title and note
-                below. The full set of stamps lands in the next commit.
-            </p>
-        </div>
-    </section>
-
-    <!-- COMMIT 1 PLACEHOLDER — every event in the array rendered as
-         a plain page-text item so the layout's height and pacing are
-         legible end-to-end. Each becomes a real stamp in commit 2. -->
-    <section class="passport-spread passport-spread--placeholder" aria-label="All events (commit 1 placeholder)">
-        <div class="passport-page passport-page--full">
-            <div class="passport-page__header">All entries — commit 1 placeholder</div>
-            <ol class="passport-placeholder-list">
-                <?php foreach ( $tc_passport_events as $idx => $e ) : ?>
-                    <li class="passport-placeholder-list__item">
-                        <span class="passport-placeholder-list__year"><?php echo esc_html( $e['year'] ); ?></span>
-                        <span class="passport-placeholder-list__place"><?php echo esc_html( $e['place'] ); ?></span>
-                        <span class="passport-placeholder-list__title"><?php echo esc_html( $e['title'] ); ?></span>
-                    </li>
-                <?php endforeach; ?>
-            </ol>
-        </div>
-    </section>
+    <!-- Interior spreads — 2 events per spread (left + right page), in
+         chronological order. Total spreads = ceil(events / 2). Single
+         tail event (odd count) renders alone on the left of its spread. -->
+    <?php
+    $events_total = count( $tc_passport_events );
+    for ( $i = 0; $i < $events_total; $i += 2 ) :
+        $left  = $tc_passport_events[ $i ];
+        $right = isset( $tc_passport_events[ $i + 1 ] ) ? $tc_passport_events[ $i + 1 ] : null;
+    ?>
+        <section class="passport-spread" aria-label="Spread <?php echo esc_attr( ( $i / 2 ) + 1 ); ?>">
+            <?php tc_passport_render_page( $left,  $i + 1,         'left',  $tc_passport_stamp_variants ); ?>
+            <?php if ( $right ) : ?>
+                <?php tc_passport_render_page( $right, $i + 2,     'right', $tc_passport_stamp_variants ); ?>
+            <?php else : ?>
+                <div class="passport-page passport-page--right passport-page--blank" aria-hidden="true"></div>
+            <?php endif; ?>
+        </section>
+    <?php endfor; ?>
 
 </main>
 
