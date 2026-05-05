@@ -110,6 +110,7 @@
                 <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/timeline' ) ); ?>">Timeline</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/passport' ) ); ?>">Passport</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/scrapbook' ) ); ?>">Scrapbook</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">HCS</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/journal' ) ); ?>">My Ramblings</a></li>
