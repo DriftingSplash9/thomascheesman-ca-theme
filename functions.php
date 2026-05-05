@@ -127,6 +127,24 @@ function tc_ventures_enqueue_scripts() {
         'siteUrl'  => home_url(),
         'themeUrl' => get_stylesheet_directory_uri(),
     ));
+
+    // Scrapbook page — page-scrapbook.php / slug `/scrapbook`.
+    //
+    // Loaded only on the scrapbook page so other pages don't pay the
+    // bytes. The CSS depends on `astra-child-style` so its rules can
+    // override sitewide defaults. The version is read from style.css's
+    // header so a single bump there cache-busts this file too.
+    //
+    // Future commits (C2..C7) will add scrapbook.js here for the
+    // page-flip controller + decade-tab nav + easter-egg JS.
+    if ( is_page( 'scrapbook' ) ) {
+        wp_enqueue_style(
+            'tc-scrapbook',
+            get_stylesheet_directory_uri() . '/assets/css/scrapbook.css',
+            array( 'astra-child-style' ),
+            wp_get_theme()->get( 'Version' )
+        );
+    }
 }
 add_action( 'wp_enqueue_scripts', 'tc_ventures_enqueue_scripts' );
 

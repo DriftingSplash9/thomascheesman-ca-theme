@@ -1,0 +1,113 @@
+/* ============================================
+   SCRAPBOOK PAGE  (page-scrapbook.php / slug = /scrapbook)
+   ============================================
+   The /scrapbook page presents Thomas's life as the interior of a
+   scrapbook on a wooden desk, navigated by page-flip through facing-
+   page spreads with decade tabs for jumping between eras.
+
+   Design system + visual prototype: ornaments-demo.html on Thomas's
+   Desktop. Full spec: timeline-build-log/V0.07.md.
+
+   This file is loaded ONLY when the queried page is `scrapbook` (see
+   the conditional enqueue in functions.php), so other pages don't
+   pay the bytes.
+
+   BUILD STATUS — C1 (shell only):
+     - Wooden-desk surface as full-viewport fixed background
+     - .scrapbook-book reserved as the 3D perspective container that
+       future .scrapbook-page elements will mount into in C2
+     - No page-flip mechanic, no events, no ornaments yet
+   ============================================ */
+
+/* ============================================
+   SURFACE — the wooden desk + painted-on open scrapbook
+   ============================================ */
+
+.scrapbook-page {
+    /* Astra's <main> usually has horizontal padding from .ast-container.
+       Strip everything here so the desk surface reads edge-to-edge. */
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+
+    /* Dark wood fallback while the surface image is loading. Matches
+       the dominant tone of blank-scrab-book.png so the swap from
+       fallback to image is invisible. */
+    background-color: #2a1a0d;
+
+    /* The surface art shows the wooden desk WITH the open scrapbook
+       painted on it. Single image = both the desk grain and the empty
+       book pages. Filename intentionally misspells "scrap" as "scrab"
+       — preserve verbatim, see V0.07 PARKED-URL note. */
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/blank-scrab-book.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+    position: relative;
+    overflow: hidden; /* clip any future overflows from page-flip 3D */
+}
+
+/* ============================================
+   STAGE — viewport-sized wrapper that hosts the book
+   ============================================ */
+
+.scrapbook-stage {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* ============================================
+   BOOK — 3D perspective parent for the page-flip
+   ============================================
+   Children .scrapbook-page elements (added in C2) will hinge on
+   either the left or right edge and rotateY through 0..-180deg to
+   simulate the page turning over. preserve-3d on this element is
+   what gives those rotations real depth.
+
+   The book overlays the painted-on book in the surface image. The
+   width / aspect-ratio / position values below are first-pass
+   approximations; C2 will tune them to align cleanly with the
+   painted spread once real pages exist to eyeball against. */
+
+.scrapbook-book {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    /* Roughly book-shape; tune in C2. */
+    width: min(70vw, 1100px);
+    aspect-ratio: 3 / 2;
+
+    /* Per V0.07 architecture spec. */
+    perspective: 1500px;
+    transform-style: preserve-3d;
+
+    /* Faint outline so we can see the reserved space during C1. Remove
+       (or bake into the page-edge styling) in C2. */
+    outline: 1px dashed rgba(255, 255, 255, 0.08);
+    outline-offset: -1px;
+}
+
+/* ============================================
+   MOBILE FALLBACK PLACEHOLDER
+   ============================================
+   Page-flip 3D is desktop-only. Mobile gets a stripped-down vertical
+   scroll fallback (V0.07 todo #6 — Phase 2). For now we just keep
+   the surface image readable on small screens. */
+
+@media (max-width: 767px) {
+    .scrapbook-page {
+        /* fixed bg-attachment is jittery on iOS — let it scroll with
+           the page on small screens. */
+        background-attachment: scroll;
+    }
+
+    .scrapbook-book {
+        width: 92vw;
+    }
+}
