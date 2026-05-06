@@ -154,6 +154,32 @@
     object-position: center center;
     pointer-events: none;
     user-select: none;
+
+    /* Soft horizontal fade on the left/right edges so the leather
+       binder dissolves into the table backdrop instead of meeting
+       it at a hard photographic seam. The fade applies to the img
+       alpha; everything layered on top (drop-shadow, etc.) inherits
+       the partial alpha at the edges. */
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 7%,
+        black 93%,
+        transparent 100%
+    );
+            mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 7%,
+        black 93%,
+        transparent 100%
+    );
+
+    /* Directional drop shadow — the candle on the left of the
+       table backdrop implies a light source upper-left, so the
+       book casts to lower-right. Anchors the book physically to
+       the desk. */
+    filter: drop-shadow(10px 22px 28px rgba(0, 0, 0, 0.55));
 }
 
 /* ============================================
