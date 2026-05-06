@@ -4,14 +4,15 @@
  * Loaded only on /scrapbook (page-scrapbook.php), conditionally
  * enqueued by tc_ventures_enqueue_scripts() in functions.php.
  *
- * BUILD STATUS — C2a.2:
+ * BUILD STATUS — C2a.5:
  *   - Scroll-driven crossfade across the 5 intro keyframes.
- *   - Page-flip controller using pageturner.mp4. Both forward and
- *     backward clicks play the same t=3..4 turn (the SFX-bearing
- *     1-second turn) — the visual is symmetric enough that
- *     reverse-stepping isn't needed, and forward-only playback
- *     keeps the audio synced. HTML overlay fade-swaps mid-turn so
- *     the video covers the content swap.
+ *   - Page-flip controller using pageturner.mp4. Forward (Next)
+ *     plays t=3..4 with the SFX. Backward (Prev) steps currentTime
+ *     from t=4 back to t=3 via rAF at 2x rate (0.5s total); audio
+ *     stays silent in reverse since browsers don't play audio when
+ *     currentTime is being mutated rather than naturally advancing.
+ *     HTML overlay fade-swaps mid-turn so the video covers the
+ *     content swap in either direction.
  *   - Decade-tab nav, letter modal, and page-number easter-egg JS
  *     land in C2c..C6.
  *
@@ -134,19 +135,26 @@
      *
      * pageturner.mp4 is ~6.04s: t=0..3 is a static book pose,
      * t=3..4 is the physical page turn (with the SFX), t=4..6 is
-     * post-turn static. On every click (forward or backward) we
-     * seek to TURN_START and play forward through t=3..4. The
-     * visual turn is symmetric enough that reverse-stepping isn't
-     * needed, and forward-only playback keeps the audio in sync.
+     * post-turn static.
      *
-     * Click sequence (both directions):
+     * Forward (Next):
      *   1. Set busy, disable nav.
-     *   2. Seek video to TURN_START, play forward.
-     *   3. At SWAP_AT (mid-turn) — swap .is-active class so the
-     *      previous spread fades out and the next fades in. The
-     *      video's mid-turn moment covers the swap visually.
-     *   4. At TURN_END — pause video, reset to TURN_START so the
-     *      idle frame matches the new spread's pose. Release busy.
+     *   2. Seek video to TURN_START (t=3), play forward at 1x.
+     *   3. At SWAP_AT (t=3.5, mid-turn) — swap .is-active class so
+     *      the previous spread fades out and the next fades in.
+     *   4. At TURN_END (t=4) — pause, reset to TURN_START, release.
+     *
+     * Backward (Prev):
+     *   1. Set busy, disable nav.
+     *   2. Seek video to TURN_END, pause.
+     *   3. rAF-step currentTime backward at REVERSE_RATE (2x), so
+     *      reverse takes ~0.5s. Negative playbackRate isn't
+     *      reliably supported across browsers; manual stepping is
+     *      the safe path. Audio stays silent because browsers
+     *      don't play audio when currentTime is mutated rather
+     *      than naturally advancing.
+     *   4. Mid-turn (currentTime <= SWAP_AT) — swap spreads.
+     *   5. At TURN_START — release busy.
      *
      * Fallback: if video.play() rejects (autoplay block, decode
      * error), we still swap content so navigation works.
@@ -167,9 +175,10 @@
 
         // Video timing constants. Adjust here if the source video's
         // pause / turn timings change in a future revision.
-        const TURN_START = 3.0;  // seconds — start of physical motion + SFX
-        const SWAP_AT    = 3.5;  // seconds — mid-turn content swap
-        const TURN_END   = 4.0;  // seconds — page settled
+        const TURN_START   = 3.0;  // seconds — start of physical motion + SFX
+        const SWAP_AT      = 3.5;  // seconds — mid-turn content swap
+        const TURN_END     = 4.0;  // seconds — page settled
+        const REVERSE_RATE = 2.0;  // backward playback multiplier (0.5s reverse)
 
         let currentIndex = 0;
         let busy = false;
@@ -211,7 +220,7 @@
             video.addEventListener('loadedmetadata', primeVideo, { once: true });
         }
 
-        function playFlip(toIndex) {
+        function playFlipForward(toIndex) {
             setBusy(true);
 
             video.currentTime = TURN_START;
@@ -239,14 +248,47 @@
             }, (TURN_END - TURN_START) * 1000);
         }
 
+        function playFlipReverse(toIndex) {
+            setBusy(true);
+
+            video.pause();
+            try {
+                video.currentTime = TURN_END;
+            } catch (err) { /* metadata may not be ready — ignore */ }
+
+            let lastTs = performance.now();
+            let swapped = false;
+
+            function step(ts) {
+                const dt = (ts - lastTs) / 1000;
+                lastTs = ts;
+                const next = video.currentTime - dt * REVERSE_RATE;
+                video.currentTime = Math.max(TURN_START, next);
+
+                if (!swapped && video.currentTime <= SWAP_AT) {
+                    setActive(toIndex);
+                    swapped = true;
+                }
+
+                if (video.currentTime > TURN_START) {
+                    requestAnimationFrame(step);
+                } else {
+                    if (!swapped) setActive(toIndex);
+                    setBusy(false);
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+
         function flipForward() {
             if (busy || currentIndex >= spreads.length - 1) return;
-            playFlip(currentIndex + 1);
+            playFlipForward(currentIndex + 1);
         }
 
         function flipBackward() {
             if (busy || currentIndex <= 0) return;
-            playFlip(currentIndex - 1);
+            playFlipReverse(currentIndex - 1);
         }
 
         prevBtn.addEventListener('click', flipBackward);

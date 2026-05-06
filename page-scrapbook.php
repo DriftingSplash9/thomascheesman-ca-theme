@@ -21,10 +21,12 @@
  * Page-flip mechanic uses Thomas's authored 6-second video
  * (pageturner.mp4) instead of CSS 3D transforms. Idle pause is
  * t=0..3, page turn + audio SFX is t=3..4, post-turn idle is
- * t=4..6. JS plays t=3..4 forward on every click (the visual turn
- * is symmetric — same animation reads as next or prev) and the
+ * t=4..6. Forward (Next) plays t=3..4 at 1x with audio. Backward
+ * (Prev) steps currentTime from t=4 back to t=3 via rAF at 2x
+ * speed (0.5s) — silent because browsers don't play audio when
+ * currentTime is mutated rather than naturally advancing. The
  * HTML overlay fades old-out / new-in mid-turn so the video
- * covers the swap.
+ * covers the swap in either direction.
  *
  * Future: Thomas plans to record his voice reading the letter.
  * Audio play button will live near KF3 when the recording lands.
