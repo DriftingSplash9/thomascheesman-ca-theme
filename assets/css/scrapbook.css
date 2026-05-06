@@ -73,10 +73,10 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    /* `contain` preserves the full authored composition (Thomas's
-       images are designed for 100vw); any letterbox on extreme
-       aspect ratios reads as the dark-wood fallback below. */
-    object-fit: contain;
+    /* `cover` fills the viewport — book reads larger, edges of
+       the source crop to fit. (Earlier `contain` left letterbox
+       gaps left/right; Thomas wanted to see more of the book.) */
+    object-fit: cover;
     object-position: center center;
     opacity: 0;
     /* Slight CSS smoothing for any opacity steps the JS can't fully
@@ -122,8 +122,9 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    /* `contain` matches the intro keyframes' framing. */
-    object-fit: contain;
+    /* `cover` matches the intro keyframes' framing — book fills
+       more of the viewport, source edges crop. */
+    object-fit: cover;
     object-position: center center;
     pointer-events: none;
     user-select: none;
