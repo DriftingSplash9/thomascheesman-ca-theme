@@ -142,8 +142,57 @@
     display: flex;
     pointer-events: none;
     /* Soft drop shadow so the book sits on the desk rather than
-       floating in space. */
+       floating in space. The drop-shadow filter applies to the
+       full combined shape including the ::before / ::after page-
+       edge stacks below. */
     filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.32));
+}
+
+/* Page-edge stacks — striped slivers extending from the outer
+   left and right of the book, suggesting accumulated thickness
+   of all the pages beneath the visible spread. Each stripe is a
+   single page edge; the alternating colours give the eye depth. */
+
+.scrapbook-book-surface::before,
+.scrapbook-book-surface::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    width: 22px;
+    background:
+        /* Inset shadow at top + bottom so the corners feel rounded
+           into the stack. */
+        linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.16) 0%,
+            transparent 6%,
+            transparent 94%,
+            rgba(0, 0, 0, 0.16) 100%
+        ),
+        /* Striped page edges — each line ≈ one page. */
+        repeating-linear-gradient(
+            to bottom,
+            #e0d6ba 0px,
+            #e0d6ba 1.5px,
+            #c4b690 1.5px,
+            #c4b690 3px
+        );
+    pointer-events: none;
+}
+
+.scrapbook-book-surface::before {
+    left: -22px;
+    border-radius: 4px 0 0 4px;
+    /* Soft outer shadow on the deepest edge gives the stack
+       physicality — like the bottom pages bow outward. */
+    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.08);
+}
+
+.scrapbook-book-surface::after {
+    right: -22px;
+    border-radius: 0 4px 4px 0;
+    box-shadow: inset -2px 0 5px rgba(0, 0, 0, 0.08);
 }
 
 .scrapbook-book-surface__page {
