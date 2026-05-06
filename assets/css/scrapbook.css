@@ -76,10 +76,12 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    /* `contain` preserves the full authored composition — Thomas's
-       images are designed for 100vw and the cropping that `cover`
-       introduced (C2a.10) ate too much. */
-    object-fit: contain;
+    /* `cover` fills the viewport edge-to-edge for the hero feel.
+       Source images wider than 16:9 will crop slightly at the
+       sides; that's acceptable for a hero treatment. If the crop
+       eats authored content, re-author the keyframes at 16:9
+       (1920×1080) and they'll fill cleanly with no crop. */
+    object-fit: cover;
     object-position: center center;
     opacity: 0;
     /* Slight CSS smoothing for any opacity steps the JS can't fully
