@@ -17,11 +17,12 @@
  *     and ornaments.
  *
  * Page-flip mechanic uses Thomas's authored 6-second video instead
- * of CSS 3D transforms. The video has a 4s static-book pause then
- * a 2s page turn; JS seeks past the pause and plays t=4..6 forward
- * on Next, t=6..4 in reverse at 2x on Prev. HTML overlays fade out
- * during the lift and fade in during the settle, so the video acts
- * as a "physical" cover for the content swap.
+ * of CSS 3D transforms. The video sits idle for the first 3 seconds
+ * (static book pose); the page turn + audio SFX play during t=3..4;
+ * t=4..6 is post-turn idle. JS seeks past the idle pause on every
+ * click and plays t=3..4 forward — for BOTH prev and next, since
+ * the visual turn looks the same in either direction. HTML overlay
+ * fades old-out / new-in mid-turn so the video covers the swap.
  *
  * Future: Thomas plans to record his voice reading the letter.
  * Audio play button will live near KF3 when the recording lands.
@@ -117,11 +118,10 @@ $tc_scrapbook_intro_kfs = array(
             <video
                 class="scrapbook-flipper"
                 data-scrapbook-flipper
-                src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/pageturner2.mp4' ) ); ?>"
+                src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/pageturner.mp4' ) ); ?>"
                 poster="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/book-zoomed-in.png' ) ); ?>"
                 preload="auto"
                 playsinline
-                muted
                 aria-hidden="true"
             ></video>
 

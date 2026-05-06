@@ -166,7 +166,10 @@
     grid-template-columns: 1fr 1fr;
 
     opacity: 0;
-    transition: opacity 400ms ease-in-out;
+    /* 250ms matches the tighter 1-second turn (t=3..4) — the swap
+       fires at t+500ms, fade completes at t+750ms, video pauses
+       at t+1000ms. */
+    transition: opacity 250ms ease-in-out;
     pointer-events: none;
 }
 
