@@ -12,12 +12,12 @@
    the conditional enqueue in functions.php), so other pages don't
    pay the bytes.
 
-   BUILD STATUS — C1.1 (intro shipped, spreads pending):
+   BUILD STATUS — C1.3 (intro keyframes only):
      - Scroll-driven 5-keyframe intro: closed cover, half-open,
-       letter (long dwell), open blank, zoomed-in (handoff).
-     - Spreads region scaffolded with the zoomed-in image as bg so
-       the intro flows into spreads without a visual cut.
-     - No page-flip mechanic, events, ornaments, or decade tabs yet.
+       letter (long dwell), open blank, zoomed-in.
+     - C2 reintroduces .scrapbook-spreads + .scrapbook-book with
+       the actual page-flip content. (C1.1 had a placeholder
+       spreads section that read as a duplicated book; removed.)
    ============================================ */
 
 /* ============================================
@@ -86,58 +86,4 @@
     opacity: 1;
 }
 
-/* ============================================
-   SPREADS — placeholder for the page-flip mechanic (lands C2)
-   ============================================
-   Uses book-zoomed-in.png as background so end-of-intro flows
-   into start-of-spreads without a cut. Pages mount in
-   .scrapbook-book in C2; the dashed outline is a build-aid that
-   gets baked into page-edge styling later.
-   ============================================ */
-
-.scrapbook-spreads {
-    position: relative;
-    width: 100%;
-    min-height: 100vh;
-    background-color: #2a1a0d;
-    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/book-zoomed-in.png');
-    /* `contain` matches the intro keyframes — see .scrapbook-intro__kf
-       above. Keeps the visual handoff from intro to spreads seamless. */
-    background-size: contain;
-    background-position: center center;
-    background-repeat: no-repeat;
-    overflow: hidden;
-}
-
-.scrapbook-book {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
-    /* Roughly book-shape; tune in C2. */
-    width: min(70vw, 1100px);
-    aspect-ratio: 3 / 2;
-
-    /* Per V0.07 architecture spec. */
-    perspective: 1500px;
-    transform-style: preserve-3d;
-
-    /* Build-aid — remove or bake into page edges in C2. */
-    outline: 1px dashed rgba(255, 255, 255, 0.08);
-    outline-offset: -1px;
-}
-
-/* ============================================
-   MOBILE FALLBACK
-   ============================================
-   The intro crossfade works on mobile. Page-flip 3D in the spreads
-   region is desktop-only (V0.07 todo #6 — Phase 2 vertical scroll
-   fallback for mobile). For now we just resize the book frame.
-   ============================================ */
-
-@media (max-width: 767px) {
-    .scrapbook-book {
-        width: 92vw;
-    }
-}
+/* .scrapbook-spreads + .scrapbook-book land in C2 (page-flip). */

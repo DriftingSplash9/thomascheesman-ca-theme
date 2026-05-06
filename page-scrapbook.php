@@ -5,15 +5,17 @@
  * Auto-applied by WordPress to any page whose slug is `scrapbook`.
  * Spec: timeline-build-log/V0.07.md.
  *
- * BUILD STATUS — Commit C1.1 (intro keyframes shipped, spreads pending):
+ * BUILD STATUS — Commit C1.3 (intro keyframes only):
  *
  *   - Scroll-driven 5-keyframe intro: closed cover → half-open →
- *     dad's letter (long dwell) → open blank → zoomed-in (handoff).
- *   - Spreads region scaffolded with the zoomed-in image as bg so the
- *     end of the intro flows into the start of the spreads region
- *     without a visual cut.
- *   - No page-flip mechanic, events, ornaments, or decade tabs yet —
- *     those land in C2..C7 per the V0.07 commit sequence.
+ *     dad's letter (long dwell) → open blank → zoomed-in.
+ *   - The spreads region (page-flip mechanic, events, ornaments,
+ *     decade tabs) is NOT scaffolded here yet — it lands in C2.
+ *     Earlier C1.1 had a placeholder spreads section with the
+ *     zoomed-in image as background for "visual continuity"; in
+ *     practice it read as a second book pasted below the intro,
+ *     so C1.3 removed it. C2 reintroduces .scrapbook-spreads +
+ *     .scrapbook-book with real page-flip content.
  *
  * Future: Thomas plans to record his voice reading the letter.
  * Audio play button will live near KF3 when the recording lands.
@@ -81,18 +83,7 @@ $tc_scrapbook_intro_kfs = array(
         </div>
     </section>
 
-    <!-- ==============================================================
-         SPREADS — page-flip placeholder.
-
-         Uses book-zoomed-in.png as background so the visual handoff
-         from the end of the intro is seamless: the reader scrolls
-         out of the sticky intro and the same image continues here as
-         the working surface. .scrapbook-page elements (the actual
-         flippable pages) mount inside .scrapbook-book in C2.
-         ============================================================== -->
-    <section class="scrapbook-spreads" data-scrapbook-spreads>
-        <div class="scrapbook-book" aria-hidden="true"></div>
-    </section>
+    <?php // .scrapbook-spreads section + page-flip mechanic land in C2. ?>
 
 </main>
 
