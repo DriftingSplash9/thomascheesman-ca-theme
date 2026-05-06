@@ -12,19 +12,19 @@
    the conditional enqueue in functions.php), so other pages don't
    pay the bytes.
 
-   BUILD STATUS — C2a.9 (video IS the rest pose):
-     - 4-keyframe intro (cover, half-open, letter, open). The
-       fifth "zoomed-in" beat is the video element itself, paused
-       at TURN_START — same source pixels as the animation, so
-       no mismatch between rest pose and motion.
-     - Slideshow wrapper opacity fades in over progress 0.78..0.82
-       (taking what was KF5's window). The video is at opacity 1
-       whenever the wrapper is visible; no per-click fade needed.
-     - Click chevrons drive the page-flip. No separate spreads
-       section, no scroll past, no footer.
-     - Real cover spread (greeting + decade menu) lands C2b.
-     - Decade tabs + letter envelope land C2c.
-     - Events + ornaments land C3+.
+   BUILD STATUS — C2b (first event content lands):
+     - 4-keyframe intro (cover, half-open, letter, open). Video
+       element at IDLE_FRAME (t=2.5) is the rest pose.
+     - Slideshow wrapper fades in over progress 0.78..1.00.
+     - First event ("Born — Calgary 1980") populated on Spread 1's
+       right page. Polaroid-style photo with handwritten caption.
+       Photo drops in with a slight overshoot when its spread
+       becomes .is-active; caption fades in 700ms later. Per-spread
+       tilt/offset from a 7-deep variations table so neighbouring
+       spreads land at distinct hand-placed angles.
+     - Subsequent spreads keep placeholder boxes until events are
+       added. Decade tabs + letter envelope land C2c.
+     - Ornaments (era-themed stamps, tape, page numbers) land C3+.
    ============================================ */
 
 /* ============================================
@@ -205,14 +205,114 @@
 }
 
 .scrapbook-spread__placeholder {
-    /* Faint dotted box around the placeholder text so we can see
-       the .scrapbook-spread__page footprint for alignment work
-       without distracting from real content (which doesn't exist
-       yet). Removed in C2b once the cover spread lands. */
+    /* Faint dotted box around the placeholder text — used on
+       spreads that don't have real event content yet. Visible
+       only on right pages (where events go) and on every left
+       page until those gain content too. */
     padding: 1.25rem 2rem;
     border: 1px dashed rgba(42, 26, 13, 0.25);
     border-radius: 4px;
     background: rgba(255, 252, 240, 0.35);
+}
+
+/* ============================================
+   PHOTOS — polaroid-style frame + entrance animation
+   ============================================
+   Each photo "drops" onto the page when its spread becomes
+   .is-active: starts from above, rotated to flat, falls into
+   its hand-placed resting tilt with a slight overshoot. The
+   caption fades in afterward (700ms delay), so the elements
+   arrive sequentially — like the scrapbook is being assembled
+   in real time, not merely fading in as a unit.
+
+   Per-spread CSS custom properties on .scrapbook-spread give
+   each spread a distinct rest pose:
+     --photo-tilt  : final rotation (degrees, e.g. -3 to +6)
+     --photo-x     : horizontal offset from page center (px)
+     --photo-y     : vertical offset from page center (px)
+   These are set from PHP via the $tc_scrapbook_variations table
+   so spreads cycle through 7 distinct hand-placed looks before
+   repeating.
+   ============================================ */
+
+.scrapbook-photo {
+    position: relative;
+    background: #fdfcf8;
+    /* Bottom padding extra-thick — this is the white strip below
+       the photo where polaroid captions live. */
+    padding: 14px 14px 56px 14px;
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.18),
+        0 12px 28px rgba(0, 0, 0, 0.14);
+    max-width: 75%;
+    margin: 0 auto;
+
+    /* Pre-entrance: starts above the resting position, no tilt,
+       fully transparent. Transition fires when the spread gains
+       .is-active. */
+    transform: translate(var(--photo-x, 0), calc(-72px + var(--photo-y, 0))) rotate(0deg);
+    opacity: 0;
+    transition:
+        transform 700ms cubic-bezier(0.34, 1.5, 0.64, 1) 250ms,
+        opacity 400ms ease-in-out 250ms;
+    will-change: transform, opacity;
+}
+
+.scrapbook-spread.is-active .scrapbook-photo {
+    /* Resting pose: hand-placed tilt + offset from the variation
+       table. The cubic-bezier overshoot above gives a tiny bounce
+       when it lands, like a real photo dropping onto paper. */
+    transform: translate(var(--photo-x, 0), var(--photo-y, 0))
+               rotate(var(--photo-tilt, 0deg));
+    opacity: 1;
+}
+
+.scrapbook-photo img {
+    width: 100%;
+    height: auto;
+    display: block;
+    user-select: none;
+    /* Subtle warm tone so photos read as printed-and-aged rather
+       than pristine digital scans. */
+    filter: saturate(0.95) contrast(0.97);
+}
+
+.scrapbook-photo__caption {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    right: 14px;
+    text-align: center;
+    color: #2a1a0d;
+
+    /* Pre-entrance: invisible, slight downward offset.
+       Delayed 700ms so it arrives AFTER the photo settles. */
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+        transform 500ms ease-out 700ms,
+        opacity 400ms ease-in-out 700ms;
+}
+
+.scrapbook-spread.is-active .scrapbook-photo__caption {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.scrapbook-photo__title {
+    display: block;
+    font-family: 'Caveat', 'Marker Felt', 'Bradley Hand', cursive;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.05;
+}
+
+.scrapbook-photo__meta {
+    display: block;
+    font-family: 'Caveat', 'Marker Felt', 'Bradley Hand', cursive;
+    font-size: 1rem;
+    margin-top: 2px;
+    opacity: 0.7;
 }
 
 /* ============================================

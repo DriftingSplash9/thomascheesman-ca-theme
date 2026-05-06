@@ -66,6 +66,42 @@ $tc_scrapbook_intro_kfs = array(
         'alt' => '',
     ),
 );
+
+/**
+ * Scrapbook events — the actual content that mounts onto each
+ * spread's right page. C2b populates the first event; future
+ * commits will extend this array. When count(events) < spread
+ * count, the remaining spreads keep their placeholder boxes.
+ */
+$tc_scrapbook_events = array(
+    array(
+        'year'  => '1980',
+        'place' => 'Calgary',
+        'title' => 'Born',
+        'note'  => 'Look out, Calgary.',
+        'image' => '/wp-content/uploads/2026/04/a-baby-thomas-scaled.jpg',
+    ),
+);
+
+/**
+ * Per-spread layout variations — keeps the scrapbook feeling
+ * hand-assembled. Each spread gets a deterministic tilt + offset
+ * (cycled through this list by spread index) so the photos land
+ * at slightly different angles instead of perfectly grid-aligned.
+ * Cycle is 7 entries deep so neighbouring spreads never share
+ * exact values.
+ */
+$tc_scrapbook_variations = array(
+    array( 'tilt' => -3, 'x' => -2, 'y' => -3 ),
+    array( 'tilt' =>  2, 'x' =>  5, 'y' =>  1 ),
+    array( 'tilt' => -5, 'x' => -1, 'y' =>  4 ),
+    array( 'tilt' =>  4, 'x' =>  3, 'y' => -2 ),
+    array( 'tilt' => -1, 'x' =>  0, 'y' =>  5 ),
+    array( 'tilt' =>  6, 'x' => -4, 'y' => -1 ),
+    array( 'tilt' => -7, 'x' =>  2, 'y' =>  2 ),
+);
+
+$tc_total_spreads = max( 6, count( $tc_scrapbook_events ) );
 ?>
 
 <main id="primary" class="scrapbook-page">
@@ -139,21 +175,58 @@ $tc_scrapbook_intro_kfs = array(
                 <div class="scrapbook-pages" data-scrapbook-pages>
                     <?php
                     /*
-                     * 6 dummy spreads for C2a verification. Each spread
-                     * is split into a left page and right page;
-                     * placeholder text confirms content swapping works
-                     * in both directions before real events are wired.
+                     * Spread loop. Each spread = left page + right page.
+                     * - Right page: real event content if available,
+                     *   otherwise the build-time placeholder box.
+                     * - Left page: placeholder for now (real left-page
+                     *   content lands in later commits — currently
+                     *   reserved for date dividers / decorative ornaments).
+                     *
+                     * The .is-active class drives the entrance animations
+                     * on the spread's children (see scrapbook.css). Each
+                     * spread carries CSS custom properties (--photo-tilt
+                     * etc.) from the variations table, so neighbouring
+                     * spreads land at distinct hand-placed angles.
                      */
-                    for ( $i = 0; $i < 6; $i++ ) :
+                    for ( $i = 0; $i < $tc_total_spreads; $i++ ) :
                         $is_active = $i === 0 ? ' is-active' : '';
+                        $event     = isset( $tc_scrapbook_events[ $i ] ) ? $tc_scrapbook_events[ $i ] : null;
+                        $variant   = $tc_scrapbook_variations[ $i % count( $tc_scrapbook_variations ) ];
+                        $style     = sprintf(
+                            '--photo-tilt: %ddeg; --photo-x: %dpx; --photo-y: %dpx;',
+                            (int) $variant['tilt'],
+                            (int) $variant['x'],
+                            (int) $variant['y']
+                        );
                     ?>
-                        <div class="scrapbook-spread<?php echo $is_active; ?>" data-spread-index="<?php echo $i; ?>" aria-hidden="<?php echo $i === 0 ? 'false' : 'true'; ?>">
+                        <div class="scrapbook-spread<?php echo $is_active; ?>"
+                             data-spread-index="<?php echo $i; ?>"
+                             aria-hidden="<?php echo $i === 0 ? 'false' : 'true'; ?>"
+                             style="<?php echo esc_attr( $style ); ?>">
+
                             <div class="scrapbook-spread__page scrapbook-spread__page--left">
                                 <span class="scrapbook-spread__placeholder">Spread <?php echo $i + 1; ?> &mdash; left</span>
                             </div>
+
                             <div class="scrapbook-spread__page scrapbook-spread__page--right">
-                                <span class="scrapbook-spread__placeholder">Spread <?php echo $i + 1; ?> &mdash; right</span>
+                                <?php if ( $event ) : ?>
+                                    <figure class="scrapbook-photo">
+                                        <img
+                                            src="<?php echo esc_url( home_url( $event['image'] ) ); ?>"
+                                            alt="<?php echo esc_attr( $event['title'] ); ?>"
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
+                                        <figcaption class="scrapbook-photo__caption">
+                                            <span class="scrapbook-photo__title"><?php echo esc_html( $event['title'] ); ?></span>
+                                            <span class="scrapbook-photo__meta"><?php echo esc_html( $event['place'] . ' &middot; ' . $event['year'] ); ?></span>
+                                        </figcaption>
+                                    </figure>
+                                <?php else : ?>
+                                    <span class="scrapbook-spread__placeholder">Spread <?php echo $i + 1; ?> &mdash; right</span>
+                                <?php endif; ?>
                             </div>
+
                         </div>
                     <?php endfor; ?>
                 </div>

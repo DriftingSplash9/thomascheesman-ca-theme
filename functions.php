@@ -138,6 +138,15 @@ function tc_ventures_enqueue_scripts() {
     // Future commits (C2..C7) will add scrapbook.js here for the
     // page-flip controller + decade-tab nav + easter-egg JS.
     if ( is_page( 'scrapbook' ) ) {
+        // Caveat — handwritten Google Font for scrapbook captions.
+        // Loaded only on this page since it's not used elsewhere.
+        wp_enqueue_style(
+            'tc-caveat',
+            'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap',
+            array(),
+            null
+        );
+
         wp_enqueue_style(
             'tc-scrapbook',
             get_stylesheet_directory_uri() . '/assets/css/scrapbook.css',
