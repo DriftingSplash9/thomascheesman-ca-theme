@@ -46,19 +46,19 @@ get_header();
  */
 $tc_scrapbook_intro_kfs = array(
     array(
-        'src' => '/wp-content/uploads/2026/05/cover.png',
-        'alt' => 'A scrapbook on a wooden desk, surrounded by small mementos.',
+        'src' => '/wp-content/uploads/2026/05/table-today.png',
+        'alt' => 'Thomas\'s wooden writing desk with small mementos scattered across it.',
     ),
     array(
-        'src' => '/wp-content/uploads/2026/05/book-half-open.png',
-        'alt' => '',
+        'src' => '/wp-content/uploads/2026/05/wide-book.jpg',
+        'alt' => 'A leather-bound scrapbook resting on the desk.',
     ),
     array(
-        'src' => '/wp-content/uploads/2026/05/letter-in-book.png',
+        'src' => '/wp-content/uploads/2026/05/tflOf-1.png',
         'alt' => 'A handwritten letter from Thomas to his children, opening the scrapbook.',
     ),
     array(
-        'src' => '/wp-content/uploads/2026/05/book-open.png',
+        'src' => '/wp-content/uploads/2026/05/balnk-book-for-slides.png',
         'alt' => '',
     ),
 );
@@ -152,16 +152,21 @@ $tc_total_spreads = max( 6, count( $tc_scrapbook_events ) );
             <div class="scrapbook-slideshow" data-scrapbook-slideshow>
 
                 <!--
-                    .scrapbook-book-surface — illustrative flat book.
-                    Two cream parchment pages with subtle edge shadows
-                    and a soft gutter where they meet. Content (the
-                    .scrapbook-pages overlay below) sits on top of
-                    this surface at matching dimensions.
+                    .scrapbook-book-surface — Thomas's authored
+                    photographic stage (an open book on the desk,
+                    designed flat top-down so HTML spread content
+                    sits on the painted-on pages cleanly). Replaces
+                    the earlier CSS parchment since the real photo
+                    matches the intro keyframes' visual register.
                 -->
-                <div class="scrapbook-book-surface" aria-hidden="true">
-                    <div class="scrapbook-book-surface__page scrapbook-book-surface__page--left"></div>
-                    <div class="scrapbook-book-surface__page scrapbook-book-surface__page--right"></div>
-                </div>
+                <img
+                    class="scrapbook-book-surface"
+                    src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/balnk-book-for-slides.png' ) ); ?>"
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    decoding="async"
+                />
 
                 <!--
                     HTML pages overlay the video. The .is-active spread

@@ -12,18 +12,20 @@
    the conditional enqueue in functions.php), so other pages don't
    pay the bytes.
 
-   BUILD STATUS — C3a (flat surface rebuild):
-     - 4-keyframe intro (cover, half-open, letter, open) sets the
-       physical-book metaphor photographically.
-     - Slideshow surface is now flat: two cream parchment pages
-       (.scrapbook-book-surface) centered on the dark wood. The
-       page-turner video and curved-book imagery are gone.
-     - Slideshow wrapper still fades in over progress 0.78..1.00.
+   BUILD STATUS — C3b (re-authored 16:9 hero keyframes):
+     - 4-keyframe intro re-authored at 16:9 (1920×1080) for full
+       hero fill: empty desk (table-today.png) → book on desk
+       (wide-book.jpg) → letter (tflOf-1.png) → blank open book
+       (balnk-book-for-slides.png).
+     - Slideshow surface is now balnk-book-for-slides.png itself
+       — Thomas's flat top-down photo, designed for HTML spread
+       content to sit on the painted-on pages. Replaces the
+       earlier CSS parchment + page-edge stacks.
+     - Slideshow wrapper fades in over progress 0.78..1.00.
      - Click chevrons drive a spread crossfade (no video state).
      - First event ("Born — Calgary 1980") on Spread 1 right page.
-       Polaroid photo + handwritten caption + entrance animation
-       all unchanged from C2b — they sit cleanly on the flat
-       parchment now.
+       Polaroid + handwritten caption + entrance animation
+       unchanged from C2b — sits on the photographic surface.
      - Audio (page-turn SFX) deferred. CSS 3D rotateY page-flip
        is a possible future polish if crossfade feels too tame.
      - Decade tabs + letter envelope still queued for C2c.
@@ -121,151 +123,23 @@
 }
 
 /* ============================================
-   BOOK SURFACE — flat illustrative pages
+   BOOK SURFACE — Thomas's authored photographic stage
    ============================================
-   Two cream parchment rectangles centered on the dark wood. The
-   intro sets the "this is a physical book" feel photographically;
-   here we're in the top-down view where actual content lives.
-
-   Dimensions match .scrapbook-spread so HTML content (polaroid +
-   caption) lines up with the paper edges. Keep the width /
-   aspect-ratio values in sync between the two rules.
+   balnk-book-for-slides.png is an authored flat top-down photo
+   of an open book on the desk, sized for hero (16:9). HTML
+   spread content (the .scrapbook-pages overlay below) sits on
+   the painted-on pages.
    ============================================ */
 
 .scrapbook-book-surface {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(72vw, 1200px);
-    aspect-ratio: 7 / 5;
-    display: flex;
-    pointer-events: none;
-    /* Soft drop shadow so the book sits on the desk rather than
-       floating in space. The drop-shadow filter applies to the
-       full combined shape including the ::before / ::after page-
-       edge stacks below. */
-    filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.32));
-}
-
-/* Page-edge stacks — soft slivers along the outer left and right
-   of the book, suggesting accumulated thickness of all the pages
-   beneath the visible spread. Stripes are very low-contrast so
-   they read as paper texture rather than digital banding; mask
-   fade at top/bottom rounds the corners into the page; the
-   stacks overlap the book by 2px to avoid a harsh seam. */
-
-.scrapbook-book-surface::before,
-.scrapbook-book-surface::after {
-    content: '';
-    position: absolute;
-    top: 4px;
-    bottom: 4px;
-    width: 14px;
-    background:
-        /* Subtle horizontal shading from outer edge (darker) to
-           inner edge (lighter, blending into the page). */
-        linear-gradient(
-            to right,
-            rgba(0, 0, 0, 0.14) 0%,
-            rgba(0, 0, 0, 0.04) 60%,
-            rgba(0, 0, 0, 0)    100%
-        ),
-        /* Faint stripes — each stripe ≈ one page edge. Low contrast
-           so it reads as texture, not banding. */
-        repeating-linear-gradient(
-            to bottom,
-            #e0d3b4 0px,
-            #e0d3b4 1.5px,
-            #d8cba8 1.5px,
-            #d8cba8 3px
-        );
-    /* Soft top/bottom fade so the stack rounds into the book
-       corners instead of stopping abruptly. */
-    -webkit-mask-image: linear-gradient(
-        to bottom,
-        transparent 0%,
-        black 6%,
-        black 94%,
-        transparent 100%
-    );
-            mask-image: linear-gradient(
-        to bottom,
-        transparent 0%,
-        black 6%,
-        black 94%,
-        transparent 100%
-    );
-    pointer-events: none;
-}
-
-.scrapbook-book-surface::before {
-    /* Left side of book — outer edge is on the LEFT.
-       Default `to right` shading (darker → transparent) is correct:
-       darker at the outer edge, fading into the book on the right.
-       Overlap the book by 2px to avoid a harsh seam. */
-    left: -12px;
-}
-
-.scrapbook-book-surface::after {
-    /* Right side of book — outer edge is on the RIGHT.
-       Flip the horizontal shading so it's darker at the right. */
-    right: -12px;
-    background:
-        linear-gradient(
-            to left,
-            rgba(0, 0, 0, 0.14) 0%,
-            rgba(0, 0, 0, 0.04) 60%,
-            rgba(0, 0, 0, 0)    100%
-        ),
-        repeating-linear-gradient(
-            to bottom,
-            #e0d3b4 0px,
-            #e0d3b4 1.5px,
-            #d8cba8 1.5px,
-            #d8cba8 3px
-        );
-}
-
-.scrapbook-book-surface__page {
-    flex: 1;
-    background: #f5ecd9; /* cream parchment */
-    position: relative;
-}
-
-/* Inner edge "gutter" — soft fold shadow where the two pages
-   meet. Each page tints darker at its inside edge so together
-   they read as the book's spine. */
-.scrapbook-book-surface__page--left {
-    background-image: linear-gradient(
-        to right,
-        rgba(0, 0, 0, 0)   80%,
-        rgba(0, 0, 0, 0.10) 100%
-    );
-}
-
-.scrapbook-book-surface__page--right {
-    background-image: linear-gradient(
-        to left,
-        rgba(0, 0, 0, 0)   80%,
-        rgba(0, 0, 0, 0.10) 100%
-    );
-}
-
-/* Subtle grain — faint repeating noise via radial gradients
-   keeps the parchment from looking like flat plastic. Cheap
-   (no asset, no file weight) and barely-visible. */
-.scrapbook-book-surface__page::after {
-    content: '';
-    position: absolute;
     inset: 0;
-    background-image:
-        radial-gradient(circle at 12% 20%, rgba(120, 90, 50, 0.04) 1px, transparent 1.5px),
-        radial-gradient(circle at 78% 65%, rgba(120, 90, 50, 0.04) 1px, transparent 1.5px),
-        radial-gradient(circle at 35% 80%, rgba(120, 90, 50, 0.05) 1px, transparent 1.5px);
-    background-size: 60px 60px, 80px 80px, 100px 100px;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
     pointer-events: none;
-    opacity: 0.7;
+    user-select: none;
 }
 
 /* ============================================
