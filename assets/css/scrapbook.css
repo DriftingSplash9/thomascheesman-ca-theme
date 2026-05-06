@@ -130,9 +130,15 @@
        static frames don't perfectly match KF5 (slight motion
        blur / decoding differences); using KF5 as the rest pose
        keeps the idle book pixel-perfect. The video reveals only
-       during the actual flip animation. */
+       during the actual flip animation.
+
+       The 800ms ease transition blends the video in/out gently.
+       Long enough that any sub-pixel misalignment between the
+       video's first/last frame and KF5 reads as a soft crossfade
+       instead of an abrupt swap — the eye sees one image
+       gradually replace another, not a hard cut. */
     opacity: 0;
-    transition: opacity 60ms linear;
+    transition: opacity 800ms ease-in-out;
     will-change: opacity, transform;
 }
 
