@@ -58,7 +58,7 @@ $tc_scrapbook_intro_kfs = array(
         'alt' => 'A handwritten letter from Thomas to his children, opening the scrapbook.',
     ),
     array(
-        'src' => '/wp-content/uploads/2026/05/cropped-book.png',
+        'src' => '/wp-content/uploads/2026/05/cropped-book-1.png',
         'alt' => '',
     ),
 );
@@ -255,7 +255,7 @@ $tc_total_spreads = max( 6, count( $tc_scrapbook_events ) );
                 -->
                 <img
                     class="scrapbook-book-surface"
-                    src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/cropped-book.png' ) ); ?>"
+                    src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/cropped-book-1.png' ) ); ?>"
                     alt=""
                     aria-hidden="true"
                     loading="lazy"
