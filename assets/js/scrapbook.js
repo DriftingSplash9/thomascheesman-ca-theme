@@ -185,6 +185,14 @@
 
         // Video timing constants. Adjust here if the source video's
         // pause / turn timings change in a future revision.
+        //
+        // IDLE_FRAME (rest pose) is half a second EARLIER than the
+        // playback start so the resting book reads as fully settled
+        // — at TURN_START the page is already starting to lift.
+        // Playback still begins at TURN_START on click, so the click
+        // feels instant; we just seek back to IDLE_FRAME after the
+        // animation ends.
+        const IDLE_FRAME = 2.5;  // seconds — rest pose (pre-motion static)
         const TURN_START = 3.0;  // seconds — start of physical motion + SFX
         const SWAP_AT    = 4.5;  // seconds — mid-turn content swap (midpoint)
         const TURN_END   = 6.0;  // seconds — page settled (end of clip)
@@ -210,12 +218,13 @@
             spreads[currentIndex].setAttribute('aria-hidden', 'false');
         }
 
-        // Idle state: pause the video at TURN_START so its visible
-        // frame matches the static-book pose the HTML overlays sit
-        // on top of. Wait for metadata to be ready before seeking.
+        // Idle state: pause the video at IDLE_FRAME (a frame from
+        // the truly-static portion before the page begins to lift),
+        // so the visible book reads as fully settled. Wait for
+        // metadata to be ready before seeking.
         function primeVideo() {
             try {
-                video.currentTime = TURN_START;
+                video.currentTime = IDLE_FRAME;
             } catch (err) {
                 // currentTime can throw if metadata isn't ready;
                 // the loadedmetadata listener below will retry.
@@ -268,7 +277,10 @@
             function finishFlip() {
                 video.pause();
                 try {
-                    video.currentTime = TURN_START;
+                    // Seek back to IDLE_FRAME (not TURN_START) so the
+                    // rest pose shows the book fully settled, not
+                    // mid-lift.
+                    video.currentTime = IDLE_FRAME;
                 } catch (err) { /* ignore */ }
                 video.classList.remove('is-reverse');
                 setBusy(false);
