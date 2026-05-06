@@ -4,18 +4,18 @@
  * Loaded only on /scrapbook (page-scrapbook.php), conditionally
  * enqueued by tc_ventures_enqueue_scripts() in functions.php.
  *
- * BUILD STATUS — C2a.6:
+ * BUILD STATUS — C2a.7:
  *   - Scroll-driven crossfade across the 5 intro keyframes.
  *   - Page-flip controller using pageturner.mp4. The video is
  *     hidden at idle — KF5 (the authored zoomed-in book image) is
  *     the resting state, so the book sits pixel-perfect between
  *     flips. The video reveals only during the actual animation.
- *   - Forward (Next): plays t=3..4 at 1x with SFX (1s).
- *   - Backward (Prev): plays the same forward clip at 2x with the
+ *   - Forward (Next): plays t=3..6 at 1x with audio (3s).
+ *   - Backward (Prev): plays the same forward clip at 1x with the
  *     video horizontally mirrored (scaleX(-1)) — visually reads as
- *     a page turning the other way (0.5s, muted). The mirror trick
- *     sidesteps the cross-browser pain of stepping currentTime
- *     backward (which doesn't reliably trigger frame repaints).
+ *     a page turning the other way. Mirror sidesteps the cross-
+ *     browser pain of stepping currentTime backward, which doesn't
+ *     reliably trigger frame repaints.
  *   - HTML overlay fade-swaps mid-turn so the video covers the
  *     content swap in either direction.
  *   - Decade-tab nav, letter modal, and page-number easter-egg JS
@@ -138,9 +138,8 @@
      * PAGE-FLIP CONTROLLER
      * ============================================================
      *
-     * pageturner.mp4 is ~6.04s: t=0..3 is a static book pose,
-     * t=3..4 is the physical page turn (with the SFX), t=4..6 is
-     * post-turn static.
+     * pageturner.mp4 is ~6.04s: t=0..3 is a static book pose;
+     * t=3..6 is the page turn (audio kicks in over this stretch).
      *
      * The video is HIDDEN at idle (CSS opacity 0). KF5 (the
      * authored zoomed-in book image) is the resting state, so the
@@ -156,15 +155,12 @@
      *   5. At TURN_END — pause, reset to TURN_START, hide video,
      *      release busy.
      *
-     * Backward (Prev): same as forward, but
-     *   - .is-reverse class adds transform: scaleX(-1) — the page
-     *     visually turns the OTHER way.
-     *   - playbackRate = 2.0 — reverse is twice as fast as forward.
-     *   - muted = true — avoids the chipmunk-pitch SFX at 2x speed.
-     *   This sidesteps the cross-browser pain of stepping
-     *   currentTime backward, which doesn't reliably trigger frame
-     *   repaints (the video element just sat on its last decoded
-     *   frame in C2a.5).
+     * Backward (Prev): identical to forward, but adds .is-reverse
+     *   which applies transform: scaleX(-1) — the page visually
+     *   turns the OTHER way. Same speed, same audio, same length.
+     *   Sidesteps the cross-browser pain of stepping currentTime
+     *   backward (which didn't reliably trigger frame repaints in
+     *   C2a.5).
      *
      * Fallback: if video.play() rejects (autoplay block, decode
      * error), we still swap content so navigation works.
@@ -185,10 +181,9 @@
 
         // Video timing constants. Adjust here if the source video's
         // pause / turn timings change in a future revision.
-        const TURN_START   = 3.0;  // seconds — start of physical motion + SFX
-        const SWAP_AT      = 3.5;  // seconds — mid-turn content swap
-        const TURN_END     = 4.0;  // seconds — page settled
-        const REVERSE_RATE = 2.0;  // backward playback multiplier (0.5s reverse)
+        const TURN_START = 3.0;  // seconds — start of physical motion + SFX
+        const SWAP_AT    = 4.5;  // seconds — mid-turn content swap (midpoint)
+        const TURN_END   = 6.0;  // seconds — page settled (end of clip)
 
         let currentIndex = 0;
         let busy = false;
@@ -230,23 +225,19 @@
             video.addEventListener('loadedmetadata', primeVideo, { once: true });
         }
 
-        // Shared flip routine. Direction is "forward" or "reverse".
-        // Forward: 1x speed, audio on. Reverse: 2x speed, audio off,
-        // video horizontally mirrored. Both seek to TURN_START and
-        // play the same forward clip.
+        // Shared flip routine. Both directions play the same forward
+        // clip at 1x with audio. Reverse just adds the .is-reverse
+        // class which CSS uses to apply transform: scaleX(-1) —
+        // visually mirrors the page-turn so it reads as "going back."
         function playFlip(toIndex, direction) {
             setBusy(true);
 
             const isReverse = direction === 'reverse';
-            const playRate  = isReverse ? REVERSE_RATE : 1.0;
-            // Wall-clock duration scales inversely with playback rate.
-            const turnMs    = ((TURN_END - TURN_START) / playRate) * 1000;
-            const swapMs    = ((SWAP_AT   - TURN_START) / playRate) * 1000;
+            const turnMs    = (TURN_END - TURN_START) * 1000;
+            const swapMs    = (SWAP_AT  - TURN_START) * 1000;
 
             video.classList.toggle('is-reverse', isReverse);
             video.classList.add('is-playing');
-            video.muted = isReverse;
-            video.playbackRate = playRate;
             video.currentTime = TURN_START;
 
             const playPromise = video.play();
@@ -274,8 +265,6 @@
                     video.currentTime = TURN_START;
                 } catch (err) { /* ignore */ }
                 video.classList.remove('is-playing', 'is-reverse');
-                video.muted = false;
-                video.playbackRate = 1.0;
                 setBusy(false);
             }
         }

@@ -23,12 +23,12 @@
  * hidden at idle (CSS opacity 0) — KF5 (the authored zoomed-in
  * book image) is the resting state, so the book sits pixel-
  * perfect between flips. The video reveals only during the
- * actual animation. Forward (Next) plays t=3..4 at 1x with the
- * SFX audio. Backward (Prev) plays the same clip at 2x with
- * the video horizontally mirrored (scaleX(-1)) — visually reads
- * as a page turning the other way, sidesteps the cross-browser
- * pain of stepping currentTime backward. The HTML overlay fades
- * old-out / new-in mid-turn so the video covers the swap.
+ * actual animation. Forward (Next) plays t=3..6 at 1x with the
+ * SFX audio (3 seconds). Backward (Prev) plays the same clip at
+ * 1x with the video horizontally mirrored (scaleX(-1)) — visually
+ * reads as a page turning the other way, sidesteps the cross-
+ * browser pain of stepping currentTime backward. The HTML overlay
+ * fades old-out / new-in mid-turn so the video covers the swap.
  *
  * Future: Thomas plans to record his voice reading the letter.
  * Audio play button will live near KF3 when the recording lands.
