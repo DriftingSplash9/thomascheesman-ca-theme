@@ -93,13 +93,15 @@ $tc_scrapbook_intro_kfs = array(
     <!-- ==============================================================
          SPREADS — page-flip presentation.
 
-         The .scrapbook-spreads outer is 150vh tall (soft-lock scroll
-         budget — user must scroll past the spreads region to reach
-         the footer; can scroll back up to revisit the intro letter).
+         The .scrapbook-spreads outer is exactly 100vh (one viewport)
+         and is the LAST element on the page — there's no footer
+         past it, so once the user scrolls past the intro and
+         spreads fills the viewport, scrolling stops. Slideshow-only
+         from there: prev/next chevrons drive navigation.
 
-         The .scrapbook-stage inner is sticky-pinned; inside it lives
-         the page-turner video (the "flip" animation), the HTML
-         overlay with the current spread, and the prev/next chevrons.
+         The .scrapbook-stage inner hosts the page-turner video (the
+         "flip" animation), the HTML overlay with the current
+         spread, and the prev/next chevrons.
 
          C2a uses 6 dummy spreads to verify the mechanic. Real
          content lands in C2b (cover spread) and C3+ (events).
@@ -186,4 +188,13 @@ $tc_scrapbook_intro_kfs = array(
 </main>
 
 <?php
-get_footer();
+/*
+ * No get_footer() — the scrapbook ends at the slideshow by design.
+ * Same approach as the parked /timeline page (per V0.05). We still
+ * need wp_footer() so plugins, the sitewide JS, and the closing
+ * body/html tags get emitted that footer.php would normally handle.
+ */
+wp_footer();
+?>
+</body>
+</html>

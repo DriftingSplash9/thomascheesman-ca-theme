@@ -91,10 +91,10 @@
 /* ============================================
    SPREADS — page-flip presentation (C2a)
    ============================================
-   - .scrapbook-spreads outer is 150vh tall — soft-lock scroll
-     budget. User scrolls into it from the intro; .scrapbook-stage
-     pins to top via position:sticky for the duration. Scrolling
-     past the spreads region exits to the footer.
+   - .scrapbook-spreads outer is exactly 100vh and is the LAST
+     element on the page (no footer past it — see page-scrapbook.php).
+     Once the user scrolls past the intro, this fills the viewport
+     and scrolling stops. Slideshow-only navigation from there.
    - .scrapbook-flipper (the page-turner video) sits inside the
      stage. preload=auto + poster=KF5 means before the video
      metadata arrives, the user sees the same frame that ended the
@@ -108,13 +108,12 @@
 
 .scrapbook-spreads {
     position: relative;
-    height: 150vh; /* soft-lock budget — see comment above */
+    height: 100vh; /* exact viewport — no scroll past */
     background-color: #2a1a0d;
 }
 
 .scrapbook-stage {
-    position: sticky;
-    top: 0;
+    position: relative;
     width: 100%;
     height: 100vh;
     overflow: hidden;
