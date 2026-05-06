@@ -12,12 +12,16 @@
    the conditional enqueue in functions.php), so other pages don't
    pay the bytes.
 
-   BUILD STATUS — C2a.4 (slideshow merged into intro):
-     - Scroll-driven 5-keyframe intro (C1.x) is the WHOLE page.
-     - Slideshow lives inside the intro's sticky stage — opacity
-       tied to scroll progress so it fades in as KF5 reaches full
-       opacity. Click chevrons drive the page-flip from there.
-       No separate spreads section, no scroll past, no footer.
+   BUILD STATUS — C2a.9 (video IS the rest pose):
+     - 4-keyframe intro (cover, half-open, letter, open). The
+       fifth "zoomed-in" beat is the video element itself, paused
+       at TURN_START — same source pixels as the animation, so
+       no mismatch between rest pose and motion.
+     - Slideshow wrapper opacity fades in over progress 0.78..0.82
+       (taking what was KF5's window). The video is at opacity 1
+       whenever the wrapper is visible; no per-click fade needed.
+     - Click chevrons drive the page-flip. No separate spreads
+       section, no scroll past, no footer.
      - Real cover spread (greeting + decade menu) lands C2b.
      - Decade tabs + letter envelope land C2c.
      - Events + ornaments land C3+.
@@ -118,39 +122,27 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    /* `contain` matches the intro keyframes' framing so when the
-       video appears its composition aligns with KF5. */
+    /* `contain` matches the intro keyframes' framing. */
     object-fit: contain;
     object-position: center center;
     pointer-events: none;
     user-select: none;
 
-    /* Hidden at idle — KF5 (the authored zoomed-in book image) is
-       the resting state, NOT a paused video frame. The video's
-       static frames don't perfectly match KF5 (slight motion
-       blur / decoding differences); using KF5 as the rest pose
-       keeps the idle book pixel-perfect. The video reveals only
-       during the actual flip animation.
-
-       The 800ms ease transition blends the video in/out gently.
-       Long enough that any sub-pixel misalignment between the
-       video's first/last frame and KF5 reads as a soft crossfade
-       instead of an abrupt swap — the eye sees one image
-       gradually replace another, not a hard cut. */
-    opacity: 0;
-    transition: opacity 800ms ease-in-out;
-    will-change: opacity, transform;
-}
-
-.scrapbook-flipper.is-playing {
+    /* Always visible whenever the slideshow wrapper is visible.
+       The video element itself IS the rest pose (paused at
+       TURN_START between flips) — same source pixels for both
+       the static idle and the animation, so there's no pixel
+       mismatch to mask with a fade. Wrapper-level opacity
+       (controlled by scroll progress in scrapbook.js) handles
+       the intro → slideshow appearance. */
     opacity: 1;
+    will-change: transform;
 }
 
 /* Reverse direction: horizontally mirror the video so the page
-   appears to turn the other way. We play the same forward video
-   at 2x speed with this flip applied — gives a "going backward"
-   visual without the cross-browser pain of stepping currentTime
-   backward (which doesn't reliably trigger frame repaints). */
+   reads as turning the other way. Applied only during reverse
+   playback. The toggle happens on the static idle frame (which
+   is symmetric — blank book) so the flip is invisible. */
 .scrapbook-flipper.is-reverse {
     transform: scaleX(-1);
 }

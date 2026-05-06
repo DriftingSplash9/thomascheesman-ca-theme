@@ -4,12 +4,13 @@
  * Loaded only on /scrapbook (page-scrapbook.php), conditionally
  * enqueued by tc_ventures_enqueue_scripts() in functions.php.
  *
- * BUILD STATUS — C2a.7:
- *   - Scroll-driven crossfade across the 5 intro keyframes.
- *   - Page-flip controller using pageturner.mp4. The video is
- *     hidden at idle — KF5 (the authored zoomed-in book image) is
- *     the resting state, so the book sits pixel-perfect between
- *     flips. The video reveals only during the actual animation.
+ * BUILD STATUS — C2a.9:
+ *   - Scroll-driven crossfade across 4 intro keyframes (cover,
+ *     half-open, letter, open). The "zoomed-in" beat is the video
+ *     element itself, paused at TURN_START — same source pixels
+ *     for rest pose and animation, no separate KF5 image.
+ *   - Slideshow wrapper opacity fades in over progress 0.78..0.82.
+ *     Video stays at opacity 1 whenever the wrapper is visible.
  *   - Forward (Next): plays t=3..6 at 1x with audio (3s).
  *   - Backward (Prev): plays the same forward clip at 1x with the
  *     video horizontally mirrored (scaleX(-1)) — visually reads as
@@ -60,8 +61,8 @@
      * image stays visible past the end of the intro and visually
      * continues onto the slideshow wrapper that lives in the same
      * sticky stage (see scrapbook.css — .scrapbook-slideshow opacity
-     * tracks the KF5 window so it fades in as the zoomed-in book
-     * reaches full opacity).
+     * fades in over the SLIDESHOW_WINDOW range, taking visual
+     * ownership of what was KF5's role).
      * ============================================================ */
 
     function initIntroCrossfade() {
@@ -71,9 +72,11 @@
         const kfs = intro.querySelectorAll('.scrapbook-intro__kf');
         if (kfs.length === 0) return;
 
-        // Slideshow wrapper sits inside the same sticky stage and
-        // its opacity tracks KF5 — invisible during early intro,
-        // fades in as the zoomed-in book reaches full opacity.
+        // Slideshow wrapper sits inside the same sticky stage. Its
+        // opacity follows SLIDESHOW_WINDOW — invisible during the
+        // early intro, fades in as KF4 finishes, holds full past
+        // end of intro. The video element inside is at opacity 1
+        // whenever the wrapper is visible.
         const slideshow = intro.querySelector('[data-scrapbook-slideshow]');
 
         // Per-keyframe windows. Tuned so KF3 (the letter) gets ~50%
@@ -85,8 +88,12 @@
             [0.06, 0.10, 0.16, 0.20],  // KF2: book half-open
             [0.16, 0.20, 0.66, 0.70],  // KF3: letter (long dwell — 50% of intro)
             [0.66, 0.70, 0.78, 0.82],  // KF4: open book, blank pages, desk visible
-            [0.78, 0.82, 1.00, 1.00],  // KF5: zoomed-in (no fade-out — holds past end)
         ];
+
+        // Slideshow wrapper window — replaces what was KF5's window.
+        // The video element (paused at TURN_START) provides the
+        // visual content, so no separate KF5 keyframe image needed.
+        const SLIDESHOW_WINDOW = [0.78, 0.82, 1.00, 1.00];
 
         function curveOpacity(progress, win) {
             const a = win[0], b = win[1], c = win[2], d = win[3];
@@ -109,10 +116,8 @@
             for (let i = 0; i < kfs.length; i++) {
                 kfs[i].style.opacity = curveOpacity(progress, windows[i]);
             }
-            // Slideshow wrapper tracks KF5's window — same fade-in
-            // schedule, same hold-past-end behaviour.
             if (slideshow) {
-                slideshow.style.opacity = curveOpacity(progress, windows[windows.length - 1]);
+                slideshow.style.opacity = curveOpacity(progress, SLIDESHOW_WINDOW);
             }
         }
 
@@ -141,26 +146,25 @@
      * pageturner.mp4 is ~6.04s: t=0..3 is a static book pose;
      * t=3..6 is the page turn (audio kicks in over this stretch).
      *
-     * The video is HIDDEN at idle (CSS opacity 0). KF5 (the
-     * authored zoomed-in book image) is the resting state, so the
-     * book sits pixel-perfect between flips. The video reveals
-     * (.is-playing class) only during the actual animation.
+     * The video is the rest pose — paused at TURN_START between
+     * flips. Its first/last frames ARE the book at rest, so the
+     * static idle and the animation share the exact same source
+     * pixels (no fading needed to mask mismatch).
      *
      * Forward (Next):
      *   1. Set busy, disable nav.
-     *   2. Add .is-playing class — video becomes visible.
-     *   3. Seek to TURN_START, play at 1x with audio.
-     *   4. At SWAP_AT (mid-turn) — swap .is-active class so the
+     *   2. Seek to TURN_START, play at 1x with audio.
+     *   3. At SWAP_AT (mid-turn) — swap .is-active class so the
      *      previous spread fades out and the next fades in.
-     *   5. At TURN_END — pause, reset to TURN_START, hide video,
-     *      release busy.
+     *   4. At TURN_END — pause, seek back to TURN_START so the
+     *      idle frame is restored; release busy.
      *
      * Backward (Prev): identical to forward, but adds .is-reverse
      *   which applies transform: scaleX(-1) — the page visually
-     *   turns the OTHER way. Same speed, same audio, same length.
-     *   Sidesteps the cross-browser pain of stepping currentTime
-     *   backward (which didn't reliably trigger frame repaints in
-     *   C2a.5).
+     *   turns the OTHER way. The mirror toggle happens on the
+     *   static idle frame which is symmetric (blank book), so it's
+     *   imperceptible. Sidesteps the cross-browser pain of stepping
+     *   currentTime backward.
      *
      * Fallback: if video.play() rejects (autoplay block, decode
      * error), we still swap content so navigation works.
@@ -226,9 +230,12 @@
         }
 
         // Shared flip routine. Both directions play the same forward
-        // clip at 1x with audio. Reverse just adds the .is-reverse
-        // class which CSS uses to apply transform: scaleX(-1) —
-        // visually mirrors the page-turn so it reads as "going back."
+        // clip at 1x with audio. Reverse adds .is-reverse which CSS
+        // uses to apply transform: scaleX(-1) — visually mirrors the
+        // page-turn so it reads as "going back." The video is at
+        // opacity 1 throughout (when the slideshow wrapper is
+        // visible), so there's no per-click fade-in/out — just
+        // play, swap mid-turn, and reset to idle frame at the end.
         function playFlip(toIndex, direction) {
             setBusy(true);
 
@@ -237,7 +244,6 @@
             const swapMs    = (SWAP_AT  - TURN_START) * 1000;
 
             video.classList.toggle('is-reverse', isReverse);
-            video.classList.add('is-playing');
             video.currentTime = TURN_START;
 
             const playPromise = video.play();
@@ -256,7 +262,7 @@
                 if (currentIndex !== toIndex) setActive(toIndex);
             }, swapMs);
 
-            // End of turn — hide video, reset, release busy.
+            // End of turn — pause and seek back to the idle frame.
             window.setTimeout(finishFlip, turnMs);
 
             function finishFlip() {
@@ -264,7 +270,7 @@
                 try {
                     video.currentTime = TURN_START;
                 } catch (err) { /* ignore */ }
-                video.classList.remove('is-playing', 'is-reverse');
+                video.classList.remove('is-reverse');
                 setBusy(false);
             }
         }

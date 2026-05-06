@@ -5,30 +5,32 @@
  * Auto-applied by WordPress to any page whose slug is `scrapbook`.
  * Spec: timeline-build-log/V0.07.md.
  *
- * BUILD STATUS — Commit C2a.4 (slideshow merged into intro):
+ * BUILD STATUS — Commit C2a.9 (video IS the rest pose):
  *
- *   - Scroll-driven 5-keyframe intro (C1.x).
- *   - Slideshow lives INSIDE the intro's sticky stage. As the user
- *     scrolls into KF5 (the zoomed-in blank book) the slideshow
- *     wrapper fades in and the first HTML spread appears on the
- *     same blank pages — no scrolling to a separate "second book"
- *     section. Once intro reaches max scroll the page is fully
- *     scrolled; click chevrons drive the slideshow from there.
+ *   - Scroll-driven 4-keyframe intro: cover → half-open → letter →
+ *     open. The fifth visual ("zoomed-in blank book") is now the
+ *     video element itself, paused at TURN_START. Eliminates the
+ *     pixel mismatch between a separate KF5 image and the video's
+ *     first/last frames — same source pixels = perfect alignment.
+ *   - Slideshow lives INSIDE the intro's sticky stage. Wrapper
+ *     opacity fades in over scroll progress 0.78..0.82, taking
+ *     KF5's old role visually. The video stays at opacity 1
+ *     whenever the wrapper is visible.
+ *   - Click chevrons drive the slideshow. The page is exactly the
+ *     intro region tall (no separate spreads section, no footer).
  *   - C2b replaces dummy spread 0 with the real cover spread
  *     (greeting + decade jump menu). C2c adds decade tabs + the
  *     letter envelope. C3+ replaces remaining dummies with events.
  *
  * Page-flip mechanic uses Thomas's authored 6-second video
  * (pageturner.mp4) instead of CSS 3D transforms. The video is
- * hidden at idle (CSS opacity 0) — KF5 (the authored zoomed-in
- * book image) is the resting state, so the book sits pixel-
- * perfect between flips. The video reveals only during the
- * actual animation. Forward (Next) plays t=3..6 at 1x with the
- * SFX audio (3 seconds). Backward (Prev) plays the same clip at
- * 1x with the video horizontally mirrored (scaleX(-1)) — visually
- * reads as a page turning the other way, sidesteps the cross-
- * browser pain of stepping currentTime backward. The HTML overlay
- * fades old-out / new-in mid-turn so the video covers the swap.
+ * always visible when the slideshow wrapper is visible (no fade
+ * in/out per click) — paused at TURN_START between flips, plays
+ * t=3..6 on click, then pause + seek back to TURN_START for the
+ * next idle. Forward plays at 1x with the SFX audio. Backward
+ * plays the same clip at 1x with the video horizontally mirrored
+ * (scaleX(-1)) so it reads as a page turning the other way. HTML
+ * overlay fades old-out / new-in mid-turn to cover the swap.
  *
  * Future: Thomas plans to record his voice reading the letter.
  * Audio play button will live near KF3 when the recording lands.
@@ -37,11 +39,14 @@
 get_header();
 
 /**
- * Intro keyframes — narrative arc from closed-on-desk to zoomed-in.
+ * Intro keyframes — narrative arc from closed-on-desk to open book.
  * Order matters: this is the scroll sequence the reader experiences.
  *
  * KF3 (the letter) gets ~50% of the scroll budget for reading time;
- * the actual opacity windows live in assets/js/scrapbook.js.
+ * the actual opacity windows live in assets/js/scrapbook.js. The
+ * fifth "zoomed-in" beat is supplied by the video element itself
+ * (paused at TURN_START) so its rest pose matches the animation
+ * source pixel-for-pixel.
  */
 $tc_scrapbook_intro_kfs = array(
     array(
@@ -58,10 +63,6 @@ $tc_scrapbook_intro_kfs = array(
     ),
     array(
         'src' => '/wp-content/uploads/2026/05/book-open.png',
-        'alt' => '',
-    ),
-    array(
-        'src' => '/wp-content/uploads/2026/05/book-zoomed-in.png',
         'alt' => '',
     ),
 );
