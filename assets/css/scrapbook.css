@@ -148,51 +148,83 @@
     filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.32));
 }
 
-/* Page-edge stacks — striped slivers extending from the outer
-   left and right of the book, suggesting accumulated thickness
-   of all the pages beneath the visible spread. Each stripe is a
-   single page edge; the alternating colours give the eye depth. */
+/* Page-edge stacks — soft slivers along the outer left and right
+   of the book, suggesting accumulated thickness of all the pages
+   beneath the visible spread. Stripes are very low-contrast so
+   they read as paper texture rather than digital banding; mask
+   fade at top/bottom rounds the corners into the page; the
+   stacks overlap the book by 2px to avoid a harsh seam. */
 
 .scrapbook-book-surface::before,
 .scrapbook-book-surface::after {
     content: '';
     position: absolute;
-    top: 6px;
-    bottom: 6px;
-    width: 22px;
+    top: 4px;
+    bottom: 4px;
+    width: 14px;
     background:
-        /* Inset shadow at top + bottom so the corners feel rounded
-           into the stack. */
+        /* Subtle horizontal shading from outer edge (darker) to
+           inner edge (lighter, blending into the page). */
         linear-gradient(
-            to bottom,
-            rgba(0, 0, 0, 0.16) 0%,
-            transparent 6%,
-            transparent 94%,
-            rgba(0, 0, 0, 0.16) 100%
+            to right,
+            rgba(0, 0, 0, 0.14) 0%,
+            rgba(0, 0, 0, 0.04) 60%,
+            rgba(0, 0, 0, 0)    100%
         ),
-        /* Striped page edges — each line ≈ one page. */
+        /* Faint stripes — each stripe ≈ one page edge. Low contrast
+           so it reads as texture, not banding. */
         repeating-linear-gradient(
             to bottom,
-            #e0d6ba 0px,
-            #e0d6ba 1.5px,
-            #c4b690 1.5px,
-            #c4b690 3px
+            #e0d3b4 0px,
+            #e0d3b4 1.5px,
+            #d8cba8 1.5px,
+            #d8cba8 3px
         );
+    /* Soft top/bottom fade so the stack rounds into the book
+       corners instead of stopping abruptly. */
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 6%,
+        black 94%,
+        transparent 100%
+    );
+            mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 6%,
+        black 94%,
+        transparent 100%
+    );
     pointer-events: none;
 }
 
 .scrapbook-book-surface::before {
-    left: -22px;
-    border-radius: 4px 0 0 4px;
-    /* Soft outer shadow on the deepest edge gives the stack
-       physicality — like the bottom pages bow outward. */
-    box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.08);
+    /* Left side of book — outer edge is on the LEFT.
+       Default `to right` shading (darker → transparent) is correct:
+       darker at the outer edge, fading into the book on the right.
+       Overlap the book by 2px to avoid a harsh seam. */
+    left: -12px;
 }
 
 .scrapbook-book-surface::after {
-    right: -22px;
-    border-radius: 0 4px 4px 0;
-    box-shadow: inset -2px 0 5px rgba(0, 0, 0, 0.08);
+    /* Right side of book — outer edge is on the RIGHT.
+       Flip the horizontal shading so it's darker at the right. */
+    right: -12px;
+    background:
+        linear-gradient(
+            to left,
+            rgba(0, 0, 0, 0.14) 0%,
+            rgba(0, 0, 0, 0.04) 60%,
+            rgba(0, 0, 0, 0)    100%
+        ),
+        repeating-linear-gradient(
+            to bottom,
+            #e0d3b4 0px,
+            #e0d3b4 1.5px,
+            #d8cba8 1.5px,
+            #d8cba8 3px
+        );
 }
 
 .scrapbook-book-surface__page {
