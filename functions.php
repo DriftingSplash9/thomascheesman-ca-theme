@@ -144,6 +144,20 @@ function tc_ventures_enqueue_scripts() {
             array( 'astra-child-style' ),
             wp_get_theme()->get( 'Version' )
         );
+
+        // scrapbook.js — scroll-driven intro crossfade in C1.1, plus
+        // the page-flip controller, decade tabs, and page-number
+        // easter-egg JS landing in C2..C6. Loaded in the footer
+        // (last arg true) so it runs after DOM parse. No dependency
+        // on tc-ventures-main: the scrapbook handlers are scoped to
+        // their own elements and don't share state.
+        wp_enqueue_script(
+            'tc-scrapbook',
+            get_stylesheet_directory_uri() . '/assets/js/scrapbook.js',
+            array(),
+            wp_get_theme()->get( 'Version' ),
+            true
+        );
     }
 }
 add_action( 'wp_enqueue_scripts', 'tc_ventures_enqueue_scripts' );

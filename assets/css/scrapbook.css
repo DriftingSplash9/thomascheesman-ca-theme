@@ -12,66 +12,97 @@
    the conditional enqueue in functions.php), so other pages don't
    pay the bytes.
 
-   BUILD STATUS — C1 (shell only):
-     - Wooden-desk surface as full-viewport fixed background
-     - .scrapbook-book reserved as the 3D perspective container that
-       future .scrapbook-page elements will mount into in C2
-     - No page-flip mechanic, no events, no ornaments yet
+   BUILD STATUS — C1.1 (intro shipped, spreads pending):
+     - Scroll-driven 5-keyframe intro: closed cover, half-open,
+       letter (long dwell), open blank, zoomed-in (handoff).
+     - Spreads region scaffolded with the zoomed-in image as bg so
+       the intro flows into spreads without a visual cut.
+     - No page-flip mechanic, events, ornaments, or decade tabs yet.
    ============================================ */
 
 /* ============================================
-   SURFACE — the wooden desk + painted-on open scrapbook
+   PAGE BASE
    ============================================ */
 
 .scrapbook-page {
-    /* Astra's <main> usually has horizontal padding from .ast-container.
-       Strip everything here so the desk surface reads edge-to-edge. */
     margin: 0;
     padding: 0;
     width: 100%;
-    min-height: 100vh;
 
-    /* Dark wood fallback while the surface image is loading. Matches
-       the dominant tone of blank-scrab-book.png so the swap from
-       fallback to image is invisible. */
+    /* Wood-tone fallback while the keyframe images are loading.
+       Matches the dominant desk tone in cover.png so the first
+       paint reads as desk before the <img> arrives. */
     background-color: #2a1a0d;
-
-    /* The surface art shows the wooden desk WITH the open scrapbook
-       painted on it. Single image = both the desk grain and the empty
-       book pages. Filename intentionally misspells "scrap" as "scrab"
-       — preserve verbatim, see V0.07 PARKED-URL note. */
-    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/blank-scrab-book.png');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-
-    position: relative;
-    overflow: hidden; /* clip any future overflows from page-flip 3D */
+    color: #f5ecd9;
 }
 
 /* ============================================
-   STAGE — viewport-sized wrapper that hosts the book
+   INTRO — scroll-driven 5-keyframe crossfade
+   ============================================
+   - Outer .scrapbook-intro is 400vh tall — drives the scroll budget.
+   - Inner .scrapbook-intro__sticky is position:sticky; pins to the
+     top of the viewport for the full intro scroll.
+   - 5 <img>s stack inside the sticky container. opacity is JS-driven
+     per scroll progress (assets/js/scrapbook.js).
+   - The letter (KF3) gets ~50% of the budget for reading time.
    ============================================ */
 
-.scrapbook-stage {
+.scrapbook-intro {
+    position: relative;
+    height: 400vh; /* tune if dwell feels wrong */
+    background-color: #2a1a0d;
+}
+
+.scrapbook-intro__sticky {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.scrapbook-intro__kf {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    opacity: 0;
+    /* Slight CSS smoothing for any opacity steps the JS can't fully
+       cover (e.g. fast wheel-flick, resize jumps). */
+    transition: opacity 80ms linear;
+    will-change: opacity;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* First keyframe at full opacity by default so the page renders
+   the cover before JS runs. JS overrides as soon as it boots. */
+.scrapbook-intro__kf.is-initial {
+    opacity: 1;
+}
+
+/* ============================================
+   SPREADS — placeholder for the page-flip mechanic (lands C2)
+   ============================================
+   Uses book-zoomed-in.png as background so end-of-intro flows
+   into start-of-spreads without a cut. Pages mount in
+   .scrapbook-book in C2; the dashed outline is a build-aid that
+   gets baked into page-edge styling later.
+   ============================================ */
+
+.scrapbook-spreads {
     position: relative;
     width: 100%;
     min-height: 100vh;
+    background-color: #2a1a0d;
+    background-image: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/book-zoomed-in.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    overflow: hidden;
 }
-
-/* ============================================
-   BOOK — 3D perspective parent for the page-flip
-   ============================================
-   Children .scrapbook-page elements (added in C2) will hinge on
-   either the left or right edge and rotateY through 0..-180deg to
-   simulate the page turning over. preserve-3d on this element is
-   what gives those rotations real depth.
-
-   The book overlays the painted-on book in the surface image. The
-   width / aspect-ratio / position values below are first-pass
-   approximations; C2 will tune them to align cleanly with the
-   painted spread once real pages exist to eyeball against. */
 
 .scrapbook-book {
     position: absolute;
@@ -87,26 +118,20 @@
     perspective: 1500px;
     transform-style: preserve-3d;
 
-    /* Faint outline so we can see the reserved space during C1. Remove
-       (or bake into the page-edge styling) in C2. */
+    /* Build-aid — remove or bake into page edges in C2. */
     outline: 1px dashed rgba(255, 255, 255, 0.08);
     outline-offset: -1px;
 }
 
 /* ============================================
-   MOBILE FALLBACK PLACEHOLDER
+   MOBILE FALLBACK
    ============================================
-   Page-flip 3D is desktop-only. Mobile gets a stripped-down vertical
-   scroll fallback (V0.07 todo #6 — Phase 2). For now we just keep
-   the surface image readable on small screens. */
+   The intro crossfade works on mobile. Page-flip 3D in the spreads
+   region is desktop-only (V0.07 todo #6 — Phase 2 vertical scroll
+   fallback for mobile). For now we just resize the book frame.
+   ============================================ */
 
 @media (max-width: 767px) {
-    .scrapbook-page {
-        /* fixed bg-attachment is jittery on iOS — let it scroll with
-           the page on small screens. */
-        background-attachment: scroll;
-    }
-
     .scrapbook-book {
         width: 92vw;
     }
