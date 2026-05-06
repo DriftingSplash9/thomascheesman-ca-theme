@@ -58,7 +58,7 @@ $tc_scrapbook_intro_kfs = array(
         'alt' => 'A handwritten letter from Thomas to his children, opening the scrapbook.',
     ),
     array(
-        'src' => '/wp-content/uploads/2026/05/balnk-book-for-slides.png',
+        'src' => '/wp-content/uploads/2026/05/cropped-book.png',
         'alt' => '',
     ),
 );
@@ -255,7 +255,7 @@ $tc_total_spreads = max( 6, count( $tc_scrapbook_events ) );
                 -->
                 <img
                     class="scrapbook-book-surface"
-                    src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/balnk-book-for-slides.png' ) ); ?>"
+                    src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/cropped-book.png' ) ); ?>"
                     alt=""
                     aria-hidden="true"
                     loading="lazy"
@@ -272,12 +272,10 @@ $tc_total_spreads = max( 6, count( $tc_scrapbook_events ) );
                 <div class="scrapbook-pages" data-scrapbook-pages>
                     <?php
                     /*
-                     * Spread loop. Each spread = left page + right page.
-                     * - Right page: real event content if available,
-                     *   otherwise the build-time placeholder box.
-                     * - Left page: placeholder for now (real left-page
-                     *   content lands in later commits — currently
-                     *   reserved for date dividers / decorative ornaments).
+                     * Spread loop. ONE PAGE AT A TIME — the surface
+                     * shows a single open book page (cropped-book.png),
+                     * so each "spread" is one event's content centred
+                     * on the visible page.
                      *
                      * The .is-active class drives the entrance animations
                      * on the spread's children (see scrapbook.css). Each
@@ -300,30 +298,22 @@ $tc_total_spreads = max( 6, count( $tc_scrapbook_events ) );
                              data-spread-index="<?php echo $i; ?>"
                              aria-hidden="<?php echo $i === 0 ? 'false' : 'true'; ?>"
                              style="<?php echo esc_attr( $style ); ?>">
-
-                            <div class="scrapbook-spread__page scrapbook-spread__page--left">
-                                <span class="scrapbook-spread__placeholder">Spread <?php echo $i + 1; ?> &mdash; left</span>
-                            </div>
-
-                            <div class="scrapbook-spread__page scrapbook-spread__page--right">
-                                <?php if ( $event ) : ?>
-                                    <figure class="scrapbook-photo">
-                                        <img
-                                            src="<?php echo esc_url( home_url( $event['image'] ) ); ?>"
-                                            alt="<?php echo esc_attr( $event['title'] ); ?>"
-                                            loading="lazy"
-                                            decoding="async"
-                                        />
-                                        <figcaption class="scrapbook-photo__caption">
-                                            <span class="scrapbook-photo__title"><?php echo esc_html( $event['title'] ); ?></span>
-                                            <span class="scrapbook-photo__meta"><?php echo esc_html( $event['place'] . ' &middot; ' . $event['year'] ); ?></span>
-                                        </figcaption>
-                                    </figure>
-                                <?php else : ?>
-                                    <span class="scrapbook-spread__placeholder">Spread <?php echo $i + 1; ?> &mdash; right</span>
-                                <?php endif; ?>
-                            </div>
-
+                            <?php if ( $event ) : ?>
+                                <figure class="scrapbook-photo">
+                                    <img
+                                        src="<?php echo esc_url( home_url( $event['image'] ) ); ?>"
+                                        alt="<?php echo esc_attr( $event['title'] ); ?>"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+                                    <figcaption class="scrapbook-photo__caption">
+                                        <span class="scrapbook-photo__title"><?php echo esc_html( $event['title'] ); ?></span>
+                                        <span class="scrapbook-photo__meta"><?php echo esc_html( $event['place'] . ' &middot; ' . $event['year'] ); ?></span>
+                                    </figcaption>
+                                </figure>
+                            <?php else : ?>
+                                <span class="scrapbook-spread__placeholder">Page <?php echo $i + 1; ?></span>
+                            <?php endif; ?>
                         </div>
                     <?php endfor; ?>
                 </div>

@@ -178,19 +178,21 @@
     left: 50%;
     transform: translate(-50%, -50%);
 
-    /* Roughly book-shape, sized to overlap the painted spread.
-       Tune by eyeball on staging; expect to adjust. */
-    width: min(72vw, 1200px);
+    /* Sized to overlap the visible page area in cropped-book.png.
+       One page at a time, so this is the full visible page. Tune
+       by eyeball on staging. */
+    width: min(60vw, 900px);
     aspect-ratio: 7 / 5;
 
+    /* Single-page layout — content centres on the page. No
+       left/right grid since we're showing one page only. */
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    place-items: center;
 
     opacity: 0;
-    /* 500ms matches the 3-second turn (t=3..6). Swap fires at
-       mid-turn (t+1500ms), fade completes at t+2000ms, video
-       pauses at t+3000ms — leaving 1s of static-spread visible
-       while the video finishes settling. */
+    /* 500ms crossfade between spreads when the user clicks Next/
+       Prev. Photo + caption have their own delayed entrance
+       animations layered on top (see .scrapbook-photo). */
     transition: opacity 500ms ease-in-out;
     pointer-events: none;
 }
@@ -252,7 +254,9 @@
     box-shadow:
         0 2px 6px rgba(0, 0, 0, 0.18),
         0 12px 28px rgba(0, 0, 0, 0.14);
-    max-width: 75%;
+    /* Sized for single-page layout — fits comfortably inside the
+       page's decorative ornament border. */
+    max-width: 60%;
     margin: 0 auto;
 
     /* Pre-entrance: starts above the resting position, no tilt,
