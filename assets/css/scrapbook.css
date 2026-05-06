@@ -118,14 +118,35 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    /* `contain` matches the intro keyframes' framing so the visual
-       handoff from KF5 (intro end) into the video's first frame is
-       seamless — same letterbox treatment, same composition. */
+    /* `contain` matches the intro keyframes' framing so when the
+       video appears its composition aligns with KF5. */
     object-fit: contain;
     object-position: center center;
     pointer-events: none;
     user-select: none;
-    background-color: #2a1a0d; /* matches the wood fallback */
+
+    /* Hidden at idle — KF5 (the authored zoomed-in book image) is
+       the resting state, NOT a paused video frame. The video's
+       static frames don't perfectly match KF5 (slight motion
+       blur / decoding differences); using KF5 as the rest pose
+       keeps the idle book pixel-perfect. The video reveals only
+       during the actual flip animation. */
+    opacity: 0;
+    transition: opacity 60ms linear;
+    will-change: opacity, transform;
+}
+
+.scrapbook-flipper.is-playing {
+    opacity: 1;
+}
+
+/* Reverse direction: horizontally mirror the video so the page
+   appears to turn the other way. We play the same forward video
+   at 2x speed with this flip applied — gives a "going backward"
+   visual without the cross-browser pain of stepping currentTime
+   backward (which doesn't reliably trigger frame repaints). */
+.scrapbook-flipper.is-reverse {
+    transform: scaleX(-1);
 }
 
 /* ============================================
