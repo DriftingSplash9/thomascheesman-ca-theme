@@ -12,11 +12,12 @@
    the conditional enqueue in functions.php), so other pages don't
    pay the bytes.
 
-   BUILD STATUS — C2a (page-flip foundation):
-     - Scroll-driven 5-keyframe intro (C1.x).
-     - Spreads region with the page-turner.mp4 video as the flip
-       animation. 6 dummy spreads + click chevrons. Soft-lock
-       scroll: 150vh budget, sticky inner stage.
+   BUILD STATUS — C2a.4 (slideshow merged into intro):
+     - Scroll-driven 5-keyframe intro (C1.x) is the WHOLE page.
+     - Slideshow lives inside the intro's sticky stage — opacity
+       tied to scroll progress so it fades in as KF5 reaches full
+       opacity. Click chevrons drive the page-flip from there.
+       No separate spreads section, no scroll past, no footer.
      - Real cover spread (greeting + decade menu) lands C2b.
      - Decade tabs + letter envelope land C2c.
      - Events + ornaments land C3+.
@@ -89,34 +90,27 @@
 }
 
 /* ============================================
-   SPREADS — page-flip presentation (C2a)
+   SLIDESHOW — page-flip presentation, layered on KF5
    ============================================
-   - .scrapbook-spreads outer is exactly 100vh and is the LAST
-     element on the page (no footer past it — see page-scrapbook.php).
-     Once the user scrolls past the intro, this fills the viewport
-     and scrolling stops. Slideshow-only navigation from there.
-   - .scrapbook-flipper (the page-turner video) sits inside the
-     stage. preload=auto + poster=KF5 means before the video
-     metadata arrives, the user sees the same frame that ended the
-     intro — visual handoff is seamless.
-   - .scrapbook-pages overlays the video with the current spread.
-     During a flip, the active spread fades out; mid-turn the
-     active class moves to the next spread; the new content fades
-     in. The video covers the swap so the reader sees a "physical"
-     page turn rather than a CSS opacity fade.
+   The slideshow lives inside .scrapbook-intro__sticky (alongside
+   the keyframes). Its opacity is JS-driven via the same scroll
+   window as KF5 — invisible during the early intro, fades in as
+   the zoomed-in book reaches full opacity, and stays visible past
+   the end of intro scroll.
+
+   Z-stacked above the keyframes (later in DOM order, no explicit
+   z-index needed) so once visible the video + HTML content render
+   on top of KF5. The video poster is the same image as KF5, so
+   the wrapper appearing reads as "the book stays put — content
+   just arrives on its blank pages."
    ============================================ */
 
-.scrapbook-spreads {
-    position: relative;
-    height: 100vh; /* exact viewport — no scroll past */
-    background-color: #2a1a0d;
-}
-
-.scrapbook-stage {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
+.scrapbook-slideshow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 80ms linear;
+    will-change: opacity;
 }
 
 .scrapbook-flipper {

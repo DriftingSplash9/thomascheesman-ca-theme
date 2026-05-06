@@ -52,8 +52,10 @@
      * Special case — when c === d, "no fade-out": the keyframe holds
      * at opacity 1 past c indefinitely. Used for KF5 so the zoomed-in
      * image stays visible past the end of the intro and visually
-     * continues into the spreads region (which uses the same image
-     * as its background, see scrapbook.css).
+     * continues onto the slideshow wrapper that lives in the same
+     * sticky stage (see scrapbook.css — .scrapbook-slideshow opacity
+     * tracks the KF5 window so it fades in as the zoomed-in book
+     * reaches full opacity).
      * ============================================================ */
 
     function initIntroCrossfade() {
@@ -62,6 +64,11 @@
 
         const kfs = intro.querySelectorAll('.scrapbook-intro__kf');
         if (kfs.length === 0) return;
+
+        // Slideshow wrapper sits inside the same sticky stage and
+        // its opacity tracks KF5 — invisible during early intro,
+        // fades in as the zoomed-in book reaches full opacity.
+        const slideshow = intro.querySelector('[data-scrapbook-slideshow]');
 
         // Per-keyframe windows. Tuned so KF3 (the letter) gets ~50%
         // of the scroll budget for reading time. Adjust here when
@@ -95,6 +102,11 @@
                 : 0;
             for (let i = 0; i < kfs.length; i++) {
                 kfs[i].style.opacity = curveOpacity(progress, windows[i]);
+            }
+            // Slideshow wrapper tracks KF5's window — same fade-in
+            // schedule, same hold-past-end behaviour.
+            if (slideshow) {
+                slideshow.style.opacity = curveOpacity(progress, windows[windows.length - 1]);
             }
         }
 
@@ -141,7 +153,7 @@
      * ============================================================ */
 
     function initPageFlip() {
-        const root = document.querySelector('[data-scrapbook-spreads]');
+        const root = document.querySelector('[data-scrapbook-slideshow]');
         if (!root) return;
 
         const video   = root.querySelector('[data-scrapbook-flipper]');
