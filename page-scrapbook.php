@@ -117,7 +117,7 @@ $tc_scrapbook_intro_kfs = array(
             <video
                 class="scrapbook-flipper"
                 data-scrapbook-flipper
-                src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/page-turner.mp4' ) ); ?>"
+                src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/pageturner2.mp4' ) ); ?>"
                 poster="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/book-zoomed-in.png' ) ); ?>"
                 preload="auto"
                 playsinline
