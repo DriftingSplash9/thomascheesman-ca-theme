@@ -12,12 +12,14 @@
    the conditional enqueue in functions.php), so other pages don't
    pay the bytes.
 
-   BUILD STATUS — C1.3 (intro keyframes only):
-     - Scroll-driven 5-keyframe intro: closed cover, half-open,
-       letter (long dwell), open blank, zoomed-in.
-     - C2 reintroduces .scrapbook-spreads + .scrapbook-book with
-       the actual page-flip content. (C1.1 had a placeholder
-       spreads section that read as a duplicated book; removed.)
+   BUILD STATUS — C2a (page-flip foundation):
+     - Scroll-driven 5-keyframe intro (C1.x).
+     - Spreads region with the page-turner.mp4 video as the flip
+       animation. 6 dummy spreads + click chevrons. Soft-lock
+       scroll: 150vh budget, sticky inner stage.
+     - Real cover spread (greeting + decade menu) lands C2b.
+     - Decade tabs + letter envelope land C2c.
+     - Events + ornaments land C3+.
    ============================================ */
 
 /* ============================================
@@ -86,4 +88,179 @@
     opacity: 1;
 }
 
-/* .scrapbook-spreads + .scrapbook-book land in C2 (page-flip). */
+/* ============================================
+   SPREADS — page-flip presentation (C2a)
+   ============================================
+   - .scrapbook-spreads outer is 150vh tall — soft-lock scroll
+     budget. User scrolls into it from the intro; .scrapbook-stage
+     pins to top via position:sticky for the duration. Scrolling
+     past the spreads region exits to the footer.
+   - .scrapbook-flipper (the page-turner video) sits inside the
+     stage. preload=auto + poster=KF5 means before the video
+     metadata arrives, the user sees the same frame that ended the
+     intro — visual handoff is seamless.
+   - .scrapbook-pages overlays the video with the current spread.
+     During a flip, the active spread fades out; mid-turn the
+     active class moves to the next spread; the new content fades
+     in. The video covers the swap so the reader sees a "physical"
+     page turn rather than a CSS opacity fade.
+   ============================================ */
+
+.scrapbook-spreads {
+    position: relative;
+    height: 150vh; /* soft-lock budget — see comment above */
+    background-color: #2a1a0d;
+}
+
+.scrapbook-stage {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.scrapbook-flipper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /* `contain` matches the intro keyframes' framing so the visual
+       handoff from KF5 (intro end) into the video's first frame is
+       seamless — same letterbox treatment, same composition. */
+    object-fit: contain;
+    object-position: center center;
+    pointer-events: none;
+    user-select: none;
+    background-color: #2a1a0d; /* matches the wood fallback */
+}
+
+/* ============================================
+   PAGES — the HTML overlay
+   ============================================
+   .scrapbook-pages fills the stage. Each .scrapbook-spread is
+   absolute-positioned and centered; only the .is-active one is
+   visible. The width / aspect-ratio below are first-pass
+   approximations of where the painted-on book sits in the video
+   frame; tune in C2a follow-up after eyeballing on staging.
+   ============================================ */
+
+.scrapbook-pages {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.scrapbook-spread {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    /* Roughly book-shape, sized to overlap the painted spread.
+       Tune by eyeball on staging; expect to adjust. */
+    width: min(72vw, 1200px);
+    aspect-ratio: 7 / 5;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    opacity: 0;
+    transition: opacity 400ms ease-in-out;
+    pointer-events: none;
+}
+
+.scrapbook-spread.is-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.scrapbook-spread__page {
+    /* Placeholder styling for C2a — no ornaments, no real content,
+       just enough to confirm the swap mechanic is working. C3+
+       replaces this with per-era ornament rendering. */
+    padding: 2.5rem;
+    color: rgba(42, 26, 13, 0.85);
+    font-family: 'Special Elite', 'Courier New', monospace;
+    font-size: 1.05rem;
+    display: grid;
+    place-items: center;
+}
+
+.scrapbook-spread__placeholder {
+    /* Faint dotted box around the placeholder text so we can see
+       the .scrapbook-spread__page footprint for alignment work
+       without distracting from real content (which doesn't exist
+       yet). Removed in C2b once the cover spread lands. */
+    padding: 1.25rem 2rem;
+    border: 1px dashed rgba(42, 26, 13, 0.25);
+    border-radius: 4px;
+    background: rgba(255, 252, 240, 0.35);
+}
+
+/* ============================================
+   NAVIGATION CHEVRONS
+   ============================================
+   Round buttons at the viewport edges, vertically centered.
+   Disabled state during the flip animation (busy) and at the
+   spread sequence boundaries (start / end). JS attaches handlers.
+   ============================================ */
+
+.scrapbook-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 56px;
+    height: 56px;
+    background: rgba(0, 0, 0, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 50%;
+    color: #f5ecd9;
+    font-size: 2.4rem;
+    line-height: 1;
+    font-family: serif; /* the chevron glyphs read more elegantly in serif */
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: opacity 200ms ease, background 200ms ease, transform 200ms ease;
+    z-index: 10;
+    padding: 0;
+}
+
+.scrapbook-nav:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.62);
+    transform: translateY(-50%) scale(1.06);
+}
+
+.scrapbook-nav:active:not(:disabled) {
+    transform: translateY(-50%) scale(0.96);
+}
+
+.scrapbook-nav:disabled {
+    opacity: 0.28;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.scrapbook-nav--prev {
+    left: 28px;
+}
+
+.scrapbook-nav--next {
+    right: 28px;
+}
+
+@media (max-width: 767px) {
+    .scrapbook-nav {
+        width: 44px;
+        height: 44px;
+        font-size: 2rem;
+    }
+    .scrapbook-nav--prev { left: 12px; }
+    .scrapbook-nav--next { right: 12px; }
+
+    .scrapbook-spread {
+        width: 92vw;
+        aspect-ratio: 7 / 5;
+    }
+}
