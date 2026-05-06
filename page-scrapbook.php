@@ -5,32 +5,28 @@
  * Auto-applied by WordPress to any page whose slug is `scrapbook`.
  * Spec: timeline-build-log/V0.07.md.
  *
- * BUILD STATUS — Commit C2a.9 (video IS the rest pose):
+ * BUILD STATUS — C3a (flat surface rebuild):
  *
- *   - Scroll-driven 4-keyframe intro: cover → half-open → letter →
- *     open. The fifth visual ("zoomed-in blank book") is now the
- *     video element itself, paused at TURN_START. Eliminates the
- *     pixel mismatch between a separate KF5 image and the video's
- *     first/last frames — same source pixels = perfect alignment.
- *   - Slideshow lives INSIDE the intro's sticky stage. Wrapper
- *     opacity fades in over scroll progress 0.78..0.82, taking
- *     KF5's old role visually. The video stays at opacity 1
- *     whenever the wrapper is visible.
- *   - Click chevrons drive the slideshow. The page is exactly the
- *     intro region tall (no separate spreads section, no footer).
- *   - C2b replaces dummy spread 0 with the real cover spread
- *     (greeting + decade jump menu). C2c adds decade tabs + the
- *     letter envelope. C3+ replaces remaining dummies with events.
+ *   - Scroll-driven 4-keyframe intro (cover → half-open → letter →
+ *     open) sets the metaphor: this is a scrapbook, on a desk.
+ *   - Slideshow surface is now a FLAT illustrative book — two
+ *     cream parchment rectangles centered on the dark wood. The
+ *     curved-pages photo (and the page-turn video) was dropped
+ *     because flat HTML content didn't read correctly on a curved
+ *     surface. We set the "physical book" feel in the intro; the
+ *     slideshow stage is the top-down view where content lives.
+ *   - Slideshow wrapper opacity fades in over scroll progress
+ *     0.78..1.00 (replaces the previous video element).
+ *   - Click chevrons drive a spread crossfade. CSS handles the
+ *     transitions (spread opacity, photo drop-in, caption fade).
+ *   - First event ("Born — Calgary 1980") populated on Spread 1
+ *     right page. Subsequent spreads keep placeholder boxes until
+ *     events are added in C3b+.
  *
- * Page-flip mechanic uses Thomas's authored 6-second video
- * (pageturner.mp4) instead of CSS 3D transforms. The video is
- * always visible when the slideshow wrapper is visible (no fade
- * in/out per click) — paused at TURN_START between flips, plays
- * t=3..6 on click, then pause + seek back to TURN_START for the
- * next idle. Forward plays at 1x with the SFX audio. Backward
- * plays the same clip at 1x with the video horizontally mirrored
- * (scaleX(-1)) so it reads as a page turning the other way. HTML
- * overlay fades old-out / new-in mid-turn to cover the swap.
+ * Audio (page-turn SFX) is deferred until Thomas provides a
+ * standalone .mp3/.wav file (pageturner.mp4 audio extraction
+ * blocked locally without ffmpeg). Optional CSS 3D rotateY
+ * page-flip is a follow-up if the crossfade feels too tame.
  *
  * Future: Thomas plans to record his voice reading the letter.
  * Audio play button will live near KF3 when the recording lands.
@@ -143,27 +139,29 @@ $tc_total_spreads = max( 6, count( $tc_scrapbook_events ) );
 
             <!--
                 Slideshow wrapper. Opacity is JS-driven (tied to the
-                same scroll window as KF5) so it's invisible during
-                the early intro keyframes and fades in when the
-                zoomed-in book reaches full opacity.
+                SLIDESHOW_WINDOW scroll range) so it's invisible
+                during the early intro keyframes and fades in as
+                the intro completes.
 
-                Z-stacked above the keyframes so the video + HTML
-                content render on top of KF5 once visible. The video
-                poster is also book-zoomed-in.png, so when the
-                wrapper first appears the user sees a continuous
-                blank-book surface from KF5 + poster.
+                Z-stacked above the keyframes so the parchment
+                surface + spread content render on top of KF4 once
+                visible. By that point the user has experienced the
+                book photographically through the intro — the flat
+                top-down surface reads as "looking at the pages."
             -->
             <div class="scrapbook-slideshow" data-scrapbook-slideshow>
 
-                <video
-                    class="scrapbook-flipper"
-                    data-scrapbook-flipper
-                    src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/pageturner.mp4' ) ); ?>"
-                    poster="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/book-zoomed-in.png' ) ); ?>"
-                    preload="auto"
-                    playsinline
-                    aria-hidden="true"
-                ></video>
+                <!--
+                    .scrapbook-book-surface — illustrative flat book.
+                    Two cream parchment pages with subtle edge shadows
+                    and a soft gutter where they meet. Content (the
+                    .scrapbook-pages overlay below) sits on top of
+                    this surface at matching dimensions.
+                -->
+                <div class="scrapbook-book-surface" aria-hidden="true">
+                    <div class="scrapbook-book-surface__page scrapbook-book-surface__page--left"></div>
+                    <div class="scrapbook-book-surface__page scrapbook-book-surface__page--right"></div>
+                </div>
 
                 <!--
                     HTML pages overlay the video. The .is-active spread

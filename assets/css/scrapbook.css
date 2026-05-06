@@ -12,19 +12,22 @@
    the conditional enqueue in functions.php), so other pages don't
    pay the bytes.
 
-   BUILD STATUS — C2b (first event content lands):
-     - 4-keyframe intro (cover, half-open, letter, open). Video
-       element at IDLE_FRAME (t=2.5) is the rest pose.
-     - Slideshow wrapper fades in over progress 0.78..1.00.
-     - First event ("Born — Calgary 1980") populated on Spread 1's
-       right page. Polaroid-style photo with handwritten caption.
-       Photo drops in with a slight overshoot when its spread
-       becomes .is-active; caption fades in 700ms later. Per-spread
-       tilt/offset from a 7-deep variations table so neighbouring
-       spreads land at distinct hand-placed angles.
-     - Subsequent spreads keep placeholder boxes until events are
-       added. Decade tabs + letter envelope land C2c.
-     - Ornaments (era-themed stamps, tape, page numbers) land C3+.
+   BUILD STATUS — C3a (flat surface rebuild):
+     - 4-keyframe intro (cover, half-open, letter, open) sets the
+       physical-book metaphor photographically.
+     - Slideshow surface is now flat: two cream parchment pages
+       (.scrapbook-book-surface) centered on the dark wood. The
+       page-turner video and curved-book imagery are gone.
+     - Slideshow wrapper still fades in over progress 0.78..1.00.
+     - Click chevrons drive a spread crossfade (no video state).
+     - First event ("Born — Calgary 1980") on Spread 1 right page.
+       Polaroid photo + handwritten caption + entrance animation
+       all unchanged from C2b — they sit cleanly on the flat
+       parchment now.
+     - Audio (page-turn SFX) deferred. CSS 3D rotateY page-flip
+       is a possible future polish if crossfade feels too tame.
+     - Decade tabs + letter envelope still queued for C2c.
+     - Ornaments (era-themed stamps, tape, page numbers) for C3b+.
    ============================================ */
 
 /* ============================================
@@ -117,35 +120,71 @@
     will-change: opacity;
 }
 
-.scrapbook-flipper {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    /* `contain` matches the intro keyframes' framing — full
-       authored composition, no source cropping. */
-    object-fit: contain;
-    object-position: center center;
-    pointer-events: none;
-    user-select: none;
+/* ============================================
+   BOOK SURFACE — flat illustrative pages
+   ============================================
+   Two cream parchment rectangles centered on the dark wood. The
+   intro sets the "this is a physical book" feel photographically;
+   here we're in the top-down view where actual content lives.
 
-    /* Always visible whenever the slideshow wrapper is visible.
-       The video element itself IS the rest pose (paused at
-       TURN_START between flips) — same source pixels for both
-       the static idle and the animation, so there's no pixel
-       mismatch to mask with a fade. Wrapper-level opacity
-       (controlled by scroll progress in scrapbook.js) handles
-       the intro → slideshow appearance. */
-    opacity: 1;
-    will-change: transform;
+   Dimensions match .scrapbook-spread so HTML content (polaroid +
+   caption) lines up with the paper edges. Keep the width /
+   aspect-ratio values in sync between the two rules.
+   ============================================ */
+
+.scrapbook-book-surface {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(72vw, 1200px);
+    aspect-ratio: 7 / 5;
+    display: flex;
+    pointer-events: none;
+    /* Soft drop shadow so the book sits on the desk rather than
+       floating in space. */
+    filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.32));
 }
 
-/* Reverse direction: horizontally mirror the video so the page
-   reads as turning the other way. Applied only during reverse
-   playback. The toggle happens on the static idle frame (which
-   is symmetric — blank book) so the flip is invisible. */
-.scrapbook-flipper.is-reverse {
-    transform: scaleX(-1);
+.scrapbook-book-surface__page {
+    flex: 1;
+    background: #f5ecd9; /* cream parchment */
+    position: relative;
+}
+
+/* Inner edge "gutter" — soft fold shadow where the two pages
+   meet. Each page tints darker at its inside edge so together
+   they read as the book's spine. */
+.scrapbook-book-surface__page--left {
+    background-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0)   80%,
+        rgba(0, 0, 0, 0.10) 100%
+    );
+}
+
+.scrapbook-book-surface__page--right {
+    background-image: linear-gradient(
+        to left,
+        rgba(0, 0, 0, 0)   80%,
+        rgba(0, 0, 0, 0.10) 100%
+    );
+}
+
+/* Subtle grain — faint repeating noise via radial gradients
+   keeps the parchment from looking like flat plastic. Cheap
+   (no asset, no file weight) and barely-visible. */
+.scrapbook-book-surface__page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 12% 20%, rgba(120, 90, 50, 0.04) 1px, transparent 1.5px),
+        radial-gradient(circle at 78% 65%, rgba(120, 90, 50, 0.04) 1px, transparent 1.5px),
+        radial-gradient(circle at 35% 80%, rgba(120, 90, 50, 0.05) 1px, transparent 1.5px);
+    background-size: 60px 60px, 80px 80px, 100px 100px;
+    pointer-events: none;
+    opacity: 0.7;
 }
 
 /* ============================================

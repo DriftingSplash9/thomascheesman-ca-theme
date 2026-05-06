@@ -4,21 +4,18 @@
  * Loaded only on /scrapbook (page-scrapbook.php), conditionally
  * enqueued by tc_ventures_enqueue_scripts() in functions.php.
  *
- * BUILD STATUS — C2a.9:
+ * BUILD STATUS — C3a (flat surface rebuild):
  *   - Scroll-driven crossfade across 4 intro keyframes (cover,
- *     half-open, letter, open). The "zoomed-in" beat is the video
- *     element itself, paused at TURN_START — same source pixels
- *     for rest pose and animation, no separate KF5 image.
- *   - Slideshow wrapper opacity fades in over progress 0.78..0.82.
- *     Video stays at opacity 1 whenever the wrapper is visible.
- *   - Forward (Next): plays t=3..6 at 1x with audio (3s).
- *   - Backward (Prev): plays the same forward clip at 1x with the
- *     video horizontally mirrored (scaleX(-1)) — visually reads as
- *     a page turning the other way. Mirror sidesteps the cross-
- *     browser pain of stepping currentTime backward, which doesn't
- *     reliably trigger frame repaints.
- *   - HTML overlay fade-swaps mid-turn so the video covers the
- *     content swap in either direction.
+ *     half-open, letter, open).
+ *   - Slideshow wrapper opacity fades in over SLIDESHOW_WINDOW
+ *     (0.78..1.00) — drives the appearance of the flat parchment
+ *     surface and the spread content layered on top.
+ *   - Page-flip controller: just a spread crossfade. The video
+ *     element + idle/turn state machine are gone — the flat
+ *     surface doesn't need them. CSS handles the spread fade and
+ *     the per-element entrance animations (photo drop, caption).
+ *   - Page-turn audio SFX is deferred (needs a standalone audio
+ *     file from Thomas).
  *   - Decade-tab nav, letter modal, and page-number easter-egg JS
  *     land in C2c..C6.
  *
@@ -143,59 +140,41 @@
      * PAGE-FLIP CONTROLLER
      * ============================================================
      *
-     * pageturner.mp4 is ~6.04s: t=0..3 is a static book pose;
-     * t=3..6 is the page turn (audio kicks in over this stretch).
+     * The slideshow surface is flat (two parchment pages). Spread
+     * navigation is just a CSS-driven crossfade — no video state,
+     * no timing constants for video frames.
      *
-     * The video is the rest pose — paused at TURN_START between
-     * flips. Its first/last frames ARE the book at rest, so the
-     * static idle and the animation share the exact same source
-     * pixels (no fading needed to mask mismatch).
-     *
-     * Forward (Next):
+     * Click sequence:
      *   1. Set busy, disable nav.
-     *   2. Seek to TURN_START, play at 1x with audio.
-     *   3. At SWAP_AT (mid-turn) — swap .is-active class so the
-     *      previous spread fades out and the next fades in.
-     *   4. At TURN_END — pause, seek back to TURN_START so the
-     *      idle frame is restored; release busy.
+     *   2. Move .is-active from current to target spread. CSS
+     *      handles the 500ms spread fade and the per-element
+     *      entrance animations (photo drop, caption fade).
+     *   3. After the longest entrance completes, release busy.
      *
-     * Backward (Prev): identical to forward, but adds .is-reverse
-     *   which applies transform: scaleX(-1) — the page visually
-     *   turns the OTHER way. The mirror toggle happens on the
-     *   static idle frame which is symmetric (blank book), so it's
-     *   imperceptible. Sidesteps the cross-browser pain of stepping
-     *   currentTime backward.
+     * Total entrance time = caption_delay (700ms) + caption_transition
+     * (500ms) = 1200ms. We give a little slack and use 1300ms.
      *
-     * Fallback: if video.play() rejects (autoplay block, decode
-     * error), we still swap content so navigation works.
+     * Audio SFX (page-turn) lands when Thomas provides a standalone
+     * audio file.
      * ============================================================ */
 
     function initPageFlip() {
         const root = document.querySelector('[data-scrapbook-slideshow]');
         if (!root) return;
 
-        const video   = root.querySelector('[data-scrapbook-flipper]');
         const pages   = root.querySelector('[data-scrapbook-pages]');
         const prevBtn = root.querySelector('[data-scrapbook-prev]');
         const nextBtn = root.querySelector('[data-scrapbook-next]');
-        if (!video || !pages || !prevBtn || !nextBtn) return;
+        if (!pages || !prevBtn || !nextBtn) return;
 
         const spreads = pages.querySelectorAll('.scrapbook-spread');
         if (spreads.length === 0) return;
 
-        // Video timing constants. Adjust here if the source video's
-        // pause / turn timings change in a future revision.
-        //
-        // IDLE_FRAME (rest pose) is half a second EARLIER than the
-        // playback start so the resting book reads as fully settled
-        // — at TURN_START the page is already starting to lift.
-        // Playback still begins at TURN_START on click, so the click
-        // feels instant; we just seek back to IDLE_FRAME after the
-        // animation ends.
-        const IDLE_FRAME = 2.5;  // seconds — rest pose (pre-motion static)
-        const TURN_START = 3.0;  // seconds — start of physical motion + SFX
-        const SWAP_AT    = 4.5;  // seconds — mid-turn content swap (midpoint)
-        const TURN_END   = 6.0;  // seconds — page settled (end of clip)
+        // Total time the nav stays disabled while the new spread
+        // arrives. Matches the longest entrance animation in the
+        // CSS (caption delay 700ms + transition 500ms = 1200ms),
+        // plus a small slack.
+        const FLIP_MS = 1300;
 
         let currentIndex = 0;
         let busy = false;
@@ -218,83 +197,22 @@
             spreads[currentIndex].setAttribute('aria-hidden', 'false');
         }
 
-        // Idle state: pause the video at IDLE_FRAME (a frame from
-        // the truly-static portion before the page begins to lift),
-        // so the visible book reads as fully settled. Wait for
-        // metadata to be ready before seeking.
-        function primeVideo() {
-            try {
-                video.currentTime = IDLE_FRAME;
-            } catch (err) {
-                // currentTime can throw if metadata isn't ready;
-                // the loadedmetadata listener below will retry.
-            }
-            video.pause();
-        }
-
-        if (video.readyState >= 1) {
-            primeVideo();
-        } else {
-            video.addEventListener('loadedmetadata', primeVideo, { once: true });
-        }
-
-        // Shared flip routine. Both directions play the same forward
-        // clip at 1x with audio. Reverse adds .is-reverse which CSS
-        // uses to apply transform: scaleX(-1) — visually mirrors the
-        // page-turn so it reads as "going back." The video is at
-        // opacity 1 throughout (when the slideshow wrapper is
-        // visible), so there's no per-click fade-in/out — just
-        // play, swap mid-turn, and reset to idle frame at the end.
-        function playFlip(toIndex, direction) {
+        function playFlip(toIndex) {
             setBusy(true);
-
-            const isReverse = direction === 'reverse';
-            const turnMs    = (TURN_END - TURN_START) * 1000;
-            const swapMs    = (SWAP_AT  - TURN_START) * 1000;
-
-            video.classList.toggle('is-reverse', isReverse);
-            video.currentTime = TURN_START;
-
-            const playPromise = video.play();
-            if (playPromise && typeof playPromise.catch === 'function') {
-                playPromise.catch(function () {
-                    // Video failed to play — fall back to a plain
-                    // swap so navigation isn't broken on autoplay-
-                    // blocked browsers.
-                    setActive(toIndex);
-                    finishFlip();
-                });
-            }
-
-            // Mid-turn content swap.
+            setActive(toIndex);
             window.setTimeout(function () {
-                if (currentIndex !== toIndex) setActive(toIndex);
-            }, swapMs);
-
-            // End of turn — pause and seek back to the idle frame.
-            window.setTimeout(finishFlip, turnMs);
-
-            function finishFlip() {
-                video.pause();
-                try {
-                    // Seek back to IDLE_FRAME (not TURN_START) so the
-                    // rest pose shows the book fully settled, not
-                    // mid-lift.
-                    video.currentTime = IDLE_FRAME;
-                } catch (err) { /* ignore */ }
-                video.classList.remove('is-reverse');
                 setBusy(false);
-            }
+            }, FLIP_MS);
         }
 
         function flipForward() {
             if (busy || currentIndex >= spreads.length - 1) return;
-            playFlip(currentIndex + 1, 'forward');
+            playFlip(currentIndex + 1);
         }
 
         function flipBackward() {
             if (busy || currentIndex <= 0) return;
-            playFlip(currentIndex - 1, 'reverse');
+            playFlip(currentIndex - 1);
         }
 
         prevBtn.addEventListener('click', flipBackward);
