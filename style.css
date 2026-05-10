@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.211
+Version: 1.0.212
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6661,5 +6661,117 @@ body.page-passport .entry-content {
     .passport-spread > .passport-page--left::before,
     .passport-spread > .passport-page--right::before {
         display: none;
+    }
+}
+
+/* =============================================================
+   PHOTO GALLERY — per-kid spoke pages (Patience / Daniel / Faith)
+   -------------------------------------------------------------
+   Justified-style wall via flex-wrap with a fixed row height. Each
+   photo retains its natural aspect ratio (per the no-cover rule);
+   widths flex so a row of mixed portrait/landscape composes cleanly.
+   The site-wide PhotoSwipe lightbox auto-wraps each <img>.
+   ============================================================= */
+.tc-photo-gallery {
+    /* Break out of the .container--narrow editorial column so the
+       wall has more room to breathe. The section above (intro prose)
+       stays in the narrow column; this block widens the canvas. */
+    margin: 4rem auto 5rem;
+    max-width: 1200px;
+    padding: 0 1.25rem;
+}
+
+.tc-photo-gallery__section-head {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin: 3.5rem 0 1.5rem;
+}
+.tc-photo-gallery__section-head:first-child {
+    margin-top: 0;
+}
+.tc-photo-gallery__rule {
+    flex: 1 1 auto;
+    height: 1px;
+    background: linear-gradient(
+        to right,
+        transparent,
+        rgba(180, 150, 90, 0.5),
+        transparent
+    );
+}
+.tc-photo-gallery__section-label {
+    flex: 0 0 auto;
+    margin: 0;
+    font-family: var(--editorial-serif, Georgia, serif);
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent-color, #b08c4a);
+    white-space: nowrap;
+}
+
+.tc-photo-gallery__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.tc-photo-gallery__item {
+    flex: 0 0 auto;
+    margin: 0;
+    height: 180px;
+    overflow: hidden;
+    background: #1a1410;
+    border-radius: 2px;
+    cursor: zoom-in;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+}
+.tc-photo-gallery__item:hover,
+.tc-photo-gallery__item:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    z-index: 2;
+}
+.tc-photo-gallery__item img {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+}
+
+/* Tablet — slightly shorter rows so more photos sit per viewport. */
+@media (max-width: 1024px) {
+    .tc-photo-gallery {
+        max-width: 100%;
+    }
+    .tc-photo-gallery__item {
+        height: 150px;
+    }
+}
+
+/* Mobile — short rows so each photo is roughly thumb-sized. */
+@media (max-width: 640px) {
+    .tc-photo-gallery {
+        margin: 2.5rem auto 3.5rem;
+        padding: 0 0.75rem;
+    }
+    .tc-photo-gallery__section-head {
+        gap: 0.75rem;
+        margin: 2.5rem 0 1rem;
+    }
+    .tc-photo-gallery__section-label {
+        font-size: 0.8rem;
+        letter-spacing: 0.18em;
+    }
+    .tc-photo-gallery__grid {
+        gap: 4px;
+    }
+    .tc-photo-gallery__item {
+        height: 110px;
     }
 }

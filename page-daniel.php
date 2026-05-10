@@ -75,6 +75,27 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php
+            // Photo wall — Daniel.
+            //
+            // Empty until Thomas's xlsx is curated and converted into
+            // inc/gallery-daniel.php. Section labels match the Patience
+            // pattern; counts will be re-derived once total is known.
+            // The renderer no-ops cleanly on an empty array.
+            $daniel_urls = require get_stylesheet_directory() . '/inc/gallery-daniel.php';
+            tc_render_photo_gallery(
+                $daniel_urls,
+                array(
+                    array( 'label' => 'First Years',   'count' => 0 ),
+                    array( 'label' => 'Toddler',       'count' => 0 ),
+                    array( 'label' => 'Little Person', 'count' => 0 ),
+                    array( 'label' => 'Schoolboy',     'count' => 0 ),
+                    array( 'label' => 'Today',         'count' => 0 ),
+                ),
+                'Daniel'
+            );
+            ?>
+
         </div>
     </article>
 

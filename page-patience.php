@@ -75,6 +75,30 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php
+            // Photo wall — Patience.
+            //
+            // 139 photos sourced from inc/gallery-patience.php (curated
+            // ordering lives in partiences.XLSX → re-import via the
+            // converter). Five chronological-ish sections derived from
+            // the order index; section labels are placeholder editorial
+            // names that Thomas can tweak as memory clarifies.
+            //
+            // Counts sum to 139: 28 + 28 + 28 + 28 + 27.
+            $patience_urls = require get_stylesheet_directory() . '/inc/gallery-patience.php';
+            tc_render_photo_gallery(
+                $patience_urls,
+                array(
+                    array( 'label' => 'First Years',   'count' => 28 ),
+                    array( 'label' => 'Toddler',       'count' => 28 ),
+                    array( 'label' => 'Little Person', 'count' => 28 ),
+                    array( 'label' => 'Schoolgirl',    'count' => 28 ),
+                    array( 'label' => 'Today',         'count' => 27 ),
+                ),
+                'Patience'
+            );
+            ?>
+
         </div>
     </article>
 

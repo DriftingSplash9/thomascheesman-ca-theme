@@ -4,6 +4,13 @@
  */
 
 /**
+ * Helper includes — small reusable PHP-side renderers used across
+ * multiple page templates. Kept in inc/ so each helper is one file
+ * with one responsibility, easy to find and refactor.
+ */
+require_once get_stylesheet_directory() . '/inc/photo-gallery.php';
+
+/**
  * Enqueue parent and child theme styles and scripts.
  *
  * Load order is enforced via the third argument of wp_enqueue_style/script,

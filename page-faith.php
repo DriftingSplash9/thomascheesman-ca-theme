@@ -81,6 +81,27 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php
+            // Photo wall — Faith.
+            //
+            // Empty until Thomas's xlsx is curated and converted into
+            // inc/gallery-faith.php. Section labels match the Patience
+            // pattern; counts will be re-derived once total is known.
+            // The renderer no-ops cleanly on an empty array.
+            $faith_urls = require get_stylesheet_directory() . '/inc/gallery-faith.php';
+            tc_render_photo_gallery(
+                $faith_urls,
+                array(
+                    array( 'label' => 'First Years',   'count' => 0 ),
+                    array( 'label' => 'Toddler',       'count' => 0 ),
+                    array( 'label' => 'Little Person', 'count' => 0 ),
+                    array( 'label' => 'Schoolgirl',    'count' => 0 ),
+                    array( 'label' => 'Today',         'count' => 0 ),
+                ),
+                'Faith'
+            );
+            ?>
+
         </div>
     </article>
 
