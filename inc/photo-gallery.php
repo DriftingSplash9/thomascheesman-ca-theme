@@ -111,6 +111,18 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
 
     echo '<section class="tc-photo-gallery" aria-label="' . esc_attr( $alt_prefix . ' photo gallery' ) . '">';
 
+    // Slideshow toolbar — only shown when the gallery is large enough
+    // for autoplay to be a meaningful affordance. Threshold of 12 means
+    // small galleries stay quiet (clicking through them is fine).
+    if ( count( $normalised ) >= 12 ) {
+        echo '<div class="tc-photo-gallery__toolbar">';
+        echo '<button type="button" class="tc-photo-gallery__slideshow-btn" data-tc-autoplay-ms="4500">';
+        echo '<span class="tc-photo-gallery__slideshow-icon" aria-hidden="true">&#9654;</span>';
+        echo '<span class="tc-photo-gallery__slideshow-label">' . esc_html__( 'Play as slideshow', 'tc-ventures-child' ) . '</span>';
+        echo '</button>';
+        echo '</div>';
+    }
+
     $global_idx = 0;
     foreach ( $slices as $slice ) {
         if ( ! empty( $slice['label'] ) ) {

@@ -76,21 +76,22 @@ get_header(); ?>
             </section>
 
             <?php
-            // Photo wall — Daniel.
-            //
-            // Empty until Thomas's xlsx is curated and converted into
-            // inc/gallery-daniel.php. Section labels match the Patience
-            // pattern; counts will be re-derived once total is known.
-            // The renderer no-ops cleanly on an empty array.
-            $daniel_urls = require get_stylesheet_directory() . '/inc/gallery-daniel.php';
+            // 222 year-tagged photos sourced from daniels.XLSX. Section
+            // structure mirrors Patience's (Daniel born 2015, two years
+            // after Patience). The "Newly added" bucket catches the
+            // sentinel year 9999 — items Thomas hasn't put a year on yet
+            // — so they remain visible while he sorts.
+            $daniel_items = require get_stylesheet_directory() . '/inc/gallery-daniel.php';
             tc_render_photo_gallery(
-                $daniel_urls,
+                $daniel_items,
                 array(
-                    array( 'label' => 'First Years',   'count' => 0 ),
-                    array( 'label' => 'Toddler',       'count' => 0 ),
-                    array( 'label' => 'Little Person', 'count' => 0 ),
-                    array( 'label' => 'Schoolboy',     'count' => 0 ),
-                    array( 'label' => 'Today',         'count' => 0 ),
+                    array( 'label' => 'Year One — 2015',           'years' => array( 2015 ) ),
+                    array( 'label' => 'Toddler Years — 2016',      'years' => array( 2016 ) ),
+                    array( 'label' => 'Little Person — 2017–2018', 'years' => array( 2017, 2018 ) ),
+                    array( 'label' => 'A Big Year — 2019',          'years' => array( 2019 ) ),
+                    array( 'label' => 'The Quiet Years — 2020–2022', 'years' => array( 2020, 2021, 2022 ) ),
+                    array( 'label' => 'Schoolboy — 2023–Today',    'years' => array( 2023, 2024, 2025, 2026 ) ),
+                    array( 'label' => 'Newly added — to sort',      'years' => array( 9999 ) ),
                 ),
                 'Daniel'
             );

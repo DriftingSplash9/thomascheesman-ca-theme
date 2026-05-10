@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.216
+Version: 1.0.218
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6718,6 +6718,56 @@ body.page-passport .entry-content {
     text-transform: uppercase;
     color: var(--accent-color, #b08c4a);
     white-space: nowrap;
+}
+
+/* Toolbar — currently just a "Play as slideshow" button shown above
+   the masonry grid for galleries with 12+ photos. */
+.tc-photo-gallery__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    max-width: 1500px;
+    margin: 0 auto 1.25rem;
+    padding: 0;
+}
+.tc-photo-gallery__slideshow-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 1.2rem;
+    background: rgba(176, 140, 74, 0.12);
+    border: 1px solid rgba(176, 140, 74, 0.45);
+    border-radius: 999px;
+    color: var(--accent-color, #b08c4a);
+    font-family: var(--editorial-serif, Georgia, serif);
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        background 200ms ease,
+        color 200ms ease,
+        transform 200ms ease,
+        box-shadow 200ms ease;
+}
+.tc-photo-gallery__slideshow-btn:hover,
+.tc-photo-gallery__slideshow-btn:focus-visible {
+    background: rgba(176, 140, 74, 0.28);
+    color: #d4ae6a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(176, 140, 74, 0.22);
+    outline: none;
+}
+/* Active = autoplay is currently running. The icon morphs from play
+   triangle to pause via the swap inside JS isn't done — instead we
+   subtly invert the chip so the user sees they can click again to stop. */
+.tc-photo-gallery__slideshow-btn[data-active="true"] {
+    background: rgba(176, 140, 74, 0.55);
+    color: #fff;
+    border-color: rgba(176, 140, 74, 0.85);
+}
+.tc-photo-gallery__slideshow-icon {
+    font-size: 0.9em;
+    line-height: 1;
 }
 
 /* True masonry via CSS Columns. Photos flow top-to-bottom in each

@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initFamilyTreeLeaves();
     initFigureKenBurns();
     initLightbox();
+    initGallerySlideshow();
     initBlogReveal();
     initScrollReveals();
     initHeritagePage();
@@ -800,10 +801,96 @@ function initLightbox() {
             });
 
             lightbox.init();
+            // Stash the instance so the gallery slideshow handler
+            // (initGallerySlideshow below) can drive it programmatically.
+            tcLightboxInstance = lightbox;
+            // Whenever the lightbox closes by any means (Esc, click X,
+            // pinch-out, etc.), make sure any active autoplay timer is
+            // cleared too — otherwise the next time the user opens the
+            // lightbox manually it would start auto-advancing.
+            lightbox.on('close', tcStopGallerySlideshow);
         })
         .catch((err) => {
             console.warn('PhotoSwipe failed to load — image clicks fall back to direct image URLs.', err);
         });
+}
+
+/* =====================================================================
+   Gallery slideshow — drives the sitewide PhotoSwipe lightbox in
+   autoplay mode from a "▶ Play as slideshow" button rendered at the
+   top of long photo galleries (per-kid spoke pages, currently).
+   ===================================================================== */
+
+// Module-scope holders. tcLightboxInstance is set inside initLightbox's
+// async PhotoSwipe import callback above; tcAutoplayTimerId is the
+// setInterval handle for whichever slideshow is currently running.
+let tcLightboxInstance = null;
+let tcAutoplayTimerId = null;
+
+function tcStopGallerySlideshow() {
+    if (tcAutoplayTimerId) {
+        clearInterval(tcAutoplayTimerId);
+        tcAutoplayTimerId = null;
+    }
+    document.querySelectorAll('.tc-photo-gallery__slideshow-btn[data-active="true"]')
+        .forEach((b) => b.removeAttribute('data-active'));
+}
+
+function tcStartGallerySlideshowAutoplay(holdMs, btn) {
+    tcStopGallerySlideshow();
+    if (btn) btn.setAttribute('data-active', 'true');
+    tcAutoplayTimerId = setInterval(() => {
+        if (tcLightboxInstance && tcLightboxInstance.pswp) {
+            tcLightboxInstance.pswp.next();
+        } else {
+            tcStopGallerySlideshow();
+        }
+    }, holdMs);
+}
+
+function initGallerySlideshow() {
+    const buttons = document.querySelectorAll('.tc-photo-gallery__slideshow-btn');
+    if (buttons.length === 0) return;
+
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', (event) => {
+            event.preventDefault();
+            const holdMs = parseInt(btn.dataset.tcAutoplayMs || '4500', 10);
+
+            // If autoplay is already running, treat this click as "stop".
+            if (tcAutoplayTimerId) {
+                tcStopGallerySlideshow();
+                if (tcLightboxInstance && tcLightboxInstance.pswp) {
+                    tcLightboxInstance.pswp.close();
+                }
+                return;
+            }
+
+            // Find the first lightbox-eligible photo inside this button's
+            // gallery. PhotoSwipe wraps imgs in an <a class="lightbox-link">
+            // — that's our trigger.
+            const gallery = btn.closest('.tc-photo-gallery');
+            if (!gallery) return;
+            const firstLink = gallery.querySelector('a.lightbox-link');
+            if (!firstLink) return;
+
+            // PhotoSwipe is dynamically imported and won't exist yet on
+            // first interaction. Clicking the first thumbnail bootstraps
+            // the import; we then poll for the instance to appear and
+            // start the autoplay timer.
+            firstLink.click();
+
+            const startWhenReady = setInterval(() => {
+                if (tcLightboxInstance && tcLightboxInstance.pswp) {
+                    clearInterval(startWhenReady);
+                    tcStartGallerySlideshowAutoplay(holdMs, btn);
+                }
+            }, 80);
+            // Safety: stop polling after 6 seconds (PhotoSwipe should
+            // have loaded long before this).
+            setTimeout(() => clearInterval(startWhenReady), 6000);
+        });
+    });
 }
 
 /**
