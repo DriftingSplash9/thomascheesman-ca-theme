@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.213
+Version: 1.0.215
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6673,19 +6673,27 @@ body.page-passport .entry-content {
    The site-wide PhotoSwipe lightbox auto-wraps each <img>.
    ============================================================= */
 .tc-photo-gallery {
-    /* Break out of the .container--narrow editorial column so the
-       wall has more room to breathe. The section above (intro prose)
-       stays in the narrow column; this block widens the canvas. */
-    margin: 4rem auto 5rem;
-    max-width: 1200px;
-    padding: 0 1.25rem;
+    /* The gallery sits inside .container--narrow (720px) on the kid
+       spoke pages. We need to escape that narrow column and span
+       close to viewport-width while the prose above stays narrow.
+       Negative margins pull the outer wrapper to the viewport edges;
+       the inner __grid + __section-head re-center at 1500px so the
+       wall doesn't get absurdly wide on a 4K monitor. */
+    margin-top: 4rem;
+    margin-bottom: 5rem;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    max-width: 100vw;
+    padding: 0 1.5rem;
+    box-sizing: border-box;
 }
 
 .tc-photo-gallery__section-head {
     display: flex;
     align-items: center;
     gap: 1.25rem;
-    margin: 3.5rem 0 1.5rem;
+    margin: 3.5rem auto 1.5rem;
+    max-width: 1500px;
 }
 .tc-photo-gallery__section-head:first-child {
     margin-top: 0;
@@ -6712,19 +6720,29 @@ body.page-passport .entry-content {
     white-space: nowrap;
 }
 
+/* True masonry via CSS Columns. Photos flow top-to-bottom in each
+   column, then to the next column. Natural aspect ratio is preserved
+   (per the no-cover rule) — variation comes from the photos' own
+   shapes, no cropping. Every 13th photo gets a column-span "feature"
+   treatment for occasional wide hero shots. */
 .tc-photo-gallery__grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: flex-start;
-    align-items: stretch;
+    column-count: 4;
+    column-gap: 8px;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: block;     /* override any inherited flex from prior version */
+    flex-wrap: initial;
 }
 
 .tc-photo-gallery__item {
-    flex: 0 0 auto;
-    margin: 0;
-    height: 180px;
-    width: auto;
+    display: block;
+    margin: 0 0 8px;
+    width: 100%;
+    /* Keep the photo whole inside its column rather than splitting it
+       across the column break. */
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
     overflow: hidden;
     background: #1a1410;
     border-radius: 2px;
@@ -6735,57 +6753,70 @@ body.page-passport .entry-content {
 .tc-photo-gallery__item:focus-within {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-    z-index: 2;
 }
+
+/* Feature variant — every 13th photo spans the full row width as a
+   hero shot. CSS column-span only supports 'all' or 'none'; using
+   'all' makes that one image break out of the columns and span the
+   entire grid. The columns resume below it. */
+.tc-photo-gallery__item:nth-child(13n + 7) {
+    column-span: all;
+    -webkit-column-span: all;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
 /* PhotoSwipe wraps each <img> in <a class="lightbox-link"> after the
-   page loads — that anchor is inline by default, which collapses the
-   image's height and lets it render at natural width. Forcing the
-   anchor to block + 100% height re-anchors the image inside the
-   figure's fixed-row-height frame. */
+   page loads — make sure the anchor and image both fill the column
+   width so layout stays predictable. */
 .tc-photo-gallery__item > a,
 .tc-photo-gallery__item .lightbox-link {
     display: block;
-    height: 100%;
-    width: auto;
+    width: 100%;
     line-height: 0;
 }
 .tc-photo-gallery__item img {
     display: block !important;
-    height: 100% !important;
-    width: auto !important;
-    max-width: none !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
     margin: 0 !important;
     border-radius: 0;
 }
 
-/* Tablet — slightly shorter rows so more photos sit per viewport. */
+/* Tablet — drop to 3 masonry columns. */
 @media (max-width: 1024px) {
     .tc-photo-gallery {
         max-width: 100%;
     }
-    .tc-photo-gallery__item {
-        height: 150px;
+    .tc-photo-gallery__grid {
+        column-count: 3;
     }
 }
 
-/* Mobile — short rows so each photo is roughly thumb-sized. */
+/* Mobile — 2 columns; tighten gaps + section head. */
 @media (max-width: 640px) {
     .tc-photo-gallery {
-        margin: 2.5rem auto 3.5rem;
+        margin-top: 2.5rem;
+        margin-bottom: 3.5rem;
         padding: 0 0.75rem;
     }
     .tc-photo-gallery__section-head {
         gap: 0.75rem;
-        margin: 2.5rem 0 1rem;
+        margin: 2.5rem auto 1rem;
     }
     .tc-photo-gallery__section-label {
         font-size: 0.8rem;
         letter-spacing: 0.18em;
     }
     .tc-photo-gallery__grid {
-        gap: 4px;
+        column-count: 2;
+        column-gap: 6px;
     }
     .tc-photo-gallery__item {
-        height: 110px;
+        margin-bottom: 6px;
     }
 }

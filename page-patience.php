@@ -89,11 +89,11 @@ get_header(); ?>
             tc_render_photo_gallery(
                 $patience_urls,
                 array(
-                    array( 'label' => 'First Years',   'count' => 28 ),
-                    array( 'label' => 'Toddler',       'count' => 28 ),
-                    array( 'label' => 'Little Person', 'count' => 28 ),
-                    array( 'label' => 'Schoolgirl',    'count' => 28 ),
-                    array( 'label' => 'Today',         'count' => 27 ),
+                    array( 'label' => '2013 — 2014',   'count' => 28 ),
+                    array( 'label' => '2015 — 2016',   'count' => 28 ),
+                    array( 'label' => '2017 — 2019',   'count' => 28 ),
+                    array( 'label' => '2020 — 2022',   'count' => 28 ),
+                    array( 'label' => '2023 — Today',  'count' => 27 ),
                 ),
                 'Patience'
             );
