@@ -85,15 +85,20 @@ get_header(); ?>
             // names that Thomas can tweak as memory clarifies.
             //
             // Counts sum to 139: 28 + 28 + 28 + 28 + 27.
-            $patience_urls = require get_stylesheet_directory() . '/inc/gallery-patience.php';
+            // 134 year-tagged photos sourced from partiences-styled.XLSX.
+            // Sections group sparse years together so the rhythm is even
+            // (2013 alone has 37 photos; 2021/2022 only 2 each, so they
+            // ride along with neighbours).
+            $patience_items = require get_stylesheet_directory() . '/inc/gallery-patience.php';
             tc_render_photo_gallery(
-                $patience_urls,
+                $patience_items,
                 array(
-                    array( 'label' => '2013 — 2014',   'count' => 28 ),
-                    array( 'label' => '2015 — 2016',   'count' => 28 ),
-                    array( 'label' => '2017 — 2019',   'count' => 28 ),
-                    array( 'label' => '2020 — 2022',   'count' => 28 ),
-                    array( 'label' => '2023 — Today',  'count' => 27 ),
+                    array( 'label' => 'Year One — 2013',          'years' => array( 2013 ) ),
+                    array( 'label' => 'Toddler Years — 2014–2016', 'years' => array( 2014, 2015, 2016 ) ),
+                    array( 'label' => 'Little Person — 2017–2018', 'years' => array( 2017, 2018 ) ),
+                    array( 'label' => 'A Big Year — 2019',         'years' => array( 2019 ) ),
+                    array( 'label' => 'The Quiet Years — 2020–2022', 'years' => array( 2020, 2021, 2022 ) ),
+                    array( 'label' => 'Schoolgirl — 2023–Today',   'years' => array( 2023, 2024, 2025, 2026 ) ),
                 ),
                 'Patience'
             );

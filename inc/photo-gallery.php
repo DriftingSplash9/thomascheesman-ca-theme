@@ -2,67 +2,117 @@
 /**
  * Photo gallery renderer — used on per-kid spoke pages (Patience,
  * Daniel, Faith) to display a long ordered list of photographs as
- * a justified-style wall, optionally divided into chapter sections.
+ * a CSS-Columns masonry wall, optionally divided into chapter sections.
  *
- * The output is plain <img> tags wrapped in figures inside <main>.
- * The site-wide initLightbox() in main.js automatically wraps every
- * such img in a PhotoSwipe link, so clicking any thumbnail opens the
- * full-size lightbox with arrow navigation across the entire page.
+ * Output is plain <img> tags wrapped in figures inside <main>. The
+ * site-wide initLightbox() in main.js automatically wraps each img
+ * in a PhotoSwipe link, so clicking any thumbnail opens the full-size
+ * lightbox with arrow navigation across the entire page.
  *
  * Per the no-cover rule (memory: feedback_no_object_fit_cover.md),
- * thumbnails preserve their natural aspect ratio. The wall flexes
- * to a uniform row height so visual rhythm holds regardless of how
- * the photos were composed.
+ * thumbnails preserve their natural aspect ratio. The masonry varies
+ * cell heights based on each photo's intrinsic shape — no cropping.
  *
- * @param array $urls     Flat ordered list of image URLs.
- * @param array $sections Optional list of section definitions. Each
- *                        entry: array( 'label' => string, 'count' => int ).
- *                        The counts must sum to <= count($urls); any
- *                        leftover photos render after the last section
- *                        without a divider. Pass an empty array (or omit)
- *                        to render one continuous wall with no dividers.
- * @param string $alt_prefix Used as the base for image alt text — e.g.
- *                           "Patience" yields "Patience photo 12".
+ * --- Item formats (auto-detected) -----------------------------------
+ *
+ * Legacy flat list (used by Daniel/Faith stubs):
+ *   $items = array( 'https://.../a.jpg', 'https://.../b.jpg', ... );
+ *
+ * Year-tagged list (Patience — sourced from partiences-styled.XLSX):
+ *   $items = array(
+ *       array( 'url' => 'https://.../a.jpg', 'year' => 2013 ),
+ *       array( 'url' => 'https://.../b.jpg', 'year' => 2013 ),
+ *       ...
+ *   );
+ *
+ * --- Section formats (auto-detected per-section) --------------------
+ *
+ * Count-based slice (legacy):
+ *   array( 'label' => 'First Years', 'count' => 28 )
+ *
+ * Year-based filter (used when items are year-tagged):
+ *   array( 'label' => '2014—2016', 'years' => array( 2014, 2015, 2016 ) )
+ *
+ * Mix and match per section as you like — the renderer dispatches
+ * each section independently.
+ *
+ * @param array  $items      Photo list (see formats above).
+ * @param array  $sections   Section definitions (see formats above).
+ *                           Empty array = render everything in one block.
+ * @param string $alt_prefix Image alt-text prefix, e.g. "Patience" yields
+ *                           "Patience photo 12".
  */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-function tc_render_photo_gallery( array $urls, array $sections = array(), string $alt_prefix = 'Photo' ) : void {
-    if ( empty( $urls ) ) {
+function tc_render_photo_gallery( array $items, array $sections = array(), string $alt_prefix = 'Photo' ) : void {
+    if ( empty( $items ) ) {
         return;
     }
 
-    // Resolve sections into [start, end, label] slices. Fall back to a
-    // single unlabeled section covering everything when none provided.
+    // Normalise items → uniform [url, year|null] tuples regardless
+    // of which input format the caller passed.
+    $normalised = array();
+    foreach ( $items as $item ) {
+        if ( is_string( $item ) ) {
+            $normalised[] = array( 'url' => $item, 'year' => null );
+        } elseif ( is_array( $item ) && isset( $item['url'] ) ) {
+            $normalised[] = array(
+                'url'  => $item['url'],
+                'year' => isset( $item['year'] ) ? (int) $item['year'] : null,
+            );
+        }
+    }
+    if ( empty( $normalised ) ) {
+        return;
+    }
+
+    // Resolve the sections list into [label, items_subset] slices.
+    // Each section can opt into either count-based slicing (legacy) or
+    // year-based filtering (preferred when years are present).
     $slices = array();
     $cursor = 0;
     foreach ( $sections as $section ) {
-        $count = (int) ( $section['count'] ?? 0 );
-        if ( $count <= 0 ) { continue; }
-        $end = min( $cursor + $count, count( $urls ) );
-        $slices[] = array(
-            'label' => (string) ( $section['label'] ?? '' ),
-            'start' => $cursor,
-            'end'   => $end,
-        );
-        $cursor = $end;
+        $label = (string) ( $section['label'] ?? '' );
+        if ( isset( $section['years'] ) && is_array( $section['years'] ) ) {
+            $year_set = array_map( 'intval', $section['years'] );
+            $subset = array();
+            foreach ( $normalised as $entry ) {
+                if ( in_array( $entry['year'], $year_set, true ) ) {
+                    $subset[] = $entry;
+                }
+            }
+            if ( ! empty( $subset ) ) {
+                $slices[] = array( 'label' => $label, 'items' => $subset );
+            }
+        } else {
+            $count = (int) ( $section['count'] ?? 0 );
+            if ( $count > 0 ) {
+                $end = min( $cursor + $count, count( $normalised ) );
+                $slices[] = array(
+                    'label' => $label,
+                    'items' => array_slice( $normalised, $cursor, $end - $cursor ),
+                );
+                $cursor = $end;
+            }
+        }
     }
-    if ( $cursor < count( $urls ) ) {
-        // Trailing remainder if section counts didn't sum to total.
+    // Trailing remainder for count-based sections that didn't sum to all.
+    if ( $cursor > 0 && $cursor < count( $normalised ) ) {
         $slices[] = array(
             'label' => '',
-            'start' => $cursor,
-            'end'   => count( $urls ),
+            'items' => array_slice( $normalised, $cursor ),
         );
     }
+    // No sections defined at all — render everything as one block.
     if ( empty( $slices ) ) {
-        // No sections supplied — render everything as one block.
-        $slices[] = array( 'label' => '', 'start' => 0, 'end' => count( $urls ) );
+        $slices[] = array( 'label' => '', 'items' => $normalised );
     }
 
     echo '<section class="tc-photo-gallery" aria-label="' . esc_attr( $alt_prefix . ' photo gallery' ) . '">';
 
-    foreach ( $slices as $idx => $slice ) {
+    $global_idx = 0;
+    foreach ( $slices as $slice ) {
         if ( ! empty( $slice['label'] ) ) {
             echo '<header class="tc-photo-gallery__section-head">';
             echo '<span class="tc-photo-gallery__rule" aria-hidden="true"></span>';
@@ -72,18 +122,19 @@ function tc_render_photo_gallery( array $urls, array $sections = array(), string
         }
 
         echo '<div class="tc-photo-gallery__grid">';
-        for ( $i = $slice['start']; $i < $slice['end']; $i++ ) {
-            $url = $urls[ $i ];
-            // First few photos eager-load so the page feels populated
-            // immediately; the rest lazy-load as the reader scrolls.
-            $loading = ( $i < 6 ) ? 'eager' : 'lazy';
-            $alt     = sprintf( '%s photo %d', $alt_prefix, $i + 1 );
+        foreach ( $slice['items'] as $entry ) {
+            // First six photos site-wide eager-load so the page feels
+            // populated immediately; everything else lazy-loads as the
+            // reader scrolls into view.
+            $loading = ( $global_idx < 6 ) ? 'eager' : 'lazy';
+            $alt     = sprintf( '%s photo %d', $alt_prefix, $global_idx + 1 );
             printf(
                 '<figure class="tc-photo-gallery__item"><img src="%1$s" alt="%2$s" loading="%3$s" decoding="async" /></figure>',
-                esc_url( $url ),
+                esc_url( $entry['url'] ),
                 esc_attr( $alt ),
                 esc_attr( $loading )
             );
+            $global_idx++;
         }
         echo '</div>';
     }

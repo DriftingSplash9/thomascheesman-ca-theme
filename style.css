@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.215
+Version: 1.0.216
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6747,12 +6747,50 @@ body.page-passport .entry-content {
     background: #1a1410;
     border-radius: 2px;
     cursor: zoom-in;
-    transition: transform 220ms ease, box-shadow 220ms ease;
+    position: relative;
+    /* Idle state — slightly muted so the hover state has somewhere
+       to "lift" toward. The desaturation is gentle (10%) so the wall
+       still reads as a cohesive set of colour photos. */
+    filter: saturate(0.92) brightness(0.96);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    will-change: transform, filter, box-shadow;
+    transition:
+        transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1.0),
+        filter 320ms ease,
+        box-shadow 320ms ease,
+        z-index 0s linear 320ms;
 }
 .tc-photo-gallery__item:hover,
 .tc-photo-gallery__item:focus-within {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    /* The "pop": lift, scale up slightly, full colour saturation, and
+       a warm rim-glow shadow. The accent ring is layered as a second
+       inset shadow for definition without a real border (which would
+       reflow the masonry). */
+    transform: translateY(-6px) scale(1.04);
+    filter: saturate(1.1) brightness(1.05);
+    box-shadow:
+        0 14px 38px rgba(0, 0, 0, 0.55),
+        0 0 0 2px rgba(176, 140, 74, 0.55);
+    z-index: 5;
+    transition:
+        transform 220ms cubic-bezier(0.2, 0.7, 0.1, 1.2),
+        filter 220ms ease,
+        box-shadow 220ms ease,
+        z-index 0s linear 0s;
+}
+
+/* Respect reduced-motion preference — no scale, no lift, just a
+   subtle brightness change so the hover affordance is still visible. */
+@media (prefers-reduced-motion: reduce) {
+    .tc-photo-gallery__item {
+        transition: filter 200ms ease, box-shadow 200ms ease;
+    }
+    .tc-photo-gallery__item:hover,
+    .tc-photo-gallery__item:focus-within {
+        transform: none;
+        filter: brightness(1.06);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
 }
 
 /* Feature variant — every 13th photo spans the full row width as a
