@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.219
+Version: 1.0.220
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6873,6 +6873,27 @@ body.page-passport .entry-content {
     max-width: 100% !important;
     margin: 0 !important;
     border-radius: 0;
+}
+
+/* Video items — same column slot as photos, but render with native
+   controls and no zoom cursor (clicking plays, doesn't lightbox). */
+.tc-photo-gallery__item--video {
+    cursor: default;
+}
+.tc-photo-gallery__item--video video {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    background: #000;
+}
+.tc-photo-gallery__item--video:hover,
+.tc-photo-gallery__item--video:focus-within {
+    /* Slightly tamer hover than photos — videos don't need the
+       saturation pop, and the lift would shift the controls under
+       the user's cursor. */
+    transform: none;
+    filter: brightness(1.0);
 }
 
 /* Tablet — drop to 3 masonry columns. */

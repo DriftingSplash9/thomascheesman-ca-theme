@@ -140,12 +140,27 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
             // reader scrolls into view.
             $loading = ( $global_idx < 6 ) ? 'eager' : 'lazy';
             $alt     = sprintf( '%s photo %d', $alt_prefix, $global_idx + 1 );
-            printf(
-                '<figure class="tc-photo-gallery__item"><img src="%1$s" alt="%2$s" loading="%3$s" decoding="async" /></figure>',
-                esc_url( $entry['url'] ),
-                esc_attr( $alt ),
-                esc_attr( $loading )
-            );
+            $url     = $entry['url'];
+
+            // Detect video URLs by extension. Render with <video> +
+            // controls instead of <img>, otherwise the browser shows
+            // a broken-image icon. PhotoSwipe's initLightbox() only
+            // wraps <img> tags, so videos sit inline as native players
+            // without entering the lightbox flow.
+            if ( preg_match( '/\.(mp4|webm|mov|m4v|ogg|ogv)(\?|#|$)/i', $url ) ) {
+                printf(
+                    '<figure class="tc-photo-gallery__item tc-photo-gallery__item--video"><video src="%1$s" controls preload="metadata" playsinline aria-label="%2$s"></video></figure>',
+                    esc_url( $url ),
+                    esc_attr( $alt )
+                );
+            } else {
+                printf(
+                    '<figure class="tc-photo-gallery__item"><img src="%1$s" alt="%2$s" loading="%3$s" decoding="async" /></figure>',
+                    esc_url( $url ),
+                    esc_attr( $alt ),
+                    esc_attr( $loading )
+                );
+            }
             $global_idx++;
         }
         echo '</div>';
