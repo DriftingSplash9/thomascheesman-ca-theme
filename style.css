@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.212
+Version: 1.0.213
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6724,6 +6724,7 @@ body.page-passport .entry-content {
     flex: 0 0 auto;
     margin: 0;
     height: 180px;
+    width: auto;
     overflow: hidden;
     background: #1a1410;
     border-radius: 2px;
@@ -6736,12 +6737,25 @@ body.page-passport .entry-content {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
     z-index: 2;
 }
-.tc-photo-gallery__item img {
+/* PhotoSwipe wraps each <img> in <a class="lightbox-link"> after the
+   page loads — that anchor is inline by default, which collapses the
+   image's height and lets it render at natural width. Forcing the
+   anchor to block + 100% height re-anchors the image inside the
+   figure's fixed-row-height frame. */
+.tc-photo-gallery__item > a,
+.tc-photo-gallery__item .lightbox-link {
     display: block;
     height: 100%;
     width: auto;
-    max-width: none;
-    object-fit: contain;
+    line-height: 0;
+}
+.tc-photo-gallery__item img {
+    display: block !important;
+    height: 100% !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 0;
 }
 
 /* Tablet — slightly shorter rows so more photos sit per viewport. */
