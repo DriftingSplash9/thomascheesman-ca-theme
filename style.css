@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.222
+Version: 1.0.223
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4660,28 +4660,20 @@ body:has(.person-spoke--faith) {
     background: rgba(255, 255, 255, 0.08);
 }
 
-/* Status banners — appear above the form when ?dispatch=<status> is
-   on the URL after a submission redirect. Soft semantic colors,
-   no animation; the banner just is. */
-.dispatch__banner {
-    margin: 0 0 clamp(20px, 3vh, 30px);
-    padding: 14px 18px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    line-height: 1.55;
-    border: 1px solid;
+/* Submit-button hint paragraph — appears below the Send button on
+   the contact form, explaining the mailto: handoff. After submit,
+   JS may swap the text + add .dispatch__hint--active to surface a
+   fallback for visitors whose OS didn't open a mail client. */
+.dispatch__hint {
+    margin: 14px 0 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.55);
+    font-style: italic;
 }
-
-.dispatch__banner--ok {
-    color: rgb(190, 240, 205);
-    background: rgba(60, 140, 90, 0.15);
-    border-color: rgba(80, 180, 120, 0.35);
-}
-
-.dispatch__banner--err {
+.dispatch__hint--active {
     color: rgb(245, 200, 195);
-    background: rgba(170, 70, 60, 0.15);
-    border-color: rgba(220, 100, 90, 0.35);
+    font-style: normal;
 }
 
 @media (max-width: 600px) {

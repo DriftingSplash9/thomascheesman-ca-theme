@@ -5,21 +5,29 @@
  * Auto-applied by WordPress to any page whose slug is `contact`.
  *
  * Layout: editorial chrome (page-hero + narrow reading column)
- * matching /about. Primary channel is the dispatch form, which
- * posts to admin-post.php and is handled by tc_dispatch_handler()
- * in functions.php. The recipient inbox is hidden from markup —
- * it's hardcoded server-side and never appears in HTML.
+ * matching /about.
  *
- * Submission feedback comes back via ?dispatch= query string:
- *   sent    — success banner
- *   invalid — required fields missing or email malformed
- *   error   — generic failure (nonce, time-trap, mail send fail)
+ * Email path: client-side mailto: composer. The form fields are
+ * captured by a JS submit handler that builds a mailto: URL with
+ * subject + pre-filled body, then opens the visitor's default mail
+ * client. Zero server-side mail dependency — no SMTP, no SPF/DKIM,
+ * no third-party form service to maintain.
+ *
+ * The recipient address is rendered into a data attribute on the
+ * form (rot13'd as a tiny anti-scraper measure; bots looking for
+ * mailto: links won't see a literal address). For visitors with JS
+ * disabled, the form falls back to a plain mailto link rendered
+ * below as a graceful degradation path.
  */
 
 get_header();
 
-// Read submission feedback flag once, sanitized.
-$dispatch_status = isset( $_GET['dispatch'] ) ? sanitize_key( $_GET['dispatch'] ) : '';
+// Recipient — kept here as a single source of truth so future swaps
+// (e.g., a dedicated contact@thomascheesman.ca address) only touch
+// one line. Rendered rot13'd into the page; main.js decodes and
+// builds the mailto: at submit time.
+$tc_contact_recipient = 'thomasmcheesman@gmail.com';
+$tc_contact_recipient_rot13 = str_rot13( $tc_contact_recipient );
 ?>
 
 <main id="primary" class="site-main contact-page">
@@ -43,37 +51,16 @@ $dispatch_status = isset( $_GET['dispatch'] ) ? sanitize_key( $_GET['dispatch'] 
             <section class="about-section scroll-animate">
 
                 <p class="about-lead">
-                    The form below is the most direct line &mdash; it lands in my inbox. I read in spurts, so don't take a slow reply personally.
+                    The form below is the most direct line. Filling it out opens your email app with a pre-composed message ready to send &mdash; nothing leaves your computer until you hit Send in your mail client. I read in spurts, so don't take a slow reply personally.
                 </p>
 
-                <?php if ( 'sent' === $dispatch_status ) : ?>
-                    <div class="dispatch__banner dispatch__banner--ok" role="status">
-                        Message sent. I'll get back to you when I'm next at a screen.
-                    </div>
-                <?php elseif ( 'invalid' === $dispatch_status ) : ?>
-                    <div class="dispatch__banner dispatch__banner--err" role="alert">
-                        That didn't go through &mdash; please check your email address and that the message field isn't empty.
-                    </div>
-                <?php elseif ( 'error' === $dispatch_status ) : ?>
-                    <div class="dispatch__banner dispatch__banner--err" role="alert">
-                        Something went sideways on my end. Try again in a moment, or reach me on the socials below.
-                    </div>
-                <?php endif; ?>
-
-                <form class="dispatch" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" novalidate>
-                    <input type="hidden" name="action" value="tc_dispatch_send">
-                    <?php wp_nonce_field( 'tc_dispatch', 'tc_dispatch_nonce' ); ?>
-                    <input type="hidden" name="dispatch_t0" value="<?php echo esc_attr( time() ); ?>">
-
-                    <!-- Honeypot — visually hidden, real humans never see it.
-                         Bots that fill every field will fill this one too;
-                         server-side, a non-empty value silently drops the
-                         submission while pretending success. -->
-                    <div class="dispatch__honeypot" aria-hidden="true">
-                        <label>Website
-                            <input type="text" name="dispatch_website" tabindex="-1" autocomplete="off">
-                        </label>
-                    </div>
+                <form class="dispatch"
+                      data-tc-mailto
+                      data-tc-recipient-rot13="<?php echo esc_attr( $tc_contact_recipient_rot13 ); ?>"
+                      action="mailto:<?php echo esc_attr( $tc_contact_recipient_rot13 ); ?>"
+                      method="post"
+                      enctype="text/plain"
+                      novalidate>
 
                     <div class="dispatch__field">
                         <label class="dispatch__label" for="dispatch-name">
@@ -84,9 +71,9 @@ $dispatch_status = isset( $_GET['dispatch'] ) ? sanitize_key( $_GET['dispatch'] 
 
                     <div class="dispatch__field">
                         <label class="dispatch__label" for="dispatch-email">
-                            Email
+                            Your email <span class="dispatch__optional">(so I can reply)</span>
                         </label>
-                        <input class="dispatch__input" type="email" id="dispatch-email" name="dispatch_email" required maxlength="200" autocomplete="email">
+                        <input class="dispatch__input" type="email" id="dispatch-email" name="dispatch_email" maxlength="200" autocomplete="email">
                     </div>
 
                     <div class="dispatch__field">
@@ -103,7 +90,11 @@ $dispatch_status = isset( $_GET['dispatch'] ) ? sanitize_key( $_GET['dispatch'] 
                         <textarea class="dispatch__input dispatch__input--textarea" id="dispatch-message" name="dispatch_message" required rows="6" maxlength="4000"></textarea>
                     </div>
 
-                    <button class="dispatch__send" type="submit">Send</button>
+                    <button class="dispatch__send" type="submit">Open in your email app</button>
+
+                    <p class="dispatch__hint">
+                        On submit your default email client will open with the message pre-filled. Hit Send in there and it lands in my inbox.
+                    </p>
                 </form>
 
                 <p class="contact-list__intro">Or find me on:</p>

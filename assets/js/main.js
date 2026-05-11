@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initLightbox();
     initGallerySlideshow();
     initFooterStampProximity();
+    initContactMailto();
     initBlogReveal();
     initScrollReveals();
     initHeritagePage();
@@ -814,6 +815,82 @@ function initLightbox() {
         .catch((err) => {
             console.warn('PhotoSwipe failed to load — image clicks fall back to direct image URLs.', err);
         });
+}
+
+/* =====================================================================
+   Contact form — mailto: composer.
+   The form on /contact has no server-side email path. On submit, this
+   handler reads the field values, builds a mailto: URL with subject
+   + pre-composed body, and opens the visitor's default mail client.
+   No SMTP, no SPF/DKIM, no third-party form service. The recipient
+   address is rot13'd in the markup as a tiny anti-scraper measure
+   (no literal `mailto:address@domain.com` for harvesters to grab).
+   ===================================================================== */
+function initContactMailto() {
+    const form = document.querySelector('form.dispatch[data-tc-mailto]');
+    if (!form) return;
+
+    function rot13(s) {
+        return s.replace(/[A-Za-z]/g, (c) => {
+            const base = c <= 'Z' ? 65 : 97;
+            return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
+        });
+    }
+
+    const recipient = rot13(form.dataset.tcRecipientRot13 || '');
+    if (!recipient) return;
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const fd = new FormData(form);
+        const name    = (fd.get('dispatch_name')    || '').toString().trim();
+        const email   = (fd.get('dispatch_email')   || '').toString().trim();
+        const subject = (fd.get('dispatch_subject') || '').toString().trim();
+        const message = (fd.get('dispatch_message') || '').toString().trim();
+
+        if (!message) {
+            // The textarea is `required` so the browser will catch this
+            // already — this is a belt-and-braces guard for older mobile
+            // browsers that quietly skip novalidate forms.
+            const ta = form.querySelector('textarea');
+            if (ta) ta.focus();
+            return;
+        }
+
+        // Build the body. Lead with name + reply-email so the recipient
+        // sees who they're talking to before the message itself.
+        const lines = [];
+        if (name)  lines.push('From: ' + name);
+        if (email) lines.push('Reply to: ' + email);
+        if (lines.length) {
+            lines.push('');
+            lines.push('--');
+            lines.push('');
+        }
+        lines.push(message);
+        const body = lines.join('\n');
+
+        const finalSubject = subject
+            ? '[thomascheesman.ca] ' + subject
+            : '[thomascheesman.ca] New message via /contact';
+
+        const params = new URLSearchParams();
+        params.set('subject', finalSubject);
+        params.set('body', body);
+        // URLSearchParams encodes spaces as '+', but mailto wants %20.
+        const queryString = params.toString().replace(/\+/g, '%20');
+
+        window.location.href = 'mailto:' + recipient + '?' + queryString;
+
+        // Surface a soft confirmation in case the OS doesn't visibly
+        // hand off to a mail client (e.g., no default client set).
+        const hint = form.querySelector('.dispatch__hint');
+        if (hint) {
+            hint.textContent = 'If your email app didn’t open, copy your message and email me directly at ' + recipient + '.';
+            hint.classList.add('dispatch__hint--active');
+        }
+    });
 }
 
 /* =====================================================================
