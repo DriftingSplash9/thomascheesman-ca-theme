@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.221
+Version: 1.0.222
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1767,13 +1767,20 @@ html.tc-menu-open body {
        not the vertical binding fold a passport needs. */
     background-color: var(--pp-paper);  /* fallback while image loads */
     background-image:
+        /* Spine fold — deeper centre shadow with thin paper-highlight
+           strokes either side, mimicking how a saddle-stitched passport
+           page catches light at the binding crease. Peak shadow bumped
+           to 22% (was 14%) and the highlight stops at 47.5% / 52.5%
+           give the eye an actual fold line to read. */
         linear-gradient(
             to right,
-            transparent 46%,
-            rgba(0, 0, 0, 0.05)  48.5%,
-            rgba(0, 0, 0, 0.14)  50%,
-            rgba(0, 0, 0, 0.05)  51.5%,
-            transparent 54%
+            transparent 44%,
+            rgba(255, 245, 220, 0.10) 47.5%,
+            rgba(0, 0, 0, 0.06)  48.5%,
+            rgba(0, 0, 0, 0.22)  50%,
+            rgba(0, 0, 0, 0.06)  51.5%,
+            rgba(255, 245, 220, 0.10) 52.5%,
+            transparent 56%
         ),
         url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/04/passport-paper.png');
     background-size: auto, cover;
@@ -1791,6 +1798,64 @@ html.tc-menu-open body {
        blend-mode pseudos elsewhere. */
     isolation: isolate;
     overflow: hidden;
+}
+
+/* Page-corner curl — bottom-right corner of the cream page lifts
+   slightly. Two pseudos:
+     ::before — the underside paper that's been revealed by the curl,
+                slightly darker cream + a soft skew + sat in the corner
+     ::after  — the highlight gradient on the top surface of the curl,
+                catching light from upper-left like the rest of the
+                page (matches the spine fold's light source)
+   The curl is small and respectful — about 28px on its longest edge —
+   so it reads as a "the corner has lifted a bit from being thumbed
+   open many times" rather than "torn corner". */
+.tc-passport::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    pointer-events: none;
+    z-index: 3;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        transparent 48%,
+        rgba(0, 0, 0, 0.18) 50%,
+        rgba(0, 0, 0, 0.10) 60%,
+        transparent 100%
+    );
+    /* The diagonal triangle reveal: clip to the lower-right triangle
+       so the rest of the page surface stays clean. */
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    /* Slight darkening of the underside */
+    box-shadow: inset -2px -2px 6px rgba(60, 38, 12, 0.18);
+}
+.tc-passport::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    pointer-events: none;
+    z-index: 4;
+    /* The lifted page-corner triangle itself — a thin highlight
+       running diagonally across it, suggesting the curve catches
+       light from upper-left. */
+    background: linear-gradient(
+        315deg,
+        rgba(255, 248, 230, 0.55) 0%,
+        rgba(240, 230, 210, 0.85) 35%,
+        rgba(200, 180, 145, 0.70) 70%,
+        rgba(140, 109, 44, 0.30) 100%
+    );
+    clip-path: polygon(100% 100%, 0 100%, 100% 0);
+    /* Cast a tiny shadow back onto the page beneath so the curl
+       reads as physically lifted, not just a colour gradient. */
+    filter: drop-shadow(-1px -2px 3px rgba(0, 0, 0, 0.20));
 }
 
 /* ---- Document title ---- */
@@ -2027,6 +2092,14 @@ html.tc-menu-open body {
     color: var(--pp-ink-dark);
     letter-spacing: 0.01em;
     line-height: 1.1;
+    /* Ink bleed — a tiny soft halo in the same dark ink colour, as if
+       the name was stamped/printed onto fibrous paper and the ink
+       crept into the fibre by a hair. Two layered shadows: one very
+       tight and warm-dark for the bleed, one slightly larger and
+       sepia for the surrounding paper warming to the print pressure. */
+    text-shadow:
+        0 0 0.6px rgba(42, 26, 8, 0.55),
+        0 0 2px   rgba(122, 59, 12, 0.18);
 }
 
 .tc-passport__bearer-tagline {
@@ -2130,14 +2203,18 @@ html.tc-menu-open body {
        the heavily-pressed border. */
     background: radial-gradient(circle, rgba(255, 250, 235, 0.40), transparent 75%);
     transform: var(--stamp-rest-transform, rotate(-4deg));
+    /* Cursor-proximity glow driven by JS (initFooterStampProximity in
+       main.js). The variable is 0 when cursor is far, ramping to 1 at
+       the stamp centre. Multiplied into the halo blur + spread so the
+       stamp appears to "notice" the cursor approaching. */
+    --stamp-proximity: 0;
     transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
                 border-color 0.3s ease,
-                box-shadow  0.45s ease,
                 filter      0.3s ease;
-    /* Subtle ink-bleed shadow + soft outer drop, as if the rubber
-       stamp pressed firmly and a touch of pigment seeped outward. */
-    box-shadow: 0 0 0 1px rgba(90, 56, 24, 0.10),
-                0 2px 4px rgba(0, 0, 0, 0.10);
+    box-shadow:
+        0 0 0 1px rgba(90, 56, 24, 0.10),
+        0 2px 4px rgba(0, 0, 0, 0.10),
+        0 0 calc(20px * var(--stamp-proximity)) calc(2px * var(--stamp-proximity)) currentColor;
 }
 
 .tc-passport__stamp-link:hover .tc-passport__stamp-mark {
@@ -2294,14 +2371,37 @@ html.tc-menu-open body {
    to system mono. Letter-spacing is intentionally tight — real MRZ
    characters are nearly fixed-pitch and butt up against each other. */
 .tc-passport__mrz {
-    margin: 0 0 12px;
-    padding: 12px 0 10px;
-    border-top: 1px dashed var(--pp-ink-line);
+    position: relative;
+    margin: 14px 0 12px;
+    padding: 14px 0 10px;
     border-bottom: 1px dashed var(--pp-ink-line);
     text-align: center;
     overflow-x: auto;
     /* Hide the scrollbar visually while keeping the content reachable. */
     scrollbar-width: none;
+}
+
+/* Perforation rule above the MRZ block — fine dotted gold line that
+   reads as the printed perforation marker between the bio data zone
+   and the machine-readable zone on a real passport. The ::before
+   gives us a thinner, denser stipple than a CSS dashed border, with
+   a touch of glow so it sits on the cream paper rather than under it. */
+.tc-passport__mrz::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 4%;
+    right: 4%;
+    height: 2px;
+    background-image: radial-gradient(
+        circle,
+        rgba(201, 168, 106, 0.75) 0,
+        rgba(201, 168, 106, 0.75) 35%,
+        transparent 38%
+    );
+    background-size: 6px 2px;
+    background-repeat: repeat-x;
+    opacity: 0.85;
 }
 
 .tc-passport__mrz::-webkit-scrollbar {
