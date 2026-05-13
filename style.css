@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.262
+Version: 1.0.263
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -755,39 +755,6 @@ body {
         width: 100%;
         text-align: center;
     }
-}
-
-/* ============================================
-   CUSTOM CURSOR
-   ============================================
-   A single sharp inner dot. JS positions it every frame via transform. */
-
-html.cursor-custom,
-html.cursor-custom * {
-    cursor: none;
-}
-
-/* Restore native text cursor on form fields so typing still feels normal. */
-html.cursor-custom input,
-html.cursor-custom textarea,
-html.cursor-custom select,
-html.cursor-custom [contenteditable] {
-    cursor: text;
-}
-
-.cursor-dot {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--text-dark);
-    pointer-events: none;
-    /* Above PhotoSwipe's --pswp-root-z-index (100000) so the custom
-       cursor stays visible over the lightbox. */
-    z-index: 1000000;
-    will-change: transform;
 }
 
 /* ============================================

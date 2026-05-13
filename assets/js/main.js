@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initHeritagePage();
     initInkTrail();
     initParticleField();
-    initCustomCursor();
     initMagneticElements();
     initTimelinePage();
 });
@@ -1274,39 +1273,6 @@ function initParticleField() {
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
-}
-
-/**
- * Custom cursor — a sharp inner dot that snaps to the live mouse position.
- *
- * The OS cursor is hidden site-wide via the `cursor-custom` class on the
- * <html> element (toggled here). Inputs/textareas restore their text
- * cursor via a CSS override so typing still feels normal.
- *
- * The dot is positioned via `transform: translate(x, y)` plus
- * a `translate(-50%, -50%)` to center on the cursor point. No lerp — the
- * ink-trail head samples e.clientX/Y exactly, so any easing would offset
- * the dot from the trail tip.
- *
- * Sit-out conditions: prefers-reduced-motion or coarse pointer (touch).
- */
-function initCustomCursor() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (!window.matchMedia('(pointer: fine)').matches) return;
-
-    document.documentElement.classList.add('cursor-custom');
-
-    const dot = document.createElement('div');
-    dot.className = 'cursor-dot';
-    dot.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(dot);
-
-    // Snap the dot to the live mouse position so it stays aligned with the
-    // ink-trail head (which samples e.clientX/Y exactly). Any easing here
-    // creates a visible offset between dot and trail tip.
-    document.addEventListener('mousemove', function (e) {
-        dot.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px) translate(-50%, -50%)';
-    });
 }
 
 /**
