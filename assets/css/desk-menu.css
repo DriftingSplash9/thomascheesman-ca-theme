@@ -459,7 +459,6 @@ html.tc-desk-open{ overflow: hidden; }
     padding: 10px 14px;
     border-radius: 3px;
     box-shadow: 0 10px 25px #000a, 0 2px 4px #0007;
-    transform: translate(0, 6px) rotate(-1.4deg);
     opacity: 0;
     pointer-events: none;
     transition: opacity .22s, transform .22s;
@@ -468,29 +467,111 @@ html.tc-desk-open{ overflow: hidden; }
     max-width: 230px;
     z-index: 5;
 }
-.tc-desk__hotspot:hover .tc-desk__card{
-    opacity: 1;
-    transform: translate(0, 0) rotate(-1.4deg);
+
+/* ============================================================
+   Card positioning + pointer alignment
+   ----------------------------------------------------------
+   Cards are centred on the hotspot in the cross-axis (horizontal
+   for above/below, vertical for left/right), and the pointer
+   triangle on each card sits at the centre of its hotspot-facing
+   edge — so visually each card looks like it's tethered to the
+   glow it describes.
+
+   The slight rotate(-1.4deg) is the "handwritten note" tilt; the
+   small offset on the cross-axis (6px) is the lift-up animation.
+   ============================================================ */
+
+.tc-desk__card--below{
+    left: 50%;
+    top: 100%;
+    margin-top: 12px;
+    transform: translate(-50%, 6px) rotate(-1.4deg);
 }
-/* Small pointer triangle */
-.tc-desk__card::before{
+.tc-desk__hotspot:hover .tc-desk__card--below{
+    opacity: 1;
+    transform: translate(-50%, 0) rotate(-1.4deg);
+}
+.tc-desk__card--below::before{
     content: "";
     position: absolute;
     top: -8px;
-    left: 18px;
-    width: 0;
-    height: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
     border-bottom: 9px solid #f6f1e3;
     filter: drop-shadow(0 -1px 0 #0002);
 }
 
-/* Positioning helpers */
-.tc-desk__card--right{ left: 100%; margin-left: 8px; top: 0; }
-.tc-desk__card--left { right: 100%; margin-right: 8px; top: 0; }
-.tc-desk__card--below{ left: 0; top: 100%; margin-top: 10px; }
-.tc-desk__card--above{ left: 0; bottom: 100%; margin-bottom: 10px; }
+.tc-desk__card--above{
+    left: 50%;
+    bottom: 100%;
+    margin-bottom: 12px;
+    transform: translate(-50%, -6px) rotate(-1.4deg);
+}
+.tc-desk__hotspot:hover .tc-desk__card--above{
+    opacity: 1;
+    transform: translate(-50%, 0) rotate(-1.4deg);
+}
+.tc-desk__card--above::before{
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 9px solid #f6f1e3;
+    filter: drop-shadow(0 1px 0 #0002);
+}
+
+.tc-desk__card--right{
+    left: 100%;
+    top: 50%;
+    margin-left: 12px;
+    transform: translate(6px, -50%) rotate(-1.4deg);
+}
+.tc-desk__hotspot:hover .tc-desk__card--right{
+    opacity: 1;
+    transform: translate(0, -50%) rotate(-1.4deg);
+}
+.tc-desk__card--right::before{
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 9px solid #f6f1e3;
+    filter: drop-shadow(-1px 0 0 #0002);
+}
+
+.tc-desk__card--left{
+    right: 100%;
+    top: 50%;
+    margin-right: 12px;
+    transform: translate(-6px, -50%) rotate(-1.4deg);
+}
+.tc-desk__hotspot:hover .tc-desk__card--left{
+    opacity: 1;
+    transform: translate(0, -50%) rotate(-1.4deg);
+}
+.tc-desk__card--left::before{
+    content: "";
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 9px solid #f6f1e3;
+    filter: drop-shadow(1px 0 0 #0002);
+}
 
 
 /* ============================================================
