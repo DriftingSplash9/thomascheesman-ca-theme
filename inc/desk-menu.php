@@ -1,0 +1,294 @@
+<?php
+/**
+ * Desk menu — the BHAG site navigation surface.
+ *
+ * Renders Thomas's actual desk as the menu. The monitor (in the photo)
+ * is the active portal showing the Contents nav; the desk objects
+ * around it are meaningful personal artifacts — family gifts, books,
+ * marbles, the kid-drawn Alberta crest — each with a small handwritten
+ * card that fades in on hover. Three objects are clickable affordances:
+ *
+ *   - The keyboard      → opens a search interface inside the monitor
+ *   - The notebooks     → opens the journal drawer (post categories)
+ *   - The memory cards  → opens the slideshow drawer (per-kid + family)
+ *
+ * --- Visibility ----------------------------------------------------
+ *
+ * The root <div class="tc-desk"> starts hidden (aria-hidden="true").
+ * Activation comes from setting html.tc-desk-open via the menu-trigger
+ * button. Mirrors the legacy .tc-menu overlay pattern — see header.php
+ * and main.js's initSiteChrome(). C4 of the build will wire the trigger
+ * to open this overlay instead of the old menu list.
+ *
+ * --- Architecture ---------------------------------------------------
+ *
+ * - Stage frame: aspect-ratio-matched container so percentage-positioned
+ *   hotspots stay photo-relative no matter the viewport shape. The
+ *   hero image is exposed as a CSS custom property (--desk-hero) so it's
+ *   swappable here (or via a future filter) without touching the CSS.
+ *
+ * - Monitor: positioned absolutely over the curved monitor in the photo,
+ *   contains both the Contents nav AND the search UI. JS toggles between
+ *   them when the keyboard hotspot is clicked.
+ *
+ * - Hotspots: invisible boxes positioned as percentages of the frame,
+ *   each with a hover card (the story or attribution). Classes:
+ *       .tc-desk__hotspot              hover-only, warm yellow glow
+ *       .tc-desk__hotspot--clickable   actionable, cyan spotlight
+ *
+ * - Drawers: slideshow + journal directory popovers; full-viewport
+ *   overlays with the desk visible blurred behind.
+ *
+ * Hotspot coordinates were dialed in across iterations against
+ * IMG_4329 (the staged desk shot). Aspect ratio of that source is
+ * 1800:1013 — the CSS encodes this so the frame fits any viewport.
+ *
+ * @return void Echoes markup directly. Call from header.php after C4.
+ */
+function tc_render_desk_menu() {
+    $hero_url = 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/desk-hero.jpg';
+    ?>
+<div
+    class="tc-desk"
+    id="tc-desk-menu"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-label="<?php esc_attr_e( "Thomas's desk — site navigation", 'tc-ventures-child' ); ?>"
+>
+    <div class="tc-desk__frame" style="--desk-hero: url('<?php echo esc_url( $hero_url ); ?>');">
+
+        <!-- ============================================================
+             MONITOR — the active portal.
+             Default state shows the Contents nav. Click the keyboard
+             hotspot to swap to the search interface.
+             ============================================================ -->
+        <div class="tc-desk__monitor" role="navigation" aria-label="<?php esc_attr_e( 'Site sections', 'tc-ventures-child' ); ?>">
+            <h1 class="tc-desk__monitor-title">Contents</h1>
+            <ul class="tc-desk__toc">
+                <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">
+                    <span class="title">Welcome &mdash; a note from me</span>
+                    <span class="pageno">1</span>
+                </a></li>
+                <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">
+                    <span class="title">All about me</span>
+                    <span class="pageno">7</span>
+                </a></li>
+                <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">
+                    <span class="title">The body I got</span>
+                    <span class="pageno">35</span>
+                </a></li>
+                <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">
+                    <span class="title">Patience, Daniel, and Faith</span>
+                    <span class="pageno">63</span>
+                </a></li>
+                <li><a href="<?php echo esc_url( home_url( '/journal' ) ); ?>">
+                    <span class="title">Things I think about</span>
+                    <span class="pageno">97</span>
+                </a></li>
+                <li><a href="https://tc-timeline.vercel.app/">
+                    <span class="title">My whole life so far</span>
+                    <span class="pageno">129</span>
+                </a></li>
+                <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">
+                    <span class="title">Send me a letter</span>
+                    <span class="pageno">165</span>
+                </a></li>
+            </ul>
+
+            <!-- Search UI — hidden until the keyboard hotspot is clicked. -->
+            <div class="tc-desk__search" id="tc-desk-search" hidden>
+                <input
+                    type="text"
+                    class="tc-desk__search-input"
+                    id="tc-desk-search-input"
+                    placeholder="<?php esc_attr_e( 'Looking for something?', 'tc-ventures-child' ); ?>"
+                    autocomplete="off"
+                >
+                <div class="tc-desk__chips">
+                    <button class="tc-desk__chip" data-q="Patience">Patience</button>
+                    <button class="tc-desk__chip" data-q="Daniel">Daniel</button>
+                    <button class="tc-desk__chip" data-q="Faith">Faith</button>
+                    <button class="tc-desk__chip" data-q="HCS">HCS</button>
+                    <button class="tc-desk__chip" data-q="Spinal fusion">Spinal fusion</button>
+                    <button class="tc-desk__chip" data-q="Bitcoin">Bitcoin</button>
+                    <button class="tc-desk__chip" data-q="Kitchen">Kitchen</button>
+                </div>
+                <button class="tc-desk__search-back" id="tc-desk-search-back" type="button">&larr; back to menu</button>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             HOTSPOTS — meaningful objects on the desk.
+             Coordinates are percentages of the stage frame
+             (photo-relative). Hover for the story; click the cyan-glow
+             objects (keyboard, notebooks, memory cards) for actions.
+             ============================================================ -->
+
+        <!-- Patience's gift -->
+        <div class="tc-desk__hotspot" style="left:13%; top:62%; width:9%; height:18%;" aria-label="Charlie Brown mug — gift from Patience">
+            <div class="tc-desk__card tc-desk__card--above">Patience knows I love coffee, Christmas, and Charlie Brown &mdash; and got me the warmer it sits on.</div>
+        </div>
+
+        <!-- From the kids while in hospital -->
+        <div class="tc-desk__hotspot" style="left:25%; top:58%; width:7%; height:15%;" aria-label="Lion stuffie — from the kids in hospital">
+            <div class="tc-desk__card tc-desk__card--right">From the kids while I was in the hospital recovering from the spinal fusion.</div>
+        </div>
+
+        <!-- Faith's Alberta crest drawing -->
+        <div class="tc-desk__hotspot" style="left:3%; top:46%; width:13%; height:25%;" aria-label="Alberta crest drawing by Faith">
+            <div class="tc-desk__card tc-desk__card--right">Faith drew this. It's not coming down.</div>
+        </div>
+
+        <!-- THOMAS nameplate -->
+        <div class="tc-desk__hotspot" style="left:-3%; top:25%; width:9%; height:9%;" aria-label="Thomas nameplate">
+            <div class="tc-desk__card tc-desk__card--below">That's my name on it.</div>
+        </div>
+
+        <!-- Faith's 67 sticker -->
+        <div class="tc-desk__hotspot" style="left:42%; top:57%; width:5%; height:9%;" aria-label="67 sticker — Faith's thing">
+            <div class="tc-desk__card tc-desk__card--below">67 is Faith's thing. She's infatuated with it. I keep it for her.</div>
+        </div>
+
+        <!-- Daniel's 3D-pen spider -->
+        <div class="tc-desk__hotspot" style="left:43%; top:52%; width:3%; height:6%;" aria-label="Blue spider — Daniel made it with a 3D pen">
+            <div class="tc-desk__card tc-desk__card--below">Daniel made this with a 3D pen. Lives on the speaker.</div>
+        </div>
+
+        <!-- Hot Wheels — Daniel + Thomas shared hobby -->
+        <div class="tc-desk__hotspot" style="left:52%; top:54%; width:6%; height:8%;" aria-label="Hot Wheels — Daniel and Thomas">
+            <div class="tc-desk__card tc-desk__card--below">Daniel and I collect these together.</div>
+        </div>
+
+        <!-- The grumpy toad — Thomas's avatar -->
+        <div class="tc-desk__hotspot" style="left:67%; top:75%; width:5%; height:9%;" aria-label="Grumpy toad — basically a statue of Thomas">
+            <div class="tc-desk__card tc-desk__card--above">Weird? Check. Mutated-looking? Check. Grumpy? Check. Basically a statue of me.</div>
+        </div>
+
+        <!-- Daniel's duck collection -->
+        <div class="tc-desk__hotspot" style="left:60%; top:51%; width:11%; height:24%;" aria-label="Rubber duck — Daniel started the collection">
+            <div class="tc-desk__card tc-desk__card--left">Daniel got me started. There's more on the dresser.</div>
+        </div>
+
+        <!-- Memory cards (clickable) — opens the slideshow drawer -->
+        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-bin" style="left:67%; top:44%; width:9%; height:14%;" aria-label="Memory cards &mdash; open the slideshow drawer">
+            <div class="tc-desk__card tc-desk__card--left">Memory cards. Click &mdash; flip through the slideshows.</div>
+        </div>
+
+        <!-- Peace sticker -->
+        <div class="tc-desk__hotspot" style="left:2.5%; top:88%; width:8%; height:9%;" aria-label="Peace sticker">
+            <div class="tc-desk__card tc-desk__card--above">My corner of the room.</div>
+        </div>
+
+        <!-- Cologne — Thomas's signature -->
+        <div class="tc-desk__hotspot" style="left:73%; top:62%; width:5%; height:14%;" aria-label="Cologne — L'Homme by Yves Saint Laurent">
+            <div class="tc-desk__card tc-desk__card--left">L'Homme by Yves Saint Laurent. My one.</div>
+        </div>
+
+        <!-- Notebooks (clickable) — opens the journal drawer -->
+        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-notebooks" style="left:78%; top:42%; width:10%; height:14%;" aria-label="Notebooks &mdash; open the journal">
+            <div class="tc-desk__card tc-desk__card--left">Notebooks. A lot of me is in those. Click &mdash; read the journal.</div>
+        </div>
+
+        <!-- Bitcoin Standard + Broken Money -->
+        <div class="tc-desk__hotspot" style="left:84%; top:41%; width:13%; height:16%;" aria-label="Bitcoin Standard and Broken Money">
+            <div class="tc-desk__card tc-desk__card--left">Two of the best books ever written about money. Still standing by them.</div>
+        </div>
+
+        <!-- LOTR / The Hobbit -->
+        <div class="tc-desk__hotspot" style="left:82%; top:23%; width:13%; height:14%;" aria-label="Lord of the Rings books">
+            <div class="tc-desk__card tc-desk__card--left">The Hobbit especially. Always.</div>
+        </div>
+
+        <!-- Keyboard (clickable) — opens the search interface -->
+        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-keyboard" style="left:24%; top:70%; width:38%; height:18%;" aria-label="Keyboard &mdash; open search">
+            <div class="tc-desk__card tc-desk__card--above">Click &mdash; search the site.</div>
+        </div>
+
+        <!-- Marbles -->
+        <div class="tc-desk__hotspot" style="left:75%; top:75%; width:5%; height:8%;" aria-label="Marbles">
+            <div class="tc-desk__card tc-desk__card--left">My marbles. Most of them, anyway.</div>
+        </div>
+
+        <!-- Wallet — driver's license visible -->
+        <div class="tc-desk__hotspot" style="left:75%; top:88%; width:8%; height:10%;" aria-label="Wallet">
+            <div class="tc-desk__card tc-desk__card--left">My wallet. That's me on the front.</div>
+        </div>
+
+        <!-- Mouse — teaser for future interaction -->
+        <div class="tc-desk__hotspot" style="left:57%; top:86%; width:8%; height:10%;" aria-label="Mouse — coming soon">
+            <div class="tc-desk__card tc-desk__card--left">Mouse. Stay tuned &mdash; something's coming for this one.</div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================
+         JOURNAL DRAWER — opens when notebooks are clicked.
+         ============================================================ -->
+    <div class="tc-desk__drawer" id="tc-desk-journal-drawer" role="dialog" aria-hidden="true">
+        <div class="tc-desk__drawer-inner">
+            <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
+            <h2>The journal</h2>
+            <p class="tc-desk__drawer-sub">Notebooks. Things I think about &mdash; squirrels, flying pigs, crayons.</p>
+            <div class="tc-desk__drawer-grid">
+                <a href="<?php echo esc_url( home_url( '/journal' ) ); ?>" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">All entries</span>
+                    <span class="tc-desk__drawer-card-count">the feed</span>
+                </a>
+                <a href="<?php echo esc_url( home_url( '/category/family' ) ); ?>" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">Family stories</span>
+                    <span class="tc-desk__drawer-card-count">kids + heritage</span>
+                </a>
+                <a href="<?php echo esc_url( home_url( '/category/hcs' ) ); ?>" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">HCS</span>
+                    <span class="tc-desk__drawer-card-count">life with this body</span>
+                </a>
+                <a href="<?php echo esc_url( home_url( '/category/culinary-arts' ) ); ?>" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">Kitchen</span>
+                    <span class="tc-desk__drawer-card-count">chef years</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         SLIDESHOW DRAWER — opens when the memory-card bin is clicked.
+         Surfaces every per-kid gallery + site-wide media stacks.
+         ============================================================ -->
+    <div class="tc-desk__drawer" id="tc-desk-slideshow-drawer" role="dialog" aria-hidden="true">
+        <div class="tc-desk__drawer-inner">
+            <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
+            <h2>All the slideshows</h2>
+            <p class="tc-desk__drawer-sub">Memory cards. Pick a stack &mdash; every slideshow and video on the site.</p>
+            <div class="tc-desk__drawer-grid">
+                <a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">Patience</span>
+                    <span class="tc-desk__drawer-card-count">134 photos</span>
+                </a>
+                <a href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">Daniel</span>
+                    <span class="tc-desk__drawer-card-count">207 photos</span>
+                </a>
+                <a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">Faith</span>
+                    <span class="tc-desk__drawer-card-count">219 photos</span>
+                </a>
+                <a href="<?php echo esc_url( home_url( '/family' ) ); ?>" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">Family &mdash; all of us</span>
+                    <span class="tc-desk__drawer-card-count">560 photos</span>
+                </a>
+                <a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">Heritage docs</span>
+                    <span class="tc-desk__drawer-card-count">YouTube series</span>
+                </a>
+                <a href="#" class="tc-desk__drawer-card">
+                    <span class="tc-desk__drawer-card-title">Site videos</span>
+                    <span class="tc-desk__drawer-card-count">coming soon</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+    <?php
+}

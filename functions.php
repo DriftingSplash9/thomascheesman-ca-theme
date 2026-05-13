@@ -9,6 +9,7 @@
  * with one responsibility, easy to find and refactor.
  */
 require_once get_stylesheet_directory() . '/inc/photo-gallery.php';
+require_once get_stylesheet_directory() . '/inc/desk-menu.php';
 
 /**
  * Enqueue parent and child theme styles and scripts.
