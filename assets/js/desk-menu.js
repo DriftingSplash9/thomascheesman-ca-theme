@@ -1,21 +1,25 @@
 /*!
- * desk-menu.js — interactions inside the desk-as-menu overlay.
+ * desk-menu.js — interactions for the desk-as-menu overlay.
  *
- * Self-contained module. Wires the click affordances on the .tc-desk
- * surface (the three cyan-spotlit objects):
+ * Self-contained module. Owns:
  *
- *   - Memory-card bin    → open the slideshow drawer
- *   - Notebooks          → open the journal drawer
- *   - Keyboard           → swap the monitor to the search interface
+ *   - The menu trigger      (toggles html.tc-desk-open on the
+ *                            [data-menu-trigger] button in the
+ *                            top-right capsule)
+ *   - Memory-card bin       (opens the slideshow drawer)
+ *   - Notebooks             (opens the journal drawer)
+ *   - Keyboard              (swaps the monitor to the search interface)
  *
- * Also handles drawer close (button, click-outside, Esc) and search
- * exit (back button, Esc).
+ * Drawer close: button, click-outside, Esc.
+ * Search exit:  back button, Esc.
+ * Overlay close: trigger again, Esc.
  *
- * The OVERLAY itself (html.tc-desk-open) is NOT toggled here — that's
- * C4's job, wired through the existing menu-trigger button in
- * header.php / main.js's initSiteChrome(). For testing C2 + C3
- * before C4 lands, append `?desk=1` to any URL and the overlay opens
- * on page load. That test hook is removed in C4.
+ * Esc layering (closes the topmost interactive surface):
+ *   open drawer  →  search active  →  overlay open
+ *
+ * main.js's initSiteChrome() still runs (clock + a11y bits) but
+ * bails when #tc-menu is missing, so it does not bind the trigger.
+ * This module is the sole owner of the trigger's open/close behaviour.
  *
  * No dependencies. Loaded in the footer after DOM parse.
  */
@@ -25,11 +29,76 @@
     var doc = document;
 
     function init() {
+        wireMenuTrigger();
         wireDrawer( 'tc-desk-bin',       'tc-desk-slideshow-drawer' );
         wireDrawer( 'tc-desk-notebooks', 'tc-desk-journal-drawer'   );
         wireKeyboardSearch();
         wireGlobalEsc();
-        maybeAutoOpen();
+    }
+
+    /**
+     * The hamburger button in the top-right capsule toggles the desk
+     * overlay. Mirrors the legacy .tc-menu open/close behaviour for
+     * aria + the "Menu" ↔ "Close" label morph.
+     */
+    function wireMenuTrigger() {
+        var trigger = doc.querySelector( '[data-menu-trigger]' );
+        var overlay = doc.getElementById( 'tc-desk-menu' );
+        var label   = doc.querySelector( '[data-trigger-label]' );
+        if ( ! trigger || ! overlay ) return;
+
+        function open() {
+            doc.documentElement.classList.add( 'tc-desk-open' );
+            overlay.setAttribute( 'aria-hidden', 'false' );
+            trigger.setAttribute( 'aria-expanded', 'true' );
+            trigger.setAttribute( 'aria-label', 'Close menu' );
+            if ( label ) label.textContent = 'Close';
+        }
+        function close() {
+            // Close any open drawer first.
+            doc.querySelectorAll( '.tc-desk__drawer.is-open' ).forEach( function ( d ) {
+                if ( typeof d.__tcDeskClose === 'function' ) d.__tcDeskClose();
+            });
+            // Exit search if active.
+            var monitor = doc.querySelector( '.tc-desk__monitor' );
+            if (
+                monitor
+                && monitor.classList.contains( 'is-searching' )
+                && typeof monitor.__tcDeskExitSearch === 'function'
+            ) {
+                monitor.__tcDeskExitSearch();
+            }
+            doc.documentElement.classList.remove( 'tc-desk-open' );
+            overlay.setAttribute( 'aria-hidden', 'true' );
+            trigger.setAttribute( 'aria-expanded', 'false' );
+            trigger.setAttribute( 'aria-label', 'Open menu' );
+            if ( label ) label.textContent = 'Menu';
+            // Return focus to the trigger so keyboard users keep their place.
+            trigger.focus({ preventScroll: true });
+        }
+        function toggle() {
+            if ( doc.documentElement.classList.contains( 'tc-desk-open' ) ) {
+                close();
+            } else {
+                open();
+            }
+        }
+
+        trigger.addEventListener( 'click', toggle );
+
+        // Expose close() so Esc can call it from the global handler.
+        overlay.__tcDeskOverlayClose = close;
+
+        // Same-page anchors close the menu before the scroll/navigation.
+        // External and off-route links navigate normally; the menu closes
+        // as the page unloads anyway.
+        overlay.querySelectorAll( 'a' ).forEach( function ( link ) {
+            link.addEventListener( 'click', function () {
+                if ( doc.documentElement.classList.contains( 'tc-desk-open' ) ) {
+                    close();
+                }
+            });
+        });
     }
 
     /**
@@ -114,10 +183,11 @@
      * Global Esc: close the topmost interactive thing.
      *   1. Any open drawer
      *   2. Active search (exits back to Contents)
-     *   3. (C4 will add) the desk overlay itself
+     *   3. The desk overlay itself (returns to whatever page was behind it)
      */
     function wireGlobalEsc() {
         var monitor = doc.querySelector( '.tc-desk__monitor' );
+        var overlay = doc.getElementById( 'tc-desk-menu' );
 
         doc.addEventListener( 'keydown', function ( e ) {
             if ( e.key !== 'Escape' ) return;
@@ -137,24 +207,14 @@
                 return;
             }
 
-            // Future: C4 closes the desk overlay here.
-        });
-    }
-
-    /**
-     * Test hook: `?desk=1` opens the overlay on page load. Lets us
-     * exercise the C2 + C3 work without waiting for C4 to wire the
-     * trigger. Removed in C4.
-     */
-    function maybeAutoOpen() {
-        try {
-            var params = new URLSearchParams( window.location.search );
-            if ( params.get( 'desk' ) === '1' ) {
-                doc.documentElement.classList.add( 'tc-desk-open' );
+            if (
+                overlay
+                && doc.documentElement.classList.contains( 'tc-desk-open' )
+                && typeof overlay.__tcDeskOverlayClose === 'function'
+            ) {
+                overlay.__tcDeskOverlayClose();
             }
-        } catch ( err ) {
-            // Old browser without URLSearchParams — silently skip.
-        }
+        });
     }
 
     if ( doc.readyState === 'loading' ) {

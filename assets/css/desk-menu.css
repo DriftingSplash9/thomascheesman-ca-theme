@@ -568,18 +568,87 @@ html.tc-desk-open .tc-desk__toc{
    .tc-desk__mobile (markup added in inc/desk-menu.php in C4).
    ============================================================ */
 
+/* Desktop: hide the mobile-only nav */
+.tc-desk__mobile{ display: none; }
+
 @media (max-width: 720px){
+    /* Hide the desk-as-menu elements that don't work on touch */
     .tc-desk__frame::after,
     .tc-desk__frame::before,
     .tc-desk__hotspot,
     .tc-desk__monitor{
         display: none;
     }
+    /* Show the desk hero as a dark blurred backdrop */
     .tc-desk__frame{
         width: 100vw;
         height: 100vh;
         background-size: cover; /* on mobile we DO crop — no hotspots to align */
         background-position: center;
         filter: brightness(.4) blur(2px);
+    }
+
+    /* Reveal the vertical fallback nav */
+    .tc-desk__mobile{
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        overflow-y: auto;
+        padding: 80px 28px 40px;
+        color: #f6f1e3;
+        font-family: Georgia, serif;
+        -webkit-overflow-scrolling: touch;
+    }
+    .tc-desk__mobile-list{
+        list-style: none;
+        margin: 0 0 32px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .tc-desk__mobile-list a{
+        display: block;
+        padding: 10px 4px;
+        font-size: 24px;
+        font-style: italic;
+        color: #f6f1e3;
+        text-decoration: none;
+        border-bottom: 1px solid #f6f1e322;
+    }
+    .tc-desk__mobile-list a:hover,
+    .tc-desk__mobile-list a:focus{
+        color: #fff;
+    }
+    .tc-desk__mobile-meta{
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 22px;
+        opacity: .85;
+    }
+    .tc-desk__mobile-meta-block{
+        border-top: 1px solid #f6f1e322;
+        padding-top: 12px;
+    }
+    .tc-desk__mobile-meta-label{
+        display: block;
+        font-size: 12px;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: #a89d80;
+        margin-bottom: 6px;
+    }
+    .tc-desk__mobile-meta-block ul{
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .tc-desk__mobile-meta-block a{
+        display: block;
+        padding: 6px 4px;
+        font-size: 16px;
+        color: #f1e9d0;
+        text-decoration: none;
     }
 }

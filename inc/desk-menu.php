@@ -223,6 +223,52 @@ function tc_render_desk_menu() {
     </div>
 
     <!-- ============================================================
+         MOBILE FALLBACK — vertical list nav.
+         Shown only at <=720px (CSS), where the desk-as-menu metaphor
+         breaks (monitor too small, hotspots impossibly precise on
+         touch). The desk hero stays as a dark blurred backdrop.
+         ============================================================ -->
+    <nav class="tc-desk__mobile" aria-label="<?php esc_attr_e( 'Site navigation', 'tc-ventures-child' ); ?>">
+        <ul class="tc-desk__mobile-list">
+            <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a></li>
+            <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
+            <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">HCS</a></li>
+            <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
+            <li><a href="<?php echo esc_url( home_url( '/journal' ) ); ?>">My Ramblings</a></li>
+            <li><a href="https://tc-timeline.vercel.app/">Timeline</a></li>
+            <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a></li>
+        </ul>
+        <div class="tc-desk__mobile-meta">
+            <div class="tc-desk__mobile-meta-block">
+                <span class="tc-desk__mobile-meta-label">Heritage</span>
+                <ul>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">Heritage</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/cheesmans' ) ); ?>">&#x21B3; Cheesmans</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">&#x21B3; Lakemans</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">&#x21B3; Rycrofts</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">&#x21B3; Haistes</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/dochertys' ) ); ?>">&#x21B3; Dochertys</a></li>
+                </ul>
+            </div>
+            <div class="tc-desk__mobile-meta-block">
+                <span class="tc-desk__mobile-meta-label">Kids</span>
+                <ul>
+                    <li><a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Daniel</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Faith</a></li>
+                </ul>
+            </div>
+            <div class="tc-desk__mobile-meta-block">
+                <span class="tc-desk__mobile-meta-label">Elsewhere</span>
+                <ul>
+                    <li><a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare <span aria-hidden="true">&#x2197;</span></a></li>
+                    <li><a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">GPRS <span aria-hidden="true">&#x2197;</span></a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================================
          JOURNAL DRAWER — opens when notebooks are clicked.
          ============================================================ -->
     <div class="tc-desk__drawer" id="tc-desk-journal-drawer" role="dialog" aria-hidden="true">
