@@ -760,9 +760,7 @@ body {
 /* ============================================
    CUSTOM CURSOR
    ============================================
-   Two-layer cursor: sharp inner dot + slow outer ring. JS positions
-   them every frame via transform. The ::hover variant of the ring
-   fires when the cursor is over interactive elements. */
+   A single sharp inner dot. JS positions it every frame via transform. */
 
 html.cursor-custom,
 html.cursor-custom * {
@@ -786,52 +784,10 @@ html.cursor-custom [contenteditable] {
     border-radius: 50%;
     background: var(--text-dark);
     pointer-events: none;
-    z-index: 10000;
-    will-change: transform;
-}
-
-.cursor-ring {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 1px solid #3B82F6;
-    /* Semi-transparent radial fill: black core fading to cyan at the
-       edge. Same gradient shape (radial circle, 2 stops) at rest and
-       on hover so the browser can smoothly interpolate alpha between
-       them during the transition. */
-    background: radial-gradient(
-        circle,
-        rgba(0, 0, 0, 0.3) 0%,
-        rgba(34, 211, 238, 0.3) 100%
-    );
-    pointer-events: none;
     /* Above PhotoSwipe's --pswp-root-z-index (100000) so the custom
        cursor stays visible over the lightbox. */
     z-index: 1000000;
-    will-change: transform, width, height, border-width, background;
-    /* Slow, buttery easing — gradient/size shift takes ~half a second
-       with an expo-out curve so it eases into place rather than snapping. */
-    transition:
-        width 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-        height 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-        border-width 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-        background 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cursor-ring--hover {
-    /* +33% radius on hover — subtle "this is interactive" cue rather
-       than the cartoony 3x scale-up we had before. */
-    width: 22px;
-    height: 22px;
-    border-width: 1.5px;
-    background: radial-gradient(
-        circle,
-        rgba(0, 0, 0, 0.5) 0%,
-        rgba(34, 211, 238, 0.5) 100%
-    );
+    will-change: transform;
 }
 
 /* ============================================
