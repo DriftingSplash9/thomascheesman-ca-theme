@@ -96,28 +96,43 @@ function tc_render_desk_menu() {
                 </a></li>
             </ul>
 
-            <!-- 90s-style starfield screensaver. Hidden by default.
-                 After 30s of inactivity inside the overlay, JS adds
-                 .is-idle on the monitor and this overlay fades in. Any
-                 movement / click / keypress wakes it back to Contents.
+            <!-- Matrix-style screensaver. Hidden by default; after 30s
+                 of inactivity inside the overlay, JS adds .is-idle on
+                 the monitor and this overlay fades in. Any movement /
+                 click / keypress wakes it back to Contents.
 
-                 Stars are pre-rendered here with PHP-randomised inline
-                 custom properties (--angle / --delay / --duration / --size)
-                 so the CSS animation can drive radial warp motion without
-                 a runtime loop. -->
+                 Columns are pre-rendered in PHP with random characters
+                 + per-column animation duration/delay custom properties,
+                 so the CSS animation can drive the falling effect with
+                 no runtime loop. -->
             <div class="tc-desk__screensaver" aria-hidden="true">
                 <?php
-                $star_count = 60;
-                for ( $i = 0; $i < $star_count; $i++ ) :
-                    $angle    = mt_rand( 0, 359 );
-                    $delay    = mt_rand( 0, 7000 );
-                    $duration = mt_rand( 5500, 9500 );
-                    $size     = mt_rand( 1, 3 );
-                    $style    = sprintf(
-                        '--angle:%ddeg;--delay:%dms;--duration:%dms;--size:%dpx;',
-                        $angle, $delay, $duration, $size
+                // Halfwidth katakana (the classic Matrix glyphs) + digits + a few symbols.
+                $matrix_chars = array(
+                    'ｱ','ｲ','ｳ','ｴ','ｵ','ｶ','ｷ','ｸ','ｹ','ｺ',
+                    'ｻ','ｼ','ｽ','ｾ','ｿ','ﾀ','ﾁ','ﾂ','ﾃ','ﾄ',
+                    'ﾅ','ﾆ','ﾇ','ﾈ','ﾉ','ﾊ','ﾋ','ﾌ','ﾍ','ﾎ',
+                    'ﾏ','ﾐ','ﾑ','ﾒ','ﾓ','ﾔ','ﾕ','ﾖ','ﾗ','ﾘ',
+                    'ﾙ','ﾚ','ﾛ','ﾜ','ﾝ',
+                    '0','1','2','3','4','5','6','7','8','9',
+                    '+','*','#','=','/','<','>','%',
+                );
+                $char_max = count( $matrix_chars ) - 1;
+                $col_count = 26;
+                for ( $col = 0; $col < $col_count; $col++ ) :
+                    $left     = round( ( $col / ( $col_count - 1 ) ) * 100, 2 );
+                    $delay    = mt_rand( 0, 5000 );
+                    $duration = mt_rand( 5000, 11000 );
+                    $col_len  = mt_rand( 14, 26 );
+                    $glyphs   = '';
+                    for ( $i = 0; $i < $col_len; $i++ ) {
+                        $glyphs .= '<span>' . $matrix_chars[ mt_rand( 0, $char_max ) ] . '</span>';
+                    }
+                    $style = sprintf(
+                        'left:%.2f%%;--delay:%dms;--duration:%dms;',
+                        $left, $delay, $duration
                     );
-                    echo '<span class="tc-desk__star" style="' . esc_attr( $style ) . '"></span>';
+                    echo '<div class="tc-desk__matrix-col" style="' . esc_attr( $style ) . '">' . $glyphs . '</div>';
                 endfor;
                 ?>
                 <span class="tc-desk__screensaver-mark">TC&nbsp;&prime;ventures</span>
