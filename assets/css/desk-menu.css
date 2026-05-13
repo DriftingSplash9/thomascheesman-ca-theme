@@ -128,10 +128,10 @@ html.tc-desk-open{ overflow: hidden; }
     /* Sized to fill the dark screen area INSIDE the white bezel of the
        curved monitor in IMG_4329. The photo's own bezel acts as the
        surround; this element is "the screen". */
-    left: 22%;
-    top: 17%;
-    width: 53%;
-    height: 50%;
+    left: 26%;
+    top: 21%;
+    width: 45%;
+    height: 42%;
     background:
         radial-gradient(120% 90% at 50% 55%, #1a0f24 0%, #0a0612 80%),
         #07050d;
