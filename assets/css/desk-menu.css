@@ -1531,27 +1531,81 @@ html.tc-desk-open .tc-footer-desk{
     outline: none;
 }
 
-/* When in real fullscreen mode, let the canvas scale up to fill the
-   viewport. The TV wrap stays, but its bezel gets bigger and the
-   canvas (with image-rendering: pixelated) grows crisply. */
+/* Fullscreen mode — drop the TV bezel entirely and let the canvas
+   take the whole viewport. The scanlines + screen wrapper still wrap
+   it, but the wood frame, nameplate, and power LED disappear because
+   they'd just be wasted area. The canvas itself scales up to 92vh
+   tall (width auto-computed from its intrinsic aspect ratio), so
+   each game fills the screen proportionally.
+
+   Rules are duplicated for `:-webkit-full-screen` because grouping
+   :fullscreen and :-webkit-full-screen in one selector breaks both
+   in browsers that only know one. */
 .tc-desk__games-canvas-wrap:fullscreen{
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     width: 100vw;
     height: 100vh;
-    padding: 50px;
+    padding: 0;
     border-radius: 0;
-    background: linear-gradient(155deg, #2a221e 0%, #0e0a08 100%);
+    background: #000;
+    box-shadow: none;
+}
+.tc-desk__games-canvas-wrap:fullscreen::before,
+.tc-desk__games-canvas-wrap:fullscreen::after{ display: none; }
+.tc-desk__games-canvas-wrap:fullscreen .tc-desk__games-screen{
+    background: #000;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
 }
 .tc-desk__games-canvas-wrap:fullscreen .tc-desk__games-canvas{
     width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: calc(100vh - 130px);
-    transform: scale(2);
-    transform-origin: center;
+    height: 92vh;
+    max-width: 96vw;
+    transform: none;
+}
+.tc-desk__games-canvas-wrap:fullscreen .tc-desk__games-fs{
+    top: 18px;
+    right: 22px;
+}
+.tc-desk__games-canvas-wrap:fullscreen .tc-desk__games-gameover{
+    inset: 5vh 5vw;
+}
+
+/* Safari / older WebKit prefix — same rules, separate selectors. */
+.tc-desk__games-canvas-wrap:-webkit-full-screen{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    border-radius: 0;
+    background: #000;
+    box-shadow: none;
+}
+.tc-desk__games-canvas-wrap:-webkit-full-screen::before,
+.tc-desk__games-canvas-wrap:-webkit-full-screen::after{ display: none; }
+.tc-desk__games-canvas-wrap:-webkit-full-screen .tc-desk__games-screen{
+    background: #000;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+}
+.tc-desk__games-canvas-wrap:-webkit-full-screen .tc-desk__games-canvas{
+    width: auto;
+    height: 92vh;
+    max-width: 96vw;
+    transform: none;
+}
+.tc-desk__games-canvas-wrap:-webkit-full-screen .tc-desk__games-fs{
+    top: 18px;
+    right: 22px;
+}
+.tc-desk__games-canvas-wrap:-webkit-full-screen .tc-desk__games-gameover{
+    inset: 5vh 5vw;
 }
 
 .tc-desk__games-gameover{
