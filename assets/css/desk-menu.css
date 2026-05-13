@@ -407,55 +407,47 @@ html.tc-desk-open{ overflow: hidden; }
 }
 .tc-desk__hotspot--clickable{ cursor: pointer; }
 
-/* Cutout pseudo — at rest, a thin black trace outlines each object
-   over a rectangular slice of the desk photo that maps 1:1 onto the
-   underlying photo (so the trace appears to wrap the object). On
-   hover, the slice scales up 15% — the object "pops" forward off
-   the desk, the trace thickens, and a drop-shadow lifts it.
+/* Cutout pseudo — per-object transparent PNG with a black silhouette
+   trace. At rest the PNG sits on top of the underlying photo at the
+   same size (visually indistinguishable from the photo plus a thin
+   outline). On hover, the PNG scales up 15% — the object pops forward
+   off the desk, the outline thickens, and a drop-shadow lifts it.
 
-   Each hotspot's inline style carries --hot-x / --hot-y / --hot-w /
-   --hot-h (the same percent coordinates used for positioning). The
-   math here re-projects the slice so it sits aligned with the photo
-   at scale(1). See:
+   The black outline is faked via four 1px drop-shadow() filters offset
+   in each direction; this follows the PNG's alpha edge (true silhouette
+   trace) rather than a rectangle.
 
-       bg-size-x   = 100 / W%             (image scaled so it's W%-wide
-                                            inside the hotspot)
-       bg-pos-x    = X / (100 - W) × 100%  (slides the image so the
-                                            slice the hotspot covers
-                                            lands at the hotspot's left)
-*/
+   Hotspots without a --hot-png set (just the mouse currently) get
+   no cutout — the glow ::after still indicates interactivity. */
 .tc-desk__hotspot::before{
     content: "";
     position: absolute;
     inset: 0;
-    background-image: var(--desk-hero);
+    background-image: var(--hot-png);
     background-repeat: no-repeat;
-    background-size:
-        calc( 10000% / var(--hot-w, 10) )
-        calc( 10000% / var(--hot-h, 10) );
-    background-position:
-        calc( var(--hot-x, 0) / ( 100 - var(--hot-w, 10) ) * 100% )
-        calc( var(--hot-y, 0) / ( 100 - var(--hot-h, 10) ) * 100% );
-    border: 1.5px solid rgba(0, 0, 0, 0.72);
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    background-size: contain;
+    background-position: center;
+    filter:
+        drop-shadow( 1px 0 0 #000)
+        drop-shadow(-1px 0 0 #000)
+        drop-shadow( 0 1px 0 #000)
+        drop-shadow( 0 -1px 0 #000);
     transform: scale(1);
     transform-origin: 50% 50%;
     transition:
         transform .35s cubic-bezier(.34, 1.56, .64, 1),
-        box-shadow .25s ease-out,
-        border-color .25s,
-        border-width .25s;
+        filter .25s ease-out;
     pointer-events: none;
     z-index: 1;
 }
 .tc-desk__hotspot:hover::before{
     transform: scale(1.15);
-    border-color: #000;
-    border-width: 2px;
-    box-shadow:
-        0 10px 24px rgba(0, 0, 0, 0.55),
-        0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+    filter:
+        drop-shadow( 1.5px 0 0 #000)
+        drop-shadow(-1.5px 0 0 #000)
+        drop-shadow( 0 1.5px 0 #000)
+        drop-shadow( 0 -1.5px 0 #000)
+        drop-shadow( 0 8px 18px rgba(0, 0, 0, 0.55));
     z-index: 5;
 }
 
