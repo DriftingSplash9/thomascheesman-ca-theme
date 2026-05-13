@@ -457,55 +457,33 @@ html.tc-desk-open{ overflow: hidden; }
     z-index: 5;
 }
 
-/* Sheen sweep — periodic diagonal highlight that washes across the
-   object silhouette, advertising interactivity. Stagger via --hot-x
-   so adjacent objects don't flash in lockstep (reads as a soft
-   left-to-right wave). Disabled on hover — the lift + scale is its
-   own affordance.
+/* Sheen sweep — periodic diagonal highlight that washes across each
+   hotspot, advertising interactivity. Stagger via --hot-x so adjacent
+   objects don't flash in lockstep (reads as a soft left-to-right
+   wave). Disabled on hover — the lift + scale is its own affordance.
 
-   Technique: ::after renders the SAME PNG as ::before, but pumped up
-   via filter to look near-white. The mask is a moving CSS gradient
-   (diagonal stripe of opaque-to-transparent), so only a sweeping
-   band of the bright PNG is revealed at any moment. Result: the
-   PNG's actual silhouette appears to flash from edge to edge.
-
-   This avoids putting `var(--hot-png)` inside `mask-image`, which is
-   buggy on some Chrome/GPU combos — instead the PNG goes through
-   `background-image` (proven to work for ::before) and the mask is a
-   pure CSS gradient. */
+   Simplest possible technique: a white-on-transparent linear gradient
+   that's wider than the element, with `background-position` animating
+   from off-right to off-left. No mask, no filter — those layers were
+   eating the sheen on some Chrome/GPU pairings. Trade-off: the stripe
+   is rectangular (bounded by the hotspot box) rather than shaped to
+   the PNG silhouette. Visible-and-rectangular beats invisible-and-
+   silhouetted. */
 .tc-desk__hotspot::after{
     content: "";
     position: absolute;
     inset: 0;
-    background-image: var(--hot-png);
+    background-image: linear-gradient(
+        110deg,
+        transparent 25%,
+        rgba(255, 255, 255, 0.7) 42%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.7) 58%,
+        transparent 75%
+    );
+    background-size: 250% 100%;
     background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
-    /* Bright + desaturated → object reads as a "lit-up" version of
-       itself when revealed by the mask stripe. */
-    filter: brightness(2.4) saturate(0.35) contrast(0.9);
-    -webkit-mask-image: linear-gradient(
-        110deg,
-        transparent 25%,
-        rgba(0, 0, 0, 0.6) 42%,
-        rgba(0, 0, 0, 1) 50%,
-        rgba(0, 0, 0, 0.6) 58%,
-        transparent 75%
-    );
-            mask-image: linear-gradient(
-        110deg,
-        transparent 25%,
-        rgba(0, 0, 0, 0.6) 42%,
-        rgba(0, 0, 0, 1) 50%,
-        rgba(0, 0, 0, 0.6) 58%,
-        transparent 75%
-    );
-    -webkit-mask-size: 250% 100%;
-            mask-size: 250% 100%;
-    -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-    -webkit-mask-position: 200% 0;
-            mask-position: 200% 0;
+    background-position: 200% 0;
     pointer-events: none;
     z-index: 3;
     opacity: 0;
@@ -521,20 +499,18 @@ html.tc-desk-open{ overflow: hidden; }
 }
 
 /* Visible window: 70%-100% of cycle (1.5s of a 5s loop) so the sweep
-   reads as a clear swoosh, not a blink. mask-position sweeps from
-   off-right to off-left across the same window, with the bright peak
-   crossing element center near ~85%. */
+   reads as a clear swoosh, not a blink. background-position sweeps
+   from off-right to off-left across the same window, with the bright
+   peak crossing element center near ~85%. */
 @keyframes tc-desk-sheen{
     0%, 70% {
-        -webkit-mask-position: 200% 0;
-                mask-position: 200% 0;
+        background-position: 200% 0;
         opacity: 0;
     }
     75% { opacity: 1; }
     95% { opacity: 1; }
     100% {
-        -webkit-mask-position: -100% 0;
-                mask-position: -100% 0;
+        background-position: -100% 0;
         opacity: 0;
     }
 }
