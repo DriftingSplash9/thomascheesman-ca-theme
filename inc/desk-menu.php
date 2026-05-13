@@ -107,11 +107,11 @@ function tc_render_desk_menu() {
                  a runtime loop. -->
             <div class="tc-desk__screensaver" aria-hidden="true">
                 <?php
-                $star_count = 70;
+                $star_count = 60;
                 for ( $i = 0; $i < $star_count; $i++ ) :
                     $angle    = mt_rand( 0, 359 );
-                    $delay    = mt_rand( 0, 4000 );
-                    $duration = mt_rand( 2200, 4500 );
+                    $delay    = mt_rand( 0, 7000 );
+                    $duration = mt_rand( 5500, 9500 );
                     $size     = mt_rand( 1, 3 );
                     $style    = sprintf(
                         '--angle:%ddeg;--delay:%dms;--duration:%dms;--size:%dpx;',

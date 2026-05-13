@@ -125,25 +125,29 @@ html.tc-desk-open{ overflow: hidden; }
 
 .tc-desk__monitor{
     position: absolute;
-    /* Sized to fill the dark screen area INSIDE the white bezel of the
-       curved monitor in IMG_4329. The photo's own bezel acts as the
-       surround; this element is "the screen". */
-    left: 22%;
+    /* Sized to sit inside the curved monitor in IMG_4329. The element
+       carries its own bezel-ish border so it reads as a real screen on
+       top of the photo, not a floating panel. */
+    left: 25%;
     top: 22%;
     width: 43%;
-    height: 40%;
+    height: 37%;
     background:
         radial-gradient(120% 90% at 50% 55%, #1a0f24 0%, #0a0612 80%),
         #07050d;
-    border-radius: 18px / 14px;
+    border: 3px solid #161618;
+    border-radius: 14px / 12px;
     box-shadow:
-        /* Inner subtle highlight so the screen reads "on" against the photo bezel */
-        0 0 0 1px #ffffff14 inset,
+        /* Outer silver edge — fine highlight where bezel meets the photo */
+        0 0 0 1px #4a4a4d,
+        /* Inner silver edge — the rim of the screen */
+        0 0 0 1px #2a2a2d inset,
+        0 0 0 2px #565659 inset,
+        /* Existing inner glow + outer screen-bleed */
         0 0 60px #2c0f44 inset,
-        /* Outer faint glow that bleeds onto the desk like a real lit screen */
         0 0 36px #00e5ff22,
         0 0 70px #b51bff11;
-    padding: 2.6% 3% 2.4%;
+    padding: 2.6% 3.5% 2.4%;
     color: #f6f1e3;
     font-family: "Iowan Old Style","Palatino Linotype",Georgia,serif;
     overflow: hidden;
@@ -160,9 +164,9 @@ html.tc-desk-open{ overflow: hidden; }
 }
 
 .tc-desk__monitor-title{
-    margin: 0 0 .6em;
+    margin: 0 0 .3em;
     font-family: Georgia, serif;
-    font-size: clamp(16px, 1.7vw, 28px);
+    font-size: clamp(13px, 1.4vw, 22px);
     font-weight: 600;
     letter-spacing: .18em;
     text-transform: uppercase;
@@ -174,22 +178,22 @@ html.tc-desk-open{ overflow: hidden; }
 .tc-desk__toc{
     list-style: none;
     margin: 0;
-    padding: 0 4%;
+    padding: 0 3%;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 1px;
 }
 .tc-desk__toc li a{
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: end;
-    gap: 14px;
+    gap: 12px;
     text-decoration: none;
     color: #f1e9d0;
     font-style: italic;
-    font-size: clamp(14px, 1.4vw, 22px);
-    line-height: 1.35;
-    padding: 4px 8px;
+    font-size: clamp(12px, 1.15vw, 18px);
+    line-height: 1.25;
+    padding: 2px 6px;
     border-radius: 3px;
     transition: background .2s, color .2s, text-shadow .2s;
 }
