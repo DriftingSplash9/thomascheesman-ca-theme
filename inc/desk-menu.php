@@ -233,7 +233,7 @@ function tc_render_desk_menu() {
         </div>
 
         <!-- Bitcoin Standard + Broken Money -->
-        <div class="tc-desk__hotspot" style="left:85.00%; top:48.00%; width:13.00%; height:14.00%; --hot-x:85.00; --hot-y:48.00; --hot-w:13.00; --hot-h:14.00; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/bitcoin.png');" aria-label="Bitcoin Standard and Broken Money">
+        <div class="tc-desk__hotspot" style="left:84.00%; top:47.00%; width:15.00%; height:12.00%; --hot-x:84.00; --hot-y:47.00; --hot-w:15.00; --hot-h:12.00; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/bitcoin.png');" aria-label="Bitcoin Standard and Broken Money">
             <div class="tc-desk__card tc-desk__card--left">Two of the best books ever written about money. Still standing by them.</div>
         </div>
 
