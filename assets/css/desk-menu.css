@@ -125,18 +125,21 @@ html.tc-desk-open{ overflow: hidden; }
 
 .tc-desk__monitor{
     position: absolute;
-    /* Sized to sit inside the curved monitor in IMG_4329. The element
-       carries its own bezel-ish border so it reads as a real screen on
-       top of the photo, not a floating panel. */
+    /* Sized + curved + tilted to read as the actual curved monitor in
+       IMG_4329. Border-radius is on a wide horizontal arc to suggest a
+       barrel-shaped screen surface, and a small rotateX gives it the
+       slight forward lean of a desk monitor photographed from above. */
     left: 25%;
-    top: 22%;
+    top: 20%;
     width: 43%;
     height: 37%;
     background:
         radial-gradient(120% 90% at 50% 55%, #1a0f24 0%, #0a0612 80%),
         #07050d;
     border: 3px solid #161618;
-    border-radius: 14px / 12px;
+    border-radius: 30% / 8%;
+    transform: perspective(1400px) rotateX(-3deg);
+    transform-origin: 50% 100%;
     box-shadow:
         /* Outer silver edge — fine highlight where bezel meets the photo */
         0 0 0 1px #4a4a4d,
@@ -147,7 +150,7 @@ html.tc-desk-open{ overflow: hidden; }
         0 0 60px #2c0f44 inset,
         0 0 36px #00e5ff22,
         0 0 70px #b51bff11;
-    padding: 2.6% 3.5% 2.4%;
+    padding: 3% 5% 3%;
     color: #f6f1e3;
     font-family: "Iowan Old Style","Palatino Linotype",Georgia,serif;
     overflow: hidden;
@@ -630,11 +633,12 @@ html.tc-desk-open .tc-desk__monitor{
     animation: tc-desk-monitor-boot 1.4s cubic-bezier(.2,.7,.3,1) 0.7s both;
 }
 @keyframes tc-desk-monitor-boot{
-    0%  { opacity: 0;  filter: brightness(0);             transform: scale(.97); }
-    18% { opacity: .8; filter: brightness(2.5) blur(8px); }
-    32% { opacity: .4; filter: brightness(.4); }
-    55% { opacity: 1;  filter: brightness(1.4) blur(2px); }
-    100%{ opacity: 1;  filter: brightness(1)   blur(0);   transform: scale(1);   }
+    /* Preserves the monitor's perspective tilt across the CRT-boot flicker. */
+    0%  { opacity: 0;  filter: brightness(0);             transform: perspective(1400px) rotateX(-3deg) scale(.97); }
+    18% { opacity: .8; filter: brightness(2.5) blur(8px); transform: perspective(1400px) rotateX(-3deg) scale(.99); }
+    32% { opacity: .4; filter: brightness(.4);            transform: perspective(1400px) rotateX(-3deg) scale(.995); }
+    55% { opacity: 1;  filter: brightness(1.4) blur(2px); transform: perspective(1400px) rotateX(-3deg) scale(1.002); }
+    100%{ opacity: 1;  filter: brightness(1)   blur(0);   transform: perspective(1400px) rotateX(-3deg) scale(1);   }
 }
 
 /* Monitor content fades in after the boot */
