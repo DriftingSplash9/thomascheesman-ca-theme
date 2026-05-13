@@ -318,34 +318,85 @@ function tc_render_desk_menu() {
     <div class="tc-desk__drawer" id="tc-desk-trail-drawer" role="dialog" aria-hidden="true">
         <div class="tc-desk__drawer-inner">
             <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
-            <h2>Pick a cursor trail</h2>
-            <p class="tc-desk__drawer-sub">Mouse magic. Your choice sticks across pages.</p>
-            <div class="tc-desk__drawer-grid">
-                <a href="#" class="tc-desk__drawer-card" data-trail="stars">
-                    <span class="tc-desk__drawer-card-title">Stars</span>
-                    <span class="tc-desk__drawer-card-count">gold twinkles</span>
-                </a>
-                <a href="#" class="tc-desk__drawer-card" data-trail="comet">
-                    <span class="tc-desk__drawer-card-title">Comet</span>
-                    <span class="tc-desk__drawer-card-count">cyan afterglow</span>
-                </a>
-                <a href="#" class="tc-desk__drawer-card" data-trail="bubbles">
-                    <span class="tc-desk__drawer-card-title">Bubbles</span>
-                    <span class="tc-desk__drawer-card-count">drifting up</span>
-                </a>
-                <a href="#" class="tc-desk__drawer-card" data-trail="confetti">
-                    <span class="tc-desk__drawer-card-title">Confetti</span>
-                    <span class="tc-desk__drawer-card-count">candy flakes</span>
-                </a>
-                <a href="#" class="tc-desk__drawer-card" data-trail="sparkles">
-                    <span class="tc-desk__drawer-card-title">Sparkles</span>
-                    <span class="tc-desk__drawer-card-count">diamond glints</span>
-                </a>
-                <a href="#" class="tc-desk__drawer-card" data-trail="none">
-                    <span class="tc-desk__drawer-card-title">Off</span>
-                    <span class="tc-desk__drawer-card-count">just a cursor</span>
-                </a>
+
+            <!-- MAIN VIEW: variant picker. Clicking "Off" swaps to the
+                 inner ink-settings view below; clicking any other card
+                 closes the drawer and applies that variant. -->
+            <div data-trail-view="main">
+                <h2>Pick a cursor trail</h2>
+                <p class="tc-desk__drawer-sub">Mouse magic. Your choice sticks across pages.</p>
+                <div class="tc-desk__drawer-grid">
+                    <a href="#" class="tc-desk__drawer-card" data-trail="stars">
+                        <span class="tc-desk__drawer-card-title">Stars</span>
+                        <span class="tc-desk__drawer-card-count">gold twinkles</span>
+                    </a>
+                    <a href="#" class="tc-desk__drawer-card" data-trail="comet">
+                        <span class="tc-desk__drawer-card-title">Comet</span>
+                        <span class="tc-desk__drawer-card-count">cyan afterglow</span>
+                    </a>
+                    <a href="#" class="tc-desk__drawer-card" data-trail="bubbles">
+                        <span class="tc-desk__drawer-card-title">Bubbles</span>
+                        <span class="tc-desk__drawer-card-count">drifting up</span>
+                    </a>
+                    <a href="#" class="tc-desk__drawer-card" data-trail="confetti">
+                        <span class="tc-desk__drawer-card-title">Confetti</span>
+                        <span class="tc-desk__drawer-card-count">candy flakes</span>
+                    </a>
+                    <a href="#" class="tc-desk__drawer-card" data-trail="sparkles">
+                        <span class="tc-desk__drawer-card-title">Sparkles</span>
+                        <span class="tc-desk__drawer-card-count">diamond glints</span>
+                    </a>
+                    <a href="#" class="tc-desk__drawer-card" data-trail="off">
+                        <span class="tc-desk__drawer-card-title">Off</span>
+                        <span class="tc-desk__drawer-card-count">tune the default</span>
+                    </a>
+                </div>
             </div>
+
+            <!-- INK-SETTINGS VIEW: the "Off" card opens this. The default
+                 ink trail keeps running here so the user can preview
+                 colour + length changes live. The kill button at the
+                 bottom turns the ink trail off completely. -->
+            <div data-trail-view="ink" hidden>
+                <button class="tc-desk__trail-back" type="button" data-trail-back>
+                    &larr; back
+                </button>
+                <h2>Off</h2>
+                <p class="tc-desk__drawer-sub">Or tune the default trail to taste.</p>
+
+                <p class="tc-desk__trail-label">Trail colour</p>
+                <div class="tc-desk__color-swatches">
+                    <button type="button" data-ink-color="#ffffff" aria-label="White"  style="--swatch:#ffffff"></button>
+                    <button type="button" data-ink-color="#ffd9b3" aria-label="Cream"  style="--swatch:#ffd9b3"></button>
+                    <button type="button" data-ink-color="#ffb6e0" aria-label="Pink"   style="--swatch:#ffb6e0"></button>
+                    <button type="button" data-ink-color="#b3e5ff" aria-label="Sky"    style="--swatch:#b3e5ff"></button>
+                    <button type="button" data-ink-color="#c4ffd6" aria-label="Mint"   style="--swatch:#c4ffd6"></button>
+                    <button type="button" data-ink-color="#d9b3ff" aria-label="Lilac"  style="--swatch:#d9b3ff"></button>
+                    <button type="button" data-ink-color="#ffe680" aria-label="Butter" style="--swatch:#ffe680"></button>
+                    <button type="button" data-ink-color="#80f8ff" aria-label="Cyan"   style="--swatch:#80f8ff"></button>
+                </div>
+
+                <p class="tc-desk__trail-label">Trail length</p>
+                <input
+                    type="range"
+                    class="tc-desk__trail-slider"
+                    data-ink-age
+                    min="200"
+                    max="1500"
+                    step="20"
+                    value="510"
+                    aria-label="<?php esc_attr_e( 'Trail length in milliseconds', 'tc-ventures-child' ); ?>"
+                >
+                <div class="tc-desk__trail-slider-marks">
+                    <span>short</span>
+                    <span>long</span>
+                </div>
+
+                <button class="tc-desk__trail-kill" type="button" data-ink-off>
+                    Turn it off completely
+                </button>
+            </div>
+
         </div>
     </div>
 

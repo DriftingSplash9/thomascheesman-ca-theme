@@ -1723,6 +1723,25 @@ function initInkTrail() {
 
     const ctx = canvas.getContext('2d');
 
+    // Runtime-tunable settings (color + age) — exposed via window.__tcInkSet
+    // so the desk-menu cursor-trail picker can change them live. Defaults
+    // match the original ink-trail look (white, ~510ms fade).
+    let inkColor = '#ffffff';
+    let MAX_AGE  = 510;
+    let inkEnabled = true;
+    window.__tcInkSet = function ( s ) {
+        if ( s && typeof s.color === 'string' ) inkColor = s.color;
+        if ( s && typeof s.age   === 'number' && s.age >= 100 && s.age <= 3000 ) MAX_AGE = s.age;
+        if ( s && typeof s.enabled === 'boolean' ) inkEnabled = s.enabled;
+        // When disabled, also clear any in-flight strokes so we don't see
+        // a half-faded trail freeze on screen until next mousemove.
+        if ( ! inkEnabled ) {
+            points.length = 0;
+            sparks.length = 0;
+            ctx.clearRect( 0, 0, canvas.width, canvas.height );
+        }
+    };
+
     // Resize handler. We use device-pixel-ratio scaling so strokes stay
     // crisp on retina displays. setTransform resets any prior scale rather
     // than compounding, so this is safe to call repeatedly.
@@ -1737,7 +1756,7 @@ function initInkTrail() {
 
     // ----- Trail state -----
     const points = []; // { x, y, t (ms), v (px/ms) }
-    const MAX_AGE = 510; // ms before a sample expires
+    // MAX_AGE is hoisted above as a `let` so it can be live-tuned.
 
     // Stacked stroke layers, outer-to-inner. Width is the BASE that gets
     // multiplied by velocity-factor and age-factor per segment. Alpha is
@@ -1810,10 +1829,19 @@ function initInkTrail() {
             points.shift();
         }
 
+        // If the user has chosen a variant trail (or explicitly turned the
+        // ink trail off), skip drawing — clear the canvas just in case
+        // there are leftover strokes from a previous frame.
+        if ( ! inkEnabled ) {
+            ctx.clearRect( 0, 0, canvas.width, canvas.height );
+            requestAnimationFrame( render );
+            return;
+        }
+
         if (points.length >= 2) {
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = inkColor;
 
             for (const layer of LAYERS) {
                 for (let i = 1; i < points.length; i++) {

@@ -305,20 +305,30 @@
     /**
      * Cursor-trail engine.
      *
-     * Listens for clicks on .tc-desk__drawer-card[data-trail] inside
-     * the trail drawer and applies the chosen trail sitewide. The
-     * choice is persisted in localStorage under "tc-trail" so it
-     * survives navigation. Trail effects spawn small DOM particles
-     * at the cursor on every throttled mousemove; each particle
-     * self-removes after its CSS animation finishes.
+     * Manages two layers, never both at once:
      *
-     * Trail types: stars, comet, bubbles, confetti, sparkles, none.
-     * Disabled on touch devices (no cursor) and under reduced-motion.
+     *   - "Variant" trails (stars / comet / bubbles / confetti / sparkles):
+     *     DOM particles spawned at the cursor on throttled mousemove.
+     *     When one is active, the default ink-trail canvas is suppressed
+     *     via window.__tcInkSet({ enabled: false }).
+     *
+     *   - The default ink trail (defined in main.js's initInkTrail), with
+     *     user-tunable color and length, OR explicitly off.
+     *
+     * State in localStorage:
+     *   tc-trail        which row is active: one of the variants, 'ink', or 'off'
+     *   tc-ink-color    hex string for the ink trail's stroke
+     *   tc-ink-age      ms for the ink trail's fade (200..1500)
+     *
+     * The "Off" card in the drawer doesn't actually turn things off — it
+     * opens an inner view (color swatches + length slider + a real Off
+     * button) so the user can fine-tune the default trail.
      */
     function wireCursorTrail() {
         var html = doc.documentElement;
-        var STORAGE_KEY = 'tc-trail';
-        var TRAIL_TYPES = [ 'stars', 'comet', 'bubbles', 'confetti', 'sparkles', 'none' ];
+        var VARIANTS = [ 'stars', 'comet', 'bubbles', 'confetti', 'sparkles', 'ink', 'off' ];
+        var INK_COLOR_DEFAULT = '#ffffff';
+        var INK_AGE_DEFAULT   = 510;
 
         var isTouch  = window.matchMedia( '(pointer: coarse)' ).matches;
         var reduceMo = window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
@@ -326,47 +336,83 @@
         var container = null;
         var mouseHandler = null;
         var lastSpawn = 0;
-        var currentTrail = 'none';
+        var currentTrail = 'ink';
 
-        // Confetti colour palette + a few unicode glyphs per trail.
-        var CONFETTI_RGB = [
+        // Pastel candy palette — used by bubbles, confetti, sparkles glow
+        var PASTEL_RGB = [
             '255,170,190',  // coral
             '170,220,255',  // sky
             '210,180,255',  // lavender
             '255,230,150',  // butter
             '170,240,200',  // mint
             '255,190,160',  // peach
+            '255,180,230',  // rose
+            '195,230,170',  // sage
         ];
 
-        function readStored() {
-            try {
-                var v = localStorage.getItem( STORAGE_KEY );
-                return TRAIL_TYPES.indexOf( v ) >= 0 ? v : 'none';
-            } catch ( err ) {
-                return 'none';
-            }
+        function readStored( key, fallback ) {
+            try { return localStorage.getItem( key ) || fallback; }
+            catch ( err ) { return fallback; }
         }
-        function writeStored( v ) {
-            try { localStorage.setItem( STORAGE_KEY, v ); } catch ( err ) {}
+        function writeStored( key, val ) {
+            try { localStorage.setItem( key, val ); } catch ( err ) {}
         }
 
-        function setTrail( name ) {
-            if ( TRAIL_TYPES.indexOf( name ) < 0 ) name = 'none';
-            // Strip any existing trail class
-            TRAIL_TYPES.forEach( function ( t ) {
-                if ( t !== 'none' ) html.classList.remove( 'tc-trail-' + t );
+        function readSettings() {
+            var v = readStored( 'tc-trail', 'ink' );
+            if ( VARIANTS.indexOf( v ) < 0 ) v = 'ink';
+            var color = readStored( 'tc-ink-color', INK_COLOR_DEFAULT );
+            var age   = parseInt( readStored( 'tc-ink-age', INK_AGE_DEFAULT ), 10 );
+            if ( ! age || age < 200 || age > 3000 ) age = INK_AGE_DEFAULT;
+            return { variant: v, inkColor: color, inkAge: age };
+        }
+
+        function applyInkSettings( settings ) {
+            if ( typeof window.__tcInkSet !== 'function' ) return;
+            // Ink trail is "alive" only when variant is 'ink'. Variants
+            // (stars/comet/etc.) and 'off' both suppress it.
+            window.__tcInkSet({
+                color: settings.inkColor,
+                age: settings.inkAge,
+                enabled: settings.variant === 'ink' && ! reduceMo && ! isTouch,
             });
-            if ( name !== 'none' ) {
+        }
+
+        function setVariant( name ) {
+            if ( VARIANTS.indexOf( name ) < 0 ) name = 'ink';
+            // Strip any old variant class
+            VARIANTS.forEach( function ( t ) {
+                if ( t !== 'ink' && t !== 'off' ) {
+                    html.classList.remove( 'tc-trail-' + t );
+                }
+            });
+            // Apply new variant class (only for DOM-particle variants)
+            if ( name !== 'ink' && name !== 'off' ) {
                 html.classList.add( 'tc-trail-' + name );
             }
-            writeStored( name );
+            writeStored( 'tc-trail', name );
             currentTrail = name;
-            // Reset the renderer for the new type
-            if ( name === 'none' || isTouch || reduceMo ) {
-                stopRenderer();
-            } else {
+
+            // Variant-particle renderer on/off
+            var isVariant = name !== 'ink' && name !== 'off';
+            if ( isVariant && ! isTouch && ! reduceMo ) {
                 startRenderer();
+            } else {
+                stopRenderer();
             }
+
+            // Push ink settings (covers both enabled/disabled and color/length)
+            applyInkSettings( readSettings() );
+        }
+
+        function setInkColor( color ) {
+            writeStored( 'tc-ink-color', color );
+            applyInkSettings( readSettings() );
+            updateSwatchHighlight();
+        }
+        function setInkAge( age ) {
+            writeStored( 'tc-ink-age', String( age ) );
+            applyInkSettings( readSettings() );
         }
 
         function startRenderer() {
@@ -407,45 +453,154 @@
 
             // Per-trail content / inline overrides
             if ( currentTrail === 'stars' ) {
-                p.textContent = '★'; // ★
+                p.textContent = '★';
+                // Random size 10..22px + twinkle hue via inline custom property
+                var size = Math.round( 10 + Math.random() * 12 );
+                p.style.fontSize = size + 'px';
+                p.style.setProperty( '--twinkle', ( 0.7 + Math.random() * 0.6 ).toFixed( 2 ) );
             } else if ( currentTrail === 'bubbles' ) {
-                p.textContent = '○'; // ○
-                // Slight horizontal drift via inline custom property
-                p.style.setProperty( '--drift', ( Math.random() * 40 - 20 ).toFixed( 1 ) + 'px' );
+                p.textContent = '○';
+                // Random size 12..28px + random pastel color
+                var bsize = Math.round( 12 + Math.random() * 16 );
+                p.style.fontSize = bsize + 'px';
+                var brgb = PASTEL_RGB[ Math.floor( Math.random() * PASTEL_RGB.length ) ];
+                p.style.color = 'rgba(' + brgb + ', 0.85)';
+                p.style.textShadow = '0 0 ' + Math.round( bsize / 2 ) + 'px rgba(' + brgb + ', 0.55)';
+                p.style.setProperty( '--drift', ( Math.random() * 50 - 25 ).toFixed( 1 ) + 'px' );
             } else if ( currentTrail === 'confetti' ) {
-                var rgb = CONFETTI_RGB[ Math.floor( Math.random() * CONFETTI_RGB.length ) ];
-                p.style.background = 'rgb(' + rgb + ')';
+                var crgb = PASTEL_RGB[ Math.floor( Math.random() * PASTEL_RGB.length ) ];
+                p.style.background = 'rgb(' + crgb + ')';
                 p.style.setProperty( '--spin', ( Math.random() * 540 - 270 ).toFixed( 0 ) + 'deg' );
                 p.style.setProperty( '--drift', ( Math.random() * 60 - 30 ).toFixed( 1 ) + 'px' );
             } else if ( currentTrail === 'sparkles' ) {
-                p.textContent = '❖'; // ❖
+                p.textContent = '❖';
+                // Random pastel glow color
+                var srgb = PASTEL_RGB[ Math.floor( Math.random() * PASTEL_RGB.length ) ];
+                p.style.color = '#ffffff';
+                p.style.textShadow =
+                    '0 0 4px #fff,' +
+                    '0 0 10px rgba(' + srgb + ', 0.85),' +
+                    '0 0 20px rgba(' + srgb + ', 0.45)';
+                p.style.setProperty( '--spin', ( Math.random() < .5 ? -1 : 1 ) * ( 180 + Math.random() * 360 ) + 'deg' );
             }
-            // 'comet' uses CSS-only styling — no content/inline needed
+            // 'comet' uses CSS-only styling
 
             container.appendChild( p );
-            // Auto-cleanup after the animation finishes (longest is ~2s)
             setTimeout( function () {
                 if ( p.parentNode ) p.parentNode.removeChild( p );
             }, 2200 );
         }
 
-        // Wire the drawer's option cards
-        var drawer = doc.getElementById( 'tc-desk-trail-drawer' );
+        // --- Drawer wiring ---
+        var drawer  = doc.getElementById( 'tc-desk-trail-drawer' );
+        var mainView = drawer ? drawer.querySelector( '[data-trail-view="main"]' ) : null;
+        var inkView  = drawer ? drawer.querySelector( '[data-trail-view="ink"]' )  : null;
+
+        function showView( name ) {
+            if ( ! mainView || ! inkView ) return;
+            if ( name === 'ink' ) {
+                mainView.setAttribute( 'hidden', '' );
+                inkView.removeAttribute( 'hidden' );
+            } else {
+                inkView.setAttribute( 'hidden', '' );
+                mainView.removeAttribute( 'hidden' );
+            }
+        }
+
+        function updateSwatchHighlight() {
+            if ( ! inkView ) return;
+            var color = readSettings().inkColor.toLowerCase();
+            inkView.querySelectorAll( '[data-ink-color]' ).forEach( function ( btn ) {
+                if ( btn.dataset.inkColor.toLowerCase() === color ) {
+                    btn.classList.add( 'is-selected' );
+                } else {
+                    btn.classList.remove( 'is-selected' );
+                }
+            });
+        }
+
         if ( drawer ) {
+            // Variant cards: clicking a real variant applies + closes.
+            // Clicking "Off" instead opens the inner settings view.
             drawer.querySelectorAll( '[data-trail]' ).forEach( function ( card ) {
                 card.addEventListener( 'click', function ( e ) {
                     e.preventDefault();
-                    setTrail( card.dataset.trail );
-                    // Close the drawer on selection
+                    var t = card.dataset.trail;
+                    if ( t === 'off' ) {
+                        // Switch the drawer's view; ink stays on with current
+                        // settings so the user can preview tweaks live.
+                        showView( 'ink' );
+                        // Make sure ink is alive (variant -> 'ink') so changes
+                        // are visible as the user picks.
+                        setVariant( 'ink' );
+                        updateSwatchHighlight();
+                        return;
+                    }
+                    setVariant( t );
                     if ( typeof drawer.__tcDeskClose === 'function' ) {
                         drawer.__tcDeskClose();
                     }
                 });
             });
+
+            // Back button in the inner view returns to the main grid.
+            var back = drawer.querySelector( '[data-trail-back]' );
+            if ( back ) {
+                back.addEventListener( 'click', function ( e ) {
+                    e.preventDefault();
+                    showView( 'main' );
+                });
+            }
+
+            // Color swatches
+            var swatches = drawer.querySelectorAll( '[data-ink-color]' );
+            swatches.forEach( function ( btn ) {
+                btn.addEventListener( 'click', function ( e ) {
+                    e.preventDefault();
+                    setInkColor( btn.dataset.inkColor );
+                });
+            });
+
+            // Length slider
+            var slider = drawer.querySelector( '[data-ink-age]' );
+            if ( slider ) {
+                slider.value = readSettings().inkAge;
+                slider.addEventListener( 'input', function () {
+                    setInkAge( parseInt( slider.value, 10 ) );
+                });
+            }
+
+            // "Turn it off completely" button
+            var killBtn = drawer.querySelector( '[data-ink-off]' );
+            if ( killBtn ) {
+                killBtn.addEventListener( 'click', function ( e ) {
+                    e.preventDefault();
+                    setVariant( 'off' );
+                    if ( typeof drawer.__tcDeskClose === 'function' ) {
+                        drawer.__tcDeskClose();
+                    }
+                });
+            }
+
+            // Whenever the drawer opens, refresh the view + swatch highlight
+            // so it reflects current state.
+            var drawerObs = new MutationObserver( function () {
+                if ( drawer.classList.contains( 'is-open' ) ) {
+                    var st = readSettings();
+                    showView( st.variant === 'ink' && inkView && ! inkView.hasAttribute( 'hidden' ) ? 'ink' : 'main' );
+                    updateSwatchHighlight();
+                }
+            });
+            drawerObs.observe( drawer, { attributes: true, attributeFilter: [ 'class' ] });
         }
 
-        // Apply the user's persisted choice on every page load
-        setTrail( readStored() );
+        // Apply the user's persisted choice on every page load. Wait a
+        // tick so main.js's initInkTrail has had a chance to register
+        // its __tcInkSet hook.
+        setTimeout( function () {
+            setVariant( readSettings().variant );
+            updateSwatchHighlight();
+        }, 50 );
     }
 
     if ( doc.readyState === 'loading' ) {
