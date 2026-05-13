@@ -67,12 +67,15 @@
         var gameoverEl = drawer.querySelector( '[data-games-gameover]' );
         var gameoverMsg = drawer.querySelector( '[data-games-gameover-msg]' );
         var restartBtn = drawer.querySelector( '[data-games-restart]' );
+        var fsBtn      = drawer.querySelector( '[data-games-fs]' );
+        var tvEl       = drawer.querySelector( '[data-games-tv]' );
 
         var GAMES = {
             snake:     { title: 'Snake',     controls: '&larr;&uarr;&darr;&rarr; to slither',         start: startSnake     },
             pong:      { title: 'Pong',      controls: '&uarr;&darr; to move &mdash; first to 5 wins', start: startPong      },
             pacman:    { title: 'Pac-Man',   controls: '&larr;&uarr;&darr;&rarr; &mdash; eat the dots', start: startPacman    },
             asteroids: { title: 'Asteroids', controls: '&larr;&rarr; rotate &middot; &uarr; thrust &middot; space fire', start: startAsteroids },
+            brickles:  { title: 'Brickles',  controls: '&larr;&rarr; paddle &mdash; clear the wall',   start: startBrickles  },
         };
 
         var currentKey  = null;
@@ -122,15 +125,38 @@
                         writeHigh( key, finalScore );
                         highEl.textContent = finalScore;
                     }
-                    gameoverMsg.textContent = ( msg || 'Game over' )
+                    gameoverMsg.innerHTML = ( msg || 'Game over' )
                         + ( isNew ? ' &mdash; new high!' : '' );
-                    gameoverMsg.innerHTML = gameoverMsg.textContent;
                     gameoverEl.hidden = false;
                 },
             } );
             // Focus the canvas so keyboard input lands here, not on a
             // background button.
             try { canvas.focus(); } catch ( e ) {}
+        }
+
+        // Fullscreen toggle on the TV wrap. Browsers vary on prefix, so
+        // feature-detect both directions.
+        function isFullscreen() {
+            return !! ( doc.fullscreenElement || doc.webkitFullscreenElement );
+        }
+        function enterFullscreen() {
+            if ( tvEl.requestFullscreen ) tvEl.requestFullscreen();
+            else if ( tvEl.webkitRequestFullscreen ) tvEl.webkitRequestFullscreen();
+        }
+        function exitFullscreen() {
+            if ( doc.exitFullscreen ) doc.exitFullscreen();
+            else if ( doc.webkitExitFullscreen ) doc.webkitExitFullscreen();
+        }
+        function syncFsLabel() {
+            fsBtn.textContent = isFullscreen() ? 'Exit fullscreen' : 'Fullscreen';
+        }
+        if ( fsBtn ) {
+            fsBtn.addEventListener( 'click', function () {
+                if ( isFullscreen() ) exitFullscreen(); else enterFullscreen();
+            } );
+            doc.addEventListener( 'fullscreenchange',       syncFsLabel );
+            doc.addEventListener( 'webkitfullscreenchange', syncFsLabel );
         }
 
         cards.forEach( function ( card ) {
@@ -234,10 +260,10 @@
         }
 
         function draw() {
-            ctx.fillStyle = '#001508';
+            ctx.fillStyle = '#000';
             ctx.fillRect( 0, 0, canvas.width, canvas.height );
             // Subtle grid
-            ctx.strokeStyle = '#0fff8a11';
+            ctx.strokeStyle = 'rgba(43, 255, 136, 0.07)';
             ctx.lineWidth = 1;
             for ( var x = 0; x <= W; x++ ) {
                 ctx.beginPath();
@@ -245,13 +271,13 @@
                 ctx.lineTo( x * CELL, canvas.height );
                 ctx.stroke();
             }
-            // Snake
-            ctx.fillStyle = '#0fff8a';
+            // Snake — bright neon green with a subtle head highlight
             snake.forEach( function ( s, i ) {
+                ctx.fillStyle = i === 0 ? '#b6ffd6' : '#2bff88';
                 ctx.fillRect( s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2 );
             } );
-            // Food
-            ctx.fillStyle = '#ff5588';
+            // Food — bright red dot
+            ctx.fillStyle = '#ff3a55';
             ctx.beginPath();
             ctx.arc( food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2 );
             ctx.fill();
@@ -298,8 +324,9 @@
         function serve( towardPlayer ) {
             ballX = canvas.width / 2;
             ballY = canvas.height / 2;
-            var speed = 4.5;
-            var angle = ( Math.random() - 0.5 ) * 0.6; // small vertical component
+            // Roughly 30% slower than before — was 4.5, now 3.2.
+            var speed = 3.2;
+            var angle = ( Math.random() - 0.5 ) * 0.6;
             ballVX = ( towardPlayer ? -1 : 1 ) * speed * Math.cos( angle );
             ballVY = speed * Math.sin( angle );
         }
@@ -307,13 +334,13 @@
         function loop() {
             if ( over ) return;
             // Player
-            if ( keys.up   ) playerY -= 6;
-            if ( keys.down ) playerY += 6;
+            if ( keys.up   ) playerY -= 5;
+            if ( keys.down ) playerY += 5;
             playerY = Math.max( 0, Math.min( canvas.height - PAD_H, playerY ) );
             // CPU — track ball with slight delay (capped speed)
             var target = ballY - PAD_H / 2;
-            if ( cpuY < target ) cpuY = Math.min( cpuY + 4.2, target );
-            else                 cpuY = Math.max( cpuY - 4.2, target );
+            if ( cpuY < target ) cpuY = Math.min( cpuY + 3.4, target );
+            else                 cpuY = Math.max( cpuY - 3.4, target );
             cpuY = Math.max( 0, Math.min( canvas.height - PAD_H, cpuY ) );
 
             // Ball
@@ -322,17 +349,18 @@
             if ( ballY < 0 ) { ballY = 0; ballVY = -ballVY; }
             else if ( ballY > canvas.height ) { ballY = canvas.height; ballVY = -ballVY; }
 
-            // Left paddle collision
+            // Left paddle collision — gentle speed-up (1.03) so rallies
+            // don't escalate to unhittable in a few volleys.
             if ( ballVX < 0 && ballX <= 20 + PAD_W && ballY >= playerY && ballY <= playerY + PAD_H ) {
                 ballX = 20 + PAD_W;
-                ballVX = -ballVX * 1.06;
-                ballVY += ( ballY - ( playerY + PAD_H / 2 ) ) * 0.08;
+                ballVX = -ballVX * 1.03;
+                ballVY += ( ballY - ( playerY + PAD_H / 2 ) ) * 0.06;
             }
             // Right paddle collision
             if ( ballVX > 0 && ballX >= canvas.width - 20 - PAD_W && ballY >= cpuY && ballY <= cpuY + PAD_H ) {
                 ballX = canvas.width - 20 - PAD_W;
-                ballVX = -ballVX * 1.06;
-                ballVY += ( ballY - ( cpuY + PAD_H / 2 ) ) * 0.08;
+                ballVX = -ballVX * 1.03;
+                ballVY += ( ballY - ( cpuY + PAD_H / 2 ) ) * 0.06;
             }
 
             // Score
@@ -352,23 +380,26 @@
         }
 
         function draw() {
-            ctx.fillStyle = '#001508';
+            ctx.fillStyle = '#000';
             ctx.fillRect( 0, 0, canvas.width, canvas.height );
-            // Centerline
-            ctx.fillStyle = '#0fff8a33';
+            // Centerline — brighter so it reads against the CRT scanlines
+            ctx.fillStyle = 'rgba(43, 255, 136, 0.45)';
             for ( var y = 8; y < canvas.height; y += 22 ) {
                 ctx.fillRect( canvas.width / 2 - 1, y, 2, 12 );
             }
             // Scores
-            ctx.fillStyle = '#0fff8a';
-            ctx.font = 'bold 36px ui-monospace, monospace';
+            ctx.fillStyle = '#b6ffd6';
+            ctx.font = 'bold 40px ui-monospace, monospace';
             ctx.textAlign = 'center';
-            ctx.fillText( playerScore, canvas.width / 2 - 60, 44 );
-            ctx.fillText( cpuScore,    canvas.width / 2 + 60, 44 );
-            // Paddles
+            ctx.fillText( playerScore, canvas.width / 2 - 60, 50 );
+            ctx.fillText( cpuScore,    canvas.width / 2 + 60, 50 );
+            // Paddles — bright neon
+            ctx.fillStyle = '#2bff88';
             ctx.fillRect( 20, playerY, PAD_W, PAD_H );
+            ctx.fillStyle = '#80f8ff';
             ctx.fillRect( canvas.width - 20 - PAD_W, cpuY, PAD_W, PAD_H );
-            // Ball
+            // Ball — bright white
+            ctx.fillStyle = '#ffffff';
             ctx.fillRect( ballX - 5, ballY - 5, 10, 10 );
         }
 
@@ -530,19 +561,20 @@
                     var ch = grid[ r ][ c ];
                     var x = c * CELL, y = r * CELL;
                     if ( ch === '#' ) {
-                        ctx.fillStyle = '#1840d8';
+                        ctx.fillStyle = '#2050ff';
                         ctx.fillRect( x + 2, y + 2, CELL - 4, CELL - 4 );
-                        ctx.strokeStyle = '#80a8ff';
+                        ctx.strokeStyle = '#a0c0ff';
+                        ctx.lineWidth = 1.5;
                         ctx.strokeRect( x + 2.5, y + 2.5, CELL - 5, CELL - 5 );
                     } else if ( ch === '.' ) {
-                        ctx.fillStyle = '#f5deb3';
+                        ctx.fillStyle = '#fff5d0';
                         ctx.beginPath();
-                        ctx.arc( x + CELL / 2, y + CELL / 2, 2.5, 0, Math.PI * 2 );
+                        ctx.arc( x + CELL / 2, y + CELL / 2, 3, 0, Math.PI * 2 );
                         ctx.fill();
                     } else if ( ch === 'o' ) {
                         ctx.fillStyle = '#ffffff';
                         ctx.beginPath();
-                        ctx.arc( x + CELL / 2, y + CELL / 2, 6, 0, Math.PI * 2 );
+                        ctx.arc( x + CELL / 2, y + CELL / 2, 7, 0, Math.PI * 2 );
                         ctx.fill();
                     }
                 }
@@ -731,15 +763,15 @@
             ctx.fillStyle = '#000';
             ctx.fillRect( 0, 0, W, H );
             // Stars
-            ctx.fillStyle = '#0fff8a44';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
             for ( var s = 0; s < 40; s++ ) {
                 var sx = ( s * 137 ) % W;
                 var sy = ( s * 89 ) % H;
                 ctx.fillRect( sx, sy, 1, 1 );
             }
-            // Asteroids
-            ctx.strokeStyle = '#0fff8a';
-            ctx.lineWidth = 1.5;
+            // Asteroids — bright neon outline
+            ctx.strokeStyle = '#80f8ff';
+            ctx.lineWidth = 2;
             asteroids.forEach( function ( a ) {
                 ctx.beginPath();
                 a.shape.forEach( function ( p, i ) {
@@ -813,6 +845,169 @@
         reset();
         draw();
         raf = requestAnimationFrame( tick );
+        doc.addEventListener( 'keydown', onKey );
+        doc.addEventListener( 'keyup',   onKeyUp );
+
+        return function stop() {
+            alive = false;
+            cancelAnimationFrame( raf );
+            doc.removeEventListener( 'keydown', onKey );
+            doc.removeEventListener( 'keyup',   onKeyUp );
+        };
+    }
+
+    // ================================================================
+    // BRICKLES (Breakout-style brick breaker)
+    // ================================================================
+    function startBrickles( canvas, hooks ) {
+        canvas.width = 600;
+        canvas.height = 420;
+        var ctx = canvas.getContext( '2d' );
+        var W = canvas.width, H = canvas.height;
+
+        var paddle = { x: W / 2 - 55, y: H - 28, w: 110, h: 12 };
+        var ball   = { x: W / 2, y: H - 70, vx: 3, vy: -3, r: 6 };
+        var score  = 0;
+        var lives  = 3;
+        var alive  = true;
+        var raf;
+        var keys   = { left: false, right: false };
+
+        var COLS = 12, ROWS = 5;
+        var BW = ( W - 40 ) / COLS;
+        var BH = 22;
+        var ROW_COLORS = [ '#ff3a55', '#ff8830', '#ffe200', '#2bff88', '#80f8ff' ];
+        var bricks;
+
+        function reset() {
+            bricks = [];
+            for ( var r = 0; r < ROWS; r++ ) {
+                for ( var c = 0; c < COLS; c++ ) {
+                    bricks.push( {
+                        x: 20 + c * BW,
+                        y: 60 + r * ( BH + 6 ),
+                        w: BW - 4,
+                        h: BH,
+                        color: ROW_COLORS[ r ],
+                        points: ( ROWS - r ) * 10,
+                    } );
+                }
+            }
+            paddle.x = W / 2 - paddle.w / 2;
+            ball.x = W / 2;
+            ball.y = H - 70;
+            ball.vx = 3.2 * ( Math.random() > 0.5 ? 1 : -1 );
+            ball.vy = -3.2;
+        }
+
+        function loop() {
+            if ( ! alive ) return;
+            // Paddle input
+            if ( keys.left  ) paddle.x -= 6.5;
+            if ( keys.right ) paddle.x += 6.5;
+            paddle.x = Math.max( 0, Math.min( W - paddle.w, paddle.x ) );
+
+            // Ball
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            if ( ball.x < ball.r )       { ball.x = ball.r;       ball.vx = -ball.vx; }
+            if ( ball.x > W - ball.r )   { ball.x = W - ball.r;   ball.vx = -ball.vx; }
+            if ( ball.y < ball.r )       { ball.y = ball.r;       ball.vy = -ball.vy; }
+
+            // Paddle collision — bounce angle depends on hit position
+            if ( ball.vy > 0
+                 && ball.y + ball.r >= paddle.y
+                 && ball.y - ball.r <= paddle.y + paddle.h
+                 && ball.x >= paddle.x
+                 && ball.x <= paddle.x + paddle.w ) {
+                ball.y = paddle.y - ball.r;
+                ball.vy = -Math.abs( ball.vy );
+                var offset = ( ball.x - ( paddle.x + paddle.w / 2 ) ) / ( paddle.w / 2 );
+                ball.vx = offset * 4.2;
+                // Gentle speed-up to keep games moving
+                var speed = Math.hypot( ball.vx, ball.vy );
+                if ( speed < 6 ) { ball.vx *= 1.02; ball.vy *= 1.02; }
+            }
+
+            // Brick collisions
+            for ( var i = bricks.length - 1; i >= 0; i-- ) {
+                var b = bricks[ i ];
+                if ( ball.x + ball.r > b.x
+                     && ball.x - ball.r < b.x + b.w
+                     && ball.y + ball.r > b.y
+                     && ball.y - ball.r < b.y + b.h ) {
+                    // Decide which side was hit
+                    var dx = ball.x - ( b.x + b.w / 2 );
+                    var dy = ball.y - ( b.y + b.h / 2 );
+                    if ( Math.abs( dx ) * b.h > Math.abs( dy ) * b.w ) ball.vx = -ball.vx;
+                    else                                              ball.vy = -ball.vy;
+                    score += b.points;
+                    hooks.onScore( score );
+                    bricks.splice( i, 1 );
+                    break;
+                }
+            }
+
+            // Cleared the wall
+            if ( bricks.length === 0 ) return finish( true );
+
+            // Lost ball
+            if ( ball.y > H + 30 ) {
+                lives--;
+                if ( lives <= 0 ) return finish( false );
+                ball.x = W / 2; ball.y = H - 70;
+                ball.vx = 3.2 * ( Math.random() > 0.5 ? 1 : -1 );
+                ball.vy = -3.2;
+            }
+
+            draw();
+            raf = requestAnimationFrame( loop );
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect( 0, 0, W, H );
+            // Bricks
+            bricks.forEach( function ( b ) {
+                ctx.fillStyle = b.color;
+                ctx.fillRect( b.x, b.y, b.w, b.h );
+                // 1px highlight along the top edge — adds dimension
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.fillRect( b.x, b.y, b.w, 2 );
+            } );
+            // Paddle
+            ctx.fillStyle = '#b6ffd6';
+            ctx.fillRect( paddle.x, paddle.y, paddle.w, paddle.h );
+            // Ball
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc( ball.x, ball.y, ball.r, 0, Math.PI * 2 );
+            ctx.fill();
+            // Lives counter
+            ctx.fillStyle = '#2bff88';
+            ctx.font = '14px ui-monospace, monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText( 'lives: ' + lives, W - 14, 22 );
+        }
+
+        function finish( won ) {
+            alive = false;
+            cancelAnimationFrame( raf );
+            hooks.onGameOver( score, won ? 'Wall cleared!' : 'Out of lives' );
+        }
+
+        function onKey( e ) {
+            if ( e.key === 'ArrowLeft'  || e.key === 'a' ) { keys.left  = true; e.preventDefault(); }
+            if ( e.key === 'ArrowRight' || e.key === 'd' ) { keys.right = true; e.preventDefault(); }
+        }
+        function onKeyUp( e ) {
+            if ( e.key === 'ArrowLeft'  || e.key === 'a' ) keys.left  = false;
+            if ( e.key === 'ArrowRight' || e.key === 'd' ) keys.right = false;
+        }
+
+        reset();
+        draw();
+        raf = requestAnimationFrame( loop );
         doc.addEventListener( 'keydown', onKey );
         doc.addEventListener( 'keyup',   onKeyUp );
 

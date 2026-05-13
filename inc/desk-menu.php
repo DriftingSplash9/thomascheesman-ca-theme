@@ -504,10 +504,14 @@ function tc_render_desk_menu() {
                         <span class="tc-desk__drawer-card-title">Asteroids</span>
                         <span class="tc-desk__drawer-card-count">high: <span data-games-high="asteroids">0</span></span>
                     </a>
+                    <a href="#" class="tc-desk__drawer-card" data-game="brickles">
+                        <span class="tc-desk__drawer-card-title">Brickles</span>
+                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="brickles">0</span></span>
+                    </a>
                 </div>
             </div>
 
-            <!-- PLAY VIEW: canvas + score line + back. JS injects the running game. -->
+            <!-- PLAY VIEW: TV mockup + score line + back. JS injects the running game. -->
             <div data-games-view="play" hidden>
                 <button class="tc-desk__games-back" type="button" data-games-back>
                     &larr; back
@@ -517,8 +521,13 @@ function tc_render_desk_menu() {
                     <span>Score: <strong data-games-score>0</strong></span>
                     <span>High: <strong data-games-high-current>0</strong></span>
                 </div>
-                <div class="tc-desk__games-canvas-wrap">
-                    <canvas class="tc-desk__games-canvas" data-games-canvas tabindex="0"></canvas>
+                <div class="tc-desk__games-canvas-wrap" data-games-tv>
+                    <button class="tc-desk__games-fs" type="button" data-games-fs aria-label="<?php esc_attr_e( 'Toggle fullscreen', 'tc-ventures-child' ); ?>">
+                        Fullscreen
+                    </button>
+                    <div class="tc-desk__games-screen">
+                        <canvas class="tc-desk__games-canvas" data-games-canvas tabindex="0"></canvas>
+                    </div>
                     <div class="tc-desk__games-gameover" data-games-gameover hidden>
                         <p data-games-gameover-msg>Game over</p>
                         <button type="button" data-games-restart>Play again</button>
