@@ -37,21 +37,34 @@
     }
 
     /**
-     * The hamburger button in the top-right capsule toggles the desk
-     * overlay. Mirrors the legacy .tc-menu open/close behaviour for
-     * aria + the "Menu" ↔ "Close" label morph.
+     * Any [data-menu-trigger] element toggles the desk overlay. There
+     * are currently two: the hamburger button in the top-right capsule
+     * (always visible) and the "back to the desk" button in the
+     * footer (added in C5). Both behave identically.
+     *
+     * The "Menu" ↔ "Close" label morph + aria-expanded are only kept
+     * in sync on triggers that carry [data-trigger-label] — i.e. the
+     * capsule one. The footer button stays labelled "back to the desk"
+     * regardless of state.
      */
     function wireMenuTrigger() {
-        var trigger = doc.querySelector( '[data-menu-trigger]' );
-        var overlay = doc.getElementById( 'tc-desk-menu' );
-        var label   = doc.querySelector( '[data-trigger-label]' );
-        if ( ! trigger || ! overlay ) return;
+        var triggers = doc.querySelectorAll( '[data-menu-trigger]' );
+        var overlay  = doc.getElementById( 'tc-desk-menu' );
+        var label    = doc.querySelector( '[data-trigger-label]' );
+        if ( ! triggers.length || ! overlay ) return;
+
+        // Treat the FIRST trigger (the capsule one) as the focus-return
+        // target. After the user closes the menu, focus returns there
+        // even if they opened it via the footer button.
+        var primaryTrigger = triggers[0];
 
         function open() {
             doc.documentElement.classList.add( 'tc-desk-open' );
             overlay.setAttribute( 'aria-hidden', 'false' );
-            trigger.setAttribute( 'aria-expanded', 'true' );
-            trigger.setAttribute( 'aria-label', 'Close menu' );
+            triggers.forEach( function ( t ) {
+                t.setAttribute( 'aria-expanded', 'true' );
+            });
+            primaryTrigger.setAttribute( 'aria-label', 'Close menu' );
             if ( label ) label.textContent = 'Close';
         }
         function close() {
@@ -70,11 +83,14 @@
             }
             doc.documentElement.classList.remove( 'tc-desk-open' );
             overlay.setAttribute( 'aria-hidden', 'true' );
-            trigger.setAttribute( 'aria-expanded', 'false' );
-            trigger.setAttribute( 'aria-label', 'Open menu' );
+            triggers.forEach( function ( t ) {
+                t.setAttribute( 'aria-expanded', 'false' );
+            });
+            primaryTrigger.setAttribute( 'aria-label', 'Open menu' );
             if ( label ) label.textContent = 'Menu';
-            // Return focus to the trigger so keyboard users keep their place.
-            trigger.focus({ preventScroll: true });
+            // Return focus to the primary trigger so keyboard users keep
+            // their place.
+            primaryTrigger.focus({ preventScroll: true });
         }
         function toggle() {
             if ( doc.documentElement.classList.contains( 'tc-desk-open' ) ) {
@@ -84,14 +100,15 @@
             }
         }
 
-        trigger.addEventListener( 'click', toggle );
+        triggers.forEach( function ( t ) {
+            t.addEventListener( 'click', toggle );
+        });
 
         // Expose close() so Esc can call it from the global handler.
         overlay.__tcDeskOverlayClose = close;
 
-        // Same-page anchors close the menu before the scroll/navigation.
-        // External and off-route links navigate normally; the menu closes
-        // as the page unloads anyway.
+        // Any link inside the overlay closes the menu on click so the
+        // navigation doesn't leave it hanging open.
         overlay.querySelectorAll( 'a' ).forEach( function ( link ) {
             link.addEventListener( 'click', function () {
                 if ( doc.documentElement.classList.contains( 'tc-desk-open' ) ) {

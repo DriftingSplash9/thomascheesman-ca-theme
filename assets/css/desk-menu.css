@@ -571,6 +571,73 @@ html.tc-desk-open .tc-desk__toc{
 /* Desktop: hide the mobile-only nav */
 .tc-desk__mobile{ display: none; }
 
+
+/* ============================================================
+   11. Footer — minimal "back to the desk" button
+   ----------------------------------------------------------
+   Replaces the retired passport footer (C5). One floating
+   button bottom-left of every page; clicking it opens the desk
+   menu (same affordance as the top-right capsule trigger).
+   ============================================================ */
+
+.tc-footer-desk{
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    z-index: 60;
+}
+
+.tc-footer-desk__back{
+    appearance: none;
+    background: rgba( 10, 8, 12, 0.55 );
+    color: #f6f1e3;
+    border: 1px solid rgba( 246, 241, 227, 0.18 );
+    border-radius: 999px;
+    padding: 8px 14px 9px;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: .01em;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow:
+        0 2px 8px rgba( 0, 0, 0, 0.30 ),
+        0 0 0 0 rgba( 0, 229, 255, 0 );
+    transition: background .18s, border-color .18s, box-shadow .25s, transform .18s;
+}
+.tc-footer-desk__back:hover,
+.tc-footer-desk__back:focus-visible{
+    background: rgba( 10, 8, 12, 0.78 );
+    border-color: rgba( 0, 229, 255, 0.65 );
+    color: #fff;
+    box-shadow:
+        0 4px 14px rgba( 0, 0, 0, 0.40 ),
+        0 0 18px 2px rgba( 0, 229, 255, 0.25 );
+    transform: translateY(-1px);
+    outline: none;
+}
+.tc-footer-desk__back:active{
+    transform: translateY(0);
+}
+
+/* Hide the footer button when the menu is already open — no point
+   showing "back to the desk" when you ARE on the desk. */
+html.tc-desk-open .tc-footer-desk{
+    display: none;
+}
+
+@media (max-width: 720px){
+    .tc-footer-desk{
+        left: 12px;
+        bottom: 12px;
+    }
+    .tc-footer-desk__back{
+        font-size: 12px;
+        padding: 7px 12px 8px;
+    }
+}
+
 @media (max-width: 720px){
     /* Hide the desk-as-menu elements that don't work on touch */
     .tc-desk__frame::after,
