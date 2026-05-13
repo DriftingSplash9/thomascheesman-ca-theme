@@ -138,24 +138,36 @@ function tc_render_desk_menu() {
                 <span class="tc-desk__screensaver-mark">TC&nbsp;&prime;ventures</span>
             </div>
 
-            <!-- Search UI — hidden until the keyboard hotspot is clicked. -->
+            <!-- Search UI — hidden until the keyboard hotspot is clicked.
+                 Form posts to home_url('/') with name="s" → WP's standard
+                 search query; Astra's search results template renders. -->
             <div class="tc-desk__search" id="tc-desk-search" hidden>
-                <input
-                    type="text"
-                    class="tc-desk__search-input"
-                    id="tc-desk-search-input"
-                    placeholder="<?php esc_attr_e( 'Looking for something?', 'tc-ventures-child' ); ?>"
-                    autocomplete="off"
+                <form
+                    class="tc-desk__search-form"
+                    id="tc-desk-search-form"
+                    role="search"
+                    method="get"
+                    action="<?php echo esc_url( home_url( '/' ) ); ?>"
                 >
-                <div class="tc-desk__chips">
-                    <button class="tc-desk__chip" data-q="Patience">Patience</button>
-                    <button class="tc-desk__chip" data-q="Daniel">Daniel</button>
-                    <button class="tc-desk__chip" data-q="Faith">Faith</button>
-                    <button class="tc-desk__chip" data-q="HCS">HCS</button>
-                    <button class="tc-desk__chip" data-q="Spinal fusion">Spinal fusion</button>
-                    <button class="tc-desk__chip" data-q="Bitcoin">Bitcoin</button>
-                    <button class="tc-desk__chip" data-q="Kitchen">Kitchen</button>
-                </div>
+                    <input
+                        type="search"
+                        class="tc-desk__search-input"
+                        id="tc-desk-search-input"
+                        name="s"
+                        placeholder="<?php esc_attr_e( 'Looking for something?', 'tc-ventures-child' ); ?>"
+                        autocomplete="off"
+                        required
+                    >
+                    <div class="tc-desk__chips">
+                        <button type="button" class="tc-desk__chip" data-q="Patience">Patience</button>
+                        <button type="button" class="tc-desk__chip" data-q="Daniel">Daniel</button>
+                        <button type="button" class="tc-desk__chip" data-q="Faith">Faith</button>
+                        <button type="button" class="tc-desk__chip" data-q="HCS">HCS</button>
+                        <button type="button" class="tc-desk__chip" data-q="Spinal fusion">Spinal fusion</button>
+                        <button type="button" class="tc-desk__chip" data-q="Bitcoin">Bitcoin</button>
+                        <button type="button" class="tc-desk__chip" data-q="Kitchen">Kitchen</button>
+                    </div>
+                </form>
                 <button class="tc-desk__search-back" id="tc-desk-search-back" type="button">&larr; back to menu</button>
             </div>
         </div>

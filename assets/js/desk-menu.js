@@ -193,11 +193,19 @@
         kb.addEventListener( 'click', enter );
         backBtn.addEventListener( 'click', exit );
 
-        // Quick-pick chips populate the input.
+        // Quick-pick chips populate the input AND submit immediately.
+        // The form posts to home_url('/') with name="s" → WP search.
+        var form = doc.getElementById( 'tc-desk-search-form' );
         search.querySelectorAll( '.tc-desk__chip' ).forEach( function ( chip ) {
             chip.addEventListener( 'click', function () {
                 input.value = chip.dataset.q || '';
-                input.focus();
+                if ( form ) {
+                    if ( typeof form.requestSubmit === 'function' ) {
+                        form.requestSubmit();
+                    } else {
+                        form.submit();
+                    }
+                }
             });
         });
 
