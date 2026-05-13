@@ -495,14 +495,19 @@ html.tc-desk-open{ overflow: hidden; }
 
 /* ============================================================
    7. Drawers — full-viewport popovers (slideshow + journal)
+   ----------------------------------------------------------
+   Electric glassmorphism: translucent dark panels with a heavy
+   backdrop blur, hairline neon borders, and a slow cyan↔violet
+   corona pulse. Each compartment inside grows in place from
+   small, chronologically offset so they cascade open.
    ============================================================ */
 
 .tc-desk__drawer{
     position: fixed;
     inset: 0;
-    background: #000a;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(2, 0, 10, 0.45);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -515,76 +520,160 @@ html.tc-desk-open{ overflow: hidden; }
     opacity: 1;
     pointer-events: auto;
 }
+
 .tc-desk__drawer-inner{
-    background: #f6f1e3;
-    color: #1f1a14;
-    padding: 28px 36px 32px;
-    border-radius: 6px;
-    box-shadow: 0 30px 80px #000b, 0 4px 12px #0008;
-    max-width: 560px;
+    /* Translucent dark glass with a heavy interior blur, cyan-tinted
+       hairline border, dual-color outer corona that pulses slowly. */
+    background: rgba(14, 10, 30, 0.55);
+    backdrop-filter: blur(28px) saturate(1.5);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5);
+    color: #f1e9d0;
+    padding: 30px 36px 34px;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 229, 255, 0.30);
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.65),
+        0 0 60px rgba(0, 229, 255, 0.12),
+        0 0 90px rgba(181, 27, 255, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    max-width: 580px;
     width: 90%;
     position: relative;
-    transform: translateY(20px) scale(.97);
-    transition: transform .28s ease-out;
+    transform: translateY(20px) scale(.92);
+    opacity: 0;
+    transition: transform .42s cubic-bezier(.16, 1, .3, 1), opacity .35s ease-out;
     font-family: "Iowan Old Style", Georgia, serif;
 }
 .tc-desk__drawer.is-open .tc-desk__drawer-inner{
     transform: translateY(0) scale(1);
+    opacity: 1;
+    animation: tc-desk-drawer-corona 7s ease-in-out infinite 0.7s;
 }
+@keyframes tc-desk-drawer-corona{
+    0%, 100%{
+        box-shadow:
+            0 30px 80px rgba(0, 0, 0, 0.65),
+            0 0 60px rgba(0, 229, 255, 0.14),
+            0 0 90px rgba(181, 27, 255, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        border-color: rgba(0, 229, 255, 0.30);
+    }
+    50%{
+        box-shadow:
+            0 30px 80px rgba(0, 0, 0, 0.65),
+            0 0 60px rgba(0, 229, 255, 0.08),
+            0 0 100px rgba(181, 27, 255, 0.20),
+            inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        border-color: rgba(181, 27, 255, 0.34);
+    }
+}
+
 .tc-desk__drawer-close{
     position: absolute;
-    right: 8px;
-    top: 4px;
+    right: 10px;
+    top: 6px;
     background: transparent;
     border: 0;
     font-size: 26px;
     line-height: 1;
-    color: #1f1a14;
+    color: rgba(241, 233, 208, 0.65);
     cursor: pointer;
     padding: 4px 12px;
+    transition: color .18s, text-shadow .18s;
 }
+.tc-desk__drawer-close:hover{
+    color: #fff;
+    text-shadow: 0 0 8px #00e5ff;
+}
+
 .tc-desk__drawer h2{
     margin: 0 0 4px;
     font-family: Georgia, serif;
     font-size: 22px;
-    letter-spacing: .03em;
+    letter-spacing: .04em;
+    color: #f1e9d0;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.30);
 }
 .tc-desk__drawer-sub{
-    margin: 0 0 16px;
+    margin: 0 0 18px;
     font-style: italic;
-    color: #5b5240;
+    color: rgba(241, 233, 208, 0.55);
     font-size: 14px;
 }
+
 .tc-desk__drawer-grid{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 12px;
 }
+
 .tc-desk__drawer-card{
     display: block;
-    padding: 14px 16px;
-    background: #fff;
-    border: 1px solid #d8cfb5;
-    border-radius: 4px;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
     text-decoration: none;
-    color: #1f1a14;
-    transition: transform .18s, box-shadow .18s, border-color .18s;
+    color: #f1e9d0;
+    transition: transform .22s, box-shadow .22s, border-color .22s, background .22s;
+    /* Initial state for the grow-in cascade (when drawer opens). */
+    opacity: 0;
+    transform: scale(0.6) translateY(10px);
 }
+.tc-desk__drawer.is-open .tc-desk__drawer-card{
+    animation: tc-desk-card-grow 0.55s cubic-bezier(.34, 1.56, .64, 1) forwards;
+}
+/* Chronologically offset entrance — each compartment lands ~0.07s
+   after the previous one. */
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(1){ animation-delay: 0.20s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(2){ animation-delay: 0.27s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(3){ animation-delay: 0.34s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(4){ animation-delay: 0.41s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(5){ animation-delay: 0.48s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(6){ animation-delay: 0.55s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(7){ animation-delay: 0.62s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(8){ animation-delay: 0.69s; }
+@keyframes tc-desk-card-grow{
+    0%   { opacity: 0; transform: scale(0.6) translateY(10px); }
+    60%  { opacity: 1; }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .tc-desk__drawer-card:hover{
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px #0002;
-    border-color: #1f1a14;
+    background: rgba(0, 229, 255, 0.08);
+    border-color: rgba(0, 229, 255, 0.55);
+    transform: scale(1.03) translateY(-2px);
+    box-shadow:
+        0 10px 24px rgba(0, 0, 0, 0.45),
+        0 0 24px rgba(0, 229, 255, 0.25);
 }
 .tc-desk__drawer-card-title{
     display: block;
     font-weight: 600;
     font-size: 16px;
+    color: #ffffff;
+    text-shadow: 0 0 6px rgba(0, 229, 255, 0.25);
 }
 .tc-desk__drawer-card-count{
     display: block;
     font-size: 12px;
-    color: #6f6755;
+    color: rgba(241, 233, 208, 0.50);
     margin-top: 2px;
+}
+
+/* Reduced motion: skip the cascade + corona — show cards instantly. */
+@media (prefers-reduced-motion: reduce){
+    .tc-desk__drawer.is-open .tc-desk__drawer-inner{
+        animation: none !important;
+    }
+    .tc-desk__drawer-card,
+    .tc-desk__drawer.is-open .tc-desk__drawer-card{
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
 }
 
 
