@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.263
+Version: 1.0.264
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -755,6 +755,26 @@ body {
         width: 100%;
         text-align: center;
     }
+}
+
+/* ============================================
+   HIDE OS CURSOR (ink-trail only)
+   ============================================
+   The `cursor-custom` class is toggled on <html> by initInkTrail() once
+   the sit-out checks (reduced-motion, coarse pointer) pass. With no
+   custom-cursor dot, the ink trail is the only on-screen indicator. */
+
+html.cursor-custom,
+html.cursor-custom * {
+    cursor: none;
+}
+
+/* Restore native text cursor on form fields so typing still feels normal. */
+html.cursor-custom input,
+html.cursor-custom textarea,
+html.cursor-custom select,
+html.cursor-custom [contenteditable] {
+    cursor: text;
 }
 
 /* ============================================

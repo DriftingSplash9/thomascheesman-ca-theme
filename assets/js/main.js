@@ -1630,6 +1630,9 @@ function initInkTrail() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (!window.matchMedia('(pointer: fine)').matches) return;
 
+    // Hide the OS cursor sitewide — the trail is the only cursor indicator.
+    document.documentElement.classList.add('cursor-custom');
+
     const canvas = document.createElement('canvas');
     canvas.className = 'ink-trail-canvas';
     canvas.setAttribute('aria-hidden', 'true');
