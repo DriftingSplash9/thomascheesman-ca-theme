@@ -417,9 +417,9 @@ function tc_render_desk_menu() {
                     <span class="tc-desk__drawer-card-title">HCS</span>
                     <span class="tc-desk__drawer-card-count">life with this body</span>
                 </a>
-                <a href="<?php echo esc_url( home_url( '/category/culinary-arts' ) ); ?>" class="tc-desk__drawer-card">
+                <a href="<?php echo esc_url( home_url( '/journal' ) ); ?>" class="tc-desk__drawer-card">
                     <span class="tc-desk__drawer-card-title">Kitchen</span>
-                    <span class="tc-desk__drawer-card-count">chef years</span>
+                    <span class="tc-desk__drawer-card-count">chef years &mdash; coming soon</span>
                 </a>
             </div>
         </div>
