@@ -483,30 +483,37 @@ function tc_render_desk_menu() {
         <div class="tc-desk__drawer-inner">
             <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
 
-            <!-- PICKER VIEW: 4 game cards. Clicking one swaps to the play view. -->
+            <!-- PICKER VIEW: game cards. Clicking one swaps to the play view.
+                 Each card's secondary line shows the current top score and
+                 the name of whoever set it — refreshed from the leaderboard
+                 REST endpoint each time the drawer opens. -->
             <div data-games-view="picker">
                 <h2>Arcade</h2>
                 <p class="tc-desk__drawer-sub">Hidden inside the toad. Pick a game.</p>
                 <div class="tc-desk__drawer-grid">
                     <a href="#" class="tc-desk__drawer-card" data-game="snake">
                         <span class="tc-desk__drawer-card-title">Snake</span>
-                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="snake">0</span></span>
+                        <span class="tc-desk__drawer-card-count" data-games-high="snake">&mdash;</span>
                     </a>
                     <a href="#" class="tc-desk__drawer-card" data-game="pong">
                         <span class="tc-desk__drawer-card-title">Pong</span>
-                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="pong">0</span></span>
+                        <span class="tc-desk__drawer-card-count" data-games-high="pong">&mdash;</span>
                     </a>
                     <a href="#" class="tc-desk__drawer-card" data-game="pacman">
                         <span class="tc-desk__drawer-card-title">Pac-Man</span>
-                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="pacman">0</span></span>
+                        <span class="tc-desk__drawer-card-count" data-games-high="pacman">&mdash;</span>
                     </a>
                     <a href="#" class="tc-desk__drawer-card" data-game="asteroids">
                         <span class="tc-desk__drawer-card-title">Asteroids</span>
-                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="asteroids">0</span></span>
+                        <span class="tc-desk__drawer-card-count" data-games-high="asteroids">&mdash;</span>
                     </a>
                     <a href="#" class="tc-desk__drawer-card" data-game="brickles">
                         <span class="tc-desk__drawer-card-title">Brickles</span>
-                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="brickles">0</span></span>
+                        <span class="tc-desk__drawer-card-count" data-games-high="brickles">&mdash;</span>
+                    </a>
+                    <a href="#" class="tc-desk__drawer-card" data-game="solitaire">
+                        <span class="tc-desk__drawer-card-title">Solitaire</span>
+                        <span class="tc-desk__drawer-card-count" data-games-high="solitaire">&mdash;</span>
                     </a>
                 </div>
             </div>
@@ -530,6 +537,24 @@ function tc_render_desk_menu() {
                     </div>
                     <div class="tc-desk__games-gameover" data-games-gameover hidden>
                         <p data-games-gameover-msg>Game over</p>
+                        <!-- Name-entry form — JS un-hides it only when the
+                             player's score qualifies for the top 10. -->
+                        <form class="tc-desk__games-leaderboard-entry" data-games-entry hidden>
+                            <label data-games-entry-label>Top 10! Your name:</label>
+                            <div class="tc-desk__games-entry-row">
+                                <input
+                                    type="text"
+                                    data-games-entry-input
+                                    maxlength="16"
+                                    autocomplete="off"
+                                    placeholder="<?php esc_attr_e( 'name', 'tc-ventures-child' ); ?>"
+                                >
+                                <button type="submit" data-games-entry-submit>Submit</button>
+                            </div>
+                        </form>
+                        <!-- Mini leaderboard — top 3 for the current game, shown
+                             after submission OR if score didn't qualify. -->
+                        <ol class="tc-desk__games-mini-board" data-games-mini-board hidden></ol>
                         <button type="button" data-games-restart>Play again</button>
                     </div>
                 </div>

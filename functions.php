@@ -10,6 +10,7 @@
  */
 require_once get_stylesheet_directory() . '/inc/photo-gallery.php';
 require_once get_stylesheet_directory() . '/inc/desk-menu.php';
+require_once get_stylesheet_directory() . '/inc/games-leaderboard.php';
 
 /**
  * Enqueue parent and child theme styles and scripts.
@@ -174,16 +175,24 @@ function tc_ventures_enqueue_scripts() {
         true
     );
 
-    // Desk-games arcade. The four canvas games (Snake / Pong / Pac-Man /
-    // Asteroids) tucked behind the toad hotspot. Depends on desk-menu.js
-    // for the drawer's open/close wiring; this file owns picker→play
-    // view switching, the game loops, and localStorage high scores.
+    // Desk-games arcade. The canvas games (Snake / Pong / Pac-Man /
+    // Asteroids / Brickles / Solitaire) tucked behind the toad
+    // hotspot. Depends on desk-menu.js for the drawer's open/close
+    // wiring; this file owns picker→play view switching, the game
+    // loops, and the REST-backed leaderboard wiring.
     wp_enqueue_script(
         'tc-desk-games',
         get_stylesheet_directory_uri() . '/assets/js/desk-games.js',
         array( 'tc-desk-menu' ),
         wp_get_theme()->get( 'Version' ),
         true
+    );
+    wp_localize_script(
+        'tc-desk-games',
+        'tcDeskGames',
+        array(
+            'scoresUrl' => esc_url_raw( rest_url( 'tc-games/v1/scores' ) ),
+        )
     );
 
     // Scrapbook page — page-scrapbook.php / slug `/scrapbook`.

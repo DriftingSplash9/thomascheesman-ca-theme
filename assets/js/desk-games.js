@@ -28,24 +28,48 @@
     var doc = document;
 
     // ----------------------------------------------------------------
-    // High-score storage
+    // Leaderboard — REST-backed persistent top-10 per game.
+    //
+    // The endpoint URL is injected by wp_localize_script into a global
+    // `tcDeskGames` object (functions.php). All requests are public —
+    // see inc/games-leaderboard.php for the trust model.
+    //
+    // `boards` is a session cache: shaped as { [gameKey]: row[] } where
+    // row = { name, score, ts }. Refreshed on drawer open and after a
+    // successful POST. If the network call fails the cache stays empty
+    // and the UI shows "—" everywhere, which is intentional — better
+    // than misleading 0s that look like real high scores.
     // ----------------------------------------------------------------
-    var HS_KEY = 'tcDeskGamesHigh';
-    function readHigh( game ) {
-        try {
-            var raw = localStorage.getItem( HS_KEY );
-            if ( ! raw ) return 0;
-            var parsed = JSON.parse( raw );
-            return parseInt( parsed[ game ], 10 ) || 0;
-        } catch ( e ) { return 0; }
+    var SCORES_URL = ( window.tcDeskGames && window.tcDeskGames.scoresUrl ) || '/wp-json/tc-games/v1/scores';
+    var boards = {};
+
+    function fetchBoards() {
+        return fetch( SCORES_URL, { credentials: 'same-origin' } )
+            .then( function ( r ) { return r.ok ? r.json() : {}; } )
+            .then( function ( data ) { boards = data || {}; return boards; } )
+            .catch( function () { return {}; } );
     }
-    function writeHigh( game, score ) {
-        try {
-            var raw = localStorage.getItem( HS_KEY );
-            var parsed = raw ? JSON.parse( raw ) : {};
-            parsed[ game ] = score;
-            localStorage.setItem( HS_KEY, JSON.stringify( parsed ) );
-        } catch ( e ) {}
+
+    function postScore( game, name, score ) {
+        return fetch( SCORES_URL, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify( { game: game, name: name, score: score } ),
+        } )
+            .then( function ( r ) { return r.ok ? r.json() : null; } )
+            .catch( function () { return null; } );
+    }
+
+    function topRow( game ) {
+        var b = boards[ game ];
+        return ( b && b.length ) ? b[ 0 ] : null;
+    }
+
+    function qualifiesForTop10( game, score ) {
+        var b = boards[ game ] || [];
+        if ( b.length < 10 ) return score > 0;
+        return score > b[ b.length - 1 ].score;
     }
 
     // ----------------------------------------------------------------
@@ -76,16 +100,49 @@
             pacman:    { title: 'Pac-Man',   controls: '&larr;&uarr;&darr;&rarr; &mdash; eat the dots', start: startPacman    },
             asteroids: { title: 'Asteroids', controls: '&larr;&rarr; rotate &middot; &uarr; thrust &middot; space fire', start: startAsteroids },
             brickles:  { title: 'Brickles',  controls: '&larr;&rarr; paddle &mdash; clear the wall',   start: startBrickles  },
+            solitaire: { title: 'Solitaire', controls: 'click to select &middot; click again to place', start: startSolitaire },
         };
 
         var currentKey  = null;
         var currentStop = null;
 
+        // Name-entry elements live inside the gameover overlay
+        var entryForm    = drawer.querySelector( '[data-games-entry]' );
+        var entryInput   = drawer.querySelector( '[data-games-entry-input]' );
+        var miniBoard    = drawer.querySelector( '[data-games-mini-board]' );
+
         function paintHighScores() {
             Object.keys( GAMES ).forEach( function ( k ) {
                 var el = drawer.querySelector( '[data-games-high="' + k + '"]' );
-                if ( el ) el.textContent = readHigh( k );
+                if ( ! el ) return;
+                var row = topRow( k );
+                el.textContent = row
+                    ? ( 'high: ' + row.score + ' · ' + row.name )
+                    : 'high: —';
             } );
+        }
+
+        function renderMiniBoard( game ) {
+            var b = boards[ game ] || [];
+            miniBoard.innerHTML = '';
+            if ( ! b.length ) { miniBoard.hidden = true; return; }
+            b.slice( 0, 5 ).forEach( function ( row, i ) {
+                var li = doc.createElement( 'li' );
+                var rank = doc.createElement( 'span' );
+                rank.className = 'tc-desk__games-mini-rank';
+                rank.textContent = ( i + 1 ) + '.';
+                var name = doc.createElement( 'span' );
+                name.className = 'tc-desk__games-mini-name';
+                name.textContent = row.name;
+                var score = doc.createElement( 'span' );
+                score.className = 'tc-desk__games-mini-score';
+                score.textContent = row.score;
+                li.appendChild( rank );
+                li.appendChild( name );
+                li.appendChild( score );
+                miniBoard.appendChild( li );
+            } );
+            miniBoard.hidden = false;
         }
 
         function showPicker() {
@@ -113,27 +170,62 @@
             titleEl.textContent = game.title;
             controlsEl.innerHTML = game.controls;
             scoreEl.textContent = '0';
-            highEl.textContent  = readHigh( key );
+            var top = topRow( key );
+            highEl.textContent = top ? ( top.score + ' · ' + top.name ) : '—';
             gameoverEl.hidden = true;
+            entryForm.hidden  = true;
+            miniBoard.hidden  = true;
             // Each game writes its own pixel dimensions onto the canvas.
             currentStop = game.start( canvas, {
                 onScore: function ( n ) { scoreEl.textContent = n; },
                 onGameOver: function ( finalScore, msg ) {
-                    var high = readHigh( key );
-                    var isNew = finalScore > high;
-                    if ( isNew ) {
-                        writeHigh( key, finalScore );
-                        highEl.textContent = finalScore;
-                    }
-                    gameoverMsg.innerHTML = ( msg || 'Game over' )
-                        + ( isNew ? ' &mdash; new high!' : '' );
-                    gameoverEl.hidden = false;
+                    handleGameOver( key, finalScore, msg );
                 },
             } );
             // Focus the canvas so keyboard input lands here, not on a
             // background button.
             try { canvas.focus(); } catch ( e ) {}
         }
+
+        function handleGameOver( key, finalScore, msg ) {
+            gameoverMsg.innerHTML = ( msg || 'Game over' )
+                + ' &mdash; ' + finalScore;
+            // Re-check the live boards before deciding if the score
+            // qualifies; another visitor might have just submitted a
+            // higher one, but we can also offer entry on the cached
+            // boards immediately while the refresh is in flight.
+            var qualifies = finalScore > 0 && qualifiesForTop10( key, finalScore );
+            if ( qualifies ) {
+                entryForm.hidden = false;
+                entryInput.value = '';
+                miniBoard.hidden = true;
+                // Auto-focus the name input so a keyboard player can
+                // type immediately.
+                setTimeout( function () { try { entryInput.focus(); } catch ( e ) {} }, 50 );
+            } else {
+                entryForm.hidden = true;
+                renderMiniBoard( key );
+            }
+            gameoverEl.hidden = false;
+        }
+
+        // Submit the name + score; on success refresh the cache and
+        // show the mini-board so the player sees where they landed.
+        entryForm.addEventListener( 'submit', function ( e ) {
+            e.preventDefault();
+            if ( ! currentKey ) return;
+            var name = ( entryInput.value || '' ).trim().slice( 0, 16 );
+            var score = parseInt( scoreEl.textContent, 10 ) || 0;
+            entryForm.hidden = true;
+            postScore( currentKey, name, score ).then( function ( res ) {
+                if ( res && res.success && res.scores ) {
+                    boards[ currentKey ] = res.scores;
+                    var t = topRow( currentKey );
+                    highEl.textContent = t ? ( t.score + ' · ' + t.name ) : '—';
+                }
+                renderMiniBoard( currentKey );
+            } );
+        } );
 
         // Fullscreen toggle on the TV wrap. Browsers vary on prefix, so
         // feature-detect both directions.
@@ -186,14 +278,18 @@
                 picker.hidden = false;
                 playView.hidden = true;
                 gameoverEl.hidden = true;
+                entryForm.hidden  = true;
+                miniBoard.hidden  = true;
             } else {
-                // On open, refresh the displayed highs.
-                paintHighScores();
+                // On open, refresh from the server (cache miss = "—").
+                fetchBoards().then( paintHighScores );
             }
         } );
         observer.observe( drawer, { attributes: true, attributeFilter: [ 'class' ] } );
 
-        paintHighScores();
+        // Initial fetch on script init so a fast click on the toad
+        // already has data when the drawer pops.
+        fetchBoards().then( paintHighScores );
     }
 
     // ================================================================
@@ -1016,6 +1112,456 @@
             cancelAnimationFrame( raf );
             doc.removeEventListener( 'keydown', onKey );
             doc.removeEventListener( 'keyup',   onKeyUp );
+        };
+    }
+
+    // ================================================================
+    // SOLITAIRE (Klondike, draw-one)
+    //
+    // Click-to-select / click-to-place interaction (no drag-drop — much
+    // simpler hit testing and avoids touch ambiguity if someone tries
+    // it on a tablet despite the desktop-only sign).
+    //
+    // Layout: top row = stock, waste, 4 foundations (left → right).
+    // Bottom = 7 tableau columns.
+    //
+    // Score: classic Klondike point values
+    //   - Waste → tableau:    +5
+    //   - Waste → foundation: +10
+    //   - Tableau → foundation: +10
+    //   - Foundation → tableau: -15
+    //   - Flipping a face-down tableau card: +5
+    // (Capped at 0 minimum.)
+    // ================================================================
+    function startSolitaire( canvas, hooks ) {
+        var CARD_W = 64, CARD_H = 90;
+        var COL_GAP = 12, ROW_GAP = 14, STAGGER = 24;
+        var PAD_X = 14, PAD_Y = 14;
+        var TOP_Y = PAD_Y;
+        var TABLEAU_Y = TOP_Y + CARD_H + ROW_GAP * 2;
+        var W = PAD_X * 2 + CARD_W * 7 + COL_GAP * 6;
+        canvas.width  = W;
+        canvas.height = TABLEAU_Y + STAGGER * 18 + CARD_H + PAD_Y;
+        var ctx = canvas.getContext( '2d' );
+
+        var SUITS = [ 'S', 'H', 'D', 'C' ];
+        var SUIT_GLYPH = { S: '♠', H: '♥', D: '♦', C: '♣' };
+        var RED = { H: true, D: true, S: false, C: false };
+        var RANK_LABEL = [ '', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K' ];
+
+        var stock, waste, foundations, tableau, selected, score, alive;
+
+        function shuffle( arr ) {
+            for ( var i = arr.length - 1; i > 0; i-- ) {
+                var j = Math.floor( Math.random() * ( i + 1 ) );
+                var t = arr[ i ]; arr[ i ] = arr[ j ]; arr[ j ] = t;
+            }
+        }
+
+        function deal() {
+            var deck = [];
+            SUITS.forEach( function ( s ) {
+                for ( var r = 1; r <= 13; r++ ) deck.push( { suit: s, rank: r, faceUp: false } );
+            } );
+            shuffle( deck );
+            tableau = [ [], [], [], [], [], [], [] ];
+            for ( var col = 0; col < 7; col++ ) {
+                for ( var row = 0; row <= col; row++ ) {
+                    var card = deck.pop();
+                    card.faceUp = ( row === col );
+                    tableau[ col ].push( card );
+                }
+            }
+            stock = deck; // remaining
+            waste = [];
+            foundations = [ [], [], [], [] ];
+            selected = null;
+            score = 0;
+            alive = true;
+            hooks.onScore( 0 );
+        }
+
+        function bumpScore( delta ) {
+            score = Math.max( 0, score + delta );
+            hooks.onScore( score );
+        }
+
+        // ---- Positions ----
+        function stockPos()      { return { x: PAD_X,                                            y: TOP_Y }; }
+        function wastePos()      { return { x: PAD_X + CARD_W + COL_GAP,                         y: TOP_Y }; }
+        function foundationPos( i ) {
+            return { x: PAD_X + ( 3 + i ) * ( CARD_W + COL_GAP ), y: TOP_Y };
+        }
+        function tableauPos( col, row ) {
+            return { x: PAD_X + col * ( CARD_W + COL_GAP ), y: TABLEAU_Y + row * STAGGER };
+        }
+
+        // ---- Drawing ----
+        function drawCardBack( x, y ) {
+            ctx.fillStyle = '#1a3060';
+            roundRect( x, y, CARD_W, CARD_H, 6, true, false );
+            ctx.fillStyle = '#4a78c8';
+            for ( var dy = 6; dy < CARD_H - 6; dy += 8 ) {
+                for ( var dx = 6; dx < CARD_W - 6; dx += 8 ) {
+                    ctx.fillRect( x + dx, y + dy, 4, 4 );
+                }
+            }
+            ctx.strokeStyle = '#0a1830';
+            ctx.lineWidth = 1.5;
+            roundRect( x + 0.5, y + 0.5, CARD_W - 1, CARD_H - 1, 6, false, true );
+        }
+
+        function drawCardFace( x, y, card, highlight ) {
+            ctx.fillStyle = highlight ? '#fff5d0' : '#fafafa';
+            roundRect( x, y, CARD_W, CARD_H, 6, true, false );
+            ctx.strokeStyle = highlight ? '#ffaa00' : '#888';
+            ctx.lineWidth = highlight ? 2.5 : 1;
+            roundRect( x + 0.5, y + 0.5, CARD_W - 1, CARD_H - 1, 6, false, true );
+            ctx.fillStyle = RED[ card.suit ] ? '#d83040' : '#101010';
+            ctx.font = 'bold 14px ui-monospace, monospace';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText( RANK_LABEL[ card.rank ], x + 5, y + 4 );
+            ctx.font = '14px ui-monospace, monospace';
+            ctx.fillText( SUIT_GLYPH[ card.suit ], x + 5, y + 20 );
+            // Center glyph
+            ctx.font = '28px ui-monospace, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText( SUIT_GLYPH[ card.suit ], x + CARD_W / 2, y + CARD_H / 2 - 14 );
+            // Mirrored corner
+            ctx.font = 'bold 14px ui-monospace, monospace';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText( RANK_LABEL[ card.rank ], x + CARD_W - 5, y + CARD_H - 20 );
+            ctx.font = '14px ui-monospace, monospace';
+            ctx.fillText( SUIT_GLYPH[ card.suit ], x + CARD_W - 5, y + CARD_H - 4 );
+        }
+
+        function drawEmptySlot( x, y, label ) {
+            ctx.strokeStyle = '#0fff8a55';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash( [ 4, 4 ] );
+            roundRect( x + 0.5, y + 0.5, CARD_W - 1, CARD_H - 1, 6, false, true );
+            ctx.setLineDash( [] );
+            if ( label ) {
+                ctx.fillStyle = '#0fff8a55';
+                ctx.font = '32px ui-monospace, monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText( label, x + CARD_W / 2, y + CARD_H / 2 );
+            }
+        }
+
+        function roundRect( x, y, w, h, r, fill, stroke ) {
+            ctx.beginPath();
+            ctx.moveTo( x + r, y );
+            ctx.lineTo( x + w - r, y );
+            ctx.quadraticCurveTo( x + w, y, x + w, y + r );
+            ctx.lineTo( x + w, y + h - r );
+            ctx.quadraticCurveTo( x + w, y + h, x + w - r, y + h );
+            ctx.lineTo( x + r, y + h );
+            ctx.quadraticCurveTo( x, y + h, x, y + h - r );
+            ctx.lineTo( x, y + r );
+            ctx.quadraticCurveTo( x, y, x + r, y );
+            ctx.closePath();
+            if ( fill )   ctx.fill();
+            if ( stroke ) ctx.stroke();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#054428';
+            ctx.fillRect( 0, 0, canvas.width, canvas.height );
+            // Felt texture — faint diagonal lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+            ctx.lineWidth = 1;
+            for ( var i = -canvas.height; i < canvas.width; i += 8 ) {
+                ctx.beginPath();
+                ctx.moveTo( i, 0 );
+                ctx.lineTo( i + canvas.height, canvas.height );
+                ctx.stroke();
+            }
+            // Stock
+            var sp = stockPos();
+            if ( stock.length ) drawCardBack( sp.x, sp.y );
+            else                drawEmptySlot( sp.x, sp.y, '↻' );
+            // Waste
+            var wp = wastePos();
+            if ( waste.length ) {
+                var w = waste[ waste.length - 1 ];
+                drawCardFace( wp.x, wp.y, w, isSelected( { source: 'waste', idx: waste.length - 1 } ) );
+            } else {
+                drawEmptySlot( wp.x, wp.y );
+            }
+            // Foundations
+            for ( var f = 0; f < 4; f++ ) {
+                var fp = foundationPos( f );
+                if ( foundations[ f ].length ) {
+                    drawCardFace( fp.x, fp.y, foundations[ f ][ foundations[ f ].length - 1 ], false );
+                } else {
+                    drawEmptySlot( fp.x, fp.y, SUIT_GLYPH[ SUITS[ f ] ] );
+                }
+            }
+            // Tableau
+            for ( var col = 0; col < 7; col++ ) {
+                var column = tableau[ col ];
+                if ( ! column.length ) {
+                    var ep = tableauPos( col, 0 );
+                    drawEmptySlot( ep.x, ep.y );
+                    continue;
+                }
+                for ( var row = 0; row < column.length; row++ ) {
+                    var card = column[ row ];
+                    var pos = tableauPos( col, row );
+                    if ( ! card.faceUp ) {
+                        drawCardBack( pos.x, pos.y );
+                    } else {
+                        drawCardFace( pos.x, pos.y, card, isSelected( { source: 'tableau', col: col, idx: row } ) );
+                    }
+                }
+            }
+        }
+
+        function isSelected( s ) {
+            if ( ! selected ) return false;
+            if ( selected.source !== s.source ) return false;
+            if ( selected.source === 'tableau' )
+                return selected.col === s.col && s.idx >= selected.idx;
+            return true;
+        }
+
+        // ---- Hit testing ----
+        function hitTest( x, y ) {
+            // Stock
+            var sp = stockPos();
+            if ( inBox( x, y, sp.x, sp.y, CARD_W, CARD_H ) ) return { source: 'stock' };
+            // Waste
+            var wp = wastePos();
+            if ( inBox( x, y, wp.x, wp.y, CARD_W, CARD_H ) ) {
+                if ( waste.length ) return { source: 'waste', idx: waste.length - 1 };
+                return null;
+            }
+            // Foundations
+            for ( var f = 0; f < 4; f++ ) {
+                var fp = foundationPos( f );
+                if ( inBox( x, y, fp.x, fp.y, CARD_W, CARD_H ) ) return { source: 'foundation', idx: f };
+            }
+            // Tableau — check each column from bottom card up (last drawn = topmost)
+            for ( var col = 0; col < 7; col++ ) {
+                var column = tableau[ col ];
+                if ( ! column.length ) {
+                    var ep = tableauPos( col, 0 );
+                    if ( inBox( x, y, ep.x, ep.y, CARD_W, CARD_H ) ) return { source: 'tableau', col: col, idx: 0, empty: true };
+                    continue;
+                }
+                for ( var row = column.length - 1; row >= 0; row-- ) {
+                    var pos = tableauPos( col, row );
+                    var hitH = ( row === column.length - 1 ) ? CARD_H : STAGGER;
+                    if ( inBox( x, y, pos.x, pos.y, CARD_W, hitH ) ) {
+                        return { source: 'tableau', col: col, idx: row };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function inBox( px, py, x, y, w, h ) {
+            return px >= x && px < x + w && py >= y && py < y + h;
+        }
+
+        // ---- Move rules ----
+        function canStackOnTableau( movingTopCard, targetCol ) {
+            var col = tableau[ targetCol ];
+            if ( ! col.length ) return movingTopCard.rank === 13;
+            var t = col[ col.length - 1 ];
+            if ( ! t.faceUp ) return false;
+            return RED[ movingTopCard.suit ] !== RED[ t.suit ]
+                && movingTopCard.rank === t.rank - 1;
+        }
+        function canStackOnFoundation( card, idx ) {
+            // foundation index → suit
+            var f = foundations[ idx ];
+            if ( ! f.length ) return card.rank === 1 && card.suit === SUITS[ idx ];
+            var t = f[ f.length - 1 ];
+            return card.suit === t.suit && card.rank === t.rank + 1;
+        }
+
+        // ---- Move actions ----
+        function tryFlipTopOfColumn( col ) {
+            var c = tableau[ col ];
+            if ( c.length && ! c[ c.length - 1 ].faceUp ) {
+                c[ c.length - 1 ].faceUp = true;
+                bumpScore( 5 );
+                return true;
+            }
+            return false;
+        }
+
+        function attemptMove( dest ) {
+            if ( ! selected || ! dest ) return false;
+            // Foundation target — only single card
+            if ( dest.source === 'foundation' ) {
+                var card = getSelectedTopCard();
+                if ( selected.source === 'tableau' ) {
+                    var srcCol = tableau[ selected.col ];
+                    if ( srcCol.length - selected.idx !== 1 ) return false; // multi-card to foundation not allowed
+                    if ( ! canStackOnFoundation( card, dest.idx ) ) return false;
+                    foundations[ dest.idx ].push( srcCol.pop() );
+                    tryFlipTopOfColumn( selected.col );
+                    bumpScore( 10 );
+                    return true;
+                }
+                if ( selected.source === 'waste' ) {
+                    if ( ! canStackOnFoundation( card, dest.idx ) ) return false;
+                    foundations[ dest.idx ].push( waste.pop() );
+                    bumpScore( 10 );
+                    return true;
+                }
+                if ( selected.source === 'foundation' ) {
+                    // Foundation → foundation is meaningless
+                    return false;
+                }
+            }
+            // Tableau target
+            if ( dest.source === 'tableau' ) {
+                var top = getSelectedTopCard();
+                if ( ! canStackOnTableau( top, dest.col ) ) return false;
+                if ( selected.source === 'tableau' ) {
+                    var srcArr = tableau[ selected.col ];
+                    var moving = srcArr.splice( selected.idx );
+                    tableau[ dest.col ] = tableau[ dest.col ].concat( moving );
+                    tryFlipTopOfColumn( selected.col );
+                    return true;
+                }
+                if ( selected.source === 'waste' ) {
+                    tableau[ dest.col ].push( waste.pop() );
+                    bumpScore( 5 );
+                    return true;
+                }
+                if ( selected.source === 'foundation' ) {
+                    tableau[ dest.col ].push( foundations[ selected.idx ].pop() );
+                    bumpScore( -15 );
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function getSelectedTopCard() {
+            if ( ! selected ) return null;
+            if ( selected.source === 'tableau' ) {
+                var col = tableau[ selected.col ];
+                return col[ selected.idx ];
+            }
+            if ( selected.source === 'waste' ) return waste[ waste.length - 1 ];
+            if ( selected.source === 'foundation' ) {
+                var f = foundations[ selected.idx ];
+                return f[ f.length - 1 ];
+            }
+            return null;
+        }
+
+        function canSelect( hit ) {
+            if ( hit.source === 'waste' ) return waste.length > 0;
+            if ( hit.source === 'foundation' ) return foundations[ hit.idx ].length > 0;
+            if ( hit.source === 'tableau' ) {
+                if ( hit.empty ) return false;
+                var card = tableau[ hit.col ][ hit.idx ];
+                return !! card.faceUp;
+            }
+            return false;
+        }
+
+        function sameSelection( a, b ) {
+            if ( a.source !== b.source ) return false;
+            if ( a.source === 'tableau' ) return a.col === b.col && a.idx === b.idx;
+            if ( a.source === 'foundation' ) return a.idx === b.idx;
+            return true; // waste
+        }
+
+        function onCanvasClick( e ) {
+            if ( ! alive ) return;
+            var rect = canvas.getBoundingClientRect();
+            var scaleX = canvas.width  / rect.width;
+            var scaleY = canvas.height / rect.height;
+            var x = ( e.clientX - rect.left ) * scaleX;
+            var y = ( e.clientY - rect.top  ) * scaleY;
+            var hit = hitTest( x, y );
+
+            // Click stock — flip one to waste, or recycle if empty
+            if ( hit && hit.source === 'stock' ) {
+                if ( stock.length ) {
+                    var c = stock.pop();
+                    c.faceUp = true;
+                    waste.push( c );
+                } else {
+                    // Recycle the waste back to stock (face down, original order reversed)
+                    while ( waste.length ) {
+                        var w = waste.pop();
+                        w.faceUp = false;
+                        stock.push( w );
+                    }
+                }
+                selected = null;
+                draw();
+                return;
+            }
+
+            // No current selection — try to start one
+            if ( ! selected ) {
+                if ( hit && canSelect( hit ) ) {
+                    // Auto-flip a face-down tableau card if you click it
+                    if ( hit.source === 'tableau' && ! tableau[ hit.col ][ hit.idx ].faceUp
+                         && hit.idx === tableau[ hit.col ].length - 1 ) {
+                        tryFlipTopOfColumn( hit.col );
+                        draw();
+                        return;
+                    }
+                    selected = hit;
+                    draw();
+                }
+                return;
+            }
+
+            // Click on same selection → deselect
+            if ( hit && sameSelection( selected, hit ) ) {
+                selected = null;
+                draw();
+                return;
+            }
+
+            // Otherwise attempt the move
+            if ( hit ) {
+                var moved = attemptMove( hit );
+                selected = null;
+                draw();
+                if ( moved ) {
+                    if ( checkWin() ) {
+                        alive = false;
+                        // Win bonus — every face-up card on the board got
+                        // there with score; just stop the timer and bow out.
+                        hooks.onGameOver( score, 'You won!' );
+                    }
+                }
+                return;
+            }
+
+            // Click outside anything — deselect
+            selected = null;
+            draw();
+        }
+
+        function checkWin() {
+            return foundations.every( function ( f ) { return f.length === 13; } );
+        }
+
+        canvas.addEventListener( 'click', onCanvasClick );
+
+        deal();
+        draw();
+
+        return function stop() {
+            alive = false;
+            canvas.removeEventListener( 'click', onCanvasClick );
         };
     }
 

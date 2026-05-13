@@ -1602,6 +1602,88 @@ html.tc-desk-open .tc-footer-desk{
     outline: none;
 }
 
+/* Name-entry form shown only when score qualifies for top-10 */
+.tc-desk__games-leaderboard-entry{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.tc-desk__games-leaderboard-entry label{
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #ffd970;
+    text-shadow: 0 0 12px rgba(255, 217, 112, 0.55);
+}
+.tc-desk__games-entry-row{
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+.tc-desk__games-leaderboard-entry input{
+    appearance: none;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(15, 255, 138, 0.45);
+    border-radius: 6px;
+    color: #fff;
+    font: inherit;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    padding: 8px 12px;
+    width: 180px;
+    letter-spacing: .04em;
+    outline: none;
+    transition: border-color .18s, box-shadow .18s;
+}
+.tc-desk__games-leaderboard-entry input:focus{
+    border-color: #2bff88;
+    box-shadow: 0 0 12px rgba(43, 255, 136, 0.45);
+}
+.tc-desk__games-leaderboard-entry button{
+    /* Inherits .tc-desk__games-gameover button styles above */
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+/* Mini-leaderboard (top 5) shown after submission or when score
+   didn't qualify */
+.tc-desk__games-mini-board{
+    list-style: none;
+    margin: 0;
+    padding: 12px 18px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(15, 255, 138, 0.25);
+    border-radius: 8px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    color: #b6ffd6;
+    min-width: 220px;
+}
+.tc-desk__games-mini-board li{
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 10px;
+    padding: 4px 0;
+    border-bottom: 1px dashed rgba(15, 255, 138, 0.15);
+}
+.tc-desk__games-mini-board li:last-child{ border-bottom: 0; }
+.tc-desk__games-mini-rank{
+    color: rgba(15, 255, 138, 0.55);
+    text-align: right;
+}
+.tc-desk__games-mini-name{
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tc-desk__games-mini-score{
+    color: #ffd970;
+    font-weight: 700;
+}
+
 .tc-desk__games-controls{
     margin: 12px 2px 0;
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
