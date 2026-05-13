@@ -126,9 +126,10 @@ html.tc-desk-open{ overflow: hidden; }
 .tc-desk__monitor{
     position: absolute;
     /* Sized + curved + tilted to read as the actual curved monitor in
-       IMG_4329. Border-radius is on a wide horizontal arc to suggest a
-       barrel-shaped screen surface, and a small rotateX gives it the
-       slight forward lean of a desk monitor photographed from above. */
+       IMG_4329. clip-path bows the top and bottom edges CONCAVE (down
+       in middle of top, up in middle of bottom) to match the natural
+       curve of a curved screen photographed from slightly above. The
+       rotateX adds the forward lean. */
     left: 25%;
     top: 20%;
     width: 43%;
@@ -137,20 +138,25 @@ html.tc-desk-open{ overflow: hidden; }
         radial-gradient(120% 90% at 50% 55%, #1a0f24 0%, #0a0612 80%),
         #07050d;
     border: 3px solid #161618;
-    border-radius: 30% / 8%;
+    border-radius: 10px;
+    clip-path: polygon(
+        /* Top edge: dips DOWN in the middle (concave from outside) */
+        0%  0%,
+        12% 1.0%, 25% 2.0%, 38% 2.8%, 50% 3.0%, 62% 2.8%, 75% 2.0%, 88% 1.0%, 100% 0%,
+        /* Right edge straight */
+        100% 100%,
+        /* Bottom edge: rises UP in the middle (concave from outside) */
+        88% 99.0%, 75% 98.0%, 62% 97.2%, 50% 97.0%, 38% 97.2%, 25% 98.0%, 12% 99.0%, 0% 100%
+    );
     transform: perspective(1400px) rotateX(-3deg);
     transform-origin: 50% 100%;
     box-shadow:
-        /* Outer silver edge — fine highlight where bezel meets the photo */
-        0 0 0 1px #4a4a4d,
-        /* Inner silver edge — the rim of the screen */
+        /* Inner silver rim — visible inside the clip area */
         0 0 0 1px #2a2a2d inset,
         0 0 0 2px #565659 inset,
-        /* Existing inner glow + outer screen-bleed */
-        0 0 60px #2c0f44 inset,
-        0 0 36px #00e5ff22,
-        0 0 70px #b51bff11;
-    padding: 3% 5% 3%;
+        /* Inner screen glow */
+        0 0 60px #2c0f44 inset;
+    padding: 4% 6% 4%;
     color: #f6f1e3;
     font-family: "Iowan Old Style","Palatino Linotype",Georgia,serif;
     overflow: hidden;
