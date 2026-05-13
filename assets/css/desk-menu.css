@@ -454,12 +454,12 @@ html.tc-desk-open{ overflow: hidden; }
         filter .25s ease-out;
     pointer-events: none;
     z-index: 1;
-    animation: tc-desk-glow-pulse 15s ease-in-out infinite;
+    animation: tc-desk-glow-pulse 20s ease-in-out infinite;
     /* Stagger by BOTH x and y with prime-ish coefficients so the
        wash reads as scattered, not a left-to-right wave. With a 15s
        cycle these negative delays spread objects across ~13s of the
        loop, so usually only one or two objects glow at once. */
-    animation-delay: calc(var(--hot-x, 50) * -0.13s + var(--hot-y, 50) * -0.07s);
+    animation-delay: calc(var(--hot-x, 50) * -0.17s + var(--hot-y, 50) * -0.09s);
 }
 .tc-desk__hotspot:hover::before{
     animation: none;
@@ -515,13 +515,13 @@ html.tc-desk-open{ overflow: hidden; }
     z-index: 3;
     opacity: 0;
     animation-name: tc-desk-sheen;
-    animation-duration: 15s;
+    animation-duration: 20s;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
     /* Same 2D stagger as the glow pulse so both animations stay in
        phase per object (white peak crosses center exactly when the
        brightness pulse peaks). */
-    animation-delay: calc(var(--hot-x, 50) * -0.13s + var(--hot-y, 50) * -0.07s);
+    animation-delay: calc(var(--hot-x, 50) * -0.17s + var(--hot-y, 50) * -0.09s);
 }
 .tc-desk__hotspot:hover::after{
     animation: none;
