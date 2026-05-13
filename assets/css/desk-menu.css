@@ -418,6 +418,12 @@ html.tc-desk-open{ overflow: hidden; }
     perspective: 600px;
 }
 .tc-desk__hotspot--clickable{ cursor: pointer; }
+/* When a hotspot is hovered, raise its entire stacking context above
+   the others so the hover card + lifted PNG aren't occluded by a
+   later sibling's PNG (e.g. the 67 sticker covering Lion's card). */
+.tc-desk__hotspot:hover{
+    z-index: 10;
+}
 
 /* The object PNG itself. Sits flat on the underlying photo at rest
    (no outline, no halo — the photo + sheen carry the visual). On
@@ -452,40 +458,54 @@ html.tc-desk-open{ overflow: hidden; }
 }
 
 /* Sheen sweep — periodic diagonal highlight that washes across the
-   object silhouette, advertising interactivity. Mask-image (the same
-   PNG used for ::before) clips the gradient to the object's alpha
-   shape, so the flash only ever appears on the visible artifact, never
-   on its bounding box. Stagger via --hot-x so adjacent objects don't
-   flash in lockstep (reads as a soft left-to-right wave). Disabled on
-   hover — the lift + scale is its own affordance.
+   object silhouette, advertising interactivity. Stagger via --hot-x
+   so adjacent objects don't flash in lockstep (reads as a soft
+   left-to-right wave). Disabled on hover — the lift + scale is its
+   own affordance.
 
-   No mix-blend-mode — `screen` over a `mask-image` is buggy on some
-   GPU/Chrome combos, where the mask renders but the blended layer
-   doesn't show. Straight rgba alpha is enough to read against the
-   desk photo. */
+   Technique: ::after renders the SAME PNG as ::before, but pumped up
+   via filter to look near-white. The mask is a moving CSS gradient
+   (diagonal stripe of opaque-to-transparent), so only a sweeping
+   band of the bright PNG is revealed at any moment. Result: the
+   PNG's actual silhouette appears to flash from edge to edge.
+
+   This avoids putting `var(--hot-png)` inside `mask-image`, which is
+   buggy on some Chrome/GPU combos — instead the PNG goes through
+   `background-image` (proven to work for ::before) and the mask is a
+   pure CSS gradient. */
 .tc-desk__hotspot::after{
     content: "";
     position: absolute;
     inset: 0;
-    background-image: linear-gradient(
+    background-image: var(--hot-png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    /* Bright + desaturated → object reads as a "lit-up" version of
+       itself when revealed by the mask stripe. */
+    filter: brightness(2.4) saturate(0.35) contrast(0.9);
+    -webkit-mask-image: linear-gradient(
         110deg,
         transparent 25%,
-        rgba(255, 255, 255, 0.55) 42%,
-        rgba(255, 255, 255, 0.95) 50%,
-        rgba(255, 255, 255, 0.55) 58%,
+        rgba(0, 0, 0, 0.6) 42%,
+        rgba(0, 0, 0, 1) 50%,
+        rgba(0, 0, 0, 0.6) 58%,
         transparent 75%
     );
-    background-size: 250% 100%;
-    background-repeat: no-repeat;
-    background-position: 200% 0;
-    -webkit-mask-image: var(--hot-png);
-            mask-image: var(--hot-png);
+            mask-image: linear-gradient(
+        110deg,
+        transparent 25%,
+        rgba(0, 0, 0, 0.6) 42%,
+        rgba(0, 0, 0, 1) 50%,
+        rgba(0, 0, 0, 0.6) 58%,
+        transparent 75%
+    );
+    -webkit-mask-size: 250% 100%;
+            mask-size: 250% 100%;
     -webkit-mask-repeat: no-repeat;
             mask-repeat: no-repeat;
-    -webkit-mask-size: contain;
-            mask-size: contain;
-    -webkit-mask-position: center;
-            mask-position: center;
+    -webkit-mask-position: 200% 0;
+            mask-position: 200% 0;
     pointer-events: none;
     z-index: 3;
     opacity: 0;
@@ -500,19 +520,21 @@ html.tc-desk-open{ overflow: hidden; }
     opacity: 0;
 }
 
-/* The visible flash spans 70% to 100% of the cycle (1.5s of a 5s loop)
-   so users see the sweep clearly rather than a blink. Position
-   interpolates across the same window — peak crosses element center
-   at ~85% of the cycle. */
+/* Visible window: 70%-100% of cycle (1.5s of a 5s loop) so the sweep
+   reads as a clear swoosh, not a blink. mask-position sweeps from
+   off-right to off-left across the same window, with the bright peak
+   crossing element center near ~85%. */
 @keyframes tc-desk-sheen{
     0%, 70% {
-        background-position: 200% 0;
+        -webkit-mask-position: 200% 0;
+                mask-position: 200% 0;
         opacity: 0;
     }
     75% { opacity: 1; }
     95% { opacity: 1; }
     100% {
-        background-position: -100% 0;
+        -webkit-mask-position: -100% 0;
+                mask-position: -100% 0;
         opacity: 0;
     }
 }
