@@ -367,9 +367,20 @@
                 ctx.lineTo( x * CELL, canvas.height );
                 ctx.stroke();
             }
-            // Snake — bright neon green with a subtle head highlight
+            // Snake — head is brightest, body shifts hue across cyan
+            // so the trail visibly grows. The newest segments glow more
+            // than older ones (tail fades to deep teal).
             snake.forEach( function ( s, i ) {
-                ctx.fillStyle = i === 0 ? '#b6ffd6' : '#2bff88';
+                if ( i === 0 ) {
+                    ctx.fillStyle = '#eaffec';
+                } else {
+                    // Interpolate from bright neon green (i=1) to teal (i=last)
+                    var t = Math.min( 1, ( i - 1 ) / Math.max( 1, snake.length - 2 ) );
+                    var r = Math.round( 43  + ( 18  - 43  ) * t );
+                    var g = Math.round( 255 + ( 180 - 255 ) * t );
+                    var b = Math.round( 136 + ( 160 - 136 ) * t );
+                    ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+                }
                 ctx.fillRect( s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2 );
             } );
             // Food — bright red dot
@@ -411,11 +422,17 @@
         var playerY = canvas.height / 2 - PAD_H / 2;
         var cpuY    = canvas.height / 2 - PAD_H / 2;
         var ballX, ballY, ballVX, ballVY;
+        var ballTrail = [];
         var playerScore = 0, cpuScore = 0;
         var TARGET = 5;
         var keys = { up: false, down: false };
         var raf;
         var over = false;
+        // CPU handicap — random tracking offset that re-rolls every
+        // ~1s, plus only reacting when ball moves toward CPU. Without
+        // this the CPU is unbeatable.
+        var cpuOffset = 0;
+        var cpuOffsetUntil = 0;
 
         function serve( towardPlayer ) {
             ballX = canvas.width / 2;
@@ -433,13 +450,25 @@
             if ( keys.up   ) playerY -= 5;
             if ( keys.down ) playerY += 5;
             playerY = Math.max( 0, Math.min( canvas.height - PAD_H, playerY ) );
-            // CPU — track ball with slight delay (capped speed)
-            var target = ballY - PAD_H / 2;
-            if ( cpuY < target ) cpuY = Math.min( cpuY + 3.4, target );
-            else                 cpuY = Math.max( cpuY - 3.4, target );
+
+            // CPU — only reacts when ball is heading toward it, with a
+            // random aiming offset that re-rolls periodically so the
+            // CPU sometimes overshoots / undershoots. Result: beatable.
+            var now = performance.now();
+            if ( now > cpuOffsetUntil ) {
+                cpuOffset      = ( Math.random() - 0.5 ) * 40;
+                cpuOffsetUntil = now + 500 + Math.random() * 700;
+            }
+            if ( ballVX > 0 ) {
+                var target = ballY + cpuOffset - PAD_H / 2;
+                if ( cpuY < target ) cpuY = Math.min( cpuY + 2.6, target );
+                else                 cpuY = Math.max( cpuY - 2.6, target );
+            }
             cpuY = Math.max( 0, Math.min( canvas.height - PAD_H, cpuY ) );
 
-            // Ball
+            // Ball + trail
+            ballTrail.push( { x: ballX, y: ballY } );
+            if ( ballTrail.length > 6 ) ballTrail.shift();
             ballX += ballVX;
             ballY += ballVY;
             if ( ballY < 0 ) { ballY = 0; ballVY = -ballVY; }
@@ -494,6 +523,13 @@
             ctx.fillRect( 20, playerY, PAD_W, PAD_H );
             ctx.fillStyle = '#80f8ff';
             ctx.fillRect( canvas.width - 20 - PAD_W, cpuY, PAD_W, PAD_H );
+            // Ball trail — older positions render dimmer
+            for ( var ti = 0; ti < ballTrail.length; ti++ ) {
+                var t = ballTrail[ ti ];
+                var a = ( ti + 1 ) / ballTrail.length * 0.45;
+                ctx.fillStyle = 'rgba(255, 255, 255, ' + a + ')';
+                ctx.fillRect( t.x - 4, t.y - 4, 8, 8 );
+            }
             // Ball — bright white
             ctx.fillStyle = '#ffffff';
             ctx.fillRect( ballX - 5, ballY - 5, 10, 10 );
@@ -532,17 +568,19 @@
     // PAC-MAN (simplified: small fixed maze, random-walk ghosts)
     // ================================================================
     function startPacman( canvas, hooks ) {
-        // Maze grid: '#' wall, '.' dot, 'o' power pellet, ' ' empty
+        // Maze grid: '#' wall, '.' dot, 'o' power pellet, ' ' empty.
+        // The "ghost box" has openings top + bottom so ghosts actually
+        // wander out — original sealed-box version trapped them.
         var MAZE = [
             '##############',
             '#o..........o#',
             '#.####.####.##',
             '#.#........#.#',
-            '#.#.######.#.#',
-            '#...#    #...#',
-            '###.#    #.###',
-            '#...#    #...#',
-            '#.#.######.#.#',
+            '#.#.##..##.#.#',
+            '#...#....#...#',
+            '###.#....#.###',
+            '#...#....#...#',
+            '#.#.##..##.#.#',
             '#.#........#.#',
             '#.####.####.##',
             '#o..........o#',
@@ -556,19 +594,41 @@
         var ctx = canvas.getContext( '2d' );
 
         // Mutable grid (so we can erase dots as eaten)
-        var grid = MAZE.map( function ( r ) { return r.split( '' ); } );
-        var dotsLeft = 0;
-        grid.forEach( function ( r ) { r.forEach( function ( c ) { if ( c === '.' || c === 'o' ) dotsLeft++; } ); } );
-
-        var pac    = { col: 6, row: 9, dx: 0, dy: 0, nextDx: 0, nextDy: 0, mouth: 0 };
-        var ghosts = [
-            { col: 6, row: 5, dx: 0, dy: 1, color: '#ff5588' },
-            { col: 7, row: 7, dx: 0, dy: -1, color: '#80f8ff' },
-        ];
+        var grid;
+        var dotsLeft;
+        var pac;
+        var ghosts;
         var score = 0;
         var powerLeft = 0;
         var alive = true;
+        var level = 1;
+        var tickMs = 180;
         var timer;
+
+        function resetBoard() {
+            grid = MAZE.map( function ( r ) { return r.split( '' ); } );
+            dotsLeft = 0;
+            grid.forEach( function ( r ) {
+                r.forEach( function ( c ) { if ( c === '.' || c === 'o' ) dotsLeft++; } );
+            } );
+            pac = { col: 6, row: 9, dx: 0, dy: 0, nextDx: 0, nextDy: 0, mouth: 0 };
+            // Ghosts start INSIDE the box but the openings let them out.
+            // Adding one extra ghost per level (capped at 4) for difficulty.
+            var ghostColors = [ '#ff5588', '#80f8ff', '#ffb04f', '#ff70ff' ];
+            var ghostCount = Math.min( 4, 2 + Math.floor( ( level - 1 ) / 1 ) );
+            ghosts = [];
+            for ( var gi = 0; gi < ghostCount; gi++ ) {
+                ghosts.push( {
+                    col: 6 + ( gi % 2 ),
+                    row: 5 + Math.floor( gi / 2 ) * 2,
+                    dx: ( gi % 2 === 0 ) ? 0 : 0,
+                    dy: ( gi % 2 === 0 ) ? -1 : 1,
+                    color: ghostColors[ gi ],
+                } );
+            }
+            powerLeft = 0;
+        }
+        resetBoard();
 
         function isWall( c, r ) {
             if ( r < 0 || r >= ROWS || c < 0 || c >= COLS ) return true;
@@ -591,7 +651,7 @@
             if ( here === '.' ) { score += 10; grid[ pac.row ][ pac.col ] = ' '; dotsLeft--; hooks.onScore( score ); }
             else if ( here === 'o' ) { score += 50; grid[ pac.row ][ pac.col ] = ' '; dotsLeft--; powerLeft = 28; hooks.onScore( score ); }
 
-            if ( dotsLeft === 0 ) return win();
+            if ( dotsLeft === 0 ) { nextLevel(); return; }
 
             // Ghosts random-walk (with retry if blocked) — keep direction
             // unless blocked or 1-in-5 chance to turn
@@ -640,12 +700,16 @@
         function die() {
             alive = false;
             clearInterval( timer );
-            hooks.onGameOver( score );
+            hooks.onGameOver( score, 'Level ' + level + ' — caught!' );
         }
-        function win() {
-            alive = false;
+        // On maze clear, advance to next level: faster ghosts, refilled
+        // board, +1 ghost. Player keeps their score across levels.
+        function nextLevel() {
+            level++;
+            tickMs = Math.max( 100, 180 - ( level - 1 ) * 14 );
             clearInterval( timer );
-            hooks.onGameOver( score, 'Cleared the maze!' );
+            resetBoard();
+            timer = setInterval( tick, tickMs );
         }
 
         function draw() {
@@ -705,6 +769,12 @@
                 ctx.beginPath(); ctx.arc( gx - 4, gy - 2, 2.8, 0, Math.PI * 2 ); ctx.fill();
                 ctx.beginPath(); ctx.arc( gx + 4, gy - 2, 2.8, 0, Math.PI * 2 ); ctx.fill();
             } );
+            // Level indicator — top-left corner of the maze
+            ctx.fillStyle = '#ffe200';
+            ctx.font = 'bold 11px ui-monospace, monospace';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText( 'LV ' + level, 6, 4 );
         }
 
         function onKey( e ) {
@@ -716,7 +786,7 @@
         }
 
         draw();
-        timer = setInterval( tick, 180 );
+        timer = setInterval( tick, tickMs );
         doc.addEventListener( 'keydown', onKey );
 
         return function stop() {
@@ -738,11 +808,29 @@
         var ship = { x: W / 2, y: H / 2, vx: 0, vy: 0, angle: -Math.PI / 2, radius: 10 };
         var bullets = [];
         var asteroids = [];
+        var particles = [];
         var score = 0;
+        var level = 1;
         var alive = true;
         var raf;
         var keys = { left: false, right: false, up: false };
         var fireCooldown = 0;
+
+        function explode( x, y, size ) {
+            var n = size * 6 + 4;
+            for ( var i = 0; i < n; i++ ) {
+                var a = Math.random() * Math.PI * 2;
+                var s = 0.5 + Math.random() * 3;
+                particles.push( {
+                    x: x, y: y,
+                    vx: Math.cos( a ) * s,
+                    vy: Math.sin( a ) * s,
+                    life: 25 + Math.random() * 20,
+                    maxLife: 40,
+                    color: Math.random() > 0.4 ? '#ffd970' : '#ff8830',
+                } );
+            }
+        }
 
         function spawnAsteroid( size, x, y ) {
             asteroids.push( {
@@ -827,6 +915,7 @@
                     if ( Math.hypot( a.x - b.x, a.y - b.y ) < a.radius ) {
                         bullets.splice( j, 1 );
                         asteroids.splice( i, 1 );
+                        explode( a.x, a.y, a.size );
                         score += ( 4 - a.size ) * 30; // 3 → 30, 2 → 60, 1 → 90
                         hooks.onScore( score );
                         if ( a.size > 1 ) {
@@ -838,6 +927,15 @@
                 }
             }
 
+            // Particles
+            particles.forEach( function ( p ) {
+                p.x += p.vx; p.y += p.vy;
+                p.vx *= 0.96; p.vy *= 0.96;
+                p.life--;
+                wrap( p );
+            } );
+            particles = particles.filter( function ( p ) { return p.life > 0; } );
+
             // Ship-asteroid collision
             for ( var k = 0; k < asteroids.length; k++ ) {
                 var ax = asteroids[ k ];
@@ -846,9 +944,22 @@
                 }
             }
 
-            // Refill if cleared
+            // Refill on clear — each wave bumps the level, spawns one
+            // extra asteroid, and a small score bonus rewards survival.
             if ( asteroids.length === 0 ) {
-                for ( var n = 0; n < 5; n++ ) spawnAsteroid( 3 );
+                level++;
+                score += 200;
+                hooks.onScore( score );
+                var newCount = Math.min( 9, 4 + level );
+                for ( var n = 0; n < newCount; n++ ) {
+                    var rx, ry, tries = 0;
+                    do {
+                        rx = Math.random() * W;
+                        ry = Math.random() * H;
+                        tries++;
+                    } while ( Math.hypot( rx - ship.x, ry - ship.y ) < 120 && tries < 20 );
+                    spawnAsteroid( 3, rx, ry );
+                }
             }
 
             draw();
@@ -880,6 +991,14 @@
                 ctx.closePath();
                 ctx.stroke();
             } );
+            // Explosion particles — fade out as life drops
+            particles.forEach( function ( p ) {
+                var alpha = Math.max( 0, p.life / p.maxLife );
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = p.color;
+                ctx.fillRect( p.x - 1.5, p.y - 1.5, 3, 3 );
+            } );
+            ctx.globalAlpha = 1;
             // Bullets
             ctx.fillStyle = '#ffe200';
             bullets.forEach( function ( b ) {
@@ -906,12 +1025,21 @@
                 ctx.lineTo( left[ 0 ] * 0.4 + right[ 0 ] * 0.6, left[ 1 ] * 0.4 + right[ 1 ] * 0.6 );
                 ctx.stroke();
             }
+            // Level indicator — top-left
+            ctx.fillStyle = '#80f8ff';
+            ctx.font = 'bold 12px ui-monospace, monospace';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText( 'WAVE ' + level, 8, 8 );
         }
 
         function die() {
             alive = false;
             cancelAnimationFrame( raf );
-            hooks.onGameOver( score );
+            // Big death explosion at the ship's position
+            explode( ship.x, ship.y, 4 );
+            draw();
+            hooks.onGameOver( score, 'Wave ' + level + ' — destroyed' );
         }
 
         function fire() {
@@ -965,15 +1093,31 @@
         var ball   = { x: W / 2, y: H - 70, vx: 3, vy: -3, r: 6 };
         var score  = 0;
         var lives  = 3;
+        var level  = 1;
         var alive  = true;
         var raf;
         var keys   = { left: false, right: false };
+        var particles = [];
 
         var COLS = 12, ROWS = 5;
         var BW = ( W - 40 ) / COLS;
         var BH = 22;
         var ROW_COLORS = [ '#ff3a55', '#ff8830', '#ffe200', '#2bff88', '#80f8ff' ];
         var bricks;
+
+        function brickBoom( b ) {
+            for ( var i = 0; i < 10; i++ ) {
+                particles.push( {
+                    x: b.x + b.w / 2,
+                    y: b.y + b.h / 2,
+                    vx: ( Math.random() - 0.5 ) * 6,
+                    vy: ( Math.random() - 0.5 ) * 6 - 1,
+                    color: b.color,
+                    life: 22,
+                    maxLife: 22,
+                } );
+            }
+        }
 
         function reset() {
             bricks = [];
@@ -1039,13 +1183,31 @@
                     else                                              ball.vy = -ball.vy;
                     score += b.points;
                     hooks.onScore( score );
+                    brickBoom( b );
                     bricks.splice( i, 1 );
                     break;
                 }
             }
 
-            // Cleared the wall
-            if ( bricks.length === 0 ) return finish( true );
+            // Cleared the wall — advance level instead of ending. Each
+            // level bumps ball speed by 15% and refills the wall.
+            if ( bricks.length === 0 ) {
+                level++;
+                score += 100;
+                hooks.onScore( score );
+                reset();
+                ball.vx *= 1 + level * 0.12;
+                ball.vy *= 1 + level * 0.12;
+                return;
+            }
+
+            // Particles
+            particles.forEach( function ( p ) {
+                p.x += p.vx; p.y += p.vy;
+                p.vy += 0.2; // gravity
+                p.life--;
+            } );
+            particles = particles.filter( function ( p ) { return p.life > 0; } );
 
             // Lost ball
             if ( ball.y > H + 30 ) {
@@ -1071,6 +1233,13 @@
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.fillRect( b.x, b.y, b.w, 2 );
             } );
+            // Particles — fade with life
+            particles.forEach( function ( p ) {
+                ctx.globalAlpha = Math.max( 0, p.life / p.maxLife );
+                ctx.fillStyle = p.color;
+                ctx.fillRect( p.x - 2, p.y - 2, 4, 4 );
+            } );
+            ctx.globalAlpha = 1;
             // Paddle
             ctx.fillStyle = '#b6ffd6';
             ctx.fillRect( paddle.x, paddle.y, paddle.w, paddle.h );
@@ -1079,11 +1248,14 @@
             ctx.beginPath();
             ctx.arc( ball.x, ball.y, ball.r, 0, Math.PI * 2 );
             ctx.fill();
-            // Lives counter
+            // Lives + level
             ctx.fillStyle = '#2bff88';
             ctx.font = '14px ui-monospace, monospace';
             ctx.textAlign = 'right';
             ctx.fillText( 'lives: ' + lives, W - 14, 22 );
+            ctx.fillStyle = '#80f8ff';
+            ctx.textAlign = 'left';
+            ctx.fillText( 'LV ' + level, 14, 22 );
         }
 
         function finish( won ) {

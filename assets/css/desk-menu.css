@@ -1502,6 +1502,14 @@ html.tc-desk-open .tc-footer-desk{
     height: auto;
     outline: none;
 }
+/* The sitewide `html.cursor-custom *` rule hides the OS pointer in
+   favour of the ink trail. That's fine for browsing but breaks
+   click-based games (Solitaire especially). Restore a real cursor
+   on game canvases — specificity (2 classes) beats the universal
+   selector cursor:none. */
+html.cursor-custom .tc-desk__games-canvas{
+    cursor: default;
+}
 
 /* Fullscreen button — small chip at the top-right of the screen */
 .tc-desk__games-fs{
