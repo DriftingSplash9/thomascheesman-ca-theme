@@ -1277,14 +1277,16 @@ function initParticleField() {
 }
 
 /**
- * Custom cursor — a sharp inner dot that follows the pointer tightly.
+ * Custom cursor — a sharp inner dot that snaps to the live mouse position.
  *
  * The OS cursor is hidden site-wide via the `cursor-custom` class on the
  * <html> element (toggled here). Inputs/textareas restore their text
  * cursor via a CSS override so typing still feels normal.
  *
  * The dot is positioned via `transform: translate(x, y)` plus
- * a `translate(-50%, -50%)` to center on the cursor point.
+ * a `translate(-50%, -50%)` to center on the cursor point. No lerp — the
+ * ink-trail head samples e.clientX/Y exactly, so any easing would offset
+ * the dot from the trail tip.
  *
  * Sit-out conditions: prefers-reduced-motion or coarse pointer (touch).
  */
@@ -1299,24 +1301,12 @@ function initCustomCursor() {
     dot.setAttribute('aria-hidden', 'true');
     document.body.appendChild(dot);
 
-    const target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    const dotPos = { x: target.x, y: target.y };
-
+    // Snap the dot to the live mouse position so it stays aligned with the
+    // ink-trail head (which samples e.clientX/Y exactly). Any easing here
+    // creates a visible offset between dot and trail tip.
     document.addEventListener('mousemove', function (e) {
-        target.x = e.clientX;
-        target.y = e.clientY;
+        dot.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px) translate(-50%, -50%)';
     });
-
-    function update() {
-        // Tight lerp on the dot — sharp follow.
-        dotPos.x += (target.x - dotPos.x) * 0.5;
-        dotPos.y += (target.y - dotPos.y) * 0.5;
-
-        dot.style.transform = 'translate(' + dotPos.x + 'px, ' + dotPos.y + 'px) translate(-50%, -50%)';
-
-        requestAnimationFrame(update);
-    }
-    requestAnimationFrame(update);
 }
 
 /**
