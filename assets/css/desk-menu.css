@@ -594,33 +594,35 @@ html.tc-desk-open .tc-desk__frame{
     to  { opacity: 1; transform: scale(1);    }
 }
 
-/* Hotspot fireflies wake one-by-one, staggered ~0.05s each */
+/* Hotspot fireflies wake while the screen is finishing its boot —
+   first one lights at ~0.4s, last by ~0.95s, so they feel like
+   they're "coming on" alongside the screen rather than after a wait. */
 html.tc-desk-open .tc-desk__hotspot::after{
     opacity: 0;
     animation:
-        tc-desk-hot-enter 0.9s ease-out forwards,
-        tc-desk-firefly   3.5s ease-in-out infinite;
-    animation-delay: 0.9s, 1.5s;
+        tc-desk-hot-enter 0.6s ease-out forwards,
+        tc-desk-firefly   4s ease-in-out infinite;
+    animation-delay: 0.40s, 0.95s;
 }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(2)::after { animation-delay: 0.95s, 1.55s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(3)::after { animation-delay: 1.00s, 1.60s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(4)::after { animation-delay: 1.05s, 1.65s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(5)::after { animation-delay: 1.10s, 1.70s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(6)::after { animation-delay: 1.15s, 1.75s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(7)::after { animation-delay: 1.20s, 1.80s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(8)::after { animation-delay: 1.25s, 1.85s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(9)::after { animation-delay: 1.30s, 1.90s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(10)::after{ animation-delay: 1.35s, 1.95s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(11)::after{ animation-delay: 1.40s, 2.00s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(12)::after{ animation-delay: 1.45s, 2.05s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(13)::after{ animation-delay: 1.50s, 2.10s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(14)::after{ animation-delay: 1.55s, 2.15s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(15)::after{ animation-delay: 1.60s, 2.20s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(16)::after{ animation-delay: 1.65s, 2.25s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(17)::after{ animation-delay: 1.70s, 2.30s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(18)::after{ animation-delay: 1.75s, 2.35s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(19)::after{ animation-delay: 1.80s, 2.40s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(20)::after{ animation-delay: 1.85s, 2.45s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(2)::after { animation-delay: 0.43s, 0.98s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(3)::after { animation-delay: 0.46s, 1.01s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(4)::after { animation-delay: 0.49s, 1.04s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(5)::after { animation-delay: 0.52s, 1.07s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(6)::after { animation-delay: 0.55s, 1.10s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(7)::after { animation-delay: 0.58s, 1.13s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(8)::after { animation-delay: 0.61s, 1.16s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(9)::after { animation-delay: 0.64s, 1.19s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(10)::after{ animation-delay: 0.67s, 1.22s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(11)::after{ animation-delay: 0.70s, 1.25s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(12)::after{ animation-delay: 0.73s, 1.28s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(13)::after{ animation-delay: 0.76s, 1.31s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(14)::after{ animation-delay: 0.79s, 1.34s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(15)::after{ animation-delay: 0.82s, 1.37s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(16)::after{ animation-delay: 0.85s, 1.40s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(17)::after{ animation-delay: 0.88s, 1.43s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(18)::after{ animation-delay: 0.91s, 1.46s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(19)::after{ animation-delay: 0.94s, 1.49s }
+html.tc-desk-open .tc-desk__hotspot:nth-of-type(20)::after{ animation-delay: 0.97s, 1.52s }
 
 @keyframes tc-desk-hot-enter{
     0%  { opacity: 0;   transform: scale(.30); }
@@ -628,9 +630,10 @@ html.tc-desk-open .tc-desk__hotspot:nth-of-type(20)::after{ animation-delay: 1.8
     100%{ opacity: .95; transform: scale(1);    }
 }
 
-/* Monitor boots last with a CRT flicker */
+/* Monitor boots WITH the stage (no delay) — entrance feels tight,
+   not "menu loads then waits a beat for the screen". */
 html.tc-desk-open .tc-desk__monitor{
-    animation: tc-desk-monitor-boot 1.4s cubic-bezier(.2,.7,.3,1) 0.7s both;
+    animation: tc-desk-monitor-boot 0.65s cubic-bezier(.2,.7,.3,1) 0s both;
 }
 @keyframes tc-desk-monitor-boot{
     /* Preserves the monitor's perspective tilt across the CRT-boot flicker. */
@@ -641,11 +644,11 @@ html.tc-desk-open .tc-desk__monitor{
     100%{ opacity: 1;  filter: brightness(1)   blur(0);   transform: perspective(1400px) rotateX(-3deg) scale(1);   }
 }
 
-/* Monitor content fades in after the boot */
+/* Monitor content fades in right after the boot flicker */
 html.tc-desk-open .tc-desk__monitor-title,
 html.tc-desk-open .tc-desk__toc{
     opacity: 0;
-    animation: tc-desk-content-fade .6s ease-out 1.7s forwards;
+    animation: tc-desk-content-fade .5s ease-out 0.55s forwards;
 }
 @keyframes tc-desk-content-fade{ to { opacity: 1; } }
 
