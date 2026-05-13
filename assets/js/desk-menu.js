@@ -111,9 +111,14 @@
         overlay.__tcDeskOverlayClose = close;
 
         // Any link inside the overlay closes the menu on click so the
-        // navigation doesn't leave it hanging open.
+        // navigation doesn't leave it hanging open. Skip anchors with
+        // href="#" — those are purely interactive (drawer view-switching,
+        // trail-variant cards) and shouldn't dismiss the overlay; their
+        // own handlers decide whether to close anything.
         overlay.querySelectorAll( 'a' ).forEach( function ( link ) {
             link.addEventListener( 'click', function () {
+                var href = link.getAttribute( 'href' );
+                if ( ! href || href === '#' ) return;
                 if ( doc.documentElement.classList.contains( 'tc-desk-open' ) ) {
                     close();
                 }
@@ -519,27 +524,36 @@
             });
         }
 
+        // Helper: close the trail drawer AND the parent desk overlay
+        // so the user is returned to their page to see the new trail.
+        function closeAll() {
+            if ( drawer && typeof drawer.__tcDeskClose === 'function' ) {
+                drawer.__tcDeskClose();
+            }
+            var ov = doc.getElementById( 'tc-desk-menu' );
+            if ( ov && typeof ov.__tcDeskOverlayClose === 'function' ) {
+                ov.__tcDeskOverlayClose();
+            }
+        }
+
         if ( drawer ) {
-            // Variant cards: clicking a real variant applies + closes.
-            // Clicking "Off" instead opens the inner settings view.
+            // Variant cards: clicking a real variant applies + closes
+            // everything. Clicking "Off" instead opens the inner
+            // settings view (overlay + drawer stay open for live preview).
             drawer.querySelectorAll( '[data-trail]' ).forEach( function ( card ) {
                 card.addEventListener( 'click', function ( e ) {
                     e.preventDefault();
                     var t = card.dataset.trail;
                     if ( t === 'off' ) {
-                        // Switch the drawer's view; ink stays on with current
+                        // Switch the drawer's view; ink stays alive with current
                         // settings so the user can preview tweaks live.
                         showView( 'ink' );
-                        // Make sure ink is alive (variant -> 'ink') so changes
-                        // are visible as the user picks.
                         setVariant( 'ink' );
                         updateSwatchHighlight();
                         return;
                     }
                     setVariant( t );
-                    if ( typeof drawer.__tcDeskClose === 'function' ) {
-                        drawer.__tcDeskClose();
-                    }
+                    closeAll();
                 });
             });
 
@@ -570,24 +584,22 @@
                 });
             }
 
-            // "Turn it off completely" button
+            // "Turn it off completely" button: closes drawer + overlay
+            // so the user sees the result (no trail) on their page.
             var killBtn = drawer.querySelector( '[data-ink-off]' );
             if ( killBtn ) {
                 killBtn.addEventListener( 'click', function ( e ) {
                     e.preventDefault();
                     setVariant( 'off' );
-                    if ( typeof drawer.__tcDeskClose === 'function' ) {
-                        drawer.__tcDeskClose();
-                    }
+                    closeAll();
                 });
             }
 
-            // Whenever the drawer opens, refresh the view + swatch highlight
-            // so it reflects current state.
+            // Whenever the drawer opens, always start on the main variant
+            // grid. User clicks "Off" to descend into the ink-settings view.
             var drawerObs = new MutationObserver( function () {
                 if ( drawer.classList.contains( 'is-open' ) ) {
-                    var st = readSettings();
-                    showView( st.variant === 'ink' && inkView && ! inkView.hasAttribute( 'hidden' ) ? 'ink' : 'main' );
+                    showView( 'main' );
                     updateSwatchHighlight();
                 }
             });
