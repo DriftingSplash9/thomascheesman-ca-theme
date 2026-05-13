@@ -532,6 +532,12 @@ function tc_render_desk_menu() {
                     <button class="tc-desk__games-fs" type="button" data-games-fs aria-label="<?php esc_attr_e( 'Toggle fullscreen', 'tc-ventures-child' ); ?>">
                         Fullscreen
                     </button>
+                    <!-- Visible only in fullscreen — exits fullscreen AND closes
+                         the arcade drawer in one click, so you don't have to
+                         press Esc twice or hunt for the drawer's top-right X. -->
+                    <button class="tc-desk__games-quit" type="button" data-games-quit aria-label="<?php esc_attr_e( 'Close arcade', 'tc-ventures-child' ); ?>">
+                        Close arcade
+                    </button>
                     <div class="tc-desk__games-screen">
                         <canvas class="tc-desk__games-canvas" data-games-canvas tabindex="0"></canvas>
                     </div>

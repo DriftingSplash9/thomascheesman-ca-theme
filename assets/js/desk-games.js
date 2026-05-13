@@ -92,6 +92,7 @@
         var gameoverMsg = drawer.querySelector( '[data-games-gameover-msg]' );
         var restartBtn = drawer.querySelector( '[data-games-restart]' );
         var fsBtn      = drawer.querySelector( '[data-games-fs]' );
+        var quitBtn    = drawer.querySelector( '[data-games-quit]' );
         var tvEl       = drawer.querySelector( '[data-games-tv]' );
 
         var GAMES = {
@@ -122,6 +123,20 @@
             } );
         }
 
+        // Friendly relative time — e.g. "5m ago", "3d ago", "2w ago".
+        // Helps readers gauge whether a top score is fresh or stale.
+        function timeAgo( ts ) {
+            if ( ! ts ) return '';
+            var seconds = Math.floor( Date.now() / 1000 - ts );
+            if ( seconds < 60 )    return 'just now';
+            if ( seconds < 3600 )  return Math.floor( seconds / 60 ) + 'm ago';
+            if ( seconds < 86400 ) return Math.floor( seconds / 3600 ) + 'h ago';
+            var days = Math.floor( seconds / 86400 );
+            if ( days < 7 )  return days + 'd ago';
+            if ( days < 30 ) return Math.floor( days / 7 ) + 'w ago';
+            return Math.floor( days / 30 ) + 'mo ago';
+        }
+
         function renderMiniBoard( game ) {
             var b = boards[ game ] || [];
             miniBoard.innerHTML = '';
@@ -134,11 +149,15 @@
                 var name = doc.createElement( 'span' );
                 name.className = 'tc-desk__games-mini-name';
                 name.textContent = row.name;
+                var when = doc.createElement( 'span' );
+                when.className = 'tc-desk__games-mini-when';
+                when.textContent = timeAgo( row.ts );
                 var score = doc.createElement( 'span' );
                 score.className = 'tc-desk__games-mini-score';
                 score.textContent = row.score;
                 li.appendChild( rank );
                 li.appendChild( name );
+                li.appendChild( when );
                 li.appendChild( score );
                 miniBoard.appendChild( li );
             } );
@@ -249,6 +268,16 @@
             } );
             doc.addEventListener( 'fullscreenchange',       syncFsLabel );
             doc.addEventListener( 'webkitfullscreenchange', syncFsLabel );
+        }
+        // "Close arcade" — exits fullscreen first (if needed) then
+        // closes the whole drawer. One click out of an immersive game.
+        if ( quitBtn ) {
+            quitBtn.addEventListener( 'click', function () {
+                if ( isFullscreen() ) exitFullscreen();
+                if ( typeof drawer.__tcDeskClose === 'function' ) {
+                    drawer.__tcDeskClose();
+                }
+            } );
         }
 
         cards.forEach( function ( card ) {
