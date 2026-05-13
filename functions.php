@@ -218,6 +218,22 @@ function tc_ventures_enqueue_scripts() {
 add_action( 'wp_enqueue_scripts', 'tc_ventures_enqueue_scripts' );
 
 /**
+ * TEMPORARY preview hook — render the desk menu overlay into the
+ * footer only when ?desk=1 is in the URL. Lets Thomas visually test
+ * C1..C3 (foundation + CSS + JS) before C4 makes the desk the
+ * permanent menu by wiring it through header.php.
+ *
+ * Removed in C4 when tc_render_desk_menu() is called unconditionally
+ * from header.php as part of the menu retirement.
+ */
+function tc_ventures_desk_menu_preview() {
+    if ( isset( $_GET['desk'] ) && function_exists( 'tc_render_desk_menu' ) ) {
+        tc_render_desk_menu();
+    }
+}
+add_action( 'wp_footer', 'tc_ventures_desk_menu_preview' );
+
+/**
  * Theme setup: register features the theme supports.
  * Runs once, after Astra's own after_setup_theme.
  */
