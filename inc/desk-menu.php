@@ -252,10 +252,6 @@ function tc_render_desk_menu() {
             <div class="tc-desk__card tc-desk__card--left">My marbles. Most of them, anyway.</div>
         </div>
 
-        <!-- Wallet — driver's license visible -->
-        <div class="tc-desk__hotspot" style="left:75%; top:88%; width:8%; height:10%; --hot-x:75; --hot-y:88; --hot-w:8; --hot-h:10;" aria-label="Wallet">
-            <div class="tc-desk__card tc-desk__card--left">My wallet. That's me on the front.</div>
-        </div>
 
         <!-- Mouse (clickable) — opens the cursor-trail picker -->
         <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-mouse" style="left:57%; top:86%; width:8%; height:10%; --hot-x:57; --hot-y:86; --hot-w:8; --hot-h:10;" aria-label="Mouse &mdash; pick a cursor trail">
