@@ -291,16 +291,19 @@ html.tc-desk-open{ overflow: hidden; }
 }
 .tc-desk__hotspot--clickable{ cursor: pointer; }
 
-/* The glow ring — yellow for hover, cyan for clickable */
+/* The glow ring — yellow for hover, cyan for clickable.
+   Dialed back from position-finding brightness to ambient signal:
+   you should sense glows breathing softly, then they bloom brightly
+   when you actually hover the object. */
 .tc-desk__hotspot::after{
     content: "";
     position: absolute;
-    inset: -14px;
+    inset: -10px;
     border-radius: 50%;
-    background: radial-gradient(circle, #ffffff 20%, #fff0a0 38%, #ffc94499 60%, transparent 78%);
-    filter: blur(14px);
+    background: radial-gradient(circle, #fff8d099 28%, #ffc94466 50%, transparent 72%);
+    filter: blur(10px);
     pointer-events: none;
-    opacity: .95;
+    opacity: .35;
     animation: tc-desk-firefly 3.5s ease-in-out infinite;
     z-index: 0;
     mix-blend-mode: screen;
@@ -312,16 +315,17 @@ html.tc-desk-open{ overflow: hidden; }
     filter: blur(10px);
 }
 .tc-desk__hotspot--clickable::after{
-    background: radial-gradient(circle, #ffffff 22%, #66f0ff 42%, #00d4ffcc 58%, #0080ff44 70%, transparent 84%);
-    opacity: 1;
+    background: radial-gradient(circle, #80f8ffaa 30%, #00d4ff77 52%, transparent 76%);
+    opacity: .5;
 }
 .tc-desk__hotspot--clickable:hover::after{
     background: radial-gradient(circle, #ffffff 20%, #80f8ff 40%, #00f0ff 55%, #0098ff66 70%, transparent 86%);
     filter: blur(8px);
+    opacity: 1;
 }
 @keyframes tc-desk-firefly{
-    0%, 100%{ transform: scale(.94); opacity: .75 }
-    50%     { transform: scale(1.10); opacity: 1  }
+    0%, 100%{ transform: scale(.96); opacity: .25 }
+    50%     { transform: scale(1.04); opacity: .55 }
 }
 
 

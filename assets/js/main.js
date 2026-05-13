@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initFigureKenBurns();
     initLightbox();
     initGallerySlideshow();
-    initFooterStampProximity();
     initContactEmail();
     initBlogReveal();
     initScrollReveals();
@@ -883,86 +882,6 @@ function initContactEmail() {
             button.removeAttribute('data-copied');
         }, 2200);
     });
-}
-
-/* =====================================================================
-   Footer passport — cursor-proximity stamp glow.
-   Each .tc-passport__stamp-mark gets a soft halo whose intensity
-   scales with how close the cursor is to that stamp. Replaces the
-   previous binary on-hover glow with a continuous "approaching" feel,
-   like the stamps notice you. Pure rAF + CSS-variable driven.
-   ===================================================================== */
-function initFooterStampProximity() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (window.matchMedia('(pointer: coarse)').matches) return; // no cursor on touch
-
-    const stamps = document.querySelectorAll('.tc-passport__stamp-mark');
-    if (stamps.length === 0) return;
-
-    // Distance at which the glow starts to register — outside this radius
-    // (in px), proximity contribution is zero. Inside it, contribution
-    // ramps from 0 (at the radius) to 1 (at stamp centre).
-    const ACTIVATION_RADIUS = 220;
-
-    const stampData = [];
-    let cursorX = -10000;
-    let cursorY = -10000;
-    let dirty = false;
-    let rafId = 0;
-
-    function refreshStampPositions() {
-        stampData.length = 0;
-        stamps.forEach((el) => {
-            const rect = el.getBoundingClientRect();
-            stampData.push({
-                el,
-                cx: rect.left + rect.width / 2,
-                cy: rect.top + rect.height / 2,
-            });
-        });
-    }
-
-    function tick() {
-        rafId = 0;
-        if (!dirty) return;
-        dirty = false;
-        for (const s of stampData) {
-            const dx = cursorX - s.cx;
-            const dy = cursorY - s.cy;
-            const dist = Math.hypot(dx, dy);
-            // 0 at edge of activation radius, 1 at centre
-            const t = Math.max(0, 1 - dist / ACTIVATION_RADIUS);
-            // Ease-out so faraway tiny values don't visibly creep in
-            const eased = t * t;
-            s.el.style.setProperty('--stamp-proximity', eased.toFixed(3));
-        }
-    }
-
-    function schedule() {
-        if (!rafId) rafId = requestAnimationFrame(tick);
-    }
-
-    window.addEventListener('mousemove', (event) => {
-        cursorX = event.clientX;
-        cursorY = event.clientY;
-        dirty = true;
-        schedule();
-    }, { passive: true });
-
-    // Recompute stamp positions when the layout changes — first paint,
-    // window resize, scroll (footer position relative to viewport
-    // changes). Throttled by rAF naturally.
-    refreshStampPositions();
-    window.addEventListener('scroll', () => {
-        refreshStampPositions();
-        dirty = true;
-        schedule();
-    }, { passive: true });
-    window.addEventListener('resize', () => {
-        refreshStampPositions();
-        dirty = true;
-        schedule();
-    }, { passive: true });
 }
 
 /* =====================================================================
