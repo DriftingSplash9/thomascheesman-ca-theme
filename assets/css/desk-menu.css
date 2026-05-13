@@ -431,7 +431,14 @@ html.tc-desk-open{ overflow: hidden; }
    tilts in 3D following the cursor (--tilt-x / --tilt-y are pushed
    by desk-menu.js on every mousemove inside the hotspot). The tilt
    transition is short so the object responds in near-real-time;
-   the bouncy cubic-bezier keeps the entry pop. */
+   the bouncy cubic-bezier keeps the entry pop.
+
+   The PNG also runs a synchronized brightness/saturation pulse via
+   tc-desk-glow-pulse — peaks at ~85% of the cycle, exactly when the
+   sheen's bright peak is sweeping the object center. Together they
+   make the object look like it's catching a passing light. The
+   pulse animation is killed on :hover so the hover transform +
+   drop-shadow can take over the filter property cleanly. */
 .tc-desk__hotspot::before{
     content: "";
     position: absolute;
@@ -447,8 +454,11 @@ html.tc-desk-open{ overflow: hidden; }
         filter .25s ease-out;
     pointer-events: none;
     z-index: 1;
+    animation: tc-desk-glow-pulse 5s ease-in-out infinite;
+    animation-delay: calc(var(--hot-x, 50) * -0.04s);
 }
 .tc-desk__hotspot:hover::before{
+    animation: none;
     transform:
         scale(1.35)
         rotateY(var(--tilt-x, 0deg))
@@ -457,33 +467,46 @@ html.tc-desk-open{ overflow: hidden; }
     z-index: 5;
 }
 
-/* Sheen sweep — periodic diagonal highlight that washes across each
-   hotspot, advertising interactivity. Stagger via --hot-x so adjacent
-   objects don't flash in lockstep (reads as a soft left-to-right
-   wave). Disabled on hover — the lift + scale is its own affordance.
+@keyframes tc-desk-glow-pulse{
+    0%, 70%, 100% { filter: brightness(1) saturate(1); }
+    85%           { filter: brightness(1.22) saturate(1.15); }
+}
 
-   Simplest possible technique: a white-on-transparent linear gradient
-   that's wider than the element, with `background-position` animating
-   from off-right to off-left. No mask, no filter — those layers were
-   eating the sheen on some Chrome/GPU pairings. Trade-off: the stripe
-   is rectangular (bounded by the hotspot box) rather than shaped to
-   the PNG silhouette. Visible-and-rectangular beats invisible-and-
-   silhouetted. */
+/* Iridescent sheen sweep — an oil-slick gradient (lavender → cyan →
+   white → gold → rose) periodically washes across each PNG silhouette,
+   advertising interactivity. The same PNG used by ::before clips the
+   gradient via mask-image, so the highlight only travels across the
+   actual object shape, never on its bounding box. Stagger via --hot-x
+   so the desk reads as a soft left-to-right wave instead of 16
+   synchronized flashes.
+
+   Disabled on hover — the lift + scale + 3D tilt is its own affordance,
+   and the sheen would distract from the active interaction. */
 .tc-desk__hotspot::after{
     content: "";
     position: absolute;
     inset: 0;
     background-image: linear-gradient(
-        110deg,
-        transparent 25%,
-        rgba(255, 255, 255, 0.7) 42%,
-        rgba(255, 255, 255, 1) 50%,
-        rgba(255, 255, 255, 0.7) 58%,
-        transparent 75%
+        115deg,
+        transparent 18%,
+        rgba(190, 150, 255, 0.45) 32%,
+        rgba(120, 200, 255, 0.78) 41%,
+        rgba(255, 255, 255, 1.00) 50%,
+        rgba(255, 230, 140, 0.78) 59%,
+        rgba(255, 170, 210, 0.45) 68%,
+        transparent 82%
     );
-    background-size: 250% 100%;
+    background-size: 280% 100%;
     background-repeat: no-repeat;
     background-position: 200% 0;
+    -webkit-mask-image: var(--hot-png);
+            mask-image: var(--hot-png);
+    -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+            mask-size: contain;
+    -webkit-mask-position: center;
+            mask-position: center;
     pointer-events: none;
     z-index: 3;
     opacity: 0;
@@ -498,10 +521,10 @@ html.tc-desk-open{ overflow: hidden; }
     opacity: 0;
 }
 
-/* Visible window: 70%-100% of cycle (1.5s of a 5s loop) so the sweep
-   reads as a clear swoosh, not a blink. background-position sweeps
-   from off-right to off-left across the same window, with the bright
-   peak crossing element center near ~85%. */
+/* Visible window: 70%-100% of cycle (1.5s of a 5s loop). Position
+   sweeps from off-right (200%) to off-left (-100%) across the same
+   window. The white peak crosses element center at ~85% — exactly
+   when the brightness pulse on ::before is at its peak. */
 @keyframes tc-desk-sheen{
     0%, 70% {
         background-position: 200% 0;
@@ -877,41 +900,11 @@ html.tc-desk-open .tc-desk__frame{
     to  { opacity: 1; transform: scale(1);    }
 }
 
-/* Hotspot fireflies wake while the screen is finishing its boot —
-   first one lights at ~0.4s, last by ~0.95s, so they feel like
-   they're "coming on" alongside the screen rather than after a wait. */
-html.tc-desk-open .tc-desk__hotspot::after{
-    opacity: 0;
-    animation:
-        tc-desk-hot-enter 0.6s ease-out forwards,
-        tc-desk-firefly   4s ease-in-out infinite;
-    animation-delay: 0.40s, 0.95s;
-}
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(2)::after { animation-delay: 0.43s, 0.98s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(3)::after { animation-delay: 0.46s, 1.01s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(4)::after { animation-delay: 0.49s, 1.04s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(5)::after { animation-delay: 0.52s, 1.07s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(6)::after { animation-delay: 0.55s, 1.10s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(7)::after { animation-delay: 0.58s, 1.13s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(8)::after { animation-delay: 0.61s, 1.16s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(9)::after { animation-delay: 0.64s, 1.19s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(10)::after{ animation-delay: 0.67s, 1.22s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(11)::after{ animation-delay: 0.70s, 1.25s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(12)::after{ animation-delay: 0.73s, 1.28s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(13)::after{ animation-delay: 0.76s, 1.31s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(14)::after{ animation-delay: 0.79s, 1.34s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(15)::after{ animation-delay: 0.82s, 1.37s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(16)::after{ animation-delay: 0.85s, 1.40s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(17)::after{ animation-delay: 0.88s, 1.43s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(18)::after{ animation-delay: 0.91s, 1.46s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(19)::after{ animation-delay: 0.94s, 1.49s }
-html.tc-desk-open .tc-desk__hotspot:nth-of-type(20)::after{ animation-delay: 0.97s, 1.52s }
-
-@keyframes tc-desk-hot-enter{
-    0%  { opacity: 0;   transform: scale(.30); }
-    60% { opacity: 1;   transform: scale(1.15); }
-    100%{ opacity: .95; transform: scale(1);    }
-}
+/* (The old firefly-halo entry block lived here and was clobbering the
+   sheen animation defined further up via higher specificity. It was
+   removed when the firefly was replaced by the iridescent sheen sweep.
+   The base .tc-desk__hotspot::after rule handles everything now, with
+   its own --hot-x-driven stagger.) */
 
 /* Monitor boots WITH the stage (no delay) — entrance feels tight,
    not "menu loads then waits a beat for the screen". */
@@ -943,6 +936,7 @@ html.tc-desk-open .tc-desk__toc{
 @media (prefers-reduced-motion: reduce){
     .tc-desk__frame,
     .tc-desk__frame::after,
+    .tc-desk__hotspot::before,
     .tc-desk__hotspot::after,
     .tc-desk__monitor,
     .tc-desk__monitor-title,
@@ -951,10 +945,11 @@ html.tc-desk-open .tc-desk__toc{
     .tc-desk__drawer-inner{
         animation: none !important;
         transition: opacity .15s !important;
-        opacity: 1 !important;
         transform: none !important;
         filter: none !important;
     }
+    /* Sheen stays invisible under reduced motion (no flash, no sweep). */
+    .tc-desk__hotspot::after{ opacity: 0 !important; }
 }
 
 
