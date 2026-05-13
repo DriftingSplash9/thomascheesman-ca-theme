@@ -451,6 +451,16 @@ html.tc-desk-open{ overflow: hidden; }
     z-index: 5;
 }
 
+/* Bitcoin books: the PNG already contains a printed cover edge, the
+   silhouette trace fights with that detail. Strip the black outline
+   filter entirely; on hover, keep just the lift shadow. */
+#tc-desk-bitcoin::before{
+    filter: none;
+}
+#tc-desk-bitcoin:hover::before{
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
+}
+
 /* The glow ring — yellow for hover, cyan for clickable.
    Dialed back from position-finding brightness to ambient signal:
    you should sense glows breathing softly, then they bloom brightly
