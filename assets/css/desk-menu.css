@@ -1049,3 +1049,113 @@ html.tc-desk-open .tc-footer-desk{
         text-decoration: none;
     }
 }
+
+
+/* ============================================================
+   12. Cursor trail
+   ----------------------------------------------------------
+   The mouse hotspot opens a drawer that lets visitors pick a
+   sitewide cursor trail. JS spawns small DOM particles at every
+   throttled mousemove; this CSS animates them out per-variant.
+   ============================================================ */
+
+.tc-trail-container{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 99999;
+    overflow: hidden;
+}
+.tc-trail-particle{
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    will-change: transform, opacity;
+    line-height: 1;
+    user-select: none;
+}
+
+/* --- STARS: gold twinkles that fade in place ----------------- */
+.tc-trail-particle--stars{
+    font-size: 14px;
+    color: #ffe680;
+    text-shadow:
+        0 0 6px #ffd970,
+        0 0 14px #ffb84055;
+    animation: tc-trail-stars 1.4s ease-out forwards;
+}
+@keyframes tc-trail-stars{
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(-20deg); }
+    20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.2) rotate(10deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(45deg) translateY(-30px); }
+}
+
+/* --- COMET: small cyan dot with afterglow -------------------- */
+.tc-trail-particle--comet{
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 25%, #80f8ff 60%, transparent 80%);
+    box-shadow: 0 0 12px #00e5ffcc, 0 0 24px #00d4ff55;
+    animation: tc-trail-comet 1.1s ease-out forwards;
+}
+@keyframes tc-trail-comet{
+    0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.25); }
+}
+
+/* --- BUBBLES: drift up while expanding ---------------------- */
+.tc-trail-particle--bubbles{
+    font-size: 22px;
+    color: rgba(200, 230, 255, 0.85);
+    text-shadow:
+        0 0 8px rgba(180, 220, 255, 0.6),
+        inset 0 0 4px rgba(255, 255, 255, 0.4);
+    animation: tc-trail-bubbles 2s ease-out forwards;
+}
+@keyframes tc-trail-bubbles{
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    20%  { opacity: 0.9; transform: translate(calc(-50% + var(--drift, 0px)), -50%) scale(1); }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--drift, 0px)), calc(-50% - 80px)) scale(1.3); }
+}
+
+/* --- CONFETTI: candy flakes spin while drifting down -------- */
+.tc-trail-particle--confetti{
+    width: 7px;
+    height: 10px;
+    border-radius: 2px;
+    /* background colour set inline per-particle */
+    animation: tc-trail-confetti 1.8s ease-in forwards;
+}
+@keyframes tc-trail-confetti{
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(0); }
+    15%  { opacity: 1; }
+    100% {
+        opacity: 0;
+        transform:
+            translate(calc(-50% + var(--drift, 0px)), calc(-50% + 70px))
+            scale(0.7)
+            rotate(var(--spin, 180deg));
+    }
+}
+
+/* --- SPARKLES: diamond glints that bloom + fade ------------- */
+.tc-trail-particle--sparkles{
+    font-size: 16px;
+    color: #ffffff;
+    text-shadow:
+        0 0 6px #fff,
+        0 0 12px #b51bffcc,
+        0 0 20px #00e5ff66;
+    animation: tc-trail-sparkles 1.2s ease-out forwards;
+}
+@keyframes tc-trail-sparkles{
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.3) rotate(45deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(180deg); }
+}
+
+/* Reduced motion: skip all trail rendering */
+@media (prefers-reduced-motion: reduce){
+    .tc-trail-particle{ display: none !important; }
+}

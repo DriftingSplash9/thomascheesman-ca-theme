@@ -32,9 +32,11 @@
         wireMenuTrigger();
         wireDrawer( 'tc-desk-bin',       'tc-desk-slideshow-drawer' );
         wireDrawer( 'tc-desk-notebooks', 'tc-desk-journal-drawer'   );
+        wireDrawer( 'tc-desk-mouse',     'tc-desk-trail-drawer'     );
         wireKeyboardSearch();
         wireGlobalEsc();
         wireScreensaver();
+        wireCursorTrail();
     }
 
     /**
@@ -298,6 +300,152 @@
 
         // If the overlay is somehow already open at init time, arm now.
         if ( html.classList.contains( 'tc-desk-open' ) ) arm();
+    }
+
+    /**
+     * Cursor-trail engine.
+     *
+     * Listens for clicks on .tc-desk__drawer-card[data-trail] inside
+     * the trail drawer and applies the chosen trail sitewide. The
+     * choice is persisted in localStorage under "tc-trail" so it
+     * survives navigation. Trail effects spawn small DOM particles
+     * at the cursor on every throttled mousemove; each particle
+     * self-removes after its CSS animation finishes.
+     *
+     * Trail types: stars, comet, bubbles, confetti, sparkles, none.
+     * Disabled on touch devices (no cursor) and under reduced-motion.
+     */
+    function wireCursorTrail() {
+        var html = doc.documentElement;
+        var STORAGE_KEY = 'tc-trail';
+        var TRAIL_TYPES = [ 'stars', 'comet', 'bubbles', 'confetti', 'sparkles', 'none' ];
+
+        var isTouch  = window.matchMedia( '(pointer: coarse)' ).matches;
+        var reduceMo = window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+
+        var container = null;
+        var mouseHandler = null;
+        var lastSpawn = 0;
+        var currentTrail = 'none';
+
+        // Confetti colour palette + a few unicode glyphs per trail.
+        var CONFETTI_RGB = [
+            '255,170,190',  // coral
+            '170,220,255',  // sky
+            '210,180,255',  // lavender
+            '255,230,150',  // butter
+            '170,240,200',  // mint
+            '255,190,160',  // peach
+        ];
+
+        function readStored() {
+            try {
+                var v = localStorage.getItem( STORAGE_KEY );
+                return TRAIL_TYPES.indexOf( v ) >= 0 ? v : 'none';
+            } catch ( err ) {
+                return 'none';
+            }
+        }
+        function writeStored( v ) {
+            try { localStorage.setItem( STORAGE_KEY, v ); } catch ( err ) {}
+        }
+
+        function setTrail( name ) {
+            if ( TRAIL_TYPES.indexOf( name ) < 0 ) name = 'none';
+            // Strip any existing trail class
+            TRAIL_TYPES.forEach( function ( t ) {
+                if ( t !== 'none' ) html.classList.remove( 'tc-trail-' + t );
+            });
+            if ( name !== 'none' ) {
+                html.classList.add( 'tc-trail-' + name );
+            }
+            writeStored( name );
+            currentTrail = name;
+            // Reset the renderer for the new type
+            if ( name === 'none' || isTouch || reduceMo ) {
+                stopRenderer();
+            } else {
+                startRenderer();
+            }
+        }
+
+        function startRenderer() {
+            if ( ! container ) {
+                container = doc.createElement( 'div' );
+                container.className = 'tc-trail-container';
+                container.setAttribute( 'aria-hidden', 'true' );
+                doc.body.appendChild( container );
+            }
+            if ( ! mouseHandler ) {
+                mouseHandler = function ( e ) {
+                    var now = performance.now ? performance.now() : Date.now();
+                    if ( now - lastSpawn < 28 ) return;
+                    lastSpawn = now;
+                    spawn( e.clientX, e.clientY );
+                };
+                window.addEventListener( 'mousemove', mouseHandler, { passive: true } );
+            }
+        }
+
+        function stopRenderer() {
+            if ( mouseHandler ) {
+                window.removeEventListener( 'mousemove', mouseHandler );
+                mouseHandler = null;
+            }
+            if ( container ) {
+                container.remove();
+                container = null;
+            }
+        }
+
+        function spawn( x, y ) {
+            if ( ! container ) return;
+            var p = doc.createElement( 'span' );
+            p.className = 'tc-trail-particle tc-trail-particle--' + currentTrail;
+            p.style.left = x + 'px';
+            p.style.top  = y + 'px';
+
+            // Per-trail content / inline overrides
+            if ( currentTrail === 'stars' ) {
+                p.textContent = '★'; // ★
+            } else if ( currentTrail === 'bubbles' ) {
+                p.textContent = '○'; // ○
+                // Slight horizontal drift via inline custom property
+                p.style.setProperty( '--drift', ( Math.random() * 40 - 20 ).toFixed( 1 ) + 'px' );
+            } else if ( currentTrail === 'confetti' ) {
+                var rgb = CONFETTI_RGB[ Math.floor( Math.random() * CONFETTI_RGB.length ) ];
+                p.style.background = 'rgb(' + rgb + ')';
+                p.style.setProperty( '--spin', ( Math.random() * 540 - 270 ).toFixed( 0 ) + 'deg' );
+                p.style.setProperty( '--drift', ( Math.random() * 60 - 30 ).toFixed( 1 ) + 'px' );
+            } else if ( currentTrail === 'sparkles' ) {
+                p.textContent = '❖'; // ❖
+            }
+            // 'comet' uses CSS-only styling — no content/inline needed
+
+            container.appendChild( p );
+            // Auto-cleanup after the animation finishes (longest is ~2s)
+            setTimeout( function () {
+                if ( p.parentNode ) p.parentNode.removeChild( p );
+            }, 2200 );
+        }
+
+        // Wire the drawer's option cards
+        var drawer = doc.getElementById( 'tc-desk-trail-drawer' );
+        if ( drawer ) {
+            drawer.querySelectorAll( '[data-trail]' ).forEach( function ( card ) {
+                card.addEventListener( 'click', function ( e ) {
+                    e.preventDefault();
+                    setTrail( card.dataset.trail );
+                    // Close the drawer on selection
+                    if ( typeof drawer.__tcDeskClose === 'function' ) {
+                        drawer.__tcDeskClose();
+                    }
+                });
+            });
+        }
+
+        // Apply the user's persisted choice on every page load
+        setTrail( readStored() );
     }
 
     if ( doc.readyState === 'loading' ) {

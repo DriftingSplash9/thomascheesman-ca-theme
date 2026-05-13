@@ -257,9 +257,9 @@ function tc_render_desk_menu() {
             <div class="tc-desk__card tc-desk__card--left">My wallet. That's me on the front.</div>
         </div>
 
-        <!-- Mouse — teaser for future interaction -->
-        <div class="tc-desk__hotspot" style="left:57%; top:86%; width:8%; height:10%;" aria-label="Mouse — coming soon">
-            <div class="tc-desk__card tc-desk__card--left">Mouse. Stay tuned &mdash; something's coming for this one.</div>
+        <!-- Mouse (clickable) — opens the cursor-trail picker -->
+        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-mouse" style="left:57%; top:86%; width:8%; height:10%;" aria-label="Mouse &mdash; pick a cursor trail">
+            <div class="tc-desk__card tc-desk__card--above">Mouse. Click &mdash; pick a cursor trail.</div>
         </div>
 
     </div>
@@ -309,6 +309,45 @@ function tc_render_desk_menu() {
             </div>
         </div>
     </nav>
+
+    <!-- ============================================================
+         CURSOR-TRAIL DRAWER — opens when the mouse is clicked.
+         Each card sets a sitewide trail choice that persists in
+         localStorage so it survives page navigation.
+         ============================================================ -->
+    <div class="tc-desk__drawer" id="tc-desk-trail-drawer" role="dialog" aria-hidden="true">
+        <div class="tc-desk__drawer-inner">
+            <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
+            <h2>Pick a cursor trail</h2>
+            <p class="tc-desk__drawer-sub">Mouse magic. Your choice sticks across pages.</p>
+            <div class="tc-desk__drawer-grid">
+                <a href="#" class="tc-desk__drawer-card" data-trail="stars">
+                    <span class="tc-desk__drawer-card-title">Stars</span>
+                    <span class="tc-desk__drawer-card-count">gold twinkles</span>
+                </a>
+                <a href="#" class="tc-desk__drawer-card" data-trail="comet">
+                    <span class="tc-desk__drawer-card-title">Comet</span>
+                    <span class="tc-desk__drawer-card-count">cyan afterglow</span>
+                </a>
+                <a href="#" class="tc-desk__drawer-card" data-trail="bubbles">
+                    <span class="tc-desk__drawer-card-title">Bubbles</span>
+                    <span class="tc-desk__drawer-card-count">drifting up</span>
+                </a>
+                <a href="#" class="tc-desk__drawer-card" data-trail="confetti">
+                    <span class="tc-desk__drawer-card-title">Confetti</span>
+                    <span class="tc-desk__drawer-card-count">candy flakes</span>
+                </a>
+                <a href="#" class="tc-desk__drawer-card" data-trail="sparkles">
+                    <span class="tc-desk__drawer-card-title">Sparkles</span>
+                    <span class="tc-desk__drawer-card-count">diamond glints</span>
+                </a>
+                <a href="#" class="tc-desk__drawer-card" data-trail="none">
+                    <span class="tc-desk__drawer-card-title">Off</span>
+                    <span class="tc-desk__drawer-card-count">just a cursor</span>
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- ============================================================
          JOURNAL DRAWER — opens when notebooks are clicked.
