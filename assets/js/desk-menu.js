@@ -34,6 +34,7 @@
         wireDrawer( 'tc-desk-notebooks', 'tc-desk-journal-drawer'   );
         wireKeyboardSearch();
         wireGlobalEsc();
+        wireScreensaver();
     }
 
     /**
@@ -232,6 +233,71 @@
                 overlay.__tcDeskOverlayClose();
             }
         });
+    }
+
+    /**
+     * Starfield screensaver: 30s of inactivity inside the open desk
+     * overlay flips the monitor into screensaver mode. Any mousemove
+     * / click / key / touch INSIDE the overlay wakes it up. The
+     * detection only runs while the overlay is open — when it closes,
+     * any pending timer is cleared and the idle class is removed.
+     */
+    function wireScreensaver() {
+        var monitor = doc.querySelector( '.tc-desk__monitor' );
+        var overlay = doc.getElementById( 'tc-desk-menu' );
+        var html    = doc.documentElement;
+        if ( ! monitor || ! overlay ) return;
+
+        var IDLE_MS   = 30000;
+        var idleTimer = null;
+        var armed     = false;
+        var wakeEvents = [ 'mousemove', 'mousedown', 'keydown', 'touchstart', 'wheel' ];
+
+        function startTimer() {
+            if ( idleTimer ) clearTimeout( idleTimer );
+            monitor.classList.remove( 'is-idle' );
+            idleTimer = setTimeout( function () {
+                monitor.classList.add( 'is-idle' );
+            }, IDLE_MS );
+        }
+        function clearAll() {
+            if ( idleTimer ) {
+                clearTimeout( idleTimer );
+                idleTimer = null;
+            }
+            monitor.classList.remove( 'is-idle' );
+        }
+        function arm() {
+            if ( armed ) return;
+            armed = true;
+            wakeEvents.forEach( function ( evt ) {
+                overlay.addEventListener( evt, startTimer, { passive: true, capture: true } );
+            });
+            startTimer();
+        }
+        function disarm() {
+            if ( ! armed ) return;
+            armed = false;
+            wakeEvents.forEach( function ( evt ) {
+                overlay.removeEventListener( evt, startTimer, { capture: true } );
+            });
+            clearAll();
+        }
+
+        // Arm when the overlay opens, disarm when it closes. Watching
+        // the html element's class list catches every open/close path
+        // (trigger click, footer button, Esc, link click).
+        var obs = new MutationObserver( function () {
+            if ( html.classList.contains( 'tc-desk-open' ) ) {
+                arm();
+            } else {
+                disarm();
+            }
+        });
+        obs.observe( html, { attributes: true, attributeFilter: [ 'class' ] });
+
+        // If the overlay is somehow already open at init time, arm now.
+        if ( html.classList.contains( 'tc-desk-open' ) ) arm();
     }
 
     if ( doc.readyState === 'loading' ) {

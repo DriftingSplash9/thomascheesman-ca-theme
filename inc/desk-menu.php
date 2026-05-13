@@ -96,6 +96,33 @@ function tc_render_desk_menu() {
                 </a></li>
             </ul>
 
+            <!-- 90s-style starfield screensaver. Hidden by default.
+                 After 30s of inactivity inside the overlay, JS adds
+                 .is-idle on the monitor and this overlay fades in. Any
+                 movement / click / keypress wakes it back to Contents.
+
+                 Stars are pre-rendered here with PHP-randomised inline
+                 custom properties (--angle / --delay / --duration / --size)
+                 so the CSS animation can drive radial warp motion without
+                 a runtime loop. -->
+            <div class="tc-desk__screensaver" aria-hidden="true">
+                <?php
+                $star_count = 70;
+                for ( $i = 0; $i < $star_count; $i++ ) :
+                    $angle    = mt_rand( 0, 359 );
+                    $delay    = mt_rand( 0, 4000 );
+                    $duration = mt_rand( 2200, 4500 );
+                    $size     = mt_rand( 1, 3 );
+                    $style    = sprintf(
+                        '--angle:%ddeg;--delay:%dms;--duration:%dms;--size:%dpx;',
+                        $angle, $delay, $duration, $size
+                    );
+                    echo '<span class="tc-desk__star" style="' . esc_attr( $style ) . '"></span>';
+                endfor;
+                ?>
+                <span class="tc-desk__screensaver-mark">TC&nbsp;&prime;ventures</span>
+            </div>
+
             <!-- Search UI — hidden until the keyboard hotspot is clicked. -->
             <div class="tc-desk__search" id="tc-desk-search" hidden>
                 <input

@@ -125,16 +125,22 @@ html.tc-desk-open{ overflow: hidden; }
 
 .tc-desk__monitor{
     position: absolute;
-    left: 28%;
+    /* Sized to fill the dark screen area INSIDE the white bezel of the
+       curved monitor in IMG_4329. The photo's own bezel acts as the
+       surround; this element is "the screen". */
+    left: 22%;
     top: 17%;
-    width: 32%;
-    height: 39%;
+    width: 53%;
+    height: 50%;
     background:
         radial-gradient(120% 90% at 50% 55%, #1a0f24 0%, #0a0612 80%),
         #07050d;
-    border-radius: 14px / 10px;
+    border-radius: 18px / 14px;
     box-shadow:
+        /* Inner subtle highlight so the screen reads "on" against the photo bezel */
+        0 0 0 1px #ffffff14 inset,
         0 0 60px #2c0f44 inset,
+        /* Outer faint glow that bleeds onto the desk like a real lit screen */
         0 0 36px #00e5ff22,
         0 0 70px #b51bff11;
     padding: 2.6% 3% 2.4%;
@@ -154,36 +160,36 @@ html.tc-desk-open{ overflow: hidden; }
 }
 
 .tc-desk__monitor-title{
-    margin: 0 0 .35em;
+    margin: 0 0 .6em;
     font-family: Georgia, serif;
-    font-size: clamp(11px, 1.05vw, 18px);
+    font-size: clamp(16px, 1.7vw, 28px);
     font-weight: 600;
-    letter-spacing: .16em;
+    letter-spacing: .18em;
     text-transform: uppercase;
     text-align: center;
     color: #f1e9d0;
-    text-shadow: 0 0 10px #00e5ff66, 0 0 22px #b51bff33;
+    text-shadow: 0 0 12px #00e5ff66, 0 0 26px #b51bff33;
 }
 
 .tc-desk__toc{
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 4%;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 4px;
 }
 .tc-desk__toc li a{
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: end;
-    gap: 8px;
+    gap: 14px;
     text-decoration: none;
     color: #f1e9d0;
     font-style: italic;
-    font-size: clamp(10px, .92vw, 16px);
-    line-height: 1.25;
-    padding: 2px 4px;
+    font-size: clamp(14px, 1.4vw, 22px);
+    line-height: 1.35;
+    padding: 4px 8px;
     border-radius: 3px;
     transition: background .2s, color .2s, text-shadow .2s;
 }
@@ -281,6 +287,103 @@ html.tc-desk-open{ overflow: hidden; }
 }
 
 
+/* ============================================
+   4b. Starfield screensaver
+   ----------------------------------------------------------
+   After 30s of inactivity inside the open menu, the monitor
+   replaces its Contents nav with a 90s-style starfield warp.
+   Any mousemove / click / key / touch wakes it. JS toggles
+   .is-idle on .tc-desk__monitor.
+   ============================================ */
+
+.tc-desk__screensaver{
+    position: absolute;
+    inset: 0;
+    background: #000;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.2s ease-in;
+    border-radius: inherit;
+    z-index: 3;
+}
+.tc-desk__monitor.is-idle .tc-desk__screensaver{
+    opacity: 1;
+}
+/* While idle, hide the foreground content under the screensaver. */
+.tc-desk__monitor.is-idle .tc-desk__monitor-title,
+.tc-desk__monitor.is-idle .tc-desk__toc,
+.tc-desk__monitor.is-idle .tc-desk__search{
+    visibility: hidden;
+}
+
+.tc-desk__star{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--size, 2px);
+    height: var(--size, 2px);
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 4px #fff, 0 0 8px #ffffff66;
+    transform-origin: 0 0;
+    animation: tc-desk-warp var(--duration, 3000ms) linear var(--delay, 0ms) infinite;
+    will-change: transform, opacity;
+}
+@keyframes tc-desk-warp{
+    0%{
+        transform:
+            translate(-50%, -50%)
+            rotate(var(--angle, 0deg))
+            translateX(0)
+            scale(0);
+        opacity: 0;
+    }
+    8%{
+        opacity: 1;
+    }
+    100%{
+        transform:
+            translate(-50%, -50%)
+            rotate(var(--angle, 0deg))
+            translateX(700px)
+            scale(2.4);
+        opacity: 0;
+    }
+}
+
+/* The watermark in the corner — TC 'ventures wordmark sits quietly
+   so the screensaver feels branded but not loud. */
+.tc-desk__screensaver-mark{
+    position: absolute;
+    right: 14px;
+    bottom: 10px;
+    font-family: Georgia, serif;
+    font-size: clamp(10px, .9vw, 14px);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #ffffff66;
+    text-shadow: 0 0 8px #00e5ff44;
+    animation: tc-desk-mark-pulse 4s ease-in-out infinite;
+}
+@keyframes tc-desk-mark-pulse{
+    0%, 100%{ opacity: .35 }
+    50%     { opacity: .75 }
+}
+
+/* Reduced motion: kill the warp and the pulse; show a static field. */
+@media (prefers-reduced-motion: reduce){
+    .tc-desk__star,
+    .tc-desk__screensaver-mark{
+        animation: none !important;
+    }
+    .tc-desk__star{
+        opacity: .5;
+        transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) translateX(160px);
+    }
+}
+
+
 /* ============================================================
    5. Hotspots — discoverability glow + hover cards
    ============================================================ */
@@ -298,13 +401,13 @@ html.tc-desk-open{ overflow: hidden; }
 .tc-desk__hotspot::after{
     content: "";
     position: absolute;
-    inset: -10px;
+    inset: -8px;
     border-radius: 50%;
-    background: radial-gradient(circle, #fff8d099 28%, #ffc94466 50%, transparent 72%);
-    filter: blur(10px);
+    background: radial-gradient(circle, #fff8d055 30%, #ffc94422 55%, transparent 75%);
+    filter: blur(9px);
     pointer-events: none;
-    opacity: .35;
-    animation: tc-desk-firefly 3.5s ease-in-out infinite;
+    opacity: .15;
+    animation: tc-desk-firefly 4s ease-in-out infinite;
     z-index: 0;
     mix-blend-mode: screen;
 }
@@ -315,8 +418,8 @@ html.tc-desk-open{ overflow: hidden; }
     filter: blur(10px);
 }
 .tc-desk__hotspot--clickable::after{
-    background: radial-gradient(circle, #80f8ffaa 30%, #00d4ff77 52%, transparent 76%);
-    opacity: .5;
+    background: radial-gradient(circle, #80f8ff55 32%, #00d4ff33 55%, transparent 78%);
+    opacity: .22;
 }
 .tc-desk__hotspot--clickable:hover::after{
     background: radial-gradient(circle, #ffffff 20%, #80f8ff 40%, #00f0ff 55%, #0098ff66 70%, transparent 86%);
@@ -324,8 +427,8 @@ html.tc-desk-open{ overflow: hidden; }
     opacity: 1;
 }
 @keyframes tc-desk-firefly{
-    0%, 100%{ transform: scale(.96); opacity: .25 }
-    50%     { transform: scale(1.04); opacity: .55 }
+    0%, 100%{ transform: scale(.97); opacity: .10 }
+    50%     { transform: scale(1.03); opacity: .28 }
 }
 
 
