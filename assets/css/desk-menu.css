@@ -454,8 +454,12 @@ html.tc-desk-open{ overflow: hidden; }
         filter .25s ease-out;
     pointer-events: none;
     z-index: 1;
-    animation: tc-desk-glow-pulse 5s ease-in-out infinite;
-    animation-delay: calc(var(--hot-x, 50) * -0.04s);
+    animation: tc-desk-glow-pulse 15s ease-in-out infinite;
+    /* Stagger by BOTH x and y with prime-ish coefficients so the
+       wash reads as scattered, not a left-to-right wave. With a 15s
+       cycle these negative delays spread objects across ~13s of the
+       loop, so usually only one or two objects glow at once. */
+    animation-delay: calc(var(--hot-x, 50) * -0.13s + var(--hot-y, 50) * -0.07s);
 }
 .tc-desk__hotspot:hover::before{
     animation: none;
@@ -511,12 +515,25 @@ html.tc-desk-open{ overflow: hidden; }
     z-index: 3;
     opacity: 0;
     animation-name: tc-desk-sheen;
-    animation-duration: 5s;
+    animation-duration: 15s;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
-    animation-delay: calc(var(--hot-x, 50) * -0.04s);
+    /* Same 2D stagger as the glow pulse so both animations stay in
+       phase per object (white peak crosses center exactly when the
+       brightness pulse peaks). */
+    animation-delay: calc(var(--hot-x, 50) * -0.13s + var(--hot-y, 50) * -0.07s);
 }
 .tc-desk__hotspot:hover::after{
+    animation: none;
+    opacity: 0;
+}
+
+/* The mouse hotspot has no --hot-png (it's left as the cursor-trail
+   easter egg), so the sheen mask would resolve to none and a full
+   rectangular iridescent stripe would sweep across that part of the
+   desk. Suppress both the sheen and the brightness pulse on it. */
+#tc-desk-mouse::before,
+#tc-desk-mouse::after{
     animation: none;
     opacity: 0;
 }
