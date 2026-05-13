@@ -72,6 +72,19 @@
         return score > b[ b.length - 1 ].score;
     }
 
+    // Game keydown handlers run on `document` and call preventDefault()
+    // on a / w / s / d / arrows so the page doesn't scroll. That's fine
+    // during play, but after game-over the player has a text input
+    // focused (the leaderboard name entry) and those preventDefault()s
+    // were swallowing characters like 'a'. Every game's onKey calls
+    // this first and bails out if the player is typing into a form.
+    function isTyping( e ) {
+        var t = e.target;
+        if ( ! t ) return false;
+        var tag = t.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable;
+    }
+
     // ----------------------------------------------------------------
     // Drawer wiring + view switching
     // ----------------------------------------------------------------
@@ -420,6 +433,7 @@
         }
 
         function onKey( e ) {
+            if ( isTyping( e ) ) return;
             var k = e.key;
             if ( ( k === 'ArrowUp'    || k === 'w' ) && dir.y === 0 ) { nextDir = { x: 0, y: -1 }; e.preventDefault(); }
             else if ( ( k === 'ArrowDown'  || k === 's' ) && dir.y === 0 ) { nextDir = { x: 0, y:  1 }; e.preventDefault(); }
@@ -571,10 +585,12 @@
         }
 
         function onKey( e ) {
+            if ( isTyping( e ) ) return;
             if ( e.key === 'ArrowUp'   || e.key === 'w' ) { keys.up = true;   e.preventDefault(); }
             if ( e.key === 'ArrowDown' || e.key === 's' ) { keys.down = true; e.preventDefault(); }
         }
         function onKeyUp( e ) {
+            if ( isTyping( e ) ) return;
             if ( e.key === 'ArrowUp'   || e.key === 'w' ) keys.up = false;
             if ( e.key === 'ArrowDown' || e.key === 's' ) keys.down = false;
         }
@@ -807,6 +823,7 @@
         }
 
         function onKey( e ) {
+            if ( isTyping( e ) ) return;
             var k = e.key;
             if      ( k === 'ArrowUp'    || k === 'w' ) { pac.nextDx = 0;  pac.nextDy = -1; e.preventDefault(); }
             else if ( k === 'ArrowDown'  || k === 's' ) { pac.nextDx = 0;  pac.nextDy =  1; e.preventDefault(); }
@@ -1084,12 +1101,14 @@
         }
 
         function onKey( e ) {
+            if ( isTyping( e ) ) return;
             if ( e.key === 'ArrowLeft'  || e.key === 'a' ) { keys.left  = true; e.preventDefault(); }
             if ( e.key === 'ArrowRight' || e.key === 'd' ) { keys.right = true; e.preventDefault(); }
             if ( e.key === 'ArrowUp'    || e.key === 'w' ) { keys.up    = true; e.preventDefault(); }
             if ( e.key === ' ' )                            { fire();           e.preventDefault(); }
         }
         function onKeyUp( e ) {
+            if ( isTyping( e ) ) return;
             if ( e.key === 'ArrowLeft'  || e.key === 'a' ) keys.left  = false;
             if ( e.key === 'ArrowRight' || e.key === 'd' ) keys.right = false;
             if ( e.key === 'ArrowUp'    || e.key === 'w' ) keys.up    = false;
@@ -1294,10 +1313,12 @@
         }
 
         function onKey( e ) {
+            if ( isTyping( e ) ) return;
             if ( e.key === 'ArrowLeft'  || e.key === 'a' ) { keys.left  = true; e.preventDefault(); }
             if ( e.key === 'ArrowRight' || e.key === 'd' ) { keys.right = true; e.preventDefault(); }
         }
         function onKeyUp( e ) {
+            if ( isTyping( e ) ) return;
             if ( e.key === 'ArrowLeft'  || e.key === 'a' ) keys.left  = false;
             if ( e.key === 'ArrowRight' || e.key === 'd' ) keys.right = false;
         }
