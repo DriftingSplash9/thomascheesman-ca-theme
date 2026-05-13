@@ -162,6 +162,18 @@ function tc_ventures_enqueue_scripts() {
         'themeUrl' => get_stylesheet_directory_uri(),
     ));
 
+    // Desk menu interactions. Self-contained module: wires the drawer
+    // + search affordances inside the .tc-desk overlay. Open/close of
+    // the overlay itself is wired in header.php / main.js in C4.
+    // No JS deps; loaded in the footer after DOM parse.
+    wp_enqueue_script(
+        'tc-desk-menu',
+        get_stylesheet_directory_uri() . '/assets/js/desk-menu.js',
+        array(),
+        wp_get_theme()->get( 'Version' ),
+        true
+    );
+
     // Scrapbook page — page-scrapbook.php / slug `/scrapbook`.
     //
     // Loaded only on the scrapbook page so other pages don't pay the
