@@ -522,49 +522,65 @@ html.tc-desk-open{ overflow: hidden; }
 }
 
 .tc-desk__drawer-inner{
-    /* Translucent dark glass with a heavy interior blur, cyan-tinted
-       hairline border, dual-color outer corona that pulses slowly. */
-    background: rgba(14, 10, 30, 0.55);
-    backdrop-filter: blur(28px) saturate(1.5);
-    -webkit-backdrop-filter: blur(28px) saturate(1.5);
-    color: #f1e9d0;
+    /* Pastel candy-glass: soft pink → mint diagonal wash, fat blur,
+       hairline white edge. Corona cycles through four whimsical
+       pastel colors so the panel feels alive without going cosmic. */
+    background:
+        linear-gradient(135deg,
+            rgba(255, 195, 215, 0.32) 0%,
+            rgba(195, 220, 255, 0.30) 50%,
+            rgba(210, 255, 220, 0.32) 100%);
+    backdrop-filter: blur(30px) saturate(1.6);
+    -webkit-backdrop-filter: blur(30px) saturate(1.6);
+    color: #f9f3e8;
     padding: 30px 36px 34px;
-    border-radius: 16px;
-    border: 1px solid rgba(0, 229, 255, 0.30);
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.38);
     box-shadow:
-        0 30px 80px rgba(0, 0, 0, 0.65),
-        0 0 60px rgba(0, 229, 255, 0.12),
-        0 0 90px rgba(181, 27, 255, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        0 30px 80px rgba(0, 0, 0, 0.45),
+        0 0 60px rgba(255, 170, 200, 0.20),
+        inset 0 1px 0 rgba(255, 255, 255, 0.40);
     max-width: 580px;
     width: 90%;
     position: relative;
-    transform: translateY(20px) scale(.92);
+    transform: translateY(20px) scale(.92) rotate(-1deg);
     opacity: 0;
-    transition: transform .42s cubic-bezier(.16, 1, .3, 1), opacity .35s ease-out;
+    transition: transform .42s cubic-bezier(.34, 1.56, .64, 1), opacity .35s ease-out;
     font-family: "Iowan Old Style", Georgia, serif;
 }
 .tc-desk__drawer.is-open .tc-desk__drawer-inner{
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotate(0);
     opacity: 1;
-    animation: tc-desk-drawer-corona 7s ease-in-out infinite 0.7s;
+    animation: tc-desk-drawer-corona 12s ease-in-out infinite 0.8s;
 }
 @keyframes tc-desk-drawer-corona{
     0%, 100%{
         box-shadow:
-            0 30px 80px rgba(0, 0, 0, 0.65),
-            0 0 60px rgba(0, 229, 255, 0.14),
-            0 0 90px rgba(181, 27, 255, 0.06),
-            inset 0 1px 0 rgba(255, 255, 255, 0.14);
-        border-color: rgba(0, 229, 255, 0.30);
+            0 30px 80px rgba(0, 0, 0, 0.45),
+            0 0 60px rgba(255, 170, 200, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.40);
+        border-color: rgba(255, 200, 220, 0.55);
+    }
+    25%{
+        box-shadow:
+            0 30px 80px rgba(0, 0, 0, 0.45),
+            0 0 70px rgba(180, 230, 255, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.40);
+        border-color: rgba(200, 230, 255, 0.55);
     }
     50%{
         box-shadow:
-            0 30px 80px rgba(0, 0, 0, 0.65),
-            0 0 60px rgba(0, 229, 255, 0.08),
-            0 0 100px rgba(181, 27, 255, 0.20),
-            inset 0 1px 0 rgba(255, 255, 255, 0.14);
-        border-color: rgba(181, 27, 255, 0.34);
+            0 30px 80px rgba(0, 0, 0, 0.45),
+            0 0 70px rgba(170, 240, 200, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.40);
+        border-color: rgba(190, 245, 210, 0.55);
+    }
+    75%{
+        box-shadow:
+            0 30px 80px rgba(0, 0, 0, 0.45),
+            0 0 70px rgba(255, 230, 160, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.40);
+        border-color: rgba(255, 235, 180, 0.55);
     }
 }
 
@@ -574,93 +590,113 @@ html.tc-desk-open{ overflow: hidden; }
     top: 6px;
     background: transparent;
     border: 0;
-    font-size: 26px;
+    font-size: 28px;
     line-height: 1;
-    color: rgba(241, 233, 208, 0.65);
+    color: rgba(255, 255, 255, 0.80);
     cursor: pointer;
     padding: 4px 12px;
-    transition: color .18s, text-shadow .18s;
+    transition: color .18s, transform .25s, text-shadow .18s;
 }
 .tc-desk__drawer-close:hover{
     color: #fff;
-    text-shadow: 0 0 8px #00e5ff;
+    transform: rotate(90deg);
+    text-shadow: 0 0 10px #ffd9ec;
 }
 
 .tc-desk__drawer h2{
     margin: 0 0 4px;
     font-family: Georgia, serif;
-    font-size: 22px;
-    letter-spacing: .04em;
-    color: #f1e9d0;
-    text-shadow: 0 0 10px rgba(0, 229, 255, 0.30);
+    font-size: 26px;
+    letter-spacing: .03em;
+    color: #ffffff;
+    text-shadow:
+        0 0 14px rgba(255, 200, 230, 0.5),
+        0 0 28px rgba(200, 230, 255, 0.30);
 }
 .tc-desk__drawer-sub{
-    margin: 0 0 18px;
+    margin: 0 0 20px;
     font-style: italic;
-    color: rgba(241, 233, 208, 0.55);
+    color: rgba(255, 255, 255, 0.75);
     font-size: 14px;
 }
 
 .tc-desk__drawer-grid{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 14px;
 }
 
+/* Per-card pastel hue — each compartment gets a distinct candy color
+   for its hover bloom + idle accent. --card-rgb is consumed in the
+   hover state's box-shadow and border. Cycles every 8 to keep
+   variety in larger drawers. */
 .tc-desk__drawer-card{
     display: block;
-    padding: 16px 18px;
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-radius: 8px;
+    padding: 18px 18px;
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.30);
+    border-radius: 14px;
     text-decoration: none;
-    color: #f1e9d0;
-    transition: transform .22s, box-shadow .22s, border-color .22s, background .22s;
-    /* Initial state for the grow-in cascade (when drawer opens). */
+    color: #f9f3e8;
+    transition:
+        transform .25s cubic-bezier(.34, 1.56, .64, 1),
+        box-shadow .25s,
+        border-color .25s,
+        background .25s;
+    --card-rgb: 255, 200, 220; /* default soft rose */
     opacity: 0;
-    transform: scale(0.6) translateY(10px);
+    transform: scale(0.5) translateY(12px) rotate(var(--enter-rot, -4deg));
 }
+.tc-desk__drawer-card:nth-child(8n+1){ --card-rgb: 255, 170, 190; --enter-rot: -5deg; }   /* coral */
+.tc-desk__drawer-card:nth-child(8n+2){ --card-rgb: 170, 220, 255; --enter-rot:  5deg; }   /* sky */
+.tc-desk__drawer-card:nth-child(8n+3){ --card-rgb: 210, 180, 255; --enter-rot: -4deg; }   /* lavender */
+.tc-desk__drawer-card:nth-child(8n+4){ --card-rgb: 255, 230, 150; --enter-rot:  4deg; }   /* butter */
+.tc-desk__drawer-card:nth-child(8n+5){ --card-rgb: 170, 240, 200; --enter-rot: -6deg; }   /* mint */
+.tc-desk__drawer-card:nth-child(8n+6){ --card-rgb: 255, 190, 160; --enter-rot:  3deg; }   /* peach */
+.tc-desk__drawer-card:nth-child(8n+7){ --card-rgb: 255, 180, 230; --enter-rot: -3deg; }   /* rose */
+.tc-desk__drawer-card:nth-child(8n)  { --card-rgb: 195, 230, 170; --enter-rot:  6deg; }   /* sage */
+
 .tc-desk__drawer.is-open .tc-desk__drawer-card{
-    animation: tc-desk-card-grow 0.55s cubic-bezier(.34, 1.56, .64, 1) forwards;
+    animation: tc-desk-card-pop 0.62s cubic-bezier(.34, 1.65, .54, 1.1) forwards;
 }
-/* Chronologically offset entrance — each compartment lands ~0.07s
-   after the previous one. */
-.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(1){ animation-delay: 0.20s; }
-.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(2){ animation-delay: 0.27s; }
-.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(3){ animation-delay: 0.34s; }
-.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(4){ animation-delay: 0.41s; }
-.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(5){ animation-delay: 0.48s; }
-.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(6){ animation-delay: 0.55s; }
-.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(7){ animation-delay: 0.62s; }
-.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(8){ animation-delay: 0.69s; }
-@keyframes tc-desk-card-grow{
-    0%   { opacity: 0; transform: scale(0.6) translateY(10px); }
-    60%  { opacity: 1; }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
+/* Chronological cascade — ~80ms between each so the playful pops land in order */
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(1){ animation-delay: 0.22s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(2){ animation-delay: 0.30s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(3){ animation-delay: 0.38s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(4){ animation-delay: 0.46s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(5){ animation-delay: 0.54s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(6){ animation-delay: 0.62s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(7){ animation-delay: 0.70s; }
+.tc-desk__drawer.is-open .tc-desk__drawer-card:nth-child(8){ animation-delay: 0.78s; }
+@keyframes tc-desk-card-pop{
+    0%   { opacity: 0; transform: scale(0.5) translateY(12px) rotate(var(--enter-rot, -4deg)); }
+    50%  { opacity: 1; }
+    72%  { transform: scale(1.06) translateY(-3px) rotate(calc(var(--enter-rot, -4deg) / -3)); }
+    100% { opacity: 1; transform: scale(1) translateY(0) rotate(0); }
 }
 
 .tc-desk__drawer-card:hover{
-    background: rgba(0, 229, 255, 0.08);
-    border-color: rgba(0, 229, 255, 0.55);
-    transform: scale(1.03) translateY(-2px);
+    background: rgba(var(--card-rgb), 0.18);
+    border-color: rgba(var(--card-rgb), 0.85);
+    transform: scale(1.05) translateY(-3px) rotate(-1deg);
     box-shadow:
-        0 10px 24px rgba(0, 0, 0, 0.45),
-        0 0 24px rgba(0, 229, 255, 0.25);
+        0 12px 28px rgba(0, 0, 0, 0.40),
+        0 0 30px rgba(var(--card-rgb), 0.50);
 }
 .tc-desk__drawer-card-title{
     display: block;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 17px;
     color: #ffffff;
-    text-shadow: 0 0 6px rgba(0, 229, 255, 0.25);
+    text-shadow: 0 0 8px rgba(var(--card-rgb), 0.55);
 }
 .tc-desk__drawer-card-count{
     display: block;
     font-size: 12px;
-    color: rgba(241, 233, 208, 0.50);
-    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.70);
+    margin-top: 3px;
 }
 
 /* Reduced motion: skip the cascade + corona — show cards instantly. */
