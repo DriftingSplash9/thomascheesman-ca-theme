@@ -457,18 +457,23 @@ html.tc-desk-open{ overflow: hidden; }
    shape, so the flash only ever appears on the visible artifact, never
    on its bounding box. Stagger via --hot-x so adjacent objects don't
    flash in lockstep (reads as a soft left-to-right wave). Disabled on
-   hover — the lift + scale is its own affordance. */
+   hover — the lift + scale is its own affordance.
+
+   No mix-blend-mode — `screen` over a `mask-image` is buggy on some
+   GPU/Chrome combos, where the mask renders but the blended layer
+   doesn't show. Straight rgba alpha is enough to read against the
+   desk photo. */
 .tc-desk__hotspot::after{
     content: "";
     position: absolute;
     inset: 0;
     background-image: linear-gradient(
         110deg,
-        transparent 30%,
-        rgba(255, 255, 255, 0.35) 45%,
-        rgba(255, 255, 255, 0.75) 50%,
-        rgba(255, 255, 255, 0.35) 55%,
-        transparent 70%
+        transparent 25%,
+        rgba(255, 255, 255, 0.55) 42%,
+        rgba(255, 255, 255, 0.95) 50%,
+        rgba(255, 255, 255, 0.55) 58%,
+        transparent 75%
     );
     background-size: 250% 100%;
     background-repeat: no-repeat;
@@ -482,11 +487,10 @@ html.tc-desk-open{ overflow: hidden; }
     -webkit-mask-position: center;
             mask-position: center;
     pointer-events: none;
-    z-index: 2;
+    z-index: 3;
     opacity: 0;
-    mix-blend-mode: screen;
     animation-name: tc-desk-sheen;
-    animation-duration: 6s;
+    animation-duration: 5s;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
     animation-delay: calc(var(--hot-x, 50) * -0.04s);
@@ -496,13 +500,17 @@ html.tc-desk-open{ overflow: hidden; }
     opacity: 0;
 }
 
+/* The visible flash spans 70% to 100% of the cycle (1.5s of a 5s loop)
+   so users see the sweep clearly rather than a blink. Position
+   interpolates across the same window — peak crosses element center
+   at ~85% of the cycle. */
 @keyframes tc-desk-sheen{
-    0%, 80% {
+    0%, 70% {
         background-position: 200% 0;
         opacity: 0;
     }
-    83% { opacity: 1; }
-    97% { opacity: 1; }
+    75% { opacity: 1; }
+    95% { opacity: 1; }
     100% {
         background-position: -100% 0;
         opacity: 0;
