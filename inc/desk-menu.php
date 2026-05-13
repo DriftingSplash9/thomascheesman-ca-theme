@@ -168,87 +168,87 @@ function tc_render_desk_menu() {
              ============================================================ -->
 
         <!-- Patience's gift -->
-        <div class="tc-desk__hotspot" style="left:13%; top:62%; width:9%; height:18%; --hot-x:13; --hot-y:62; --hot-w:9; --hot-h:18; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/mug.png');" aria-label="Charlie Brown mug — gift from Patience">
+        <div class="tc-desk__hotspot" style="left:14.89%; top:63.97%; width:9.67%; height:17.08%; --hot-x:14.89; --hot-y:63.97; --hot-w:9.67; --hot-h:17.08; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/mug.png');" aria-label="Charlie Brown mug — gift from Patience">
             <div class="tc-desk__card tc-desk__card--above">Patience knows I love coffee, Christmas, and Charlie Brown &mdash; and got me the warmer it sits on.</div>
         </div>
 
         <!-- From the kids while in hospital -->
-        <div class="tc-desk__hotspot" style="left:25%; top:58%; width:7%; height:15%; --hot-x:25; --hot-y:58; --hot-w:7; --hot-h:15; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/stuffie.png');" aria-label="Lion stuffie — from the kids in hospital">
+        <div class="tc-desk__hotspot" style="left:23.33%; top:53.90%; width:8.83%; height:19.25%; --hot-x:23.33; --hot-y:53.90; --hot-w:8.83; --hot-h:19.25; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/stuffie.png');" aria-label="Lion stuffie — from the kids in hospital">
             <div class="tc-desk__card tc-desk__card--right">From the kids while I was in the hospital recovering from the spinal fusion.</div>
         </div>
 
         <!-- Faith's Alberta crest drawing -->
-        <div class="tc-desk__hotspot" style="left:3%; top:46%; width:13%; height:25%; --hot-x:3; --hot-y:46; --hot-w:13; --hot-h:25; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/crest.png');" aria-label="Alberta crest drawing by Faith">
+        <div class="tc-desk__hotspot" style="left:0.67%; top:40.28%; width:16.56%; height:45.80%; --hot-x:0.67; --hot-y:40.28; --hot-w:16.56; --hot-h:45.80; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/crest.png');" aria-label="Alberta crest drawing by Faith">
             <div class="tc-desk__card tc-desk__card--right">Faith drew this. It's not coming down.</div>
         </div>
 
         <!-- THOMAS nameplate -->
-        <div class="tc-desk__hotspot" style="left:-3%; top:25%; width:9%; height:9%; --hot-x:-3; --hot-y:25; --hot-w:9; --hot-h:9; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/nameplate.png');" aria-label="Thomas nameplate">
+        <div class="tc-desk__hotspot" style="left:1.56%; top:25.27%; width:6.06%; height:12.24%; --hot-x:1.56; --hot-y:25.27; --hot-w:6.06; --hot-h:12.24; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/nameplate.png');" aria-label="Thomas nameplate">
             <div class="tc-desk__card tc-desk__card--below">That's my name on it.</div>
         </div>
 
         <!-- Faith's 67 sticker -->
-        <div class="tc-desk__hotspot" style="left:42%; top:57%; width:5%; height:9%; --hot-x:42; --hot-y:57; --hot-w:5; --hot-h:9; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/sticker-67.png');" aria-label="67 sticker — Faith's thing">
+        <div class="tc-desk__hotspot" style="left:41.56%; top:61.40%; width:3.33%; height:3.95%; --hot-x:41.56; --hot-y:61.40; --hot-w:3.33; --hot-h:3.95; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/sticker-67.png');" aria-label="67 sticker — Faith's thing">
             <div class="tc-desk__card tc-desk__card--below">67 is Faith's thing. She's infatuated with it. I keep it for her.</div>
         </div>
 
         <!-- Daniel's 3D-pen spider -->
-        <div class="tc-desk__hotspot" style="left:43%; top:52%; width:3%; height:6%; --hot-x:43; --hot-y:52; --hot-w:3; --hot-h:6; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/spider.png');" aria-label="Blue spider — Daniel made it with a 3D pen">
+        <div class="tc-desk__hotspot" style="left:42.89%; top:56.37%; width:5.72%; height:5.23%; --hot-x:42.89; --hot-y:56.37; --hot-w:5.72; --hot-h:5.23; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/spider.png');" aria-label="Blue spider — Daniel made it with a 3D pen">
             <div class="tc-desk__card tc-desk__card--below">Daniel made this with a 3D pen. Lives on the speaker.</div>
         </div>
 
         <!-- Hot Wheels — Daniel + Thomas shared hobby -->
-        <div class="tc-desk__hotspot" style="left:52%; top:54%; width:6%; height:8%; --hot-x:52; --hot-y:54; --hot-w:6; --hot-h:8; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/hotwheels.png');" aria-label="Hot Wheels — Daniel and Thomas">
+        <div class="tc-desk__hotspot" style="left:53.28%; top:57.26%; width:3.83%; height:4.84%; --hot-x:53.28; --hot-y:57.26; --hot-w:3.83; --hot-h:4.84; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/hotwheels.png');" aria-label="Hot Wheels — Daniel and Thomas">
             <div class="tc-desk__card tc-desk__card--below">Daniel and I collect these together.</div>
         </div>
 
         <!-- The grumpy toad — Thomas's avatar -->
-        <div class="tc-desk__hotspot" style="left:67%; top:75%; width:5%; height:9%; --hot-x:67; --hot-y:75; --hot-w:5; --hot-h:9; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/frog.png');" aria-label="Grumpy toad — basically a statue of Thomas">
+        <div class="tc-desk__hotspot" style="left:68.00%; top:74.23%; width:2.78%; height:6.61%; --hot-x:68.00; --hot-y:74.23; --hot-w:2.78; --hot-h:6.61; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/frog.png');" aria-label="Grumpy toad — basically a statue of Thomas">
             <div class="tc-desk__card tc-desk__card--above">Weird? Check. Mutated-looking? Check. Grumpy? Check. Basically a statue of me.</div>
         </div>
 
         <!-- Daniel's duck collection -->
-        <div class="tc-desk__hotspot" style="left:60%; top:51%; width:11%; height:24%; --hot-x:60; --hot-y:51; --hot-w:11; --hot-h:24; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/duck.png');" aria-label="Rubber duck — Daniel started the collection">
+        <div class="tc-desk__hotspot" style="left:61.00%; top:58.84%; width:7.67%; height:15.99%; --hot-x:61.00; --hot-y:58.84; --hot-w:7.67; --hot-h:15.99; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/duck.png');" aria-label="Rubber duck — Daniel started the collection">
             <div class="tc-desk__card tc-desk__card--left">Daniel got me started. There's more on the dresser.</div>
         </div>
 
         <!-- Memory cards (clickable) — opens the slideshow drawer -->
-        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-bin" style="left:67%; top:44%; width:9%; height:14%; --hot-x:67; --hot-y:44; --hot-w:9; --hot-h:14; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/memory-cards.png');" aria-label="Memory cards &mdash; open the slideshow drawer">
+        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-bin" style="left:70.72%; top:52.42%; width:3.83%; height:5.13%; --hot-x:70.72; --hot-y:52.42; --hot-w:3.83; --hot-h:5.13; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/memory-cards.png');" aria-label="Memory cards &mdash; open the slideshow drawer">
             <div class="tc-desk__card tc-desk__card--left">Memory cards. Click &mdash; flip through the slideshows.</div>
         </div>
 
         <!-- Peace sticker -->
-        <div class="tc-desk__hotspot" style="left:2.5%; top:88%; width:8%; height:9%; --hot-x:2.5; --hot-y:88; --hot-w:8; --hot-h:9; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/peace.png');" aria-label="Peace sticker">
+        <div class="tc-desk__hotspot" style="left:2.67%; top:90.33%; width:5.56%; height:4.94%; --hot-x:2.67; --hot-y:90.33; --hot-w:5.56; --hot-h:4.94; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/peace.png');" aria-label="Peace sticker">
             <div class="tc-desk__card tc-desk__card--above">My corner of the room.</div>
         </div>
 
         <!-- Cologne — Thomas's signature -->
-        <div class="tc-desk__hotspot" style="left:73%; top:62%; width:5%; height:14%; --hot-x:73; --hot-y:62; --hot-w:5; --hot-h:14; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/cologne.png');" aria-label="Cologne — L'Homme by Yves Saint Laurent">
+        <div class="tc-desk__hotspot" style="left:72.39%; top:67.72%; width:4.50%; height:9.87%; --hot-x:72.39; --hot-y:67.72; --hot-w:4.50; --hot-h:9.87; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/cologne.png');" aria-label="Cologne — L'Homme by Yves Saint Laurent">
             <div class="tc-desk__card tc-desk__card--left">L'Homme by Yves Saint Laurent. My one.</div>
         </div>
 
         <!-- Notebooks (clickable) — opens the journal drawer -->
-        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-notebooks" style="left:78%; top:42%; width:10%; height:14%; --hot-x:78; --hot-y:42; --hot-w:10; --hot-h:14; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/notebooks.png');" aria-label="Notebooks &mdash; open the journal">
+        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-notebooks" style="left:78.11%; top:46.30%; width:21.89%; height:25.77%; --hot-x:78.11; --hot-y:46.30; --hot-w:21.89; --hot-h:25.77; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/notebooks.png');" aria-label="Notebooks &mdash; open the journal">
             <div class="tc-desk__card tc-desk__card--left">Notebooks. A lot of me is in those. Click &mdash; read the journal.</div>
         </div>
 
         <!-- Bitcoin Standard + Broken Money -->
-        <div class="tc-desk__hotspot" style="left:84%; top:41%; width:13%; height:16%; --hot-x:84; --hot-y:41; --hot-w:13; --hot-h:16; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/bitcoin.png');" aria-label="Bitcoin Standard and Broken Money">
+        <div class="tc-desk__hotspot" style="left:85.00%; top:48.00%; width:13.00%; height:14.00%; --hot-x:85.00; --hot-y:48.00; --hot-w:13.00; --hot-h:14.00; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/bitcoin.png');" aria-label="Bitcoin Standard and Broken Money">
             <div class="tc-desk__card tc-desk__card--left">Two of the best books ever written about money. Still standing by them.</div>
         </div>
 
         <!-- LOTR / The Hobbit -->
-        <div class="tc-desk__hotspot" style="left:82%; top:23%; width:13%; height:14%; --hot-x:82; --hot-y:23; --hot-w:13; --hot-h:14; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/lotr.png');" aria-label="Lord of the Rings books">
+        <div class="tc-desk__hotspot" style="left:83.67%; top:21.62%; width:11.94%; height:25.86%; --hot-x:83.67; --hot-y:21.62; --hot-w:11.94; --hot-h:25.86; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/lotr.png');" aria-label="Lord of the Rings books">
             <div class="tc-desk__card tc-desk__card--left">The Hobbit especially. Always.</div>
         </div>
 
         <!-- Keyboard (clickable) — opens the search interface -->
-        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-keyboard" style="left:24%; top:70%; width:38%; height:18%; --hot-x:24; --hot-y:70; --hot-w:38; --hot-h:18; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/keyboard.png');" aria-label="Keyboard &mdash; open search">
+        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-keyboard" style="left:30.78%; top:69.40%; width:29.72%; height:14.81%; --hot-x:30.78; --hot-y:69.40; --hot-w:29.72; --hot-h:14.81; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/keyboard.png');" aria-label="Keyboard &mdash; open search">
             <div class="tc-desk__card tc-desk__card--above">Click &mdash; search the site.</div>
         </div>
 
         <!-- Marbles -->
-        <div class="tc-desk__hotspot" style="left:75%; top:75%; width:5%; height:8%; --hot-x:75; --hot-y:75; --hot-w:5; --hot-h:8; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/marbles.png');" aria-label="Marbles">
+        <div class="tc-desk__hotspot" style="left:71.61%; top:74.53%; width:7.39%; height:11.25%; --hot-x:71.61; --hot-y:74.53; --hot-w:7.39; --hot-h:11.25; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/marbles.png');" aria-label="Marbles">
             <div class="tc-desk__card tc-desk__card--left">My marbles. Most of them, anyway.</div>
         </div>
 
