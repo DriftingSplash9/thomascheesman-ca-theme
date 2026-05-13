@@ -77,6 +77,32 @@ function tc_ventures_enqueue_scripts() {
         null
     );
 
+    // Caveat — handwritten Google Font used by the desk-menu hover cards
+    // (small attribution slips that fade in when an object is hovered).
+    // Loaded site-wide because the desk-menu overlay is the global menu.
+    // (Also referenced by the scrapbook page below; WordPress dedupes by
+    // handle so the second enqueue is a harmless no-op.)
+    wp_enqueue_style(
+        'tc-caveat',
+        'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap',
+        array(),
+        null
+    );
+
+    // Desk menu — the BHAG navigation surface. Loaded site-wide; the
+    // overlay is always in the DOM (rendered by tc_render_desk_menu()
+    // from inc/desk-menu.php) but hidden by default. Activated by setting
+    // html.tc-desk-open via the menu-trigger button (wired in C4).
+    //
+    // Depends on astra-child-style so its rules can override sitewide
+    // defaults. Version bumps via the child theme's style.css header.
+    wp_enqueue_style(
+        'tc-desk-menu',
+        get_stylesheet_directory_uri() . '/assets/css/desk-menu.css',
+        array( 'astra-child-style' ),
+        wp_get_theme()->get( 'Version' )
+    );
+
     // GSAP core library (CDN).
     wp_enqueue_script(
         'gsap-core',
