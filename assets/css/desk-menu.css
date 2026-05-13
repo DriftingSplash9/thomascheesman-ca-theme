@@ -385,14 +385,20 @@ html.tc-desk-open{ overflow: hidden; }
     50%     { opacity: .75 }
 }
 
-/* Reduced motion: freeze the columns mid-fall, hide the mark animation. */
+/* Reduced motion: freeze the columns mid-fall, hide the mark animation,
+   and stop the hotspot sheen sweep (periodic flash is exactly what
+   reduced-motion users opted out of). */
 @media (prefers-reduced-motion: reduce){
     .tc-desk__matrix-col,
-    .tc-desk__screensaver-mark{
+    .tc-desk__screensaver-mark,
+    .tc-desk__hotspot::after{
         animation: none !important;
     }
     .tc-desk__matrix-col{
         transform: translateY(5%);
+    }
+    .tc-desk__hotspot::after{
+        opacity: 0;
     }
 }
 
@@ -407,18 +413,9 @@ html.tc-desk-open{ overflow: hidden; }
 }
 .tc-desk__hotspot--clickable{ cursor: pointer; }
 
-/* Cutout pseudo — per-object transparent PNG with a black silhouette
-   trace. At rest the PNG sits on top of the underlying photo at the
-   same size (visually indistinguishable from the photo plus a thin
-   outline). On hover, the PNG scales up 15% — the object pops forward
-   off the desk, the outline thickens, and a drop-shadow lifts it.
-
-   The black outline is faked via four 1px drop-shadow() filters offset
-   in each direction; this follows the PNG's alpha edge (true silhouette
-   trace) rather than a rectangle.
-
-   Hotspots without a --hot-png set (just the mouse currently) get
-   no cutout — the glow ::after still indicates interactivity. */
+/* The object PNG itself. Sits flat on the underlying photo at rest
+   (no outline, no halo — the photo + sheen carry the visual). On
+   hover, scales up 35% and lifts off the desk with a drop-shadow. */
 .tc-desk__hotspot::before{
     content: "";
     position: absolute;
@@ -427,11 +424,6 @@ html.tc-desk-open{ overflow: hidden; }
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
-    filter:
-        drop-shadow( 1px 0 0 #000)
-        drop-shadow(-1px 0 0 #000)
-        drop-shadow( 0 1px 0 #000)
-        drop-shadow( 0 -1px 0 #000);
     transform: scale(1);
     transform-origin: 50% 50%;
     transition:
@@ -441,61 +433,67 @@ html.tc-desk-open{ overflow: hidden; }
     z-index: 1;
 }
 .tc-desk__hotspot:hover::before{
-    transform: scale(1.15);
-    filter:
-        drop-shadow( 1.5px 0 0 #000)
-        drop-shadow(-1.5px 0 0 #000)
-        drop-shadow( 0 1.5px 0 #000)
-        drop-shadow( 0 -1.5px 0 #000)
-        drop-shadow( 0 8px 18px rgba(0, 0, 0, 0.55));
+    transform: scale(1.35);
+    filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.55));
     z-index: 5;
 }
 
-/* Bitcoin books: the PNG already contains a printed cover edge, the
-   silhouette trace fights with that detail. Strip the black outline
-   filter entirely; on hover, keep just the lift shadow. */
-#tc-desk-bitcoin::before{
-    filter: none;
-}
-#tc-desk-bitcoin:hover::before{
-    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
-}
-
-/* The glow ring — yellow for hover, cyan for clickable.
-   Dialed back from position-finding brightness to ambient signal:
-   you should sense glows breathing softly, then they bloom brightly
-   when you actually hover the object. */
+/* Sheen sweep — periodic diagonal highlight that washes across the
+   object silhouette, advertising interactivity. Mask-image (the same
+   PNG used for ::before) clips the gradient to the object's alpha
+   shape, so the flash only ever appears on the visible artifact, never
+   on its bounding box. Stagger via --hot-x so adjacent objects don't
+   flash in lockstep (reads as a soft left-to-right wave). Disabled on
+   hover — the lift + scale is its own affordance. */
 .tc-desk__hotspot::after{
     content: "";
     position: absolute;
-    inset: -8px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #fff8d055 30%, #ffc94422 55%, transparent 75%);
-    filter: blur(9px);
+    inset: 0;
+    background-image: linear-gradient(
+        110deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.35) 45%,
+        rgba(255, 255, 255, 0.75) 50%,
+        rgba(255, 255, 255, 0.35) 55%,
+        transparent 70%
+    );
+    background-size: 250% 100%;
+    background-repeat: no-repeat;
+    background-position: 200% 0;
+    -webkit-mask-image: var(--hot-png);
+            mask-image: var(--hot-png);
+    -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+            mask-size: contain;
+    -webkit-mask-position: center;
+            mask-position: center;
     pointer-events: none;
-    opacity: .15;
-    animation: tc-desk-firefly 4s ease-in-out infinite;
-    z-index: 0;
+    z-index: 2;
+    opacity: 0;
     mix-blend-mode: screen;
+    animation-name: tc-desk-sheen;
+    animation-duration: 6s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-delay: calc(var(--hot-x, 50) * -0.04s);
 }
 .tc-desk__hotspot:hover::after{
-    opacity: 1;
     animation: none;
-    background: radial-gradient(circle, #ffffff 25%, #ffe680 45%, #ffb84088 62%, transparent 82%);
-    filter: blur(10px);
+    opacity: 0;
 }
-.tc-desk__hotspot--clickable::after{
-    background: radial-gradient(circle, #80f8ff55 32%, #00d4ff33 55%, transparent 78%);
-    opacity: .22;
-}
-.tc-desk__hotspot--clickable:hover::after{
-    background: radial-gradient(circle, #ffffff 20%, #80f8ff 40%, #00f0ff 55%, #0098ff66 70%, transparent 86%);
-    filter: blur(8px);
-    opacity: 1;
-}
-@keyframes tc-desk-firefly{
-    0%, 100%{ transform: scale(.97); opacity: .10 }
-    50%     { transform: scale(1.03); opacity: .28 }
+
+@keyframes tc-desk-sheen{
+    0%, 80% {
+        background-position: 200% 0;
+        opacity: 0;
+    }
+    83% { opacity: 1; }
+    97% { opacity: 1; }
+    100% {
+        background-position: -100% 0;
+        opacity: 0;
+    }
 }
 
 
