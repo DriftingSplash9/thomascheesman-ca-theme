@@ -174,6 +174,18 @@ function tc_ventures_enqueue_scripts() {
         true
     );
 
+    // Desk-games arcade. The four canvas games (Snake / Pong / Pac-Man /
+    // Asteroids) tucked behind the toad hotspot. Depends on desk-menu.js
+    // for the drawer's open/close wiring; this file owns picker→play
+    // view switching, the game loops, and localStorage high scores.
+    wp_enqueue_script(
+        'tc-desk-games',
+        get_stylesheet_directory_uri() . '/assets/js/desk-games.js',
+        array( 'tc-desk-menu' ),
+        wp_get_theme()->get( 'Version' ),
+        true
+    );
+
     // Scrapbook page — page-scrapbook.php / slug `/scrapbook`.
     //
     // Loaded only on the scrapbook page so other pages don't pay the

@@ -1378,3 +1378,144 @@ html.tc-desk-open .tc-footer-desk{
     box-shadow: 0 0 20px rgba(255, 130, 160, 0.35);
     outline: none;
 }
+
+
+/* ============================================================
+   14. Games drawer — the toad's hidden arcade
+   ----------------------------------------------------------
+   Two views inside #tc-desk-games-drawer (picker / play). The play
+   view shows a canvas in a CRT-phosphor frame. desk-games.js owns
+   the running game; this section is purely presentation. */
+
+.tc-desk__games-back{
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: rgba(255, 255, 255, 0.75);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 8px 4px 0;
+    margin-bottom: 8px;
+    letter-spacing: .02em;
+    transition: color .18s, transform .18s;
+}
+.tc-desk__games-back:hover,
+.tc-desk__games-back:focus-visible{
+    color: #fff;
+    transform: translateX(-3px);
+    outline: none;
+}
+
+.tc-desk__games-stats{
+    display: flex;
+    gap: 24px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    color: #0fff8a;
+    text-shadow: 0 0 8px rgba(15, 255, 138, 0.5);
+    margin: 4px 0 14px;
+    letter-spacing: .06em;
+}
+.tc-desk__games-stats strong{
+    font-weight: 700;
+    color: #b6ffd6;
+}
+
+.tc-desk__games-canvas-wrap{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    border: 1px solid rgba(15, 255, 138, 0.35);
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow:
+        0 0 30px rgba(15, 255, 138, 0.18),
+        inset 0 0 60px rgba(0, 0, 0, 0.8);
+}
+
+.tc-desk__games-canvas{
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    max-width: 100%;
+    height: auto;
+    outline: none;
+    /* Slight phosphor bloom — the games draw their own pixels but
+       this lifts them off the black slightly. */
+    filter: drop-shadow(0 0 6px rgba(15, 255, 138, 0.35));
+}
+
+.tc-desk__games-gameover{
+    position: absolute;
+    inset: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    border-radius: 6px;
+    color: #fff;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    text-align: center;
+    padding: 24px;
+}
+.tc-desk__games-gameover p{
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: .08em;
+    text-shadow: 0 0 14px rgba(255, 130, 160, 0.55);
+}
+.tc-desk__games-gameover button{
+    appearance: none;
+    background: rgba(15, 255, 138, 0.12);
+    border: 1px solid rgba(15, 255, 138, 0.55);
+    border-radius: 999px;
+    color: #b6ffd6;
+    font: inherit;
+    font-size: 14px;
+    padding: 10px 22px;
+    cursor: pointer;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    transition: background .18s, color .18s, box-shadow .25s, transform .12s;
+}
+.tc-desk__games-gameover button:hover,
+.tc-desk__games-gameover button:focus-visible{
+    background: rgba(15, 255, 138, 0.28);
+    color: #fff;
+    box-shadow: 0 0 24px rgba(15, 255, 138, 0.45);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.tc-desk__games-controls{
+    margin: 12px 2px 0;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: rgba(15, 255, 138, 0.7);
+    letter-spacing: .12em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+/* The games drawer is wider than the others so the canvas fits
+   comfortably (Pong is 600px wide). */
+.tc-desk__drawer--games .tc-desk__drawer-inner{
+    max-width: 720px;
+}
+
+/* On touch / narrow viewports, hide the arcade entirely — these
+   games need a keyboard. The toad's hotspot is hidden by the
+   existing mobile rule too, but belt-and-braces here in case
+   someone deep-links into the drawer. */
+@media (max-width: 720px), (pointer: coarse){
+    .tc-desk__drawer--games{
+        display: none !important;
+    }
+}

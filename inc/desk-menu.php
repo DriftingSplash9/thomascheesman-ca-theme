@@ -214,9 +214,9 @@ function tc_render_desk_menu() {
             <div class="tc-desk__card tc-desk__card--below">Daniel and I collect these together.</div>
         </div>
 
-        <!-- The grumpy toad — Thomas's avatar -->
-        <div class="tc-desk__hotspot" style="left:68.00%; top:74.23%; width:2.78%; height:6.61%; --hot-x:68.00; --hot-y:74.23; --hot-w:2.78; --hot-h:6.61; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/frog.png');" aria-label="Grumpy toad — basically a statue of Thomas">
-            <div class="tc-desk__card tc-desk__card--above">Weird? Check. Mutated-looking? Check. Grumpy? Check. Basically a statue of me.</div>
+        <!-- The grumpy toad — opens the arcade (hidden games drawer) -->
+        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-frog" style="left:68.00%; top:74.23%; width:2.78%; height:6.61%; --hot-x:68.00; --hot-y:74.23; --hot-w:2.78; --hot-h:6.61; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/frog.png');" aria-label="Grumpy toad &mdash; open the arcade">
+            <div class="tc-desk__card tc-desk__card--above">Weird? Mutated? Grumpy? Basically a statue of me. Click &mdash; play a game.</div>
         </div>
 
         <!-- Daniel's duck collection -->
@@ -472,6 +472,61 @@ function tc_render_desk_menu() {
                     <span class="tc-desk__drawer-card-count">coming soon</span>
                 </a>
             </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         GAMES DRAWER — opens when the grumpy toad is clicked.
+         Hidden arcade. Two views (picker / play) toggled by JS.
+         ============================================================ -->
+    <div class="tc-desk__drawer tc-desk__drawer--games" id="tc-desk-games-drawer" role="dialog" aria-hidden="true">
+        <div class="tc-desk__drawer-inner">
+            <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
+
+            <!-- PICKER VIEW: 4 game cards. Clicking one swaps to the play view. -->
+            <div data-games-view="picker">
+                <h2>Arcade</h2>
+                <p class="tc-desk__drawer-sub">Hidden inside the toad. Pick a game.</p>
+                <div class="tc-desk__drawer-grid">
+                    <a href="#" class="tc-desk__drawer-card" data-game="snake">
+                        <span class="tc-desk__drawer-card-title">Snake</span>
+                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="snake">0</span></span>
+                    </a>
+                    <a href="#" class="tc-desk__drawer-card" data-game="pong">
+                        <span class="tc-desk__drawer-card-title">Pong</span>
+                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="pong">0</span></span>
+                    </a>
+                    <a href="#" class="tc-desk__drawer-card" data-game="pacman">
+                        <span class="tc-desk__drawer-card-title">Pac-Man</span>
+                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="pacman">0</span></span>
+                    </a>
+                    <a href="#" class="tc-desk__drawer-card" data-game="asteroids">
+                        <span class="tc-desk__drawer-card-title">Asteroids</span>
+                        <span class="tc-desk__drawer-card-count">high: <span data-games-high="asteroids">0</span></span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PLAY VIEW: canvas + score line + back. JS injects the running game. -->
+            <div data-games-view="play" hidden>
+                <button class="tc-desk__games-back" type="button" data-games-back>
+                    &larr; back
+                </button>
+                <h2 data-games-title>Snake</h2>
+                <div class="tc-desk__games-stats">
+                    <span>Score: <strong data-games-score>0</strong></span>
+                    <span>High: <strong data-games-high-current>0</strong></span>
+                </div>
+                <div class="tc-desk__games-canvas-wrap">
+                    <canvas class="tc-desk__games-canvas" data-games-canvas tabindex="0"></canvas>
+                    <div class="tc-desk__games-gameover" data-games-gameover hidden>
+                        <p data-games-gameover-msg>Game over</p>
+                        <button type="button" data-games-restart>Play again</button>
+                    </div>
+                </div>
+                <p class="tc-desk__games-controls" data-games-controls>&larr;&uarr;&darr;&rarr; to move</p>
+            </div>
+
         </div>
     </div>
 

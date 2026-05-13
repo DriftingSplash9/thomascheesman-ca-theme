@@ -33,6 +33,7 @@
         wireDrawer( 'tc-desk-bin',       'tc-desk-slideshow-drawer' );
         wireDrawer( 'tc-desk-notebooks', 'tc-desk-journal-drawer'   );
         wireDrawer( 'tc-desk-mouse',     'tc-desk-trail-drawer'     );
+        wireDrawer( 'tc-desk-frog',      'tc-desk-games-drawer'     );
         wireKeyboardSearch();
         wireGlobalEsc();
         wireScreensaver();
