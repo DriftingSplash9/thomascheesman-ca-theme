@@ -410,12 +410,22 @@ html.tc-desk-open{ overflow: hidden; }
 .tc-desk__hotspot{
     position: absolute;
     cursor: help;
+    /* Perspective makes the ::before's rotateX/Y tilts (driven by JS
+       on hover) read as real 3D rotation rather than skew. 600px is a
+       middle-ground depth — small enough that the tilt is perceptible
+       on small objects, large enough that big objects don't look
+       fish-eye-warped. */
+    perspective: 600px;
 }
 .tc-desk__hotspot--clickable{ cursor: pointer; }
 
 /* The object PNG itself. Sits flat on the underlying photo at rest
    (no outline, no halo — the photo + sheen carry the visual). On
-   hover, scales up 35% and lifts off the desk with a drop-shadow. */
+   hover, scales up 35%, lifts off the desk with a drop-shadow, and
+   tilts in 3D following the cursor (--tilt-x / --tilt-y are pushed
+   by desk-menu.js on every mousemove inside the hotspot). The tilt
+   transition is short so the object responds in near-real-time;
+   the bouncy cubic-bezier keeps the entry pop. */
 .tc-desk__hotspot::before{
     content: "";
     position: absolute;
@@ -427,13 +437,16 @@ html.tc-desk-open{ overflow: hidden; }
     transform: scale(1);
     transform-origin: 50% 50%;
     transition:
-        transform .35s cubic-bezier(.34, 1.56, .64, 1),
+        transform .2s cubic-bezier(.34, 1.45, .64, 1),
         filter .25s ease-out;
     pointer-events: none;
     z-index: 1;
 }
 .tc-desk__hotspot:hover::before{
-    transform: scale(1.35);
+    transform:
+        scale(1.35)
+        rotateY(var(--tilt-x, 0deg))
+        rotateX(var(--tilt-y, 0deg));
     filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.55));
     z-index: 5;
 }

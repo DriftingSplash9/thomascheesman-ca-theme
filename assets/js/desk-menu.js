@@ -37,6 +37,7 @@
         wireGlobalEsc();
         wireScreensaver();
         wireCursorTrail();
+        wireHotspotTilt();
     }
 
     /**
@@ -613,6 +614,52 @@
             setVariant( readSettings().variant );
             updateSwatchHighlight();
         }, 50 );
+    }
+
+    /**
+     * Hotspot 3D tilt — on hover, the object's ::before image tilts to
+     * follow the cursor's position within the hotspot. Combined with
+     * the CSS scale + lift drop-shadow, this gives flat PNGs a sense
+     * of dimension: the object appears to lean toward where you're
+     * looking, like it's responding to your attention.
+     *
+     * Implementation: on mousemove inside a hotspot, compute the
+     * cursor's offset from the hotspot center as a fraction (-0.5 to
+     * 0.5) of width/height. Map that to a small tilt angle and push
+     * the result into --tilt-x / --tilt-y custom properties. CSS
+     * reads those vars in :hover::before's transform.
+     *
+     * On mouseleave, reset the tilt to zero so the object eases back
+     * to neutral as the hover transition unwinds.
+     *
+     * Sit-out conditions: reduced motion + touch (no fine pointer).
+     * Without those, hover doesn't behave the same way anyway.
+     */
+    function wireHotspotTilt() {
+        if ( window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) return;
+        if ( ! window.matchMedia( '(pointer: fine)' ).matches ) return;
+
+        var hotspots = doc.querySelectorAll( '.tc-desk__hotspot' );
+        var MAX_TILT = 14; // degrees, peak rotation at the corners
+
+        hotspots.forEach( function ( hotspot ) {
+            hotspot.addEventListener( 'mousemove', function ( e ) {
+                var rect = hotspot.getBoundingClientRect();
+                // Offset from center, normalized to [-0.5, 0.5].
+                var fx = ( e.clientX - rect.left ) / rect.width  - 0.5;
+                var fy = ( e.clientY - rect.top  ) / rect.height - 0.5;
+                // Cursor on right side → element's right edge tilts
+                // toward viewer (rotateY negative). Cursor on top →
+                // top edge tilts toward viewer (rotateX positive).
+                hotspot.style.setProperty( '--tilt-x', ( -fx * MAX_TILT ).toFixed( 2 ) + 'deg' );
+                hotspot.style.setProperty( '--tilt-y', (  fy * MAX_TILT ).toFixed( 2 ) + 'deg' );
+            } );
+
+            hotspot.addEventListener( 'mouseleave', function () {
+                hotspot.style.setProperty( '--tilt-x', '0deg' );
+                hotspot.style.setProperty( '--tilt-y', '0deg' );
+            } );
+        } );
     }
 
     if ( doc.readyState === 'loading' ) {
