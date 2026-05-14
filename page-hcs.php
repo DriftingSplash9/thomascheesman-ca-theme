@@ -49,7 +49,7 @@ get_header(); ?>
         <div class="container container--narrow">
             <figure class="about-hero-figure">
                 <img
-                    src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/09/renderedimage1-scaled.jpg' ) ); ?>"
+                    src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/day-after-surgert.jpg' ) ); ?>"
                     alt="<?php esc_attr_e( 'In a halo brace after cervical spinal fusion, July 2022', 'tc-ventures-child' ); ?>"
                     loading="eager"
                 />
