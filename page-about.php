@@ -94,7 +94,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
 
                 <figure class="about-figure about-figure--left">
                     <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/09/renderedimage1-scaled.jpg' ) ); ?>"
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/sitting-up-after-surgery-scaled.jpg' ) ); ?>"
                         alt="<?php esc_attr_e( 'In a halo brace after cervical spinal fusion', 'tc-ventures-child' ); ?>"
                         loading="lazy"
                     />
@@ -123,7 +123,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
 
                 <figure class="about-figure about-figure--left">
                     <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2025/03/20180904_184232-scaled.jpg' ) ); ?>"
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20180109_172138-scaled.jpg' ) ); ?>"
                         alt="<?php esc_attr_e( 'Daniel and me', 'tc-ventures-child' ); ?>"
                         loading="lazy"
                     />
@@ -141,7 +141,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
 
                 <figure class="about-figure about-figure--right">
                     <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2025/03/20181209_183100-scaled.jpg' ) ); ?>"
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/DSC1161-scaled.jpg' ) ); ?>"
                         alt="<?php esc_attr_e( 'Patience and me', 'tc-ventures-child' ); ?>"
                         loading="lazy"
                     />
@@ -163,7 +163,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
 
                 <figure class="about-figure about-figure--left">
                     <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/me-and-faith.jpg' ) ); ?>"
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/IMG_3500-scaled.jpg' ) ); ?>"
                         alt="<?php esc_attr_e( 'Faith and me', 'tc-ventures-child' ); ?>"
                         loading="lazy"
                     />
