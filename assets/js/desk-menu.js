@@ -34,6 +34,8 @@
         wireDrawer( 'tc-desk-notebooks', 'tc-desk-journal-drawer'   );
         wireDrawer( 'tc-desk-mouse',     'tc-desk-trail-drawer'     );
         wireDrawer( 'tc-desk-frog',      'tc-desk-games-drawer'     );
+        wireDrawer( 'tc-desk-crest',     'tc-desk-crest-drawer'     );
+        wireCrestVideo();
         wireKeyboardSearch();
         wireGlobalEsc();
         wireScreensaver();
@@ -623,6 +625,64 @@
             setVariant( readSettings().variant );
             updateSwatchHighlight();
         }, 50 );
+    }
+
+    /**
+     * Crest video — clicking Faith's Alberta crest opens the crest
+     * drawer with one of two videos. Alternates per visitor via
+     * localStorage so a second click flips to the other clip.
+     *
+     * Drawer open/close is handled by wireDrawer in init(); this
+     * function just picks the URL, sets it as <video src>, and pauses
+     * the video when the drawer closes (via MutationObserver on the
+     * drawer's class).
+     */
+    function wireCrestVideo() {
+        var trigger = doc.getElementById( 'tc-desk-crest' );
+        var drawer  = doc.getElementById( 'tc-desk-crest-drawer' );
+        if ( ! trigger || ! drawer ) return;
+
+        var video = drawer.querySelector( '[data-crest-video]' );
+        var URL_A = drawer.getAttribute( 'data-crest-video-a' );
+        var URL_B = drawer.getAttribute( 'data-crest-video-b' );
+        if ( ! video || ! URL_A || ! URL_B ) return;
+
+        var KEY = 'tcDeskCrestLast';
+
+        function pickNext() {
+            var last = '';
+            try { last = localStorage.getItem( KEY ) || ''; } catch ( e ) {}
+            // First click ever → random. Otherwise → the other one.
+            if ( last === URL_A ) return URL_B;
+            if ( last === URL_B ) return URL_A;
+            return Math.random() < 0.5 ? URL_A : URL_B;
+        }
+
+        trigger.addEventListener( 'click', function () {
+            var url = pickNext();
+            // Setting src triggers a fresh load — needed when toggling
+            // between the two clips on consecutive clicks.
+            if ( video.src !== url ) {
+                video.src = url;
+            }
+            try { localStorage.setItem( KEY, url ); } catch ( e ) {}
+            // Attempt autoplay. Browsers block this if the video has
+            // audio and the page wasn't directly interacted with, but
+            // we're inside a click handler so it usually flies. The
+            // controls attribute means the user can hit play anyway.
+            var p = video.play();
+            if ( p && typeof p.catch === 'function' ) p.catch( function () {} );
+        } );
+
+        // Pause + rewind whenever the drawer closes (button, ESC,
+        // click-outside) so audio doesn't keep playing in the background.
+        var obs = new MutationObserver( function () {
+            if ( ! drawer.classList.contains( 'is-open' ) ) {
+                video.pause();
+                try { video.currentTime = 0; } catch ( e ) {}
+            }
+        } );
+        obs.observe( drawer, { attributes: true, attributeFilter: [ 'class' ] } );
     }
 
     /**

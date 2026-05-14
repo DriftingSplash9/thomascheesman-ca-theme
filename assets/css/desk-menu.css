@@ -1865,6 +1865,24 @@ html.cursor-custom .tc-desk__drawer input{
     max-width: 720px;
 }
 
+/* Crest video drawer — opens when Faith's Alberta crest is clicked.
+   Holds a single <video> element; JS sets the src to one of two
+   secret clips. */
+.tc-desk__drawer--video .tc-desk__drawer-inner{
+    max-width: 720px;
+}
+.tc-desk__crest-video{
+    display: block;
+    width: 100%;
+    max-height: 70vh;
+    background: #000;
+    border-radius: 10px;
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+    margin-top: 8px;
+}
+
 /* On touch / narrow viewports, hide the arcade entirely — these
    games need a keyboard. The toad's hotspot is hidden by the
    existing mobile rule too, but belt-and-braces here in case

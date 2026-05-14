@@ -189,9 +189,10 @@ function tc_render_desk_menu() {
             <div class="tc-desk__card tc-desk__card--right">From the kids while I was in the hospital recovering from the spinal fusion.</div>
         </div>
 
-        <!-- Faith's Alberta crest drawing -->
-        <div class="tc-desk__hotspot" style="left:0.67%; top:40.28%; width:16.56%; height:45.80%; --hot-x:0.67; --hot-y:40.28; --hot-w:16.56; --hot-h:45.80; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/crest.png');" aria-label="Alberta crest drawing by Faith">
-            <div class="tc-desk__card tc-desk__card--right">Faith drew this. It's not coming down.</div>
+        <!-- Faith's Alberta crest drawing — click to play one of two
+             secret videos. Alternates each click via localStorage. -->
+        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-crest" style="left:0.67%; top:40.28%; width:16.56%; height:45.80%; --hot-x:0.67; --hot-y:40.28; --hot-w:16.56; --hot-h:45.80; --hot-png: url('https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/crest.png');" aria-label="Alberta crest drawing by Faith &mdash; click to play">
+            <div class="tc-desk__card tc-desk__card--right">Faith drew this. It's not coming down. Click &mdash; secret video.</div>
         </div>
 
         <!-- THOMAS nameplate -->
@@ -567,6 +568,23 @@ function tc_render_desk_menu() {
                 <p class="tc-desk__games-controls" data-games-controls>&larr;&uarr;&darr;&rarr; to move</p>
             </div>
 
+        </div>
+    </div>
+
+    <!-- ============================================================
+         CREST VIDEO DRAWER — opens when Faith's Alberta crest is
+         clicked. Two videos are stored as data-attrs on the drawer;
+         JS picks one on click (alternating per visitor via
+         localStorage) and sets it as the <video src>.
+         ============================================================ -->
+    <div class="tc-desk__drawer tc-desk__drawer--video" id="tc-desk-crest-drawer" role="dialog" aria-hidden="true"
+         data-crest-video-a="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/IMG_4119.mov"
+         data-crest-video-b="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/IMG_4109.mov">
+        <div class="tc-desk__drawer-inner">
+            <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
+            <h2>From Faith</h2>
+            <p class="tc-desk__drawer-sub">A little secret behind the crest.</p>
+            <video class="tc-desk__crest-video" data-crest-video controls playsinline preload="metadata"></video>
         </div>
     </div>
 
