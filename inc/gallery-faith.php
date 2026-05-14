@@ -27,7 +27,6 @@ return array(
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/20170619_184624.jpg', 'year' => 2017 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/20170624_203715.jpg', 'year' => 2017 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/20170701_112340.jpg', 'year' => 2017 ),
-    array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/20170730_001646.jpg', 'year' => 2017 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/20170812_100012.jpg', 'year' => 2017 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/20170829_111221.jpg', 'year' => 2017 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/20170912_090355.jpg', 'year' => 2017 ),
