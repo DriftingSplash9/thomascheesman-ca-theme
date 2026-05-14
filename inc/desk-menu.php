@@ -450,19 +450,19 @@ function tc_render_desk_menu() {
             <div class="tc-desk__drawer-grid">
                 <a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>" class="tc-desk__drawer-card">
                     <span class="tc-desk__drawer-card-title">Patience</span>
-                    <span class="tc-desk__drawer-card-count">134 photos</span>
+                    <span class="tc-desk__drawer-card-count">128 photos</span>
                 </a>
                 <a href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>" class="tc-desk__drawer-card">
                     <span class="tc-desk__drawer-card-title">Daniel</span>
-                    <span class="tc-desk__drawer-card-count">207 photos</span>
+                    <span class="tc-desk__drawer-card-count">199 photos</span>
                 </a>
                 <a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>" class="tc-desk__drawer-card">
                     <span class="tc-desk__drawer-card-title">Faith</span>
-                    <span class="tc-desk__drawer-card-count">219 photos</span>
+                    <span class="tc-desk__drawer-card-count">207 photos</span>
                 </a>
                 <a href="<?php echo esc_url( home_url( '/family' ) ); ?>" class="tc-desk__drawer-card">
                     <span class="tc-desk__drawer-card-title">Family &mdash; all of us</span>
-                    <span class="tc-desk__drawer-card-count">560 photos</span>
+                    <span class="tc-desk__drawer-card-count">534 photos</span>
                 </a>
                 <a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>" class="tc-desk__drawer-card">
                     <span class="tc-desk__drawer-card-title">Heritage docs</span>
