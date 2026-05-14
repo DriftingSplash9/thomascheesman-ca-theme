@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.280
+Version: 1.0.281
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5403,6 +5403,94 @@ body.page-passport .entry-content {
 }
 
 /* =============================================================
+   SITEWIDE IMAGE TREATMENT — gallery glass
+   -------------------------------------------------------------
+   Single, elegant frame + gentle button-like hover for content
+   images sitewide. Replaces ad-hoc per-section image styling
+   (the old scale/accent-ring on .tc-photo-gallery__item, etc.).
+
+   Scope (covered):
+     - .wp-block-image img        (Gutenberg image block)
+     - .wp-caption img            (Classic editor caption block)
+     - .entry-content img         (Loose images inside posts/pages)
+     - .tc-photo-gallery img      (Kids' photo galleries)
+
+   Scope (intentionally NOT covered — keep their own behaviour):
+     - .tc-desk__hotspot          (PNGs are background-images, not <img>)
+     - .site-logo / nav images    (UI chrome)
+     - .pswp img                  (PhotoSwipe lightbox)
+     - Avatar / .wp-smiley etc.   (have their own treatment)
+
+   Rest state: 4px rounded corners, 1px inset highlight at the top
+   (reads as a glass print edge), soft 8px drop shadow.
+   Hover: 3px lift (no scale — scale reads cartoony), +6% brightness,
+   +5% saturation, shadow deepens and grows. cursor: pointer.
+   All transitions ~360ms with a smooth easing so the change feels
+   buttery instead of snappy.
+
+   Gallery items wrap their <img> with overflow:hidden for the
+   masonry layout, which would clip a lifting <img>. So the gallery
+   wrapper handles the lift; the <img> inside only brightens. */
+
+.wp-block-image img,
+.wp-caption img,
+.entry-content img,
+.tc-photo-gallery img {
+    border-radius: 4px;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    transition:
+        transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 360ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter   360ms ease;
+    cursor: pointer;
+}
+
+/* Direct-hover lift on <img>, plus wrapper-hover trigger for
+   blocks/captions so hovering the wrapper's margin also lifts. */
+.wp-block-image img:hover,
+.wp-caption img:hover,
+.entry-content img:hover,
+.wp-block-image:hover img,
+.wp-caption:hover img {
+    transform: translateY(-3px);
+    box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.22),
+        0 2px  8px rgba(0, 0, 0, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    filter: brightness(1.06) saturate(1.05);
+}
+
+/* Gallery items: lift the wrapper instead of the image (wrapper has
+   overflow:hidden so an <img> lift would clip). Image inside still
+   gets the brightness shift. */
+.tc-photo-gallery__item:hover img,
+.tc-photo-gallery__item:focus-within img {
+    filter: brightness(1.06) saturate(1.05);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wp-block-image img,
+    .wp-caption img,
+    .entry-content img,
+    .tc-photo-gallery img {
+        transition: filter 200ms ease, box-shadow 200ms ease;
+    }
+    .wp-block-image img:hover,
+    .wp-caption img:hover,
+    .entry-content img:hover,
+    .wp-block-image:hover img,
+    .wp-caption:hover img {
+        transform: none;
+    }
+}
+
+
+/* =============================================================
    PHOTO GALLERY — per-kid spoke pages (Patience / Daniel / Faith)
    -------------------------------------------------------------
    Justified-style wall via flex-wrap with a fixed row height. Each
@@ -5533,51 +5621,42 @@ body.page-passport .entry-content {
     page-break-inside: avoid;
     overflow: hidden;
     background: #1a1410;
-    border-radius: 2px;
-    cursor: zoom-in;
+    border-radius: 4px;
+    cursor: pointer;
     position: relative;
-    /* Idle state — slightly muted so the hover state has somewhere
-       to "lift" toward. The desaturation is gentle (10%) so the wall
-       still reads as a cohesive set of colour photos. */
-    filter: saturate(0.92) brightness(0.96);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-    will-change: transform, filter, box-shadow;
+    /* Wrapper lift + shadow are part of the sitewide gallery-glass
+       treatment now — the per-photo flourish (scale 1.04 + amber
+       accent ring) was retired in the simplify pass. */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.20);
+    will-change: transform, box-shadow;
     transition:
-        transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1.0),
-        filter 320ms ease,
-        box-shadow 320ms ease,
-        z-index 0s linear 320ms;
+        transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 360ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        z-index 0s linear 360ms;
 }
 .tc-photo-gallery__item:hover,
 .tc-photo-gallery__item:focus-within {
-    /* The "pop": lift, scale up slightly, full colour saturation, and
-       a warm rim-glow shadow. The accent ring is layered as a second
-       inset shadow for definition without a real border (which would
-       reflow the masonry). */
-    transform: translateY(-6px) scale(1.04);
-    filter: saturate(1.1) brightness(1.05);
+    transform: translateY(-3px);
     box-shadow:
-        0 14px 38px rgba(0, 0, 0, 0.55),
-        0 0 0 2px rgba(176, 140, 74, 0.55);
+        0 12px 28px rgba(0, 0, 0, 0.32),
+        0 2px  8px rgba(0, 0, 0, 0.15);
     z-index: 5;
     transition:
-        transform 220ms cubic-bezier(0.2, 0.7, 0.1, 1.2),
-        filter 220ms ease,
-        box-shadow 220ms ease,
+        transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 360ms cubic-bezier(0.2, 0.8, 0.2, 1),
         z-index 0s linear 0s;
 }
 
-/* Respect reduced-motion preference — no scale, no lift, just a
-   subtle brightness change so the hover affordance is still visible. */
+/* Reduced-motion: drop the lift, keep just the shadow change. The
+   image's own filter hover still kicks in via the sitewide block. */
 @media (prefers-reduced-motion: reduce) {
     .tc-photo-gallery__item {
-        transition: filter 200ms ease, box-shadow 200ms ease;
+        transition: box-shadow 200ms ease;
     }
     .tc-photo-gallery__item:hover,
     .tc-photo-gallery__item:focus-within {
         transform: none;
-        filter: brightness(1.06);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.40);
     }
 }
 
