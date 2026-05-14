@@ -81,8 +81,6 @@ function tc_ventures_enqueue_scripts() {
     // Caveat — handwritten Google Font used by the desk-menu hover cards
     // (small attribution slips that fade in when an object is hovered).
     // Loaded site-wide because the desk-menu overlay is the global menu.
-    // (Also referenced by the scrapbook page below; WordPress dedupes by
-    // handle so the second enqueue is a harmless no-op.)
     wp_enqueue_style(
         'tc-caveat',
         'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap',
@@ -195,46 +193,6 @@ function tc_ventures_enqueue_scripts() {
         )
     );
 
-    // Scrapbook page — page-scrapbook.php / slug `/scrapbook`.
-    //
-    // Loaded only on the scrapbook page so other pages don't pay the
-    // bytes. The CSS depends on `astra-child-style` so its rules can
-    // override sitewide defaults. The version is read from style.css's
-    // header so a single bump there cache-busts this file too.
-    //
-    // Future commits (C2..C7) will add scrapbook.js here for the
-    // page-flip controller + decade-tab nav + easter-egg JS.
-    if ( is_page( 'scrapbook' ) ) {
-        // Caveat — handwritten Google Font for scrapbook captions.
-        // Loaded only on this page since it's not used elsewhere.
-        wp_enqueue_style(
-            'tc-caveat',
-            'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap',
-            array(),
-            null
-        );
-
-        wp_enqueue_style(
-            'tc-scrapbook',
-            get_stylesheet_directory_uri() . '/assets/css/scrapbook.css',
-            array( 'astra-child-style' ),
-            wp_get_theme()->get( 'Version' )
-        );
-
-        // scrapbook.js — scroll-driven intro crossfade in C1.1, plus
-        // the page-flip controller, decade tabs, and page-number
-        // easter-egg JS landing in C2..C6. Loaded in the footer
-        // (last arg true) so it runs after DOM parse. No dependency
-        // on tc-ventures-main: the scrapbook handlers are scoped to
-        // their own elements and don't share state.
-        wp_enqueue_script(
-            'tc-scrapbook',
-            get_stylesheet_directory_uri() . '/assets/js/scrapbook.js',
-            array(),
-            wp_get_theme()->get( 'Version' ),
-            true
-        );
-    }
 }
 add_action( 'wp_enqueue_scripts', 'tc_ventures_enqueue_scripts' );
 

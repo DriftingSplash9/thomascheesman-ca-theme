@@ -142,7 +142,6 @@ return array(
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/IMG_1984-scaled.jpg', 'year' => 2024 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/IMG_1986.jpg', 'year' => 2024 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/IMG_1994-scaled.jpg', 'year' => 2025 ),
-    array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/IMG_20190304_191004_01.jpg', 'year' => 2018 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/IMG_2169.jpg', 'year' => 2019 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/IMG_2471.jpg', 'year' => 2023 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/IMG_2547.jpg', 'year' => 2025 ),
@@ -215,7 +214,6 @@ return array(
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/cookie-2.jpg', 'year' => 2019 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/faith-1-scaled.jpg', 'year' => 2018 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/faith-5.jpg', 'year' => 2018 ),
-    array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/faith-8-scaled.jpg', 'year' => 2018 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/faith-and-daddy.jpg', 'year' => 2017 ),
     array( 'url' => 'https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/fall-2.jpg', 'year' => 2017 ),
 );

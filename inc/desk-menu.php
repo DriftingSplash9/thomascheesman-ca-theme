@@ -458,11 +458,11 @@ function tc_render_desk_menu() {
                 </a>
                 <a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>" class="tc-desk__drawer-card">
                     <span class="tc-desk__drawer-card-title">Faith</span>
-                    <span class="tc-desk__drawer-card-count">206 photos</span>
+                    <span class="tc-desk__drawer-card-count">204 photos</span>
                 </a>
                 <a href="<?php echo esc_url( home_url( '/family' ) ); ?>" class="tc-desk__drawer-card">
                     <span class="tc-desk__drawer-card-title">Family &mdash; all of us</span>
-                    <span class="tc-desk__drawer-card-count">533 photos</span>
+                    <span class="tc-desk__drawer-card-count">531 photos</span>
                 </a>
                 <a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>" class="tc-desk__drawer-card">
                     <span class="tc-desk__drawer-card-title">Heritage docs</span>
