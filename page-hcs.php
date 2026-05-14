@@ -156,7 +156,7 @@ get_header(); ?>
 
                 <figure class="about-figure about-figure--left">
                     <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/img_0288.webp' ) ); ?>"
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/img_0288-e1760286860822.webp' ) ); ?>"
                         alt="<?php esc_attr_e( 'Both hands showing acro-osteolysis at the fingertips', 'tc-ventures-child' ); ?>"
                         loading="lazy"
                     />
