@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.281
+Version: 1.0.282
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -462,10 +462,12 @@ body {
 }
 
 .post-card:hover {
-    transform: translateY(-6px);
+    /* Matches sitewide gallery-glass hover lift (was -6px + cyan
+       glow; simplified to align with the unified image treatment). */
+    transform: translateY(-3px);
     box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.5),
-        0 8px 20px color-mix(in srgb, var(--primary-color) 25%, transparent);
+        0 12px 28px rgba(0, 0, 0, 0.40),
+        0 2px  8px rgba(0, 0, 0, 0.20);
 }
 
 .post-card-thumb {
@@ -477,11 +479,14 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    /* Brightness shift on hover only — no scale (scale reads
+       cartoony, and the sitewide treatment is "lift + brighten",
+       not "zoom"). */
+    transition: filter 360ms ease;
 }
 
 .post-card:hover img {
-    transform: scale(1.05);
+    filter: brightness(1.06) saturate(1.05);
 }
 
 .post-card-body {

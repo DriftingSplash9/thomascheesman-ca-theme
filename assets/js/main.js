@@ -17,14 +17,18 @@ document.addEventListener('DOMContentLoaded', function () {
     initSiteChrome();
     initKineticHero();
     initHeroScrollOut();
-    initPillarReveal();
+    // Home-page reveal animations (pillar tumble + blog-card random
+    // tumble) intentionally disabled — the user asked for "simple
+    // images with none of that". The function bodies remain in this
+    // file in case we want to bring them back later.
+    // initPillarReveal();
     initFamilyTreeReveal();
     initFamilyTreeLeaves();
     initFigureKenBurns();
     initLightbox();
     initGallerySlideshow();
     initContactEmail();
-    initBlogReveal();
+    // initBlogReveal();
     initScrollReveals();
     initHeritagePage();
     initInkTrail();
