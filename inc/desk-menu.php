@@ -96,6 +96,22 @@ function tc_render_desk_menu() {
                 </a></li>
             </ul>
 
+            <!-- Elsewhere — off-site projects. Same TOC structure but a
+                 subordinate visual treatment (smaller label, dimmer rows,
+                 ↗ instead of a page number) so it reads as a footnote to
+                 the main Contents, not a peer. -->
+            <p class="tc-desk__toc-aside-label">Elsewhere</p>
+            <ul class="tc-desk__toc tc-desk__toc--aside">
+                <li><a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">
+                    <span class="title">Bare Your Rare</span>
+                    <span class="pageno" aria-hidden="true">&#x2197;</span>
+                </a></li>
+                <li><a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">
+                    <span class="title">GPRS</span>
+                    <span class="pageno" aria-hidden="true">&#x2197;</span>
+                </a></li>
+            </ul>
+
             <!-- Matrix-style screensaver. Hidden by default; after 30s
                  of inactivity inside the overlay, JS adds .is-idle on
                  the monitor and this overlay fades in. Any movement /

@@ -63,6 +63,10 @@ $tc_contact_recipient_rot13  = str_rot13( $tc_contact_recipient );
                     </button>
                 </div>
 
+                <p class="tc-contact-card__aside">
+                    Writing about Hajdu-Cheney or your own rare disease? <a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare</a> is the better address &mdash; the patient guide, the community, and the deeper writing all live there.
+                </p>
+
                 <p class="contact-list__intro">Or find me on:</p>
                 <ul class="contact-list">
                     <li>

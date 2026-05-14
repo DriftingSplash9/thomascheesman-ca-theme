@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.288
+Version: 1.0.289
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3332,6 +3332,27 @@ body:has(.person-spoke--faith) {
 }
 .tc-contact-card__address[data-copied="false"] {
     border-color: rgba(220, 100, 90, 0.5);
+}
+
+/* Small aside below the email card pointing rare-disease writers to
+   bareyourrare.org. Reads as a quiet helper line, not a CTA — keeps
+   the contact page focused on direct email. */
+.tc-contact-card__aside {
+    margin: 14px 0 26px;
+    font-size: 14px;
+    font-style: italic;
+    color: rgba(241, 233, 208, 0.72);
+    line-height: 1.55;
+}
+.tc-contact-card__aside a {
+    color: var(--primary-color);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.35);
+    transition: color .18s, border-color .18s;
+}
+.tc-contact-card__aside a:hover {
+    color: #fff;
+    border-bottom-color: #fff;
 }
 
 /* ============================================

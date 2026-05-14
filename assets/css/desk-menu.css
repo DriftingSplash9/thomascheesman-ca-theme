@@ -228,6 +228,34 @@ html.tc-desk-open{ overflow: hidden; }
     color: #a89d80;
 }
 
+/* Subordinate "Elsewhere" cluster — off-site projects (Bare Your Rare,
+   GPRS). Sits below the main Contents TOC with a small caps eyebrow
+   and dimmer rows so it reads as a footnote, not a peer. */
+.tc-desk__toc-aside-label{
+    margin: 1.2em 0 .2em;
+    padding: 0 3%;
+    font-family: Georgia, serif;
+    font-size: clamp(9px, 0.85vw, 11px);
+    font-weight: 600;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: #8a7f66;
+    text-align: left;
+}
+.tc-desk__toc--aside li a{
+    font-size: clamp(10px, 0.95vw, 14px);
+    color: #c7bea0;
+    opacity: .82;
+}
+.tc-desk__toc--aside li a:hover{
+    color: #fff;
+    opacity: 1;
+}
+.tc-desk__toc--aside .pageno{
+    color: #8a7f66;
+    font-size: 1.1em;
+}
+
 
 /* ============================================================
    4. Search UI (revealed inside the monitor by JS in C3)
@@ -301,6 +329,7 @@ html.tc-desk-open{ overflow: hidden; }
 
 /* When search is active, hide the Contents nav inside the monitor */
 .tc-desk__monitor.is-searching .tc-desk__toc,
+.tc-desk__monitor.is-searching .tc-desk__toc-aside-label,
 .tc-desk__monitor.is-searching .tc-desk__monitor-title{
     display: none;
 }
