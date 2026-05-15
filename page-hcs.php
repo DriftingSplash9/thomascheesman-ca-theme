@@ -190,7 +190,7 @@ get_header(); ?>
 
                 <figure class="about-figure about-figure--right">
                     <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/me-and-kids.jpg' ) ); ?>"
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/family-by-river.jpg' ) ); ?>"
                         alt="<?php esc_attr_e( 'Thomas with the three kids', 'tc-ventures-child' ); ?>"
                         loading="lazy"
                     />
@@ -275,7 +275,7 @@ get_header(); ?>
 
                 <figure class="about-figure about-figure--left">
                     <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/foot-4-2.jpg' ) ); ?>"
+                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/foot-4-2-e1778818711872.jpg' ) ); ?>"
                         alt="<?php esc_attr_e( 'Foot X-ray showing a broken surgical screw', 'tc-ventures-child' ); ?>"
                         loading="lazy"
                     />
