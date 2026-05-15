@@ -1,1 +1,8 @@
 .claude/
+
+# Dev helper scripts — image audits, run locally, not part of the theme
+db-image-audit.py
+build-image-audit.py
+test-image-urls.py
+remove-dead-images.py
+image-audit*.xlsx
