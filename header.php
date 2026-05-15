@@ -56,7 +56,7 @@
         type="button"
         class="tc-capsule__trigger"
         data-menu-trigger
-        aria-controls="tc-menu"
+        aria-controls="tc-desk-menu"
         aria-expanded="false"
         aria-label="<?php esc_attr_e( 'Open menu', 'tc-ventures-child' ); ?>"
     >
