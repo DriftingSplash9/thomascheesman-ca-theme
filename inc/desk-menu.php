@@ -594,8 +594,8 @@ function tc_render_desk_menu() {
          localStorage) and sets it as the <video src>.
          ============================================================ -->
     <div class="tc-desk__drawer tc-desk__drawer--video" id="tc-desk-crest-drawer" role="dialog" aria-hidden="true"
-         data-crest-video-a="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/Img-4119-1.mp4"
-         data-crest-video-b="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/Img-4109-1.mp4">
+         data-crest-video-a="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/Faith-boxing.mp4"
+         data-crest-video-b="https://lightgoldenrodyellow-dugong-336485.hostingersite.com/wp-content/uploads/2026/05/Faith-boxing-2.mp4">
         <div class="tc-desk__drawer-inner">
             <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
             <h2>From Faith</h2>
