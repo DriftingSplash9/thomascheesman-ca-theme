@@ -28,7 +28,7 @@ get_header(); ?>
          ============================================================== -->
     <section class="page-hero">
         <div class="container">
-            <span class="page-hero__eyebrow">Pillar one</span>
+            <span class="page-hero__eyebrow">My Awesome Figgin' Family</span>
             <h1 class="page-hero__title kinetic-text">Family</h1>
             <p class="page-hero__subtitle kinetic-fade">
                 The people I love and the stories we share

@@ -155,7 +155,7 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
                 );
             } else {
                 printf(
-                    '<figure class="tc-photo-gallery__item"><img src="%1$s" alt="%2$s" loading="%3$s" decoding="async" /></figure>',
+                    '<figure class="tc-photo-gallery__item"><img src="%1$s" alt="%2$s" loading="%3$s" /></figure>',
                     esc_url( $url ),
                     esc_attr( $alt ),
                     esc_attr( $loading )
