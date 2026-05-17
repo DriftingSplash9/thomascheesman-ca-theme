@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initLightbox();
     initGallerySlideshow();
     initContactEmail();
+    initRot13Email();
     // initBlogReveal();
     initScrollReveals();
     initHeritagePage();
@@ -883,6 +884,26 @@ function initContactEmail() {
             if (actionSpan) actionSpan.textContent = 'Click to copy';
             button.removeAttribute('data-copied');
         }, 2200);
+    });
+}
+
+/* =====================================================================
+   Generic rot13 email reveal — used where the address is shown inline
+   in editorial prose (the /about and /hcs sign-offs) rather than in the
+   full contact card. Any element with data-tc-rot13 carries the address
+   rot13'd in source so harvester bots see gibberish; on load we decode
+   it in place for real visitors.
+   ===================================================================== */
+function initRot13Email() {
+    function rot13(s) {
+        return s.replace(/[A-Za-z]/g, (c) => {
+            const base = c <= 'Z' ? 65 : 97;
+            return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
+        });
+    }
+    document.querySelectorAll('[data-tc-rot13]').forEach((el) => {
+        const decoded = rot13(el.getAttribute('data-tc-rot13') || '');
+        if (decoded) el.textContent = decoded;
     });
 }
 

@@ -15,7 +15,7 @@ get_header(); ?>
                 Welcome to TC 'ventures
             </h1>
             <p class="hero-subtitle kinetic-fade">
-                Exploring life, family, and what matters most
+                Exploring life, family, and what matters most to me
             </p>
         </div>
     </section>
@@ -34,9 +34,9 @@ get_header(); ?>
                     </div>
                     <h3>Family &amp; Stories</h3>
                     <p>
-                        Life's greatest joy comes from the people we love. Discover the stories of Patience, Daniel, Faith, and the extended family that makes us whole.
+                        Life's greatest joy comes from the people we love. Discover the stories of Patience, Daniel, Faith, and the extended family that makes me whole.
                     </p>
-                    <a href="<?php echo home_url('/family'); ?>">Explore Family Stories &rarr;</a>
+                    <a href="<?php echo home_url('/family'); ?>">Explore My Family Stories &rarr;</a>
                 </div>
 
                 <!-- PILLAR 2: RARE DISEASE & BYR -->
@@ -60,7 +60,7 @@ get_header(); ?>
                     <p>
                         Giving back matters. I volunteer with Grande Prairie Residential Society to provide accessible housing in our community.
                     </p>
-                    <a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">Visit GPRS &rarr;</a>
+                    <a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">Visit GPRS (I created this website too!) &rarr;</a>
                 </div>
 
             </div>

@@ -40,11 +40,13 @@ get_header(); ?>
                         />
                     </figure>
 
-                    <p>Faith was born on March 29, 2017 &mdash; 8 pounds, 20 inches &mdash; and finished off our family. We'd been turning over names for months and I couldn't think of one to save my life. Faith came to me in a dream. Melanie was teasing me for not having ideas and the name just popped in. I woke her up at 3 a.m. and asked if she liked it.</p>
+                    <p>Faith was born on March 29, 2017 &mdash; 8 pounds, 20 inches &mdash; and finished off our family. We'd been turning over names for months and I couldn't think of one to save my life &ndash; Melanie was coming up with all the ideas. &ldquo;Faith&rdquo; came to me in a dream, I think I was getting heck in my dream and it just came to me and I woke up. Melanie was bugging me now and then for not having ideas and I guess the name just popped in. I woke her up at 3 a.m. and asked if she liked it. She mumbled &ldquo;I like it&rdquo; and passed back out.</p>
 
-                    <p>We weren't sure. We almost called her Charlotte. It wasn't until she turned blue &mdash; choking, rushed to the NICU &mdash; that we looked at each other and knew it had to be Faith.</p>
+                    <p>We weren't sure. We almost called her Charlotte. Everything was going as expected after Melanie's 3rd Cesarian until Faith turned blue after a bath and change&mdash; choking, she was rushed to the NICU &mdash; Melanie was not sitting downstairs waiting and got herself up and into a wheelchair and up to Nicu. We looked at each other and knew it had to be Faith, we knew we needed to have Faith.</p>
 
-                    <p>She's stubborn, independent, particular about her things. She had a hamster named Jeffery James. Now she has Mataeo. The youngest gets away with more, I know that. We butt heads more than I want to. She has a wild and free spirit and I'm trying to learn it.</p>
+                    <p>She's stubborn, independent, and particular about her things. She snuggles on her own terms. She had a hamster named Jeffery James. Now she has Mataeo. The youngest gets away with more, I know that. She has a wild and free spirit and I'm loving it.</p>
+
+                    <p>Faith and I get to spend a lot of time together as her brother and sister are often too busy or too &ldquo;mature&rdquo; to play with their little sister. We love to do chemistry, mix colors, paint, do dollar store crafts, glue stuff, and generally make a mess of the kitchen table one way or another. We also love to visit the pet stores and see all the critters (especially ones we can touch!).</p>
 
                     <figure class="heritage-line__figure">
                         <img

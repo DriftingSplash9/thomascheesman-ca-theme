@@ -110,7 +110,7 @@ get_header(); ?>
                         />
                     </figure>
 
-                    <p>For a long stretch &mdash; roughly 1990 to 2013 &mdash; the Cheesman side stayed small and close. Mostly just my immediate family and a handful of relatives. I'd love more group photos of the cousins and their families now. If you have them, send them. It's been long enough. Time to put everyone in the same frame again.</p>
+                    <p>For a long stretch &mdash; roughly 1990 to 2013 &mdash; the Cheesman side stayed small and close. Mostly just my immediate family and a handful of relatives. I'd love more group photos of the cousins and their families.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--bw">
                         <img

@@ -56,7 +56,7 @@ get_header(); ?>
 
                     <p>In 1974 my grandfather retired. On the way back to Calgary the family stopped in Holland to visit relatives and stayed for the 1975 New Year's celebration. My dad still talks about it &mdash; fireworks for sale to anyone who wanted them, no restrictions, and the whole night sky went bright red, white, and blue. After that they finally settled back in Calgary.</p>
 
-                    <p>A year or two later my dad met my mom. The story goes like this: my mother had a brief relationship with a guy named Jim, and after it ended she asked Jim to introduce her to <em>his tall blonde friend</em>. As it turned out, Jim had two tall blonde friends. Mom had her eye on the other one. She got my dad. As Martin puts it: <em>&ldquo;if it wasn't for Jim I might never have been your father.&rdquo;</em></p>
+                    <p>A year or two later my dad met my mom. The story goes like this: my mother had a brief relationship with a guy named Jim, and after it ended, she asked Jim to introduce her to <em>his tall blonde friend</em>. As it turned out, Jim had two tall blonde friends. Mom had her eye on the other one. She got my dad. As Martin puts it: <em>&ldquo;if it wasn't for Jim, I might never have been your father.&rdquo;</em></p>
 
                     <figure class="heritage-line__figure">
                         <img

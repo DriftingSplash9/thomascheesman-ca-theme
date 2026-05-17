@@ -49,7 +49,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
                 </figure>
 
                 <p class="about-lead">
-                    Hi, I'm Thomas Cheesman. I cooked for a living for the better part of two decades, taught it for a small stretch of that, and stopped when Hajdu-Cheney Syndrome made the line unimaginable. I live in Grande Prairie, Alberta, with Melanie and our three kids &mdash; Daniel, Patience, and Faith. The rest of this page is where the threads come from.
+                    Hi, I'm Thomas Cheesman. I cooked for a living for the better part of two decades, I apprenticed a couple chefs and even taught at the local college, though for the last and my only semester, and stopped when Hajdu-Cheney Syndrome made the line unbearable. I live in Grande Prairie, Alberta, with Melanie and our three kids &mdash; Daniel, Patience, and Faith. The rest of this page is where the threads come from.
                 </p>
             </section>
 
@@ -79,7 +79,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
                     <figcaption>Smoked-salmon spring rolls &mdash; six-course wine dinner.</figcaption>
                 </figure>
 
-                <p>I wrote curriculum. I built lesson plans. I stood in front of students eager to learn and I had to be the one with the answer by day 2. That was the hardest time I ever had and the best one.</p>
+                <p>I wrote curriculum. I built lesson plans. I stood in front of students eager to learn and I had to be the one with the answer by day 1. That was the hardest time I ever had and the best one. All my years speaking and teaching Product Knowledge/Steakology/Orientations and everything a good chef does to ensure the kitchen and dining staff know everything they need for success.</p>
 
                 <p>The last full kitchen I ran was Majors Homestyle &amp; Tractor Jack's. Before that, Ric's Grill &amp; Township 71 &mdash; I started at Ric's Grill as Head Chef on the same day Patience was born, ten days late. There's a story in that.</p>
 
@@ -152,7 +152,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
 
                 <p>This one &mdash; <a href="<?php echo esc_url( home_url() ); ?>"><?php echo esc_html( $personal_host ); ?></a> &mdash; is the personal hub. <a href="https://bareyourrare.org">bareyourrare.org</a> is a writing project about Hajdu-Cheney specifically and rare disease in general, built for the small group of people who go looking for it and don't find much. <a href="https://gpresidentialsociety.com">gpresidentialsociety.com</a> is the volunteer hub for the Grande Prairie Residential Society; I sit on its board and the website work is one of the ways I contribute.</p>
 
-                <p>I work with Claude, Anthropic's coding assistant, to build them. I don't write the code; I spec the design, the voice, the editorial moves, and Claude writes them out. Three sites in eighteen months says something about how that collaboration goes.</p>
+                <p>I work with Claude, Anthropic's coding assistant, to build them. I don't write all the code; I spec the design, the voice, the editorial moves, and Claude writes them out. Sometimes I write bits here and there but I am leagues behind AI and to tell the truth I am better off learning to use them than I am to learn how to build a pac-man game. Three sites in eighteen months says something about how that collaboration goes.</p>
             </section>
 
             <!-- ======================================================
@@ -170,9 +170,9 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
                     <figcaption>Faith and I.</figcaption>
                 </figure>
 
-                <p>I've kept structured goals &mdash; BHAGs, PDPs, annual reviews &mdash; for almost twenty years. The frameworks stayed even when the kitchen left.</p>
+                <p>I've kept structured goals &mdash; BHAGs, PDPs, annual reviews &mdash; for almost twenty years. The frameworks stayed even when the kitchen left. I admit the framework has been a little neglected the last year or so.</p>
 
-                <p>Lately the threads are: Bitcoin and decentralized ledgers (curiosity, mostly), AISH advocacy &mdash; Alberta's disability program is in a slow crisis and I've written about it &mdash; and the slow craft of getting the family record onto the page before the people who remember it stop being here to ask.</p>
+                <p>Lately the threads are: Bitcoin and decentralized ledgers (curiosity, mostly), AISH advocacy &mdash; Alberta's disability program is in a slow crisis and I've written about it &mdash; and the slow craft of getting the family record onto the page/slide/YouTube before the people who remember it stop being here to ask.</p>
             </section>
 
             <!-- ======================================================
@@ -180,7 +180,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
                  ====================================================== -->
             <section class="about-section about-section--closing scroll-animate">
                 <p class="about-closing">
-                    The fastest way to reach me is email. <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">The contact page has it.</a>
+                    The fastest way to reach me is email: <span data-tc-rot13="<?php echo esc_attr( str_rot13( 'thomasmcheesman@gmail.com' ) ); ?>"><?php echo esc_html( str_rot13( 'thomasmcheesman@gmail.com' ) ); ?></span>
                 </p>
             </section>
 

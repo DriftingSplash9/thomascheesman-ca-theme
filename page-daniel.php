@@ -32,13 +32,24 @@ get_header(); ?>
             <section class="heritage-line heritage-line--spoke heritage-line--person scroll-animate" id="daniel">
                 <div class="heritage-line__body">
 
-                    <p>Daniel was born on June 30, 2015. He's the reason Melanie and I delayed our wedding by a year &mdash; he would've shown up right when we'd planned to tie the knot, so he set the calendar instead.</p>
+                    <p>Daniel was born on June 30, 2015. He's the reason Melanie and I delayed our wedding by a year &mdash; he would've shown up right when we'd planned to tie the knot, so he set the calendar instead. Coincidentally he is nearly exactly 1 year and 9 months younger than his sister which means we celebrated Patience's first birthday right. It wouldn't be the last time either&hellip;</p>
 
-                    <p>I figured out he was on the way during hell week opening a new restaurant, with Patience at home and a Culinary Arts class to teach on top of it. I called Melanie out of the blue and said, &ldquo;Hey, I think you're pregnant.&rdquo; She rushed out for tests and called back giddy an hour later.</p>
+                    <p>I figured out he was on the way during hell week opening a new restaurant, with Patience at home and a Culinary Arts class to teach on top of it. I called Melanie out of the blue and said, &ldquo;Hey, I think you might be pregnant!!&rdquo; She rushed out for tests even though it was quite late and called back giddy an hour later.</p>
 
                     <p>Daniel arrived dreamy-eyed and bald enough that Uncle Vance nicknamed him Charlie Brown. He never really crawled &mdash; he butt-scootched, sitting upright and pushing himself along with one leg, then the other.</p>
 
-                    <p>He's still a quiet kid. Doesn't say much, but pay attention when he does. He goes at his own pace and goes in spurts &mdash; sometimes he'll mature a bunch overnight. Who knows, maybe he'll talk your ear off one day.</p>
+                    <figure class="heritage-line__figure">
+                        <video
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/Daniels-Crawl.mp4' ) ); ?>"
+                            controls
+                            preload="metadata"
+                            playsinline
+                            aria-label="<?php esc_attr_e( 'Daniel butt-scootching as a baby', 'tc-ventures-child' ); ?>"
+                        ></video>
+                        <figcaption>The butt-scootch in action &mdash; about ten years old, and a little blurry.</figcaption>
+                    </figure>
+
+                    <p>He's still a quiet kid. Doesn't say much but pay attention when he does. He goes at his own pace and goes in spurts &mdash; sometimes he'll mature a bunch overnight. Who knows, maybe he'll talk your ear off one day. Just hang out with him at bedtime hehehe.</p>
 
                 </div>
             </section>

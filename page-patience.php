@@ -42,9 +42,9 @@ get_header(); ?>
                         />
                     </figure>
 
-                    <p>Patience is my first miracle. I never thought I'd have kids &mdash; Hajdu-Cheney made the whole question feel risky enough that I figured most people wouldn't take it on. Melanie did.</p>
+                    <p>Patience is my first miracle. I never thought I'd have kids, part of me thought I shouldn't &mdash; Hajdu-Cheney made the whole question feel risky enough that I figured most people wouldn't take it on. Melanie did. Knowing how it has changed me the last 15 years I don't think she would do it over again. She'd do it for the kids.</p>
 
-                    <p>Patience arrived 10 days late, on the same day I started a new job as Head Chef at Ric's Grill. Family had come through the hospital and then gone back to their lives, and Melanie and I were left with this little princess P who, in her first spring, learned to stand right around the time I did the dumbest thing a new dad can do &mdash; pressed a blade of grass between my thumbs and blew hard, just to see what would happen. She screamed like she did when they cut her tongue tie. She forgave me.</p>
+                    <p>Patience arrived 10 days late, on the same day I started a new job as Head Chef at Ric's Grill. Family had come through the hospital and then gone back to their lives 800km away, and Melanie and I were left with this little princess P who, in her first spring, learned to stand right around the time I did the dumbest thing a new dad can do &mdash; pressed a blade of grass between my thumbs and blew hard, just to see what would happen. She screamed like she did when they cut her tongue tie. She eventually forgave me.</p>
 
                     <p>That summer we drove from Vancouver to Calgary to Grande Prairie in our old red Pontiac G5 to introduce her to the rest of the family. The stories that follow are hers.</p>
 

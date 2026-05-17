@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.294
+Version: 1.0.295
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2285,6 +2285,17 @@ body:has(.person-spoke--faith) {
                 border-color 0.4s ease,
                 --kb-scale 8s ease-out;
     will-change: transform, filter;
+}
+
+/* Inline editorial video (e.g. Daniel's crawl clip) — mirrors the
+   figure's image treatment so a <video> sits in the reading column
+   with the same framing as the photos around it. */
+.heritage-line__figure video {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--line-color, var(--primary-color)) 35%, transparent);
 }
 
 /* Runtime-injected lightbox wrapper anchor (added by initLightbox()

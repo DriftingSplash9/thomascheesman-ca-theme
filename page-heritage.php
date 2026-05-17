@@ -52,7 +52,7 @@ get_header(); ?>
     <section class="heritage-intro">
         <div class="container container--narrow">
             <p class="heritage-intro__lead">
-                Family is its own kind of map. Mine has five lines pulling in different directions &mdash; Cheesmans, Dochertys, Lakemans, Rycrofts, and Haistes. Some I know inside and out. Others are still mostly names on paper and a few photographs I'm trying to put faces to. Each line has its own page; tap a card to follow it down.
+                Family is its own kind of map. Mine has five lines pulling it in different directions &mdash; Cheesmans, Dochertys/McIvers, Lakemans, Rycrofts, and Haistes. Some I know inside and out. Others are still mostly names on paper and a few photographs I'm trying to put faces to. Each line has its own page; tap a card to follow it down.
             </p>
             <p class="heritage-intro__lead heritage-intro__lead--secondary">
                 If you have a story, a photo, or a correction, send it my way. These pages are working drafts for as long as I can keep typing.

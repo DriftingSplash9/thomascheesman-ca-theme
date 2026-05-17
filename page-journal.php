@@ -39,7 +39,7 @@ get_header();
             <section class="about-section scroll-animate">
 
                 <p class="about-lead">
-                    This is where the topics that don't fit Family or HCS end up &mdash; finance, civics, AISH, Bitcoin, whatever I've been chewing on lately. Most of it lives somewhere between a journal entry and a draft. None of it is final. The Hajdu-Cheney and rare-disease writing lives over on <a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare</a>.
+                    This is where the topics that don't fit Family or HCS end up &mdash; finance, civics, AISH, Bitcoin, whatever I've been chewing on lately. Most of it lives somewhere between a journal entry and a draft. None of it is final. The Hajdu-Cheney and rare-disease writing mostly lives over on <a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare</a>.
                 </p>
 
                 <?php
