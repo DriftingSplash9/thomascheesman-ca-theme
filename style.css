@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.295
+Version: 1.0.296
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -780,6 +780,21 @@ html.cursor-custom textarea,
 html.cursor-custom select,
 html.cursor-custom [contenteditable] {
     cursor: text;
+}
+
+/* Restore the OS cursor inside the PhotoSwipe lightbox. The lightbox is
+   a focused modal at z-index 100000 — far above the ink-trail canvas
+   (z-index 9999) — so the ink trail can't stand in for the cursor there.
+   Without this, `cursor: none` leaves the lightbox with no visible
+   cursor in the gaps between the photo and the toolbar (PhotoSwipe only
+   paints its own zoom/grab cursor over the image itself). PhotoSwipe
+   manages its own cursors, so we just lift the sitewide override. */
+html.cursor-custom .pswp,
+html.cursor-custom .pswp * {
+    cursor: auto;
+}
+html.cursor-custom .pswp__button {
+    cursor: pointer;
 }
 
 /* ============================================
