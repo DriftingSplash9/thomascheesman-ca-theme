@@ -925,13 +925,35 @@ function initPostCarousel() {
             const cardW = card ? card.getBoundingClientRect().width : 260;
             return Math.min(track.clientWidth * 0.85, (cardW + 18) * 2);
         }
-        function update() {
-            const max = track.scrollWidth - track.clientWidth - 2;
-            prev.hidden = track.scrollLeft <= 2;
-            next.hidden = track.scrollLeft >= max;
+        function maxScroll() {
+            return Math.max(0, track.scrollWidth - track.clientWidth);
         }
-        prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
-        next.addEventListener('click', () => track.scrollBy({ left:  step(), behavior: 'smooth' }));
+        function update() {
+            prev.hidden = track.scrollLeft <= 2;
+            next.hidden = track.scrollLeft >= maxScroll() - 2;
+        }
+        // Manual rAF glide — native scrollBy({behavior:'smooth'}) does
+        // not move this flex/overflow track reliably, so animate
+        // scrollLeft ourselves with an ease-out curve.
+        let raf = 0;
+        function glideTo(target) {
+            target = Math.max(0, Math.min(target, maxScroll()));
+            const start = track.scrollLeft;
+            const dist  = target - start;
+            if (Math.abs(dist) < 1) return;
+            const dur = 380;
+            let t0 = 0;
+            cancelAnimationFrame(raf);
+            function frame(ts) {
+                if (!t0) t0 = ts;
+                const p = Math.min(1, (ts - t0) / dur);
+                track.scrollLeft = start + dist * (1 - Math.pow(1 - p, 3));
+                if (p < 1) raf = requestAnimationFrame(frame);
+            }
+            raf = requestAnimationFrame(frame);
+        }
+        prev.addEventListener('click', () => glideTo(track.scrollLeft - step()));
+        next.addEventListener('click', () => glideTo(track.scrollLeft + step()));
         track.addEventListener('scroll', update, { passive: true });
         window.addEventListener('resize', update);
         update();
