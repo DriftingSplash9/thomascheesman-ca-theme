@@ -373,6 +373,7 @@ get_header(); ?>
 
                 <h3 class="about-section__subheading">For HCS specifically</h3>
                 <ul class="about-list">
+                    <li><a href="<?php echo esc_url( home_url( '/hcs/case-studies' ) ); ?>">Case Studies &amp; Research</a> &mdash; my curated library of the free HCS case reports, NOTCH2 genetic research, and RANK-L studies worth reading.</li>
                     <li><a href="https://bareyourrare.org">Bare Your Rare</a> &mdash; my own writing on HCS, including the patient guide, my chronological story, and the Resources page that goes deeper than this one.</li>
                     <li>Elizabeth Bombal's 2022 thesis, <em>Assessment and Development of Educational Resources for Hajdu-Cheney Syndrome</em> &mdash; the most useful single document by a fellow patient. Available through the University of Connecticut.</li>
                     <li><a href="https://www.omim.org/entry/102500">OMIM #102500</a> &mdash; the Online Mendelian Inheritance in Man entry for HCS. Authoritative gene-and-phenotype reference.</li>
