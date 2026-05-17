@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initGallerySlideshow();
     initContactEmail();
     initRot13Email();
+    initPostCarousel();
     // initBlogReveal();
     initScrollReveals();
     initHeritagePage();
@@ -904,6 +905,36 @@ function initRot13Email() {
     document.querySelectorAll('[data-tc-rot13]').forEach((el) => {
         const decoded = rot13(el.getAttribute('data-tc-rot13') || '');
         if (decoded) el.textContent = decoded;
+    });
+}
+
+/* =====================================================================
+   Read-next carousel — horizontal scroll-snapped strip of post cards
+   at the foot of every single post (single.php / .post-carousel). The
+   prev/next arrows scroll the track; each arrow hides at its end.
+   ===================================================================== */
+function initPostCarousel() {
+    document.querySelectorAll('.post-carousel').forEach((carousel) => {
+        const track = carousel.querySelector('.post-carousel__track');
+        const prev  = carousel.querySelector('.post-carousel__arrow--prev');
+        const next  = carousel.querySelector('.post-carousel__arrow--next');
+        if (!track || !prev || !next) return;
+
+        function step() {
+            const card  = track.querySelector('.post-carousel__item');
+            const cardW = card ? card.getBoundingClientRect().width : 260;
+            return Math.min(track.clientWidth * 0.85, (cardW + 18) * 2);
+        }
+        function update() {
+            const max = track.scrollWidth - track.clientWidth - 2;
+            prev.hidden = track.scrollLeft <= 2;
+            next.hidden = track.scrollLeft >= max;
+        }
+        prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+        next.addEventListener('click', () => track.scrollBy({ left:  step(), behavior: 'smooth' }));
+        track.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        update();
     });
 }
 
