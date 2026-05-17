@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initContactEmail();
     initRot13Email();
     initPostCarousel();
+    initEssaySections();
     // initBlogReveal();
     initScrollReveals();
     initHeritagePage();
@@ -958,6 +959,31 @@ function initPostCarousel() {
         window.addEventListener('resize', update);
         update();
     });
+}
+
+/* =====================================================================
+   Essay collapsibles — the "Proud Of Canada" essay (.mc-essay) breaks
+   into <details> sections. Clicking a contents card opens its target
+   section before the browser's native #anchor jump scrolls to it; a
+   deep link (/#sec-…) opens that section on load.
+   ===================================================================== */
+function initEssaySections() {
+    if (!document.querySelector('.mc-section')) return;
+
+    document.querySelectorAll('.mc-card[href^="#sec-"]').forEach((link) => {
+        link.addEventListener('click', () => {
+            const target = document.getElementById(link.getAttribute('href').slice(1));
+            if (target && target.tagName === 'DETAILS') target.open = true;
+        });
+    });
+
+    if (location.hash.indexOf('#sec-') === 0) {
+        const target = document.getElementById(location.hash.slice(1));
+        if (target && target.tagName === 'DETAILS') {
+            target.open = true;
+            target.scrollIntoView();
+        }
+    }
 }
 
 /* =====================================================================

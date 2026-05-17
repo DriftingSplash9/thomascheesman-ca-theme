@@ -339,3 +339,57 @@ add_filter( 'wp_unique_post_slug', 'tc_ventures_allow_page_slug_over_attachment'
 
 // Disable Gutenberg editor entirely (we want PHP templates, not blocks):
 // add_filter( 'use_block_editor_for_post_type', '__return_false', 10 );
+
+/**
+ * Render the "Read next" carousel — a horizontal strip of other posts.
+ *
+ * Lives in one place so single.php and the bespoke page/post templates
+ * (e.g. the case-studies page, the Proud Of Canada essay) can all drop
+ * it in. initPostCarousel() in main.js drives the prev/next arrows.
+ */
+function tc_render_read_next() {
+    $q = new WP_Query( array(
+        'post_type'           => 'post',
+        'posts_per_page'      => 9,
+        'post__not_in'        => array( get_queried_object_id() ),
+        'orderby'             => 'date',
+        'order'               => 'DESC',
+        'ignore_sticky_posts' => true,
+    ) );
+    if ( ! $q->have_posts() ) {
+        return;
+    }
+    ?>
+    <section class="post-carousel" aria-label="<?php esc_attr_e( 'More posts to read', 'tc-ventures-child' ); ?>">
+        <div class="container">
+            <h2 class="post-carousel__heading">Read next</h2>
+            <div class="post-carousel__viewport">
+                <button type="button" class="post-carousel__arrow post-carousel__arrow--prev" aria-label="<?php esc_attr_e( 'Scroll back', 'tc-ventures-child' ); ?>">&larr;</button>
+                <ul class="post-carousel__track">
+                    <?php while ( $q->have_posts() ) : $q->the_post(); ?>
+                        <li class="post-carousel__item">
+                            <a class="post-carousel__card" href="<?php the_permalink(); ?>">
+                                <span class="post-carousel__thumb">
+                                    <?php
+                                    if ( has_post_thumbnail() ) {
+                                        the_post_thumbnail( 'medium' );
+                                    } else {
+                                        echo '<span class="post-carousel__thumb-fallback" aria-hidden="true">TC</span>';
+                                    }
+                                    ?>
+                                </span>
+                                <span class="post-carousel__card-body">
+                                    <span class="post-carousel__card-meta"><?php echo esc_html( get_the_date( 'F j, Y' ) ); ?></span>
+                                    <span class="post-carousel__card-title"><?php the_title(); ?></span>
+                                </span>
+                            </a>
+                        </li>
+                    <?php endwhile; ?>
+                </ul>
+                <button type="button" class="post-carousel__arrow post-carousel__arrow--next" aria-label="<?php esc_attr_e( 'Scroll forward', 'tc-ventures-child' ); ?>">&rarr;</button>
+            </div>
+        </div>
+    </section>
+    <?php
+    wp_reset_postdata();
+}

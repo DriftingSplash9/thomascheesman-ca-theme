@@ -167,6 +167,8 @@ get_header(); ?>
         </div>
     </article>
 
+    <?php tc_render_read_next(); ?>
+
 </main>
 
 <?php get_footer(); ?>
