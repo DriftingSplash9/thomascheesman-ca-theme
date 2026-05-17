@@ -67,66 +67,6 @@ get_header(); ?>
         </div>
     </section>
 
-    <!-- LATEST POSTS SECTION -->
-    <section class="blog-section scroll-animate">
-        <div class="container">
-            <h2>Latest Blog Posts</h2>
-
-            <div class="posts-grid">
-                <?php
-                $args = array(
-                    'post_type'      => 'post',
-                    'posts_per_page' => 5,
-                    'orderby'        => 'date',
-                    'order'          => 'DESC',
-                );
-
-                $query = new WP_Query( $args );
-
-                if ( $query->have_posts() ) :
-                    while ( $query->have_posts() ) : $query->the_post();
-                        ?>
-                        <article class="post-card">
-
-                            <?php if ( has_post_thumbnail() ) : ?>
-                                <div class="post-card-thumb">
-                                    <?php the_post_thumbnail( 'medium' ); ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <div class="post-card-body">
-                                <div class="post-card-meta">
-                                    <?php echo get_the_date( 'F j, Y' ); ?>
-                                </div>
-
-                                <h3>
-                                    <a href="<?php the_permalink(); ?>">
-                                        <?php the_title(); ?>
-                                    </a>
-                                </h3>
-
-                                <p>
-                                    <?php echo wp_trim_words( get_the_excerpt(), 20 ); ?>
-                                </p>
-
-                                <a href="<?php the_permalink(); ?>" class="post-card-readmore">
-                                    Read More &rarr;
-                                </a>
-                            </div>
-                        </article>
-                        <?php
-                    endwhile;
-                    wp_reset_postdata();
-                endif;
-                ?>
-            </div>
-
-            <div class="blog-section-cta">
-                <a href="<?php echo home_url('/blog'); ?>" class="btn-primary">View All Posts</a>
-            </div>
-        </div>
-    </section>
-
     <!-- CTA SECTION -->
     <section class="cta-section scroll-animate">
         <div class="container">

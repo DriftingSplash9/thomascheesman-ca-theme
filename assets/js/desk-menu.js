@@ -7,7 +7,6 @@
  *                            [data-menu-trigger] button in the
  *                            top-right capsule)
  *   - Memory-card bin       (opens the slideshow drawer)
- *   - Notebooks             (opens the journal drawer)
  *   - Keyboard              (swaps the monitor to the search interface)
  *
  * Drawer close: button, click-outside, Esc.
@@ -31,7 +30,6 @@
     function init() {
         wireMenuTrigger();
         wireDrawer( 'tc-desk-bin',       'tc-desk-slideshow-drawer' );
-        wireDrawer( 'tc-desk-notebooks', 'tc-desk-journal-drawer'   );
         wireDrawer( 'tc-desk-mouse',     'tc-desk-trail-drawer'     );
         wireDrawer( 'tc-desk-frog',      'tc-desk-games-drawer'     );
         wireDrawer( 'tc-desk-crest',     'tc-desk-crest-drawer'     );

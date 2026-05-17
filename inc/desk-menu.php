@@ -6,10 +6,9 @@
  * is the active portal showing the Contents nav; the desk objects
  * around it are meaningful personal artifacts — family gifts, books,
  * marbles, the kid-drawn Alberta crest — each with a small handwritten
- * card that fades in on hover. Three objects are clickable affordances:
+ * card that fades in on hover. Several objects are clickable affordances:
  *
  *   - The keyboard      → opens a search interface inside the monitor
- *   - The notebooks     → opens the journal drawer (post categories)
  *   - The memory cards  → opens the slideshow drawer (per-kid + family)
  *
  * --- Visibility ----------------------------------------------------
@@ -36,7 +35,7 @@
  *       .tc-desk__hotspot              hover-only, warm yellow glow
  *       .tc-desk__hotspot--clickable   actionable, cyan spotlight
  *
- * - Drawers: slideshow + journal directory popovers; full-viewport
+ * - Drawers: slideshow and similar directory popovers; full-viewport
  *   overlays with the desk visible blurred behind.
  *
  * Hotspot coordinates were dialed in across iterations against
@@ -81,10 +80,6 @@ function tc_render_desk_menu() {
                 <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">
                     <span class="title">Patience, Daniel, and Faith</span>
                     <span class="pageno">63</span>
-                </a></li>
-                <li><a href="<?php echo esc_url( home_url( '/journal' ) ); ?>">
-                    <span class="title">Things I think about</span>
-                    <span class="pageno">97</span>
                 </a></li>
                 <li><a href="https://tc-timeline.vercel.app/">
                     <span class="title">My whole life so far</span>
@@ -256,9 +251,9 @@ function tc_render_desk_menu() {
             <div class="tc-desk__card tc-desk__card--left">L'Homme by Yves Saint Laurent. My one.</div>
         </div>
 
-        <!-- Notebooks (clickable) — opens the journal drawer -->
-        <div class="tc-desk__hotspot tc-desk__hotspot--clickable" id="tc-desk-notebooks" style="left:78.11%; top:46.30%; width:21.89%; height:25.77%; --hot-x:78.11; --hot-y:46.30; --hot-w:21.89; --hot-h:25.77; --hot-png: url('/wp-content/uploads/2026/05/notebooks.png');" aria-label="Notebooks &mdash; open the journal">
-            <div class="tc-desk__card tc-desk__card--left">Notebooks. A lot of me is in those. Click &mdash; read the journal.</div>
+        <!-- Notebooks -->
+        <div class="tc-desk__hotspot" style="left:78.11%; top:46.30%; width:21.89%; height:25.77%; --hot-x:78.11; --hot-y:46.30; --hot-w:21.89; --hot-h:25.77; --hot-png: url('/wp-content/uploads/2026/05/notebooks.png');" aria-label="Notebooks">
+            <div class="tc-desk__card tc-desk__card--left">Notebooks. A lot of me is in those.</div>
         </div>
 
         <!-- Bitcoin Standard + Broken Money -->
@@ -301,7 +296,6 @@ function tc_render_desk_menu() {
             <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
             <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">HCS</a></li>
             <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
-            <li><a href="<?php echo esc_url( home_url( '/journal' ) ); ?>">My Ramblings</a></li>
             <li><a href="https://tc-timeline.vercel.app/">Timeline</a></li>
             <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a></li>
         </ul>
@@ -422,35 +416,6 @@ function tc_render_desk_menu() {
                 </button>
             </div>
 
-        </div>
-    </div>
-
-    <!-- ============================================================
-         JOURNAL DRAWER — opens when notebooks are clicked.
-         ============================================================ -->
-    <div class="tc-desk__drawer" id="tc-desk-journal-drawer" role="dialog" aria-hidden="true">
-        <div class="tc-desk__drawer-inner">
-            <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
-            <h2>The journal</h2>
-            <p class="tc-desk__drawer-sub">Notebooks. Things I think about &mdash; squirrels, flying pigs, crayons.</p>
-            <div class="tc-desk__drawer-grid">
-                <a href="<?php echo esc_url( home_url( '/journal' ) ); ?>" class="tc-desk__drawer-card">
-                    <span class="tc-desk__drawer-card-title">All entries</span>
-                    <span class="tc-desk__drawer-card-count">the feed</span>
-                </a>
-                <a href="<?php echo esc_url( home_url( '/category/family' ) ); ?>" class="tc-desk__drawer-card">
-                    <span class="tc-desk__drawer-card-title">Family stories</span>
-                    <span class="tc-desk__drawer-card-count">kids + heritage</span>
-                </a>
-                <a href="<?php echo esc_url( home_url( '/category/hcs' ) ); ?>" class="tc-desk__drawer-card">
-                    <span class="tc-desk__drawer-card-title">HCS</span>
-                    <span class="tc-desk__drawer-card-count">life with this body</span>
-                </a>
-                <a href="<?php echo esc_url( home_url( '/journal' ) ); ?>" class="tc-desk__drawer-card">
-                    <span class="tc-desk__drawer-card-title">Kitchen</span>
-                    <span class="tc-desk__drawer-card-count">chef years &mdash; coming soon</span>
-                </a>
-            </div>
         </div>
     </div>
 

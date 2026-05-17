@@ -413,53 +413,6 @@ get_header(); ?>
             </section>
 
             <!-- ======================================================
-                 SECTION 11 — Writing on HCS
-                 Posts feed if HCS-categorized posts exist; otherwise
-                 empty state pointing to BYR.
-                 ====================================================== -->
-            <section class="about-section scroll-animate">
-                <h2 class="about-section__heading">Writing on HCS</h2>
-
-                <?php
-                $hcs_query = new WP_Query( array(
-                    'post_type'      => 'post',
-                    'posts_per_page' => 6,
-                    'orderby'        => 'date',
-                    'order'          => 'DESC',
-                    'category_name'  => 'hcs',
-                ) );
-
-                if ( $hcs_query->have_posts() ) :
-                    ?>
-                    <div class="posts-grid">
-                        <?php while ( $hcs_query->have_posts() ) : $hcs_query->the_post(); ?>
-                            <article class="post-card">
-                                <?php if ( has_post_thumbnail() ) : ?>
-                                    <div class="post-card-thumb">
-                                        <?php the_post_thumbnail( 'medium' ); ?>
-                                    </div>
-                                <?php endif; ?>
-                                <div class="post-card-body">
-                                    <div class="post-card-meta"><?php echo esc_html( get_the_date( 'F j, Y' ) ); ?></div>
-                                    <h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
-                                    <p><?php echo esc_html( wp_trim_words( get_the_excerpt(), 20 ) ); ?></p>
-                                    <a href="<?php the_permalink(); ?>" class="post-card-readmore">Read More &rarr;</a>
-                                </div>
-                            </article>
-                        <?php endwhile; ?>
-                    </div>
-                    <?php
-                    wp_reset_postdata();
-                else :
-                    ?>
-                    <p>This is where my HCS-specific posts will live as I migrate them over from the old site and write new ones. Three older essays &mdash; <em>Understanding HCS</em>, <em>What is Hajdu Cheney</em>, and <em>HCS and Me</em> &mdash; are scheduled to come across. New writing on the way.</p>
-                    <p>Until they land, the most current writing on this is on <a href="https://bareyourrare.org">Bare Your Rare</a>. Linked above.</p>
-                    <?php
-                endif;
-                ?>
-            </section>
-
-            <!-- ======================================================
                  SECTION 12 — A last thing
                  TODO image: closing portrait. Recent, plain, looking
                  at the camera. Centered, smaller than hero.
