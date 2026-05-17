@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.299
+Version: 1.0.300
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3983,6 +3983,19 @@ body:has(.person-spoke--faith) {
    column. These rules give the post body the same typography as the
    bespoke pages, then a "detox" block neutralises the legacy
    block-editor styling baked into the older post bodies. */
+
+/* Astra's "separate container" layout boxes the single-post <article>
+   in a white card (.ast-article-single, pulled in via post_class()).
+   single.php supplies its own dark editorial chrome, so strip Astra's
+   box entirely — transparent, no shadow, no padding. */
+body.single .ast-article-single,
+.single-post-page .single-post {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
 
 .single-post__hero-figure {
     margin: clamp(28px, 5vh, 48px) auto 0;
