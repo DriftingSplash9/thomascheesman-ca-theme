@@ -29,6 +29,7 @@
 
     function init() {
         wireMenuTrigger();
+        wireMenuMode();
         wireDrawer( 'tc-desk-bin',       'tc-desk-slideshow-drawer' );
         wireDrawer( 'tc-desk-mouse',     'tc-desk-trail-drawer'     );
         wireDrawer( 'tc-desk-frog',      'tc-desk-games-drawer'     );
@@ -39,6 +40,28 @@
         wireScreensaver();
         wireCursorTrail();
         wireHotspotTilt();
+    }
+
+    /* Menu mode — the desk (default) vs. a plain vertical list. The
+       choice is saved in localStorage so a visitor who prefers the
+       plain menu only switches once. [data-tc-menu-mode] buttons live
+       in the Contents panel ("plain") and the plain nav ("desk"). */
+    function wireMenuMode() {
+        var KEY = 'tcMenuMode';
+        function apply( mode ) {
+            doc.documentElement.classList.toggle( 'tc-desk-plain', mode === 'plain' );
+        }
+        try {
+            if ( localStorage.getItem( KEY ) === 'plain' ) { apply( 'plain' ); }
+        } catch ( e ) {}
+        var buttons = doc.querySelectorAll( '[data-tc-menu-mode]' );
+        for ( var i = 0; i < buttons.length; i++ ) {
+            buttons[ i ].addEventListener( 'click', function () {
+                var mode = this.getAttribute( 'data-tc-menu-mode' );
+                apply( mode );
+                try { localStorage.setItem( KEY, mode ); } catch ( e ) {}
+            } );
+        }
     }
 
     /**

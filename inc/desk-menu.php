@@ -107,6 +107,12 @@ function tc_render_desk_menu() {
                 </a></li>
             </ul>
 
+            <!-- Mode toggle — switch the menu to a plain vertical list.
+                 desk-menu.js stores the choice in localStorage. -->
+            <button type="button" class="tc-desk__mode-toggle" data-tc-menu-mode="plain">
+                View as a plain list &rarr;
+            </button>
+
             <!-- Matrix-style screensaver. Hidden by default; after 30s
                  of inactivity inside the overlay, JS adds .is-idle on
                  the monitor and this overlay fades in. Any movement /
@@ -327,6 +333,9 @@ function tc_render_desk_menu() {
                 </ul>
             </div>
         </div>
+        <button type="button" class="tc-desk__mode-toggle tc-desk__mode-toggle--desk" data-tc-menu-mode="desk">
+            &larr; Back to the desk
+        </button>
     </nav>
 
     <!-- ============================================================
