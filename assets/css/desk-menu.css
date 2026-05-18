@@ -1124,6 +1124,7 @@ html.tc-desk-open .tc-desk__toc{
 .tc-desk__toc:not(.tc-desk__toc--aside) li a{
     color: #faf6ea;
     font-size: clamp(13px, 1.3vw, 19px);
+    padding: 1px 6px;
 }
 .tc-desk__toc:not(.tc-desk__toc--aside) .pageno{
     color: #c9bd96;
