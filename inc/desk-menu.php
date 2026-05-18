@@ -107,12 +107,6 @@ function tc_render_desk_menu() {
                 </a></li>
             </ul>
 
-            <!-- Mode toggle — switch the menu to a plain vertical list.
-                 desk-menu.js stores the choice in localStorage. -->
-            <button type="button" class="tc-desk__mode-toggle" data-tc-menu-mode="plain">
-                View as a plain list &rarr;
-            </button>
-
             <!-- Matrix-style screensaver. Hidden by default; after 30s
                  of inactivity inside the overlay, JS adds .is-idle on
                  the monitor and this overlay fades in. Any movement /
@@ -188,6 +182,13 @@ function tc_render_desk_menu() {
                 <button class="tc-desk__search-back" id="tc-desk-search-back" type="button">&larr; back to menu</button>
             </div>
         </div>
+
+        <!-- Plain-menu toggle — sits just below the monitor, OUTSIDE it,
+             so the screen's clip-path / overflow can't crop it off.
+             desk-menu.js saves the choice in localStorage. -->
+        <button type="button" class="tc-desk__mode-toggle tc-desk__mode-toggle--plain" data-tc-menu-mode="plain">
+            View as a plain list &rarr;
+        </button>
 
         <!-- ============================================================
              HOTSPOTS — meaningful objects on the desk.

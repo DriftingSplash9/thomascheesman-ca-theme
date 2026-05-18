@@ -1116,7 +1116,7 @@ html.tc-desk-open .tc-desk__toc{
     backdrop-filter: blur(6px);
     border: 1px solid rgba(255,255,255,0.16);
     border-radius: 10px;
-    padding: 9px 3% 10px;
+    padding: 2px 3% 3px;
     box-shadow:
         0 6px 22px -8px rgba(0,0,0,0.65),
         inset 0 1px 0 rgba(255,255,255,0.06);
@@ -1130,6 +1130,7 @@ html.tc-desk-open .tc-desk__toc{
 }
 .tc-desk__toc-aside-label{
     color: #b3a684;
+    margin: 0.5em 0 0.15em;
 }
 .tc-desk__toc--aside li a{
     color: #e0d8bf;
@@ -1139,13 +1140,14 @@ html.tc-desk-open .tc-desk__toc{
     color: #b3a684;
 }
 
-/* Mode toggle — "View as a plain list" / "Back to the desk". */
+/* Mode toggle — "View as a plain list" / "Back to the desk". A frosted
+   dark pill so it reads clearly over the desk photo. */
 .tc-desk__mode-toggle{
-    display: block;
-    margin: 1.1em auto 0;
     padding: 7px 16px 8px;
-    background: rgba(0,229,255,0.07);
-    border: 1px solid rgba(0,229,255,0.32);
+    background: rgba(8,8,20,0.85);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0,229,255,0.45);
     border-radius: 999px;
     color: #d6f6fb;
     font-family: Georgia, serif;
@@ -1156,17 +1158,26 @@ html.tc-desk-open .tc-desk__toc{
 }
 .tc-desk__mode-toggle:hover,
 .tc-desk__mode-toggle:focus-visible{
-    background: rgba(0,229,255,0.16);
-    border-color: rgba(0,229,255,0.70);
+    background: rgba(8,8,20,0.96);
+    border-color: rgba(0,229,255,0.85);
     color: #fff;
     outline: none;
 }
-.tc-desk__monitor.is-searching .tc-desk__mode-toggle,
-.tc-desk__monitor.is-idle .tc-desk__mode-toggle{
-    display: none;
+/* "View as a plain list" sits just below the monitor — positioned
+   outside the screen so its clip-path / overflow can't crop it. */
+.tc-desk__mode-toggle--plain{
+    position: absolute;
+    left: 46.5%;
+    top: 58.6%;
+    transform: translateX(-50%);
+    z-index: 5;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
 }
+/* "Back to the desk" lives in normal flow inside the plain nav. */
 .tc-desk__mode-toggle--desk{
-    margin-top: 36px;
+    display: block;
+    margin: 36px auto 0;
 }
 /* The desk-return toggle is pointless on touch (the desk metaphor is
    already off there) — hide it on small screens. */
