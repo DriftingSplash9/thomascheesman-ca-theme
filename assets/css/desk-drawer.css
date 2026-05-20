@@ -40,57 +40,123 @@
 }
 
 /* ----------------------------------------------------------------
-   LIP — the wooden top edge of the drawer, with the brass pull
-   centered on it. The lip is what the previous section sits on top
-   of, so it removes the old footer/CTA gap entirely. */
+   LIP — the wooden top edge of the drawer. Taller now (50px) with
+   subtle wood-grain striations, brass nailheads at the corners,
+   and the brass pull centered. Reads as the top board of a real
+   drawer rather than a thin trim strip. */
 .tc-drawer__lip {
     position: relative;
-    height: 28px;
+    height: 46px;
     background:
+        /* faint wood-grain — repeating linear striations */
+        repeating-linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0)        0px,
+            rgba(0, 0, 0, 0)        7px,
+            rgba(0, 0, 0, 0.06)     8px,
+            rgba(0, 0, 0, 0)        9px,
+            rgba(255, 200, 120, 0.04) 16px,
+            rgba(0, 0, 0, 0)        24px
+        ),
+        /* main wood tones — darker at edges, lighter middle */
         linear-gradient(180deg,
-            #1a0f08 0%,
-            var(--tc-wood) 30%,
-            var(--tc-wood-light) 60%,
-            #1a0f08 100%);
+            #150b06 0%,
+            #3a2414 18%,
+            var(--tc-wood-light) 50%,
+            #3a2414 82%,
+            #100804 100%);
     box-shadow:
-        inset 0 1px 0 rgba(255, 200, 120, 0.08),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
-        0 -8px 24px rgba(0, 0, 0, 0.45);
+        inset 0 1px 0 rgba(255, 200, 120, 0.14),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.65),
+        0 -10px 28px rgba(0, 0, 0, 0.5);
 }
-/* The brass pull — a horizontal nub sitting in the lip's center. */
+/* Brass nailheads at each end of the lip — like the studs that
+   would hold the front of a real drawer to the side rails. */
+.tc-drawer__lip::before,
+.tc-drawer__lip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    transform: translateY(-50%);
+    background:
+        radial-gradient(circle at 35% 30%,
+            var(--tc-brass-bright) 0%,
+            var(--tc-brass) 55%,
+            #4a3217 100%);
+    box-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.55),
+        0 0.5px 0 rgba(255, 220, 160, 0.4) inset;
+}
+.tc-drawer__lip::before { left: 28px; }
+.tc-drawer__lip::after  { right: 28px; }
+
+/* The brass pull — wider and more dimensional now, with a hint of
+   reflected highlight along its center to read as polished metal. */
 .tc-drawer__pull {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 72px;
-    height: 10px;
-    border-radius: 6px;
+    width: 96px;
+    height: 14px;
+    border-radius: 7px;
     background:
         linear-gradient(180deg,
-            var(--tc-brass-bright) 0%,
-            var(--tc-brass) 50%,
+            #fff0c2 0%,
+            var(--tc-brass-bright) 28%,
+            var(--tc-brass) 55%,
             #6b4d22 100%);
     box-shadow:
-        0 1px 0 rgba(255, 220, 160, 0.6) inset,
-        0 -1px 0 rgba(0, 0, 0, 0.5) inset,
-        0 2px 4px rgba(0, 0, 0, 0.5);
+        0 1px 0 rgba(255, 235, 190, 0.7) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.55) inset,
+        0 3px 6px rgba(0, 0, 0, 0.55);
 }
 
 /* ----------------------------------------------------------------
-   BODY — the felt-lined interior of the drawer. */
+   BODY — the felt-lined interior. Side walls and a bottom edge
+   are drawn via inset shadows so the body reads as a 3D well.
+   The interior gets a subtle vignette top-edge from a strong
+   inset shadow at the top (where the lid sits over the well). */
 .tc-drawer__body {
+    position: relative;
     background:
         radial-gradient(ellipse at 50% 0%,
-            rgba(184, 146, 78, 0.06) 0%,
-            transparent 60%),
+            rgba(184, 146, 78, 0.08) 0%,
+            transparent 55%),
         linear-gradient(180deg,
-            #100a18 0%,
-            var(--tc-felt) 80%,
-            #060410 100%);
-    border-top: 1px solid rgba(0, 0, 0, 0.6);
-    box-shadow: inset 0 24px 36px -28px rgba(0, 0, 0, 0.9);
-    padding: clamp(24px, 4vh, 44px) 24px clamp(24px, 4vh, 40px);
+            #0d0816 0%,
+            var(--tc-felt) 75%,
+            #050310 100%);
+    border-top: 1px solid rgba(0, 0, 0, 0.7);
+    box-shadow:
+        /* deep inner shadow at the top — looking down into the well */
+        inset 0 28px 40px -28px rgba(0, 0, 0, 0.95),
+        /* side walls — subtle dark verticals via inset shadow */
+        inset 18px 0 28px -22px rgba(0, 0, 0, 0.75),
+        inset -18px 0 28px -22px rgba(0, 0, 0, 0.75);
+    padding: clamp(28px, 4vh, 48px) 32px clamp(28px, 4vh, 44px);
+}
+/* Bottom wood edge — mirror of the top lip, but thinner.
+   Sells the "drawer base" so the body has a defined bottom. */
+.tc-drawer__body::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 10px;
+    background:
+        linear-gradient(180deg,
+            #1a0e07 0%,
+            var(--tc-wood) 50%,
+            #0a0503 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 200, 120, 0.06),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.7);
+    pointer-events: none;
 }
 
 .tc-drawer__interior {
@@ -353,88 +419,178 @@
 }
 
 /* ----------------------------------------------------------------
-   THE MARBLE — bottom-right corner of the interior. Idle bob is
-   handled with a CSS animation; desk-drawer.js can amplify on
-   scroll velocity if needed. */
+   THE MARBLE — nestled in a wooden "cup" at the bottom-right of
+   the drawer interior. Structure:
+     .tc-drawer__marble-cup       — wrapper that positions the cup
+       .tc-drawer__marble         — the sphere (rotates + bobs)
+         .tc-drawer__marble-tip   — handwritten "tap to play" hint
+       ::before on the cup        — ground shadow that grows/shrinks
+                                    in sync with the bob (sells 3D)
+
+   The cup has a subtle brass rim so the marble looks placed, not
+   floating. The sphere uses two stacked radial gradients (specular
+   highlight + main body) plus an inset crescent shadow opposite the
+   light source for the curved "glass marble" look. */
+
+.tc-drawer__marble-cup {
+    position: absolute;
+    right: 8px;
+    bottom: 14px;
+    width: 52px;
+    height: 52px;
+    /* visual cup the marble sits in */
+    background:
+        radial-gradient(ellipse at 50% 35%,
+            rgba(0, 0, 0, 0.55) 0%,
+            rgba(0, 0, 0, 0.35) 38%,
+            transparent 70%);
+    border-radius: 50%;
+    pointer-events: none; /* clicks go to the marble itself */
+}
+/* Animated ground shadow under the marble. Slightly elliptical;
+   shrinks + softens when the marble is at the top of its bob,
+   expands + darkens when it touches down — that contrast sells
+   the depth more than the sphere's own gradient does. */
+.tc-drawer__marble-cup::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    width: 36px;
+    height: 8px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center,
+        rgba(0, 0, 0, 0.65) 0%,
+        rgba(0, 0, 0, 0.4)  40%,
+        transparent 75%);
+    filter: blur(1.5px);
+    animation: tc-drawer-marble-shadow 4.6s ease-in-out infinite;
+}
+
 .tc-drawer__marble {
     position: absolute;
-    right: -6px;
-    bottom: -14px;
-    width: 28px;
-    height: 28px;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: none;
     padding: 0;
     cursor: pointer;
+    /* Two stacked layers:
+       1. Specular highlight at upper-left (small bright dot)
+       2. Main body gradient sweeping from highlight side into deep blue */
     background:
-        radial-gradient(circle at 30% 25%,
-            #ffffff 0%,
-            #c0d8e8 18%,
-            #4a7ea0 60%,
-            #1a3a55 100%);
+        radial-gradient(circle at 32% 28%,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(255, 255, 255, 0)    14%),
+        radial-gradient(circle at 38% 32%,
+            #f5fbff 0%,
+            #c7e0ed 22%,
+            #5a8cb0 58%,
+            #1f3d5a 88%,
+            #0e1f30 100%);
     box-shadow:
-        0 6px 10px rgba(0, 0, 0, 0.55),
-        0 1px 0 rgba(255, 255, 255, 0.18) inset,
-        0 -2px 4px rgba(0, 0, 0, 0.4) inset;
-    animation: tc-drawer-marble-bob 4.2s ease-in-out infinite;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+        /* drop shadow (subtle — the cup's ::before is the real one) */
+        0 4px 6px rgba(0, 0, 0, 0.45),
+        /* outer "polish" rim */
+        0 0 0 0.5px rgba(255, 255, 255, 0.18) inset,
+        /* crescent shadow on the dark side (opposite the highlight) —
+           the trick that sells the curvature */
+        -6px -4px 10px rgba(0, 0, 0, 0.55) inset,
+        /* tiny bottom-right rim highlight (reflected light) */
+        2px 2px 4px rgba(255, 255, 255, 0.08) inset;
+    animation: tc-drawer-marble-bob 4.6s ease-in-out infinite;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.25s ease;
+    pointer-events: auto;
 }
 .tc-drawer__marble:hover,
 .tc-drawer__marble:focus-visible {
-    transform: scale(1.18);
+    /* lift + scale; pause the bob so the marble visibly responds */
+    transform: translateX(-50%) translateY(-6px) scale(1.18);
     box-shadow:
-        0 8px 14px rgba(0, 0, 0, 0.6),
-        0 0 0 4px rgba(34, 211, 238, 0.25),
-        0 1px 0 rgba(255, 255, 255, 0.2) inset;
+        0 10px 14px rgba(0, 0, 0, 0.55),
+        0 0 0 4px rgba(34, 211, 238, 0.22),
+        0 0 0 0.5px rgba(255, 255, 255, 0.22) inset,
+        -7px -5px 12px rgba(0, 0, 0, 0.55) inset,
+        2px 2px 4px rgba(255, 255, 255, 0.1) inset;
     outline: none;
     animation-play-state: paused;
 }
+/* When the marble lifts, the cup's ground shadow softens + narrows
+   to match — set via a class added on hover for browsers that
+   don't support :has(). Fallback uses :hover ~ ::before via the
+   cup container's :hover state. */
+.tc-drawer__marble-cup:has(.tc-drawer__marble:hover)::before,
+.tc-drawer__marble-cup:has(.tc-drawer__marble:focus-visible)::before {
+    animation-play-state: paused;
+    width: 26px;
+    opacity: 0.6;
+    transition: width 0.25s ease, opacity 0.25s ease;
+}
+
 .tc-drawer__marble-tip {
     position: absolute;
-    right: 38px;
+    right: 100%;
+    margin-right: 12px;
     top: 50%;
     transform: translateY(-50%);
     white-space: nowrap;
     font-family: 'Caveat', cursive;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     color: var(--tc-brass-bright);
-    background: rgba(20, 12, 8, 0.92);
-    padding: 4px 10px;
+    background: rgba(20, 12, 8, 0.94);
+    padding: 4px 12px 5px;
     border-radius: 3px;
     border: 1px solid rgba(184, 146, 78, 0.45);
     opacity: 0;
-    transition: opacity 0.18s ease, transform 0.18s ease;
+    transition: opacity 0.22s ease, transform 0.22s ease;
     pointer-events: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 .tc-drawer__marble:hover .tc-drawer__marble-tip,
 .tc-drawer__marble:focus-visible .tc-drawer__marble-tip {
     opacity: 1;
-    transform: translateY(-50%) translateX(-4px);
+    transform: translateY(-50%) translateX(-6px);
 }
+
 @keyframes tc-drawer-marble-bob {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50%      { transform: translateY(-3px) rotate(6deg); }
+    0%   { transform: translateX(-50%) translateY(0)    rotate(0deg); }
+    50%  { transform: translateX(-50%) translateY(-7px) rotate(8deg); }
+    100% { transform: translateX(-50%) translateY(0)    rotate(0deg); }
+}
+@keyframes tc-drawer-marble-shadow {
+    0%, 100% { width: 36px; opacity: 1;   transform: translateX(-50%) scaleX(1);    }
+    50%      { width: 26px; opacity: 0.55; transform: translateX(-50%) scaleX(0.78); }
 }
 
 /* ----------------------------------------------------------------
-   TOP-SCORE TAG — small brass tag pinned next to the marble. */
+   TOP-SCORE TAG — brass-paper label pinned ABOVE the marble cup
+   (not beside the plaque, where it used to crowd the © line). */
 .tc-drawer__topscore {
     position: absolute;
-    right: 30px;
-    bottom: -8px;
+    right: 10px;
+    bottom: 76px;
     margin: 0;
     font-family: Georgia, "Iowan Old Style", serif;
     font-style: italic;
     font-size: 0.7rem;
     color: var(--tc-brass);
-    text-align: right;
-    line-height: 1.2;
-    opacity: 0.72;
+    text-align: center;
+    line-height: 1.25;
+    opacity: 0.78;
+    padding: 4px 10px 5px;
+    background: rgba(20, 12, 8, 0.7);
+    border: 1px solid rgba(184, 146, 78, 0.32);
+    border-radius: 2px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 .tc-drawer__topscore-label {
     display: block;
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 .tc-drawer__topscore-value {
@@ -444,12 +600,18 @@
 }
 
 /* ----------------------------------------------------------------
-   CLOSING — the "back to the desk" pill sits below the body. */
+   CLOSING — the "back to the desk" pill. Sits on the wood floor
+   between the body's bottom edge and the page bottom. Lower
+   padding so it reads as belonging to the drawer rather than
+   floating in its own zone. */
 .tc-drawer__closing {
     display: flex;
     justify-content: center;
-    padding: 16px 20px 24px;
-    background: linear-gradient(180deg, #060410 0%, transparent 100%);
+    padding: 14px 20px 18px;
+    background:
+        linear-gradient(180deg,
+            #0a0604 0%,
+            #050302 100%);
 }
 .tc-drawer__back {
     appearance: none;

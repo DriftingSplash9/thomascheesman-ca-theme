@@ -129,18 +129,23 @@
             </div>
 
             <!-- ====================================================
-                 THE MARBLE — idle bob in the corner, click to play.
-                 desk-drawer.js binds the click and lazy-loads
+                 THE MARBLE — nestled in a wooden cup at the corner of
+                 the drawer interior. The cup positions everything;
+                 the cup's ::before is the animated ground shadow.
+                 desk-drawer.js binds the marble click and lazy-loads
                  Matter.js + desk-pinball.js. -->
-            <button type="button"
-                    class="tc-drawer__marble"
-                    data-tc-pinball-trigger
-                    aria-label="<?php esc_attr_e( 'Play pinball', 'tc-ventures-child' ); ?>">
-                <span class="tc-drawer__marble-tip" aria-hidden="true">tap to play</span>
-            </button>
+            <div class="tc-drawer__marble-cup">
+                <button type="button"
+                        class="tc-drawer__marble"
+                        data-tc-pinball-trigger
+                        aria-label="<?php esc_attr_e( 'Play pinball', 'tc-ventures-child' ); ?>">
+                    <span class="tc-drawer__marble-tip" aria-hidden="true">tap to play</span>
+                </button>
+            </div>
 
-            <!-- Top-score brass tag next to the marble. JS updates
-                 [data-tc-pinball-top] from /wp-json/tc-games/v1/scores. -->
+            <!-- Top-score brass tag — sits above the marble cup, not
+                 beside it, so it doesn't crowd the brass plaque. JS
+                 updates [data-tc-pinball-top] from the leaderboard. -->
             <p class="tc-drawer__topscore" aria-live="polite">
                 <span class="tc-drawer__topscore-label">top score</span>
                 <span class="tc-drawer__topscore-value" data-tc-pinball-top>—</span>
