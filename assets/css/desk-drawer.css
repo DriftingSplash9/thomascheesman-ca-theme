@@ -1,0 +1,520 @@
+/* ============================================
+   THE DRAWER — site footer styled as the desk's
+   bottom drawer. Sits flush against whatever
+   section ends the page (no gap — see the
+   front-page CTA-section retirement note in
+   footer.php).
+
+   Visual vocabulary:
+   - warm walnut lip with a brass pull
+   - dark felt-lined interior (no harsh borders)
+   - cyan accents on hover (matches the site)
+   - handwritten Caveat for the quote card
+   - kinetic Fraunces serif for the email
+   - brass-engraved Georgia for the plaque
+   - the marble idles in the bottom-right corner
+
+   Activation states (set on the <footer>):
+   .is-open        — slid open (set by JS on
+                     scroll-into-view)
+   .is-pinball     — pinball mode active; the
+                     compartments dim, the canvas
+                     overlays them. (CSS by
+                     desk-pinball.css.)
+   ============================================ */
+
+.tc-drawer {
+    /* Cut the parent gap by pulling up over any preceding section's
+       bottom padding. The drawer's own lip handles the visual seam. */
+    position: relative;
+    margin-top: -1px;
+    background: transparent;
+    color: var(--text-dark);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --tc-wood: #2d1c12;
+    --tc-wood-light: #4a2e1c;
+    --tc-brass: #b8924e;
+    --tc-brass-bright: #e7c98f;
+    --tc-felt: #0c0a14;
+    --tc-felt-edge: rgba(184, 146, 78, 0.22);
+}
+
+/* ----------------------------------------------------------------
+   LIP — the wooden top edge of the drawer, with the brass pull
+   centered on it. The lip is what the previous section sits on top
+   of, so it removes the old footer/CTA gap entirely. */
+.tc-drawer__lip {
+    position: relative;
+    height: 28px;
+    background:
+        linear-gradient(180deg,
+            #1a0f08 0%,
+            var(--tc-wood) 30%,
+            var(--tc-wood-light) 60%,
+            #1a0f08 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 200, 120, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 -8px 24px rgba(0, 0, 0, 0.45);
+}
+/* The brass pull — a horizontal nub sitting in the lip's center. */
+.tc-drawer__pull {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 72px;
+    height: 10px;
+    border-radius: 6px;
+    background:
+        linear-gradient(180deg,
+            var(--tc-brass-bright) 0%,
+            var(--tc-brass) 50%,
+            #6b4d22 100%);
+    box-shadow:
+        0 1px 0 rgba(255, 220, 160, 0.6) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.5) inset,
+        0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ----------------------------------------------------------------
+   BODY — the felt-lined interior of the drawer. */
+.tc-drawer__body {
+    background:
+        radial-gradient(ellipse at 50% 0%,
+            rgba(184, 146, 78, 0.06) 0%,
+            transparent 60%),
+        linear-gradient(180deg,
+            #100a18 0%,
+            var(--tc-felt) 80%,
+            #060410 100%);
+    border-top: 1px solid rgba(0, 0, 0, 0.6);
+    box-shadow: inset 0 24px 36px -28px rgba(0, 0, 0, 0.9);
+    padding: clamp(24px, 4vh, 44px) 24px clamp(24px, 4vh, 40px);
+}
+
+.tc-drawer__interior {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ----------------------------------------------------------------
+   ROW 1 — directory + quote card. Five columns at desktop:
+   the 4 nav compartments share equal weight, the quote card
+   gets a wider slot for the longer text. */
+.tc-drawer__row {
+    display: grid;
+    gap: clamp(20px, 3vw, 36px);
+}
+.tc-drawer__row--top {
+    grid-template-columns: repeat(4, 1fr) 1.5fr;
+    margin-bottom: clamp(28px, 4vh, 44px);
+    padding-bottom: clamp(24px, 4vh, 36px);
+    border-bottom: 1px dashed rgba(184, 146, 78, 0.18);
+}
+.tc-drawer__row--bottom {
+    grid-template-columns: 2fr 1fr;
+    align-items: end;
+}
+
+/* ----------------------------------------------------------------
+   COMPARTMENT — the felt-lined inner box that each section sits
+   in. Subtle inset for the "wood divider" feel between them. */
+.tc-drawer__compartment {
+    position: relative;
+}
+.tc-drawer__compartment--nav {
+    padding-left: 14px;
+    border-left: 1px solid var(--tc-felt-edge);
+}
+.tc-drawer__compartment--nav:first-child {
+    border-left: 0;
+    padding-left: 0;
+}
+
+.tc-drawer__heading {
+    margin: 0 0 12px;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+    font-weight: 400;
+    color: var(--tc-brass-bright);
+}
+.tc-drawer__compartment--nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.tc-drawer__compartment--nav li {
+    margin: 0 0 8px;
+}
+.tc-drawer__compartment--nav a {
+    color: var(--text-dark);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.18s ease, transform 0.18s ease;
+    display: inline-block;
+}
+.tc-drawer__compartment--nav a:hover,
+.tc-drawer__compartment--nav a:focus-visible {
+    color: var(--primary-color);
+    transform: translateX(2px);
+    outline: none;
+}
+
+/* ----------------------------------------------------------------
+   QUOTE CARD — handwritten. Rotated 1.5° like it was tossed in.
+   Caveat is already loaded site-wide for the desk-menu hover cards. */
+.tc-drawer__compartment--quote {
+    position: relative;
+    padding: 18px 20px 16px;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.015) 0px,
+            rgba(255, 255, 255, 0.015) 22px,
+            rgba(255, 255, 255, 0.04) 23px,
+            transparent 24px
+        ),
+        linear-gradient(180deg, #fbf6e7 0%, #f3ead0 100%);
+    color: #2a2316;
+    border-radius: 2px;
+    transform: rotate(-1.2deg);
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.45),
+        0 1px 0 rgba(255, 255, 255, 0.5) inset;
+}
+/* The "date stamp" — red rubber stamp in the corner. */
+.tc-drawer__stamp {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    transform: rotate(8deg);
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #b32f1e;
+    opacity: 0.86;
+    border: 1.5px solid #b32f1e;
+    padding: 2px 7px 1px;
+    border-radius: 2px;
+}
+.tc-drawer__compartment--quote blockquote {
+    margin: 0;
+    padding: 0;
+}
+.tc-drawer__quote-text {
+    margin: 0 0 8px;
+    font-family: 'Caveat', 'Segoe Script', cursive;
+    font-size: clamp(1.05rem, 1.4vw, 1.35rem);
+    line-height: 1.3;
+    color: #2a2316;
+}
+.tc-drawer__quote-cite {
+    display: block;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: #6b5a3a;
+}
+
+/* ----------------------------------------------------------------
+   CONNECT BLOCK — giant email + socials. Email is the dominant
+   typographic element of the footer (footer-as-signature pattern). */
+.tc-drawer__compartment--connect {
+    padding-right: 16px;
+}
+.tc-drawer__connect-label {
+    margin: 0 0 6px;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--tc-brass);
+    letter-spacing: 0.04em;
+}
+.tc-drawer__email {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    text-align: left;
+    color: var(--text-dark);
+    font-family: 'Fraunces', Georgia, "Iowan Old Style", serif;
+    font-weight: 400;
+    font-variation-settings: 'opsz' 144, 'wght' 420;
+    font-size: clamp(1.5rem, 4vw, 2.6rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    display: block;
+    width: 100%;
+    transition: color 0.2s ease;
+}
+.tc-drawer__email-text {
+    border-bottom: 1px dashed rgba(184, 146, 78, 0.4);
+    padding-bottom: 4px;
+    transition: border-color 0.2s ease;
+}
+.tc-drawer__email-hint {
+    display: block;
+    margin-top: 6px;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--text-light);
+    opacity: 0.7;
+    letter-spacing: 0.04em;
+}
+.tc-drawer__email:hover,
+.tc-drawer__email:focus-visible {
+    color: var(--primary-color);
+    outline: none;
+}
+.tc-drawer__email:hover .tc-drawer__email-text,
+.tc-drawer__email:focus-visible .tc-drawer__email-text {
+    border-bottom-color: var(--primary-color);
+}
+.tc-drawer__email.is-copied {
+    color: var(--secondary-color);
+}
+.tc-drawer__email.is-copied .tc-drawer__email-hint::after {
+    content: ' — copied ✓';
+    color: var(--secondary-color);
+    font-style: normal;
+    opacity: 1;
+}
+
+.tc-drawer__socials {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+    display: flex;
+    gap: 18px;
+}
+.tc-drawer__socials a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 0.88rem;
+    letter-spacing: 0.04em;
+    transition: color 0.18s ease;
+}
+.tc-drawer__socials a:hover,
+.tc-drawer__socials a:focus-visible {
+    color: var(--primary-color);
+    outline: none;
+}
+
+/* ----------------------------------------------------------------
+   PLAQUE — brass nameplate with the live clock + locale. */
+.tc-drawer__compartment--plaque {
+    text-align: right;
+    padding: 12px 14px;
+    background:
+        linear-gradient(180deg,
+            rgba(184, 146, 78, 0.16) 0%,
+            rgba(184, 146, 78, 0.06) 100%);
+    border: 1px solid rgba(184, 146, 78, 0.28);
+    border-radius: 2px;
+    font-family: Georgia, "Iowan Old Style", serif;
+    color: var(--tc-brass-bright);
+    box-shadow:
+        0 1px 0 rgba(255, 220, 160, 0.18) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.4) inset;
+}
+.tc-drawer__plaque-line {
+    margin: 0;
+    line-height: 1.4;
+}
+.tc-drawer__plaque-line--name {
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--tc-brass-bright);
+}
+.tc-drawer__plaque-line--meta {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    opacity: 0.85;
+}
+.tc-drawer__plaque-sep {
+    margin: 0 6px;
+    opacity: 0.6;
+}
+.tc-drawer__plaque-line--copy {
+    font-size: 0.72rem;
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+/* ----------------------------------------------------------------
+   THE MARBLE — bottom-right corner of the interior. Idle bob is
+   handled with a CSS animation; desk-drawer.js can amplify on
+   scroll velocity if needed. */
+.tc-drawer__marble {
+    position: absolute;
+    right: -6px;
+    bottom: -14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    background:
+        radial-gradient(circle at 30% 25%,
+            #ffffff 0%,
+            #c0d8e8 18%,
+            #4a7ea0 60%,
+            #1a3a55 100%);
+    box-shadow:
+        0 6px 10px rgba(0, 0, 0, 0.55),
+        0 1px 0 rgba(255, 255, 255, 0.18) inset,
+        0 -2px 4px rgba(0, 0, 0, 0.4) inset;
+    animation: tc-drawer-marble-bob 4.2s ease-in-out infinite;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.tc-drawer__marble:hover,
+.tc-drawer__marble:focus-visible {
+    transform: scale(1.18);
+    box-shadow:
+        0 8px 14px rgba(0, 0, 0, 0.6),
+        0 0 0 4px rgba(34, 211, 238, 0.25),
+        0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    outline: none;
+    animation-play-state: paused;
+}
+.tc-drawer__marble-tip {
+    position: absolute;
+    right: 38px;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    font-family: 'Caveat', cursive;
+    font-size: 0.95rem;
+    color: var(--tc-brass-bright);
+    background: rgba(20, 12, 8, 0.92);
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid rgba(184, 146, 78, 0.45);
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    pointer-events: none;
+}
+.tc-drawer__marble:hover .tc-drawer__marble-tip,
+.tc-drawer__marble:focus-visible .tc-drawer__marble-tip {
+    opacity: 1;
+    transform: translateY(-50%) translateX(-4px);
+}
+@keyframes tc-drawer-marble-bob {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-3px) rotate(6deg); }
+}
+
+/* ----------------------------------------------------------------
+   TOP-SCORE TAG — small brass tag pinned next to the marble. */
+.tc-drawer__topscore {
+    position: absolute;
+    right: 30px;
+    bottom: -8px;
+    margin: 0;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 0.7rem;
+    color: var(--tc-brass);
+    text-align: right;
+    line-height: 1.2;
+    opacity: 0.72;
+}
+.tc-drawer__topscore-label {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.tc-drawer__topscore-value {
+    color: var(--tc-brass-bright);
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* ----------------------------------------------------------------
+   CLOSING — the "back to the desk" pill sits below the body. */
+.tc-drawer__closing {
+    display: flex;
+    justify-content: center;
+    padding: 16px 20px 24px;
+    background: linear-gradient(180deg, #060410 0%, transparent 100%);
+}
+.tc-drawer__back {
+    appearance: none;
+    background: rgba(10, 8, 12, 0.55);
+    color: #f6f1e3;
+    border: 1px solid rgba(246, 241, 227, 0.18);
+    border-radius: 999px;
+    padding: 8px 18px 9px;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+.tc-drawer__back:hover,
+.tc-drawer__back:focus-visible {
+    background: rgba(10, 8, 12, 0.85);
+    border-color: rgba(34, 211, 238, 0.6);
+    color: #fff;
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* ----------------------------------------------------------------
+   RESPONSIVE — collapse the directory grid on tablets/phones. */
+@media (max-width: 980px) {
+    .tc-drawer__row--top {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .tc-drawer__compartment--quote {
+        grid-column: 1 / -1;
+        transform: rotate(0deg);
+    }
+    .tc-drawer__row--bottom {
+        grid-template-columns: 1fr;
+    }
+    .tc-drawer__compartment--plaque {
+        text-align: left;
+    }
+    .tc-drawer__compartment--nav {
+        border-left: 0;
+        padding-left: 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .tc-drawer__row--top {
+        grid-template-columns: 1fr;
+    }
+    .tc-drawer__email {
+        font-size: clamp(1.4rem, 8vw, 2rem);
+    }
+}
+
+/* ----------------------------------------------------------------
+   PINBALL MODE — set by JS on the <footer>. Compartments dim,
+   the canvas (added by desk-pinball.js) overlays them. The marble
+   itself hides because it becomes the ball on the canvas. */
+.tc-drawer.is-pinball .tc-drawer__compartment {
+    opacity: 0.35;
+    filter: blur(0.4px);
+    transition: opacity 0.4s ease, filter 0.4s ease;
+}
+.tc-drawer.is-pinball .tc-drawer__marble,
+.tc-drawer.is-pinball .tc-drawer__topscore {
+    opacity: 0;
+    pointer-events: none;
+}

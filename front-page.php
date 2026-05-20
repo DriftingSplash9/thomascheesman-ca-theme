@@ -67,16 +67,11 @@ get_header(); ?>
         </div>
     </section>
 
-    <!-- CTA SECTION -->
-    <section class="cta-section scroll-animate">
-        <div class="container">
-            <h2>Let's Connect</h2>
-            <p>
-                Have questions? Want to chat? I'd love to hear from you. Get in touch and let's build something meaningful together.
-            </p>
-            <a href="<?php echo home_url('/contact'); ?>" class="btn-secondary">Get In Touch</a>
-        </div>
-    </section>
+    <!-- The "Let's Connect" CTA section was retired with the drawer
+         footer rebuild: the drawer now carries the connect surface
+         (giant click-to-copy email + socials), so the cta-section
+         duplicated it and created the dead band of dark space the
+         drawer's lip sits flush against the section above. -->
 
 </main>
 

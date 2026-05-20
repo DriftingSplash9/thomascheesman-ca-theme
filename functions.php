@@ -11,6 +11,7 @@
 require_once get_stylesheet_directory() . '/inc/photo-gallery.php';
 require_once get_stylesheet_directory() . '/inc/desk-menu.php';
 require_once get_stylesheet_directory() . '/inc/games-leaderboard.php';
+require_once get_stylesheet_directory() . '/inc/daily-quote.php';
 
 /**
  * Enqueue parent and child theme styles and scripts.
@@ -190,7 +191,38 @@ function tc_ventures_enqueue_scripts() {
         'tcDeskGames',
         array(
             'scoresUrl' => esc_url_raw( rest_url( 'tc-games/v1/scores' ) ),
+            // Cache-buster for the lazy-loaded desk-pinball.js; reads
+            // the same Version: header that cache-busts every other
+            // CSS/JS handle, so a single style.css version bump
+            // invalidates the pinball script too.
+            'version'   => wp_get_theme()->get( 'Version' ),
         )
+    );
+
+    // The Drawer footer — sitemap compartments + daily quote + giant
+    // click-to-copy email + live clock + a marble that escalates into
+    // pinball. The pinball script (desk-pinball.js) and Matter.js are
+    // lazy-loaded by desk-drawer.js on first marble click, so visitors
+    // who never trigger it pay zero. Loaded site-wide because footer.php
+    // is the global footer template.
+    wp_enqueue_style(
+        'tc-desk-drawer',
+        get_stylesheet_directory_uri() . '/assets/css/desk-drawer.css',
+        array( 'astra-child-style', 'tc-caveat', 'tc-fraunces' ),
+        wp_get_theme()->get( 'Version' )
+    );
+    wp_enqueue_style(
+        'tc-desk-pinball',
+        get_stylesheet_directory_uri() . '/assets/css/desk-pinball.css',
+        array( 'tc-desk-drawer' ),
+        wp_get_theme()->get( 'Version' )
+    );
+    wp_enqueue_script(
+        'tc-desk-drawer',
+        get_stylesheet_directory_uri() . '/assets/js/desk-drawer.js',
+        array( 'tc-desk-games' ),
+        wp_get_theme()->get( 'Version' ),
+        true
     );
 
 }

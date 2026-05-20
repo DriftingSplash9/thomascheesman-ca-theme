@@ -34,6 +34,7 @@ const TC_GAMES_VALID = array(
     'asteroids',
     'brickles',
     'solitaire',
+    'pinball',
 );
 const TC_GAMES_MAX_PER_BOARD = 10;
 const TC_GAMES_MAX_NAME_LEN  = 16;
