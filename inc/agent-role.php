@@ -69,6 +69,51 @@ const TC_AGENT_ROLE_SLUG    = 'agent_page_editor';
 const TC_AGENT_ROLE_LABEL   = 'Agent (Page Editor)';
 const TC_AGENT_ROLE_VERSION = 1;
 
+/**
+ * Force-enable Application Passwords site-wide.
+ *
+ * Something on this install (likely Hostinger's own admin plugin
+ * or a security plugin shipped by the host) is suppressing the
+ * Application Passwords UI in user profiles, even though the
+ * endpoints themselves work. First pass tried only the global
+ * filter; that wasn't enough. This block covers all three known
+ * mechanisms a plugin can use to hide it:
+ *
+ *   1. wp_is_application_passwords_available (global on/off)
+ *   2. wp_is_application_passwords_available_for_user (per-user)
+ *   3. remove_action() on the show_user_profile / edit_user_profile
+ *      render hooks
+ *
+ * Priority 999 / 9999 so we beat the default-priority (10) filter
+ * that's disabling them. has_action() guards on the re-attached
+ * render hooks so we don't accidentally render the panel twice if
+ * the host's plugin only used the filter approach (i.e. left the
+ * action attached).
+ *
+ * Security considerations:
+ *   1. The site is HTTPS (App Passwords require it; we checked).
+ *   2. App Passwords are individually revocable, more auditable,
+ *      and safer than reusing login credentials for non-interactive
+ *      auth.
+ *   3. The agent role we just registered is narrow, so even a
+ *      leaked App Password against Claude-Agent can't reach admin
+ *      caps.
+ *
+ * To revert: delete these add_filter / add_action calls and the
+ * host's default "no App Passwords" stance returns.
+ */
+add_filter( 'wp_is_application_passwords_available',          '__return_true', 999 );
+add_filter( 'wp_is_application_passwords_available_for_user', '__return_true', 999, 2 );
+
+add_action( 'admin_init', function () {
+    if ( ! has_action( 'show_user_profile', 'wp_application_passwords_admin_screen_render' ) ) {
+        add_action( 'show_user_profile', 'wp_application_passwords_admin_screen_render' );
+    }
+    if ( ! has_action( 'edit_user_profile', 'wp_application_passwords_admin_screen_render' ) ) {
+        add_action( 'edit_user_profile', 'wp_application_passwords_admin_screen_render' );
+    }
+}, 9999 );
+
 add_action( 'init', 'tc_register_agent_role' );
 
 function tc_register_agent_role() {
