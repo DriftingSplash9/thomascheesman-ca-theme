@@ -74,15 +74,17 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-// Abilities MUST be registered on this exact hook. Per WP 7.0
-// wp-includes/abilities-api.php docstring: "Attempting to register
-// an ability outside of this hook will fail and trigger a
-// _doing_it_wrong() notice." Earlier multi-hook attempt added
-// `init` priority 20 as a fallback -- which fires BEFORE this hook
-// in the same request, so the static guard locked the function in
-// and our wp_register_ability calls all ran outside the valid
-// window, silently returning NULL.
-add_action( 'wp_abilities_api_init', 'tc_register_agent_abilities' );
+// Two separate hooks for the Abilities API in WP 7.0:
+//
+//   wp_abilities_api_categories_init  -- categories must register here
+//   wp_abilities_api_init             -- abilities must register here
+//                                        (fires AFTER categories_init)
+//
+// Each function silently returns null and trips _doing_it_wrong()
+// when called outside its expected hook. Abilities that reference
+// an unregistered category fail the same way.
+add_action( 'wp_abilities_api_categories_init', 'tc_register_agent_ability_categories' );
+add_action( 'wp_abilities_api_init',            'tc_register_agent_abilities' );
 
 // Debug endpoint — dumps the Abilities registry so we can see
 // whether registration is happening at all. Read-only, no secrets
@@ -184,6 +186,26 @@ function tc_capture_register( $name, $args ) {
     return $result;
 }
 
+/**
+ * Categories registration — fires on wp_abilities_api_categories_init.
+ * MUST be on this exact hook; the API gates category registration the
+ * same way it gates ability registration (silent null + _doing_it_wrong
+ * outside the hook).
+ */
+function tc_register_agent_ability_categories() {
+    if ( ! function_exists( 'wp_register_ability_category' ) ) {
+        return;
+    }
+    wp_register_ability_category( 'tc-content', array(
+        'label'       => 'Portfolio content',
+        'description' => 'Pages, quotes / riddles, and other site content.',
+    ) );
+    wp_register_ability_category( 'tc-games', array(
+        'label'       => 'Arcade',
+        'description' => 'Leaderboard and other arcade-related abilities.',
+    ) );
+}
+
 function tc_register_agent_abilities() {
     static $done = false;
     if ( $done ) {
@@ -228,20 +250,9 @@ function tc_register_agent_abilities() {
         );
     }, 10, 3 );
 
-    // Register ability categories first. The registry silently
-    // rejects (returns null) any ability whose `category` arg
-    // refers to an unregistered category.
-    if ( function_exists( 'wp_register_ability_category' ) ) {
-        wp_register_ability_category( 'tc-content', array(
-            'label'       => 'Portfolio content',
-            'description' => 'Pages, quotes / riddles, and other site content.',
-        ) );
-        wp_register_ability_category( 'tc-games', array(
-            'label'       => 'Arcade',
-            'description' => 'Leaderboard and other arcade-related abilities.',
-        ) );
-    }
-    // Confirm categories actually landed in the registry.
+    // Confirm categories landed (they're registered on a DIFFERENT
+    // hook -- wp_abilities_api_categories_init -- which fires BEFORE
+    // this one).
     if ( function_exists( 'wp_has_ability_category' ) ) {
         $tc_ability_runtime_info['categories_registered'] = array(
             'tc-content' => wp_has_ability_category( 'tc-content' ),
