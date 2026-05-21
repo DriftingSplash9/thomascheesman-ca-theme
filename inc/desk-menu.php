@@ -81,10 +81,6 @@ function tc_render_desk_menu() {
                     <span class="title">Patience, Daniel, and Faith</span>
                     <span class="pageno">63</span>
                 </a></li>
-                <li><a href="https://tc-timeline.vercel.app/">
-                    <span class="title">My whole life so far</span>
-                    <span class="pageno">129</span>
-                </a></li>
                 <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">
                     <span class="title">Send me a letter</span>
                     <span class="pageno">165</span>
@@ -303,7 +299,6 @@ function tc_render_desk_menu() {
             <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
             <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">HCS</a></li>
             <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
-            <li><a href="https://tc-timeline.vercel.app/">Timeline</a></li>
             <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a></li>
         </ul>
         <div class="tc-desk__mobile-meta">

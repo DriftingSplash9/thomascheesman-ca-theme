@@ -217,14 +217,13 @@
             Bodies.rectangle( TABLE_W - 56, TABLE_H * 0.6, t, TABLE_H * 0.8, wallOpts ),
             // shooter-lane deflector — angled \ shape positioned ABOVE
             // the chute exit (y=55, well clear of the inner-wall top
-            // at y=92). Earlier this was at y=90 with angle -PI/5,
-            // which (a) reflected the ball right-and-down instead of
-            // left-and-down (wrong rotation direction), and (b) hung
-            // down into the chute exit, blocking the ball from rising
-            // out at all. Now: angle +PI/5 = \ orientation, normal
-            // points down-left, ball reflects into the playfield.
+            // at y=92). High restitution (0.85) so the ball doesn't
+            // bleed all its energy on the bounce — without that boost
+            // the ball was "flopping" off the deflector and falling
+            // straight back into the chute.
             Bodies.rectangle( TABLE_W - 40, 55, 80, t, Object.assign( {}, wallOpts, {
                 angle: Math.PI / 5,
+                restitution: 0.85,
             } ) ),
             // CHUTE FLOOR — closes the bottom of the shooter lane so
             // the ball rests on it until the plunger fires upward.
@@ -436,8 +435,11 @@
         var y = TABLE_H - 30;
         this.theBall = Bodies.circle( x, y, BALL_R, {
             density: 0.025,
-            restitution: 0.5,
-            frictionAir: 0.005,
+            restitution: 0.6,
+            // Lower air friction so the ball doesn't bleed velocity
+            // climbing the chute; previously 0.005 left it arriving
+            // at the deflector with too little energy to escape.
+            frictionAir: 0.002,
             friction: 0.01,
             label: 'ball',
             render: { fillStyle: COLORS.ball },
@@ -516,12 +518,12 @@
         // Only fire if ball is still in the shooter lane (right side,
         // lower half — i.e. resting on the chute floor).
         if ( b.position.x > TABLE_W - 60 && b.position.y > TABLE_H * 0.45 ) {
-            // Direct velocity set — applyForce is force * dt + mass
-            // dependent and was too quiet to get the ball up to the
-            // deflector arch. setVelocity is deterministic. Range:
-            // -8 (tap) to -18 (full charge) px per step — enough to
-            // reach the top and ricochet into the playfield.
-            var vy = -8 - 10 * this.plungerCharge;
+            // Direct velocity set. Range -13 (tap) to -28 (full charge)
+            // px per step. Earlier -8/-18 had the ball arriving at
+            // the deflector with not enough energy to enter the
+            // playfield — it would flop back into the chute. Bumped
+            // to give the launch real authority.
+            var vy = -13 - 15 * this.plungerCharge;
             Body.setVelocity( b, { x: 0, y: vy } );
         }
         this.plungerActive = false;
