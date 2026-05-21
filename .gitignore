@@ -6,3 +6,17 @@ build-image-audit.py
 test-image-urls.py
 remove-dead-images.py
 image-audit*.xlsx
+
+# Secret-bearing files that should never land in git. Belt-and-
+# suspenders: even if one of these gets dropped into the theme folder
+# by mistake (e.g. a Google Cloud credentials.json from the Site Kit
+# wizard), git won't see it.
+credentials*.json
+client_secret*.json
+service-account*.json
+*.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
