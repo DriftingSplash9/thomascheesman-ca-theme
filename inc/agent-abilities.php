@@ -117,10 +117,48 @@ add_action( 'rest_api_init', function () {
                     $info['abilities_raw_type'] = gettype( $all );
                 }
             }
+
+            // Surface what our wp_register_ability() calls returned.
+            global $tc_ability_registration_results;
+            $info['registration_results'] = $tc_ability_registration_results ?: array();
+
+            // Show the full shape of one successfully-registered core
+            // ability so we can compare arg names with ours.
+            if ( function_exists( 'wp_get_ability' ) ) {
+                $sample = wp_get_ability( 'core/get-site-info' );
+                if ( $sample ) {
+                    $info['sample_core_ability'] = is_object( $sample )
+                        ? get_object_vars( $sample )
+                        : $sample;
+                }
+            }
             return $info;
         },
     ) );
 } );
+
+// Captures the return value of each wp_register_ability() call so
+// the diagnostic endpoint can show what's failing. Indexed by name.
+global $tc_ability_registration_results;
+$tc_ability_registration_results = array();
+
+function tc_capture_register( $name, $args ) {
+    global $tc_ability_registration_results;
+    $result = wp_register_ability( $name, $args );
+    if ( is_wp_error( $result ) ) {
+        $tc_ability_registration_results[ $name ] = array(
+            'error_code'    => $result->get_error_code(),
+            'error_message' => $result->get_error_message(),
+            'error_data'    => $result->get_error_data(),
+        );
+    } else {
+        $tc_ability_registration_results[ $name ] = array(
+            'type'  => is_object( $result ) ? get_class( $result ) : gettype( $result ),
+            'value' => is_scalar( $result ) ? $result : null,
+        );
+    }
+    return $result;
+}
 
 function tc_register_agent_abilities() {
     static $done = false;
@@ -132,13 +170,15 @@ function tc_register_agent_abilities() {
     }
     $done = true;
 
+    global $tc_ability_registration_results;
+
     /*
      * ============================================================
      *  READ-ONLY ABILITIES
      * ============================================================
      */
 
-    wp_register_ability( 'tc-portfolio/list-pages', array(
+    tc_capture_register( 'tc-portfolio/list-pages', array(
         'label'         => 'List pages',
         'description'   => 'List every page on the site with id, slug, title, and status. Read-only.',
         'category'      => 'content',
@@ -170,7 +210,7 @@ function tc_register_agent_abilities() {
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
-    wp_register_ability( 'tc-portfolio/get-page', array(
+    tc_capture_register( 'tc-portfolio/get-page', array(
         'label'         => 'Get a page by id or slug',
         'description'   => 'Return a single page including its full post_content. Read-only.',
         'category'      => 'content',
@@ -197,7 +237,7 @@ function tc_register_agent_abilities() {
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
-    wp_register_ability( 'tc-portfolio/list-quotes', array(
+    tc_capture_register( 'tc-portfolio/list-quotes', array(
         'label'         => 'List daily quote/riddle pool',
         'description'   => 'Return the current contents of inc/data/quotes.json — the rotation pool for the daily quote/riddle shown in the footer drawer. Read-only.',
         'category'      => 'content',
@@ -211,7 +251,7 @@ function tc_register_agent_abilities() {
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
-    wp_register_ability( 'tc-portfolio/get-leaderboard', array(
+    tc_capture_register( 'tc-portfolio/get-leaderboard', array(
         'label'         => 'Get arcade leaderboard',
         'description'   => 'Return top scores for an arcade game (snake, pong, pacman, asteroids, brickles, solitaire, pinball). Read-only.',
         'category'      => 'games',
@@ -237,7 +277,7 @@ function tc_register_agent_abilities() {
      * ============================================================
      */
 
-    wp_register_ability( 'tc-portfolio/update-page-content', array(
+    tc_capture_register( 'tc-portfolio/update-page-content', array(
         'label'         => 'Update a page\'s content',
         'description'   => 'Replace the post_content of a specific page. WordPress sanitises the HTML via wp_kses_post(). Writes a revision.',
         'category'      => 'content',
@@ -274,7 +314,7 @@ function tc_register_agent_abilities() {
         ),
     ) );
 
-    wp_register_ability( 'tc-portfolio/append-quote', array(
+    tc_capture_register( 'tc-portfolio/append-quote', array(
         'label'         => 'Append a quote or riddle to the pool',
         'description'   => 'Add a new entry to inc/data/quotes.json. Type must be "quote" (with text + author) or "riddle" (with question + answer). The drawer picker re-derives indices from list length, so additions take effect on the next page load.',
         'category'      => 'content',
