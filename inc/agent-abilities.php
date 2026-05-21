@@ -84,13 +84,15 @@ add_action( 'wp_abilities_api_init', 'tc_register_agent_abilities' );
 add_action( 'abilities_api_init',    'tc_register_agent_abilities' );
 add_action( 'init',                  'tc_register_agent_abilities', 20 );
 
-// Debug endpoint — admin-only — dumps the Abilities registry so we
-// can see whether registration is happening at all. Remove once
-// the MCP Adapter is reliably picking our abilities up.
+// Debug endpoint — dumps the Abilities registry so we can see
+// whether registration is happening at all. Read-only, no secrets
+// exposed, gated by 'read' so Claude-Agent can curl it during
+// diagnosis. Remove this whole block once the MCP Adapter is
+// reliably picking our abilities up.
 add_action( 'rest_api_init', function () {
     register_rest_route( 'tc-debug/v1', '/abilities', array(
         'methods'             => 'GET',
-        'permission_callback' => function () { return current_user_can( 'manage_options' ); },
+        'permission_callback' => function () { return current_user_can( 'read' ); },
         'callback'            => function () {
             $info = array(
                 'has_wp_register_ability' => function_exists( 'wp_register_ability' ),
