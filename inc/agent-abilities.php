@@ -92,7 +92,7 @@ add_action( 'init',                  'tc_register_agent_abilities', 20 );
 add_action( 'rest_api_init', function () {
     register_rest_route( 'tc-debug/v1', '/abilities', array(
         'methods'             => 'GET',
-        'permission_callback' => function () { return current_user_can( 'read' ); },
+        'permission_callback' => 'tc_ability_can_read',
         'callback'            => function () {
             $info = array(
                 'has_wp_register_ability' => function_exists( 'wp_register_ability' ),
@@ -141,6 +141,29 @@ add_action( 'rest_api_init', function () {
 // the diagnostic endpoint can show what's failing. Indexed by name.
 global $tc_ability_registration_results;
 $tc_ability_registration_results = array();
+
+/* --------------------------------------------------------------
+   Named permission callbacks.
+
+   wp_register_ability() silently rejects abilities whose
+   permission_callback is a Closure (cf. WP/mcp-adapter, which uses
+   only string / array callables for the same reason — abilities
+   must be serialisable for caching). Converting to named
+   functions makes them registrable.
+   -------------------------------------------------------------- */
+
+function tc_ability_can_read() {
+    return current_user_can( 'read' );
+}
+
+function tc_ability_can_edit_pages() {
+    return current_user_can( 'edit_pages' );
+}
+
+function tc_ability_can_edit_page_by_input( $input ) {
+    $id = isset( $input['id'] ) ? intval( $input['id'] ) : 0;
+    return $id > 0 && current_user_can( 'edit_page', $id );
+}
 
 function tc_capture_register( $name, $args ) {
     global $tc_ability_registration_results;
@@ -206,7 +229,7 @@ function tc_register_agent_abilities() {
             ),
         ),
         'execute_callback'    => 'tc_ability_list_pages',
-        'permission_callback' => function () { return current_user_can( 'read' ); },
+        'permission_callback' => 'tc_ability_can_read',
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
@@ -233,7 +256,7 @@ function tc_register_agent_abilities() {
             ),
         ),
         'execute_callback'    => 'tc_ability_get_page',
-        'permission_callback' => function () { return current_user_can( 'read' ); },
+        'permission_callback' => 'tc_ability_can_read',
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
@@ -247,7 +270,7 @@ function tc_register_agent_abilities() {
             'items' => array( 'type' => 'object' ),
         ),
         'execute_callback'    => 'tc_ability_list_quotes',
-        'permission_callback' => function () { return current_user_can( 'read' ); },
+        'permission_callback' => 'tc_ability_can_read',
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
@@ -267,7 +290,7 @@ function tc_register_agent_abilities() {
         ),
         'output_schema' => array( 'type' => 'object' ),
         'execute_callback'    => 'tc_ability_get_leaderboard',
-        'permission_callback' => function () { return current_user_can( 'read' ); },
+        'permission_callback' => 'tc_ability_can_read',
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
@@ -303,10 +326,7 @@ function tc_register_agent_abilities() {
             ),
         ),
         'execute_callback'    => 'tc_ability_update_page_content',
-        'permission_callback' => function ( $input ) {
-            $id = isset( $input['id'] ) ? intval( $input['id'] ) : 0;
-            return $id > 0 && current_user_can( 'edit_page', $id );
-        },
+        'permission_callback' => 'tc_ability_can_edit_page_by_input',
         'meta' => array(
             'mcp'         => array( 'public' => true ),
             'destructive' => false,
@@ -337,7 +357,7 @@ function tc_register_agent_abilities() {
             ),
         ),
         'execute_callback'    => 'tc_ability_append_quote',
-        'permission_callback' => function () { return current_user_can( 'edit_pages' ); },
+        'permission_callback' => 'tc_ability_can_edit_pages',
         'meta' => array(
             'mcp'         => array( 'public' => true ),
             'destructive' => false,
