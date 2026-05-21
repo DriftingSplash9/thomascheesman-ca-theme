@@ -119,8 +119,9 @@ add_action( 'rest_api_init', function () {
             }
 
             // Surface what our wp_register_ability() calls returned.
-            global $tc_ability_registration_results;
+            global $tc_ability_registration_results, $tc_ability_runtime_info;
             $info['registration_results'] = $tc_ability_registration_results ?: array();
+            $info['runtime_info']         = $tc_ability_runtime_info ?: array( 'note' => 'function never ran' );
 
             // Show the full shape of one successfully-registered core
             // ability so we can compare arg names with ours.
@@ -193,7 +194,18 @@ function tc_register_agent_abilities() {
     }
     $done = true;
 
-    global $tc_ability_registration_results;
+    global $tc_ability_registration_results, $tc_ability_runtime_info;
+
+    // Capture the runtime state at the exact moment our function
+    // runs. wp_register_ability() returns null when called outside
+    // the wp_abilities_api_init action -- this tells us if we're
+    // in the right place.
+    $tc_ability_runtime_info = array(
+        'current_filter'               => current_filter(),
+        'doing_wp_abilities_api_init'  => doing_action( 'wp_abilities_api_init' ),
+        'did_wp_abilities_api_init'    => did_action( 'wp_abilities_api_init' ),
+        'theme_version'                => function_exists( 'wp_get_theme' ) ? wp_get_theme()->get( 'Version' ) : 'n/a',
+    );
 
     /*
      * ============================================================
