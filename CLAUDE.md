@@ -25,11 +25,12 @@ The site is **live** at https://thomascheesman.ca (staging hostname previously: 
 
 1. **Never auto-commit-and-push.** Propose the commit + message; wait for the user to say "go." Preauthorization is task-scoped only — a new request needs a new approval.
 2. **Bump `style.css` `Version:`** on every commit that touches theme code. Patch increment. Pure docs / `.gitignore`-only commits don't bump.
-3. **After every push** → user must **Purge LiteSpeed Cache** in Hostinger before the change is visible. Remind them.
-4. **Never use `object-fit: cover`** — always `contain`.
-5. **The desk menu (`inc/desk-menu.php` + `assets/js/desk-menu.js`) is the BHAG centrepiece.** Plan + propose before changes; don't freelance.
-6. **The user is Thomas Cheesman, not a programmer.** Explain CLI / wp-admin steps in plain English; number multi-step workflows.
-7. **🔒 Privacy: Thomas and Mel separated; not disclosed publicly.** Don't auto-rewrite copy that mentions Mel; don't surface Mel-related material proactively.
+3. **Never use `object-fit: cover`** — always `contain`.
+4. **The desk menu (`inc/desk-menu.php` + `assets/js/desk-menu.js`) AND the drawer footer (`footer.php` + `assets/css/desk-drawer.css`) are BHAG-tier surfaces.** Plan + propose before changes; don't freelance.
+   - **Bring bold ideas to both.** Thomas explicitly wants features that push what's possible in a browser. He's not afraid of complexity. Don't preemptively scope down; lean toward "let's try it." Many tasks Claude estimates as "15 minutes" ship in a few moments — don't telegraph time anxiety.
+   - **For desk-menu OR drawer-footer work, ask Thomas if he wants a ChatGPT brainstorm prompt first** before coding starts. ChatGPT is strong at imagining cool, weird, surprising directions but weaker at implementing them. Claude is the opposite. The division of labor that works: Claude drafts a context-rich prompt for ChatGPT, Thomas pastes it into ChatGPT, brings the ideas back, Claude implements the strongest ones. Offer the prompt; let Thomas decide whether to use it.
+5. **The user is Thomas Cheesman, a programmer-adjacent collaborator who understands some but not everything.** Explain at a medium register: don't over-explain CLI / git / wp-admin basics, but do number multi-step workflows and call out the *why* behind architectural decisions. Skip the very-beginner framing; he'll ask if something's unclear.
+6. **🔒 Privacy: Thomas and Mel are parenting cohabitants and friends.** Their status is private — **do not disclose it on the site**, and **do not write copy that frames them as a current couple**. Don't auto-rewrite existing copy that mentions Mel; don't surface this context unprompted.
 
 ## Conventions
 
