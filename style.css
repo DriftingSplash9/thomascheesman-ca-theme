@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.312
+Version: 1.0.313
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1091,6 +1091,38 @@ body.admin-bar .tc-capsule {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+}
+
+/* Weather widget — replaces the clock in the capsule. Live link to
+   the Weather Network's Grande Prairie page. Populated by
+   desk-drawer.js's wireWeather() from the Open-Meteo current-
+   conditions endpoint (free, no API key). */
+.tc-capsule__weather {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-light);
+    transition: color 0.2s ease;
+}
+.tc-capsule__weather:hover,
+.tc-capsule__weather:focus-visible {
+    color: var(--primary-color);
+    outline: none;
+}
+.tc-capsule__weather-icon {
+    font-size: 15px;
+    line-height: 1;
+}
+.tc-capsule__weather-temp {
+    font-weight: 600;
+    color: var(--text-dark);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+}
+.tc-capsule__weather:hover .tc-capsule__weather-temp,
+.tc-capsule__weather:focus-visible .tc-capsule__weather-temp {
+    color: var(--primary-color);
 }
 
 /* Menu trigger — a pill-within-the-pill. Two stacked bars on the right

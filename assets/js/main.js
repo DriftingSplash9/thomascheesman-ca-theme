@@ -2001,6 +2001,55 @@ function initSiteChrome() {
         }, msToNextMinute);
     }
 
+    // ---- Weather widget ----
+    // The capsule's `[data-tc-weather]` link houses an icon + temp slot.
+    // We fetch current conditions from Open-Meteo (free, no API key)
+    // and map the WMO weather_code to a glyph. Refreshes every 30
+    // minutes — the API has no rate-limit issue at that cadence.
+    // Footer brass plaque continues to show the local time; the
+    // capsule now carries weather instead.
+    const weatherIcon = document.querySelector('[data-tc-weather-icon]');
+    const weatherTemp = document.querySelector('[data-tc-weather-temp]');
+    if (weatherIcon && weatherTemp) {
+        // Grande Prairie, AB: 55.17°N, -118.79°E.
+        const WX_URL = 'https://api.open-meteo.com/v1/forecast'
+            + '?latitude=55.17&longitude=-118.79'
+            + '&current=temperature_2m,weather_code'
+            + '&timezone=America%2FEdmonton';
+
+        // WMO weather code → emoji glyph (kept small and readable
+        // against the dark capsule). Buckets that share a glyph are
+        // intentional — we don't need 27 distinct icons in a 15px slot.
+        function glyphForCode(code) {
+            if (code === 0)                       return '☀';
+            if (code === 1 || code === 2)         return '⛅';
+            if (code === 3)                       return '☁';
+            if (code === 45 || code === 48)       return '🌫';
+            if (code >= 51 && code <= 57)         return '🌦';
+            if (code >= 61 && code <= 67)         return '🌧';
+            if (code >= 71 && code <= 77)         return '❄';
+            if (code >= 80 && code <= 82)         return '🌧';
+            if (code >= 85 && code <= 86)         return '🌨';
+            if (code >= 95 && code <= 99)         return '⛈';
+            return '·';
+        }
+
+        function fetchWeather() {
+            fetch(WX_URL)
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    if (!data || !data.current) return;
+                    const t = Math.round(data.current.temperature_2m);
+                    const c = data.current.weather_code;
+                    weatherTemp.textContent = t + '°';
+                    weatherIcon.textContent = glyphForCode(c);
+                })
+                .catch(function () { /* keep the placeholder. */ });
+        }
+        fetchWeather();
+        setInterval(fetchWeather, 30 * 60 * 1000);
+    }
+
     // If the menu DOM isn't on this page, bail after starting the clock.
     if (!trigger || !menu) return;
 

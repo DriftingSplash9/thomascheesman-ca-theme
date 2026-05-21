@@ -253,27 +253,44 @@
         0 6px 18px rgba(0, 0, 0, 0.45),
         0 1px 0 rgba(255, 255, 255, 0.5) inset;
 }
-/* The "date stamp" — red rubber stamp in the corner. */
+/* The "date stamp" — red rubber stamp in the corner. Sits ABOVE
+   the card on a small absolute negative offset so it doesn't
+   overlap the quote text. Slight clockwise rotation reads as
+   "tossed on top". */
 .tc-drawer__stamp {
     position: absolute;
-    top: 10px;
-    right: 12px;
+    top: -10px;
+    right: 14px;
     transform: rotate(8deg);
     font-family: Georgia, "Iowan Old Style", serif;
     font-weight: 700;
     font-style: italic;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #b32f1e;
-    opacity: 0.86;
+    opacity: 0.88;
     border: 1.5px solid #b32f1e;
     padding: 2px 7px 1px;
     border-radius: 2px;
+    background: #fbf6e7;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
 }
 .tc-drawer__compartment--quote blockquote {
     margin: 0;
     padding: 0;
+}
+/* Small italic kicker shown above the riddle question
+   ("today's riddle") so the visitor knows the format. */
+.tc-drawer__quote-kicker {
+    margin: 0 0 6px;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a6e3a;
 }
 .tc-drawer__quote-text {
     margin: 0 0 8px;
@@ -288,6 +305,36 @@
     font-style: italic;
     font-size: 0.82rem;
     color: #6b5a3a;
+}
+/* Riddle reveal button — looks like a dashed-underline link, but
+   morphs into the (handwritten) answer once clicked. */
+.tc-drawer__riddle-reveal {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: #b32f1e;
+    border-bottom: 1px dashed #b32f1e;
+    transition: color 0.2s ease, font-family 0.2s ease,
+                font-size 0.2s ease, font-style 0.2s ease;
+}
+.tc-drawer__riddle-reveal:hover,
+.tc-drawer__riddle-reveal:focus-visible {
+    color: #d83c25;
+    outline: none;
+}
+.tc-drawer__riddle-reveal.is-revealed {
+    cursor: default;
+    color: #2a2316;
+    font-family: 'Caveat', 'Segoe Script', cursive;
+    font-style: normal;
+    font-size: clamp(1rem, 1.3vw, 1.25rem);
+    border-bottom: 0;
 }
 
 /* ----------------------------------------------------------------
@@ -402,6 +449,20 @@
     font-style: italic;
     font-size: 0.95rem;
     color: var(--tc-brass-bright);
+}
+/* Signature SVG sits in place of the typed "Thomas Cheesman" line.
+   currentColor on the strokes lets us tint it brass via CSS color.
+   Right-aligned to match the rest of the plaque. */
+.tc-drawer__signature {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 4px;
+    color: var(--tc-brass-bright);
+}
+.tc-drawer__signature .tc-signature-svg {
+    width: clamp(140px, 14vw, 200px);
+    height: auto;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
 }
 .tc-drawer__plaque-line--meta {
     font-size: 0.78rem;

@@ -81,16 +81,33 @@
                     </ul>
                 </nav>
 
-                <?php if ( $tc_footer_quote ) : ?>
-                <aside class="tc-drawer__compartment tc-drawer__compartment--quote"
-                       aria-label="<?php esc_attr_e( "Today's quote", 'tc-ventures-child' ); ?>">
+                <?php if ( $tc_footer_quote ) :
+                    $tc_is_riddle = ( isset( $tc_footer_quote['type'] ) && $tc_footer_quote['type'] === 'riddle' );
+                ?>
+                <aside class="tc-drawer__compartment tc-drawer__compartment--quote<?php echo $tc_is_riddle ? ' is-riddle' : ''; ?>"
+                       aria-label="<?php echo $tc_is_riddle
+                            ? esc_attr__( "Today's riddle", 'tc-ventures-child' )
+                            : esc_attr__( "Today's quote", 'tc-ventures-child' ); ?>">
                     <span class="tc-drawer__stamp" aria-hidden="true">
                         <?php echo esc_html( gmdate( 'M j' ) ); ?>
                     </span>
-                    <blockquote>
-                        <p class="tc-drawer__quote-text"><?php echo esc_html( $tc_footer_quote['text'] ); ?></p>
-                        <cite class="tc-drawer__quote-cite">— <?php echo esc_html( $tc_footer_quote['author'] ); ?></cite>
-                    </blockquote>
+
+                    <?php if ( $tc_is_riddle ) : ?>
+                        <p class="tc-drawer__quote-kicker">today's riddle</p>
+                        <p class="tc-drawer__quote-text"><?php echo esc_html( $tc_footer_quote['question'] ); ?></p>
+                        <button type="button"
+                                class="tc-drawer__riddle-reveal"
+                                data-tc-riddle-reveal
+                                data-tc-riddle-answer="<?php echo esc_attr( $tc_footer_quote['answer'] ); ?>"
+                                aria-label="<?php esc_attr_e( 'Show the riddle answer', 'tc-ventures-child' ); ?>">
+                            click for answer →
+                        </button>
+                    <?php else : ?>
+                        <blockquote>
+                            <p class="tc-drawer__quote-text"><?php echo esc_html( $tc_footer_quote['text'] ); ?></p>
+                            <cite class="tc-drawer__quote-cite">— <?php echo esc_html( $tc_footer_quote['author'] ); ?></cite>
+                        </blockquote>
+                    <?php endif; ?>
                 </aside>
                 <?php endif; ?>
             </div>
@@ -116,7 +133,17 @@
                 </div>
 
                 <div class="tc-drawer__compartment tc-drawer__compartment--plaque" aria-hidden="true">
-                    <p class="tc-drawer__plaque-line tc-drawer__plaque-line--name">Thomas Cheesman</p>
+                    <?php
+                    // Signature SVG replaces the typed name — drawn in brass
+                    // via currentColor on the strokes (the SVG's stroke is
+                    // set to currentColor in the source so CSS color wins).
+                    $tc_sig_path = get_stylesheet_directory() . '/assets/svg/signature.svg';
+                    if ( is_readable( $tc_sig_path ) ) {
+                        echo '<div class="tc-drawer__signature" aria-label="Thomas Cheesman">';
+                        echo file_get_contents( $tc_sig_path );
+                        echo '</div>';
+                    }
+                    ?>
                     <p class="tc-drawer__plaque-line tc-drawer__plaque-line--meta">
                         <span data-tc-clock>--:-- MDT</span>
                         <span class="tc-drawer__plaque-sep">·</span>

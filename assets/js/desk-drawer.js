@@ -33,7 +33,24 @@
         wireLiveClock( footer );
         fetchTopScore( footer );
         wireMarble( footer );
+        wireRiddleReveal( footer );
     } );
+
+    // ----------------------------------------------------------------
+    // Riddle answer reveal — when the daily entry is a riddle, the
+    // card shows the question and a "click for answer →" button. On
+    // click the button morphs into the answer (handwritten, brass).
+    function wireRiddleReveal( footer ) {
+        var btn = footer.querySelector( '[data-tc-riddle-reveal]' );
+        if ( ! btn ) return;
+        btn.addEventListener( 'click', function () {
+            if ( btn.classList.contains( 'is-revealed' ) ) return;
+            var answer = btn.dataset.tcRiddleAnswer || '';
+            btn.textContent = answer;
+            btn.classList.add( 'is-revealed' );
+            btn.setAttribute( 'aria-label', answer );
+        } );
+    }
 
     // ----------------------------------------------------------------
     // 1. Reveal — adds .is-open the first time the drawer's lip

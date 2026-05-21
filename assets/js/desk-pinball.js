@@ -215,10 +215,16 @@
             Bodies.rectangle( TABLE_W / 2, t / 2, TABLE_W, t, wallOpts ),
             // plunger chute inner wall (vertical, to the left of the lane)
             Bodies.rectangle( TABLE_W - 56, TABLE_H * 0.6, t, TABLE_H * 0.8, wallOpts ),
-            // shooter-lane "arch" — diagonal top of the chute deflecting
-            // the ball leftward into the playfield once launched
-            Bodies.rectangle( TABLE_W - 36, 90, 70, t, Object.assign( {}, wallOpts, {
-                angle: -Math.PI / 5,
+            // shooter-lane deflector — angled \ shape positioned ABOVE
+            // the chute exit (y=55, well clear of the inner-wall top
+            // at y=92). Earlier this was at y=90 with angle -PI/5,
+            // which (a) reflected the ball right-and-down instead of
+            // left-and-down (wrong rotation direction), and (b) hung
+            // down into the chute exit, blocking the ball from rising
+            // out at all. Now: angle +PI/5 = \ orientation, normal
+            // points down-left, ball reflects into the playfield.
+            Bodies.rectangle( TABLE_W - 40, 55, 80, t, Object.assign( {}, wallOpts, {
+                angle: Math.PI / 5,
             } ) ),
             // CHUTE FLOOR — closes the bottom of the shooter lane so
             // the ball rests on it until the plunger fires upward.

@@ -1,32 +1,402 @@
 [
-  { "text": "When something is important enough, you do it even if the odds are not in your favor.", "author": "Elon Musk" },
-  { "text": "Failure is an option here. If things are not failing, you are not innovating enough.", "author": "Elon Musk" },
-  { "text": "The first step is to establish that something is possible; then probability will occur.", "author": "Elon Musk" },
-  { "text": "Software is eating the world.", "author": "Marc Andreessen" },
-  { "text": "Markets that don't exist don't care how smart you are.", "author": "Marc Andreessen" },
-  { "text": "Strong opinions, loosely held.", "author": "Marc Andreessen" },
-  { "text": "The most patriotic thing you can do is question your government.", "author": "Robert F. Kennedy Jr." },
-  { "text": "We need to protect the things that connect us — the rivers, the air, the soil — because they don't belong to any one of us.", "author": "Robert F. Kennedy Jr." },
-  { "text": "My friends, love is better than anger. Hope is better than fear. Optimism is better than despair. So let us be loving, hopeful and optimistic. And we'll change the world.", "author": "Jack Layton" },
-  { "text": "Don't let them tell you it can't be done.", "author": "Jack Layton" },
-  { "text": "The first principle is that you must not fool yourself — and you are the easiest person to fool.", "author": "Richard Feynman" },
-  { "text": "I would rather have questions that can't be answered than answers that can't be questioned.", "author": "Richard Feynman" },
-  { "text": "Extraordinary claims require extraordinary evidence.", "author": "Carl Sagan" },
-  { "text": "Somewhere, something incredible is waiting to be known.", "author": "Carl Sagan" },
-  { "text": "Intelligence is the ability to adapt to change.", "author": "Stephen Hawking" },
-  { "text": "Look up at the stars and not down at your feet.", "author": "Stephen Hawking" },
-  { "text": "Imagination is more important than knowledge.", "author": "Albert Einstein" },
-  { "text": "Sometimes it is the people no one imagines anything of who do the things that no one can imagine.", "author": "Alan Turing" },
-  { "text": "Nothing in life is to be feared, it is only to be understood.", "author": "Marie Curie" },
-  { "text": "Things are only impossible until they're not.", "author": "Jean-Luc Picard" },
-  { "text": "It is possible to commit no mistakes and still lose. That is not a weakness; that is life.", "author": "Jean-Luc Picard" },
-  { "text": "Live now; make now always the most precious time. Now will never come again.", "author": "Jean-Luc Picard" },
-  { "text": "The line must be drawn here. This far, no further.", "author": "Jean-Luc Picard" },
-  { "text": "Today is a good day to die.", "author": "Worf" },
-  { "text": "I am the dreamer; the dream is mine.", "author": "Data" },
-  { "text": "Think of how stupid the average person is, and realize half of them are stupider than that.", "author": "George Carlin" },
-  { "text": "I used to do drugs. I still do, but I used to, too.", "author": "Mitch Hedberg" },
-  { "text": "I have an existential map. It has 'You are here' written all over it.", "author": "Steven Wright" },
-  { "text": "Whenever you find yourself on the side of the majority, it is time to pause and reflect.", "author": "Mark Twain" },
-  { "text": "The two most important days in your life are the day you are born and the day you find out why.", "author": "Mark Twain" }
+  {
+    "type": "quote",
+    "text": "When something is important enough, you do it even if the odds are not in your favor.",
+    "author": "Elon Musk"
+  },
+  {
+    "type": "riddle",
+    "question": "Why was 6 afraid of 7?",
+    "answer": "Because 7, 8 (ate), 9"
+  },
+  {
+    "type": "quote",
+    "text": "Failure is an option here. If things are not failing, you are not innovating enough.",
+    "author": "Elon Musk"
+  },
+  {
+    "type": "riddle",
+    "question": "What is the richest nut?",
+    "answer": "A cash-ew"
+  },
+  {
+    "type": "quote",
+    "text": "The first step is to establish that something is possible; then probability will occur.",
+    "author": "Elon Musk"
+  },
+  {
+    "type": "riddle",
+    "question": "What room do ghosts avoid?",
+    "answer": "The living room!"
+  },
+  {
+    "type": "quote",
+    "text": "Software is eating the world.",
+    "author": "Marc Andreessen"
+  },
+  {
+    "type": "riddle",
+    "question": "What has a neck but no head?",
+    "answer": "A bottle"
+  },
+  {
+    "type": "quote",
+    "text": "Markets that don't exist don't care how smart you are.",
+    "author": "Marc Andreessen"
+  },
+  {
+    "type": "riddle",
+    "question": "Why do bees have sticky hair?",
+    "answer": "Because they use their honeycombs!"
+  },
+  {
+    "type": "quote",
+    "text": "Strong opinions, loosely held.",
+    "author": "Marc Andreessen"
+  },
+  {
+    "type": "riddle",
+    "question": "What has a bottom at the top?",
+    "answer": "A leg!"
+  },
+  {
+    "type": "quote",
+    "text": "The most patriotic thing you can do is question your government.",
+    "author": "Robert F. Kennedy Jr."
+  },
+  {
+    "type": "riddle",
+    "question": "What kind of lion never roars?",
+    "answer": "A dandelion"
+  },
+  {
+    "type": "quote",
+    "text": "We need to protect the things that connect us — the rivers, the air, the soil — because they don't belong to any one of us.",
+    "author": "Robert F. Kennedy Jr."
+  },
+  {
+    "type": "riddle",
+    "question": "What’s black, white, and blue?",
+    "answer": "A sad zebra!"
+  },
+  {
+    "type": "quote",
+    "text": "My friends, love is better than anger. Hope is better than fear. Optimism is better than despair. So let us be loving, hopeful and optimistic. And we'll change the world.",
+    "author": "Jack Layton"
+  },
+  {
+    "type": "riddle",
+    "question": "How many seconds are in a year?",
+    "answer": "Twelve: January 2nd, February 2nd, March 2nd..."
+  },
+  {
+    "type": "quote",
+    "text": "Don't let them tell you it can't be done.",
+    "author": "Jack Layton"
+  },
+  {
+    "type": "riddle",
+    "question": "What has one eye, but can’t see?",
+    "answer": "A needle"
+  },
+  {
+    "type": "quote",
+    "text": "The first principle is that you must not fool yourself — and you are the easiest person to fool.",
+    "author": "Richard Feynman"
+  },
+  {
+    "type": "riddle",
+    "question": "What can you catch but not throw?",
+    "answer": "A cold"
+  },
+  {
+    "type": "quote",
+    "text": "I would rather have questions that can't be answered than answers that can't be questioned.",
+    "author": "Richard Feynman"
+  },
+  {
+    "type": "riddle",
+    "question": "Where would you take a sick boat?",
+    "answer": "To the dock"
+  },
+  {
+    "type": "quote",
+    "text": "Extraordinary claims require extraordinary evidence.",
+    "author": "Carl Sagan"
+  },
+  {
+    "type": "riddle",
+    "question": "What fruit can you never cheer up?",
+    "answer": "A blueberry"
+  },
+  {
+    "type": "quote",
+    "text": "Somewhere, something incredible is waiting to be known.",
+    "author": "Carl Sagan"
+  },
+  {
+    "type": "riddle",
+    "question": "What has many rings but no fingers?",
+    "answer": "A telephone"
+  },
+  {
+    "type": "quote",
+    "text": "Intelligence is the ability to adapt to change.",
+    "author": "Stephen Hawking"
+  },
+  {
+    "type": "riddle",
+    "question": "What gets wetter the more it dries?",
+    "answer": "A towel"
+  },
+  {
+    "type": "quote",
+    "text": "Look up at the stars and not down at your feet.",
+    "author": "Stephen Hawking"
+  },
+  {
+    "type": "riddle",
+    "question": "What did the zero say to the eight?",
+    "answer": "“Nice belt!”"
+  },
+  {
+    "type": "quote",
+    "text": "Imagination is more important than knowledge.",
+    "author": "Albert Einstein"
+  },
+  {
+    "type": "riddle",
+    "question": "What month of the year has 28 days?",
+    "answer": "All of them"
+  },
+  {
+    "type": "quote",
+    "text": "Sometimes it is the people no one imagines anything of who do the things that no one can imagine.",
+    "author": "Alan Turing"
+  },
+  {
+    "type": "riddle",
+    "question": "I grow down as I grow up. What am I?",
+    "answer": "A goose"
+  },
+  {
+    "type": "quote",
+    "text": "Nothing in life is to be feared, it is only to be understood.",
+    "author": "Marie Curie"
+  },
+  {
+    "type": "riddle",
+    "question": "I’m the father of fruits. What am I?",
+    "answer": "A papa-ya!"
+  },
+  {
+    "type": "quote",
+    "text": "Things are only impossible until they're not.",
+    "author": "Jean-Luc Picard"
+  },
+  {
+    "type": "riddle",
+    "question": "What kind of cup doesn’t hold water?",
+    "answer": "A cupcake"
+  },
+  {
+    "type": "quote",
+    "text": "It is possible to commit no mistakes and still lose. That is not a weakness; that is life.",
+    "author": "Jean-Luc Picard"
+  },
+  {
+    "type": "riddle",
+    "question": "What do you call a bear with no teeth?",
+    "answer": "A gummy bear!"
+  },
+  {
+    "type": "quote",
+    "text": "Live now; make now always the most precious time. Now will never come again.",
+    "author": "Jean-Luc Picard"
+  },
+  {
+    "type": "riddle",
+    "question": "What kind of cheese is made backwards?",
+    "answer": "Edam. Made is M-A-D-E, Edam is E-D-A-M, or \"made\" backwards."
+  },
+  {
+    "type": "quote",
+    "text": "The line must be drawn here. This far, no further.",
+    "author": "Jean-Luc Picard"
+  },
+  {
+    "type": "riddle",
+    "question": "Where does today come before yesterday?",
+    "answer": "The dictionary"
+  },
+  {
+    "type": "quote",
+    "text": "Today is a good day to die.",
+    "author": "Worf"
+  },
+  {
+    "type": "riddle",
+    "question": "What goes up but never comes back down?",
+    "answer": "Your age"
+  },
+  {
+    "type": "quote",
+    "text": "I am the dreamer; the dream is mine.",
+    "author": "Data"
+  },
+  {
+    "type": "riddle",
+    "question": "How can the number four be half of five?",
+    "answer": "In Roman numerals. Four is IV in Roman numerals, and also make up half the letters in the word \"five.\""
+  },
+  {
+    "type": "quote",
+    "text": "Think of how stupid the average person is, and realize half of them are stupider than that.",
+    "author": "George Carlin"
+  },
+  {
+    "type": "riddle",
+    "question": "What breaks as soon as you say its name?",
+    "answer": "Silence"
+  },
+  {
+    "type": "quote",
+    "text": "I used to do drugs. I still do, but I used to, too.",
+    "author": "Mitch Hedberg"
+  },
+  {
+    "type": "riddle",
+    "question": "What is yours but mostly used by others?",
+    "answer": "Your name"
+  },
+  {
+    "type": "quote",
+    "text": "I have an existential map. It has 'You are here' written all over it.",
+    "author": "Steven Wright"
+  },
+  {
+    "type": "riddle",
+    "question": "What kind of apples do computers prefer?",
+    "answer": "Macintosh"
+  },
+  {
+    "type": "quote",
+    "text": "Whenever you find yourself on the side of the majority, it is time to pause and reflect.",
+    "author": "Mark Twain"
+  },
+  {
+    "type": "riddle",
+    "question": "What did the triangle say to the circle?",
+    "answer": "You are pointless"
+  },
+  {
+    "type": "quote",
+    "text": "The two most important days in your life are the day you are born and the day you find out why.",
+    "author": "Mark Twain"
+  },
+  {
+    "type": "riddle",
+    "question": "What gets bigger when more is taken away?",
+    "answer": "A hole"
+  },
+  {
+    "type": "riddle",
+    "question": "What kind of room has no doors or windows?",
+    "answer": "A mushroom"
+  },
+  {
+    "type": "riddle",
+    "question": "What goes in a birdbath but never gets wet?",
+    "answer": "The bird's shadow"
+  },
+  {
+    "type": "riddle",
+    "question": "How many animals did Moses take on the ark?",
+    "answer": "None. Noah took them"
+  },
+  {
+    "type": "riddle",
+    "question": "What has a thousand needles but cannot sew?",
+    "answer": "A porcupine"
+  },
+  {
+    "type": "riddle",
+    "question": "Why did the citrus tree go to the hospital?",
+    "answer": "Lemon-aid"
+  },
+  {
+    "type": "riddle",
+    "question": "How many letters are there in the alphabet?",
+    "answer": "Eleven: three in \"the\" and eight in \"alphabet.\""
+  },
+  {
+    "type": "riddle",
+    "question": "What is full of holes but still holds water?",
+    "answer": "A sponge"
+  },
+  {
+    "type": "riddle",
+    "question": "What animal can jump higher than a building?",
+    "answer": "Any animal that can jump—buildings don’t jump, silly!"
+  },
+  {
+    "type": "riddle",
+    "question": "What has a head but no eyes, nose, or mouth?",
+    "answer": "Lettuce"
+  },
+  {
+    "type": "riddle",
+    "question": "What has to be broken before you can use it?",
+    "answer": "An egg"
+  },
+  {
+    "type": "riddle",
+    "question": "Which question can you never answer \"yes\" to?",
+    "answer": "\"Are you asleep?\""
+  },
+  {
+    "type": "riddle",
+    "question": "I sometimes run, but I cannot walk. What am I?",
+    "answer": "Your nose!"
+  },
+  {
+    "type": "riddle",
+    "question": "What has hands and a face, but no arms or legs?",
+    "answer": "A clock"
+  },
+  {
+    "type": "riddle",
+    "question": "What kind of foods are the most fun at parties?",
+    "answer": "Fungi"
+  },
+  {
+    "type": "riddle",
+    "question": "What has many keys but can’t open a single lock?",
+    "answer": "A piano"
+  },
+  {
+    "type": "riddle",
+    "question": "What two things can you never eat for breakfast?",
+    "answer": "Lunch and dinner"
+  },
+  {
+    "type": "riddle",
+    "question": "What kind of coat is better when it's put on wet?",
+    "answer": "A coat of paint"
+  },
+  {
+    "type": "riddle",
+    "question": "What begins with T, ends with T, and has T in it?",
+    "answer": "A teapot"
+  },
+  {
+    "type": "riddle",
+    "question": "You cut me, slice me, dice me, and all the while,",
+    "answer": "An onion"
+  },
+  {
+    "type": "riddle",
+    "question": "What runs all around the backyard but never moves?",
+    "answer": "A fence"
+  }
 ]

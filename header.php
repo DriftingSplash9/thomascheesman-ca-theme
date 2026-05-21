@@ -47,10 +47,15 @@
 
     <span class="tc-capsule__divider" aria-hidden="true"></span>
 
-    <span class="tc-capsule__clock" aria-hidden="true">
-        <span class="tc-capsule__clock-time" data-clock-time>--:--</span>
-        <span class="tc-capsule__clock-zone" data-clock-zone>—</span>
-    </span>
+    <a class="tc-capsule__weather"
+       href="https://www.theweathernetwork.com/ca/weather/alberta/grande-prairie"
+       target="_blank"
+       rel="noopener noreferrer"
+       data-tc-weather
+       aria-label="<?php esc_attr_e( 'Current weather in Grande Prairie — opens The Weather Network', 'tc-ventures-child' ); ?>">
+        <span class="tc-capsule__weather-icon" data-tc-weather-icon aria-hidden="true">·</span>
+        <span class="tc-capsule__weather-temp" data-tc-weather-temp>--°</span>
+    </a>
 
     <button
         type="button"

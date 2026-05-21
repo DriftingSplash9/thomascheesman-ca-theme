@@ -51,6 +51,20 @@
     touch-action: none;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
 }
+/* The site applies `cursor: none` globally and uses a JS ink-trail.
+   That makes the pinball canvas un-aimable. Same pattern V0.13 used
+   for the PhotoSwipe lightbox — explicitly restore the cursor on
+   the canvas (and the overlay UI) so the player can see where they
+   are. !important because the global rule sets cursor on every
+   element via universal selectors. */
+html.cursor-custom .tc-pinball,
+html.cursor-custom .tc-pinball *,
+html.cursor-custom .tc-pinball__canvas {
+    cursor: crosshair !important;
+}
+html.cursor-custom .tc-pinball__exit {
+    cursor: pointer !important;
+}
 
 /* CRT-phosphor HUD pinned to the corners of the overlay. */
 .tc-pinball__hud {
