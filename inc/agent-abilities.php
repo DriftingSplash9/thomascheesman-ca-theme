@@ -205,12 +205,32 @@ function tc_register_agent_abilities() {
         'doing_wp_abilities_api_init'  => doing_action( 'wp_abilities_api_init' ),
         'did_wp_abilities_api_init'    => did_action( 'wp_abilities_api_init' ),
         'theme_version'                => function_exists( 'wp_get_theme' ) ? wp_get_theme()->get( 'Version' ) : 'n/a',
+        'callbacks_exist'              => array(
+            'tc_ability_list_pages'    => function_exists( 'tc_ability_list_pages' ),
+            'tc_ability_can_read'      => function_exists( 'tc_ability_can_read' ),
+            'tc_ability_can_edit_pages' => function_exists( 'tc_ability_can_edit_pages' ),
+        ),
+        'category_fns_exist'           => array(
+            'wp_register_ability_category' => function_exists( 'wp_register_ability_category' ),
+            'wp_has_ability_category'      => function_exists( 'wp_has_ability_category' ),
+        ),
+        'doing_it_wrong_messages'      => array(),
     );
+
+    // Capture _doing_it_wrong calls during our registration. That's
+    // how the Abilities API reports the actual failure reason --
+    // null is the return code, the real message is in the notice.
+    add_action( 'doing_it_wrong_run', function ( $func, $msg, $ver ) {
+        global $tc_ability_runtime_info;
+        $tc_ability_runtime_info['doing_it_wrong_messages'][] = array(
+            'function' => $func,
+            'message'  => wp_strip_all_tags( $msg ),
+        );
+    }, 10, 3 );
 
     // Register ability categories first. The registry silently
     // rejects (returns null) any ability whose `category` arg
-    // refers to an unregistered category -- that was the actual
-    // root cause of the all-NULLs bug we were chasing.
+    // refers to an unregistered category.
     if ( function_exists( 'wp_register_ability_category' ) ) {
         wp_register_ability_category( 'tc-content', array(
             'label'       => 'Portfolio content',
@@ -220,6 +240,13 @@ function tc_register_agent_abilities() {
             'label'       => 'Arcade',
             'description' => 'Leaderboard and other arcade-related abilities.',
         ) );
+    }
+    // Confirm categories actually landed in the registry.
+    if ( function_exists( 'wp_has_ability_category' ) ) {
+        $tc_ability_runtime_info['categories_registered'] = array(
+            'tc-content' => wp_has_ability_category( 'tc-content' ),
+            'tc-games'   => wp_has_ability_category( 'tc-games' ),
+        );
     }
 
     /*
