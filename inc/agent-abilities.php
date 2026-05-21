@@ -86,73 +86,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 add_action( 'wp_abilities_api_categories_init', 'tc_register_agent_ability_categories' );
 add_action( 'wp_abilities_api_init',            'tc_register_agent_abilities' );
 
-// Debug endpoint — dumps the Abilities registry so we can see
-// whether registration is happening at all. Read-only, no secrets
-// exposed, gated by 'read' so Claude-Agent can curl it during
-// diagnosis. Remove this whole block once the MCP Adapter is
-// reliably picking our abilities up.
-add_action( 'rest_api_init', function () {
-    register_rest_route( 'tc-debug/v1', '/abilities', array(
-        'methods'             => 'GET',
-        'permission_callback' => 'tc_ability_can_read',
-        'callback'            => function () {
-            $info = array(
-                'has_wp_register_ability' => function_exists( 'wp_register_ability' ),
-                'has_wp_get_abilities'    => function_exists( 'wp_get_abilities' ),
-                'has_wp_get_ability'      => function_exists( 'wp_get_ability' ),
-                'fired_hooks'             => array(),
-                'abilities'               => array(),
-            );
-            global $wp_actions;
-            foreach ( array( 'wp_abilities_api_init', 'abilities_api_init', 'init' ) as $h ) {
-                $info['fired_hooks'][ $h ] = isset( $wp_actions[ $h ] ) ? (int) $wp_actions[ $h ] : 0;
-            }
-            if ( function_exists( 'wp_get_abilities' ) ) {
-                $all = wp_get_abilities();
-                if ( is_array( $all ) ) {
-                    foreach ( $all as $key => $a ) {
-                        $name = is_object( $a ) && isset( $a->name ) ? $a->name
-                              : ( is_array( $a ) && isset( $a['name'] ) ? $a['name'] : $key );
-                        $info['abilities'][] = $name;
-                    }
-                } else {
-                    $info['abilities_raw_type'] = gettype( $all );
-                }
-            }
-
-            // Surface what our wp_register_ability() calls returned.
-            global $tc_ability_registration_results, $tc_ability_runtime_info;
-            $info['registration_results'] = $tc_ability_registration_results ?: array();
-            $info['runtime_info']         = $tc_ability_runtime_info ?: array( 'note' => 'function never ran' );
-
-            // Show the full shape of one successfully-registered core
-            // ability so we can compare arg names with ours.
-            if ( function_exists( 'wp_get_ability' ) ) {
-                $sample = wp_get_ability( 'core/get-site-info' );
-                if ( $sample ) {
-                    $info['sample_core_ability'] = is_object( $sample )
-                        ? get_object_vars( $sample )
-                        : $sample;
-                }
-            }
-            return $info;
-        },
-    ) );
-} );
-
-// Captures the return value of each wp_register_ability() call so
-// the diagnostic endpoint can show what's failing. Indexed by name.
-global $tc_ability_registration_results;
-$tc_ability_registration_results = array();
-
 /* --------------------------------------------------------------
    Named permission callbacks.
 
-   wp_register_ability() silently rejects abilities whose
-   permission_callback is a Closure (cf. WP/mcp-adapter, which uses
-   only string / array callables for the same reason — abilities
-   must be serialisable for caching). Converting to named
-   functions makes them registrable.
+   wp_register_ability() requires `is_callable()` to return true on
+   both execute_callback and permission_callback. String callables
+   (function names) and array callables (class+method pairs) work;
+   we use strings here. Inline closures also work in WP 7.0 per the
+   official docstring example, but named functions are easier to
+   grep and test.
    -------------------------------------------------------------- */
 
 function tc_ability_can_read() {
@@ -166,24 +108,6 @@ function tc_ability_can_edit_pages() {
 function tc_ability_can_edit_page_by_input( $input ) {
     $id = isset( $input['id'] ) ? intval( $input['id'] ) : 0;
     return $id > 0 && current_user_can( 'edit_page', $id );
-}
-
-function tc_capture_register( $name, $args ) {
-    global $tc_ability_registration_results;
-    $result = wp_register_ability( $name, $args );
-    if ( is_wp_error( $result ) ) {
-        $tc_ability_registration_results[ $name ] = array(
-            'error_code'    => $result->get_error_code(),
-            'error_message' => $result->get_error_message(),
-            'error_data'    => $result->get_error_data(),
-        );
-    } else {
-        $tc_ability_registration_results[ $name ] = array(
-            'type'  => is_object( $result ) ? get_class( $result ) : gettype( $result ),
-            'value' => is_scalar( $result ) ? $result : null,
-        );
-    }
-    return $result;
 }
 
 /**
@@ -216,57 +140,13 @@ function tc_register_agent_abilities() {
     }
     $done = true;
 
-    global $tc_ability_registration_results, $tc_ability_runtime_info;
-
-    // Capture the runtime state at the exact moment our function
-    // runs. wp_register_ability() returns null when called outside
-    // the wp_abilities_api_init action -- this tells us if we're
-    // in the right place.
-    $tc_ability_runtime_info = array(
-        'current_filter'               => current_filter(),
-        'doing_wp_abilities_api_init'  => doing_action( 'wp_abilities_api_init' ),
-        'did_wp_abilities_api_init'    => did_action( 'wp_abilities_api_init' ),
-        'theme_version'                => function_exists( 'wp_get_theme' ) ? wp_get_theme()->get( 'Version' ) : 'n/a',
-        'callbacks_exist'              => array(
-            'tc_ability_list_pages'    => function_exists( 'tc_ability_list_pages' ),
-            'tc_ability_can_read'      => function_exists( 'tc_ability_can_read' ),
-            'tc_ability_can_edit_pages' => function_exists( 'tc_ability_can_edit_pages' ),
-        ),
-        'category_fns_exist'           => array(
-            'wp_register_ability_category' => function_exists( 'wp_register_ability_category' ),
-            'wp_has_ability_category'      => function_exists( 'wp_has_ability_category' ),
-        ),
-        'doing_it_wrong_messages'      => array(),
-    );
-
-    // Capture _doing_it_wrong calls during our registration. That's
-    // how the Abilities API reports the actual failure reason --
-    // null is the return code, the real message is in the notice.
-    add_action( 'doing_it_wrong_run', function ( $func, $msg, $ver ) {
-        global $tc_ability_runtime_info;
-        $tc_ability_runtime_info['doing_it_wrong_messages'][] = array(
-            'function' => $func,
-            'message'  => wp_strip_all_tags( $msg ),
-        );
-    }, 10, 3 );
-
-    // Confirm categories landed (they're registered on a DIFFERENT
-    // hook -- wp_abilities_api_categories_init -- which fires BEFORE
-    // this one).
-    if ( function_exists( 'wp_has_ability_category' ) ) {
-        $tc_ability_runtime_info['categories_registered'] = array(
-            'tc-content' => wp_has_ability_category( 'tc-content' ),
-            'tc-games'   => wp_has_ability_category( 'tc-games' ),
-        );
-    }
-
     /*
      * ============================================================
      *  READ-ONLY ABILITIES
      * ============================================================
      */
 
-    tc_capture_register( 'tc-portfolio/list-pages', array(
+    wp_register_ability( 'tc-portfolio/list-pages', array(
         'label'         => 'List pages',
         'description'   => 'List every page on the site with id, slug, title, and status. Read-only.',
         'category'      => 'tc-content',
@@ -298,7 +178,7 @@ function tc_register_agent_abilities() {
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
-    tc_capture_register( 'tc-portfolio/get-page', array(
+    wp_register_ability( 'tc-portfolio/get-page', array(
         'label'         => 'Get a page by id or slug',
         'description'   => 'Return a single page including its full post_content. Read-only.',
         'category'      => 'tc-content',
@@ -325,7 +205,7 @@ function tc_register_agent_abilities() {
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
-    tc_capture_register( 'tc-portfolio/list-quotes', array(
+    wp_register_ability( 'tc-portfolio/list-quotes', array(
         'label'         => 'List daily quote/riddle pool',
         'description'   => 'Return the current contents of inc/data/quotes.json — the rotation pool for the daily quote/riddle shown in the footer drawer. Read-only.',
         'category'      => 'tc-content',
@@ -339,7 +219,7 @@ function tc_register_agent_abilities() {
         'meta' => array( 'mcp' => array( 'public' => true ) ),
     ) );
 
-    tc_capture_register( 'tc-portfolio/get-leaderboard', array(
+    wp_register_ability( 'tc-portfolio/get-leaderboard', array(
         'label'         => 'Get arcade leaderboard',
         'description'   => 'Return top scores for an arcade game (snake, pong, pacman, asteroids, brickles, solitaire, pinball). Read-only.',
         'category'      => 'tc-games',
@@ -365,7 +245,7 @@ function tc_register_agent_abilities() {
      * ============================================================
      */
 
-    tc_capture_register( 'tc-portfolio/update-page-content', array(
+    wp_register_ability( 'tc-portfolio/update-page-content', array(
         'label'         => 'Update a page\'s content',
         'description'   => 'Replace the post_content of a specific page. WordPress sanitises the HTML via wp_kses_post(). Writes a revision.',
         'category'      => 'tc-content',
@@ -399,7 +279,7 @@ function tc_register_agent_abilities() {
         ),
     ) );
 
-    tc_capture_register( 'tc-portfolio/append-quote', array(
+    wp_register_ability( 'tc-portfolio/append-quote', array(
         'label'         => 'Append a quote or riddle to the pool',
         'description'   => 'Add a new entry to inc/data/quotes.json. Type must be "quote" (with text + author) or "riddle" (with question + answer). The drawer picker re-derives indices from list length, so additions take effect on the next page load.',
         'category'      => 'tc-content',
