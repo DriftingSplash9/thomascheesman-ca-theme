@@ -94,11 +94,21 @@
     // Public entry point. Boots a fresh game instance bound to the
     // given footer element. Multiple boots (Esc → reopen) are fine;
     // the previous instance is torn down before a new one is built.
+    //
+    // Blurs the marble button after booting — without this, the
+    // marble keeps keyboard focus (CSS hides it but it's still
+    // focused) and pressing Space activates it via the browser's
+    // default button-activation behaviour, which calls boot() again
+    // and gives the appearance that Space "exits the game".
     var current = null;
     window.TCPinball = {
         boot: function ( footer ) {
             if ( current ) current.destroy();
             current = new Pinball( footer );
+            var marble = footer.querySelector( '[data-tc-pinball-trigger]' );
+            if ( marble && typeof marble.blur === 'function' ) {
+                marble.blur();
+            }
         }
     };
 
@@ -204,6 +214,11 @@
             Bodies.rectangle( TABLE_W - 36, 90, 70, t, Object.assign( {}, wallOpts, {
                 angle: -Math.PI / 5,
             } ) ),
+            // CHUTE FLOOR — closes the bottom of the shooter lane so
+            // the ball rests on it until the plunger fires upward.
+            // Without this the ball drops out the open bottom of the
+            // chute into the drain sensor and the game ends instantly.
+            Bodies.rectangle( TABLE_W - 32, TABLE_H - 8, 56, 12, wallOpts ),
         ] );
 
         // ---- drain trough lips (slope inward at the bottom so the
@@ -327,55 +342,72 @@
     };
 
     // ================================================================
-    // FLIPPERS — pivoted rectangles. Each has a hinge constraint and
-    // is driven by angular velocity on key press.
+    // FLIPPERS — kinematic. We do NOT use hinge constraints. Each
+    // frame the tick() loop computes the flipper's target angle
+    // (rest or active) and steps the current angle toward it at a
+    // fixed angular speed; the body's world position is computed
+    // from the pivot + a body-local hinge offset rotated by the new
+    // angle, and Body.setPosition / Body.setAngle override whatever
+    // the physics tried to do.
+    //
+    // To make ball contacts feel right we ALSO set the body's
+    // angularVelocity (and linear velocity) to match the kinematic
+    // step — Matter's collision response uses those to compute the
+    // impulse imparted to the ball.
+    //
+    // This solves the oscillation: gravity can't affect the flipper
+    // because its pose is forcibly set every frame, so there's no
+    // gravity-vs-controller fight to settle.
     Pinball.prototype.buildFlippers = function () {
         var w = this.engine.world;
 
         var flipperOpts = {
-            density: 0.005,
+            // density barely matters because we're kinematic, but keep
+            // a value so Matter can still compute mass for collisions.
+            density: 0.02,
             friction: 0.05,
-            restitution: 0.4,
+            restitution: 0.55,
             chamfer: { radius: 5 },
             render: { fillStyle: COLORS.flipper },
         };
 
-        // Left flipper hinges at (250, 410), rests pointing right-down.
-        this.leftFlipper = Bodies.rectangle( 290, 410, 80, 14,
+        // LEFT — pivots around world (250, 410). Hinge sits at
+        // body-local (-40, 0) i.e. 40 px left of body center.
+        this.leftFlipper = Bodies.rectangle( 0, 0, 80, 14,
             Object.assign( {}, flipperOpts, { label: 'flipper:left' } ) );
-        this.leftHinge = Constraint.create( {
-            pointA: { x: 250, y: 410 },
-            bodyB: this.leftFlipper,
-            pointB: { x: -40, y: 0 },
-            stiffness: 1,
-            length: 0,
-            render: { visible: false },
-        } );
-        World.add( w, [ this.leftFlipper, this.leftHinge ] );
-
-        // Right flipper hinges at (510, 410).
-        this.rightFlipper = Bodies.rectangle( 470, 410, 80, 14,
-            Object.assign( {}, flipperOpts, { label: 'flipper:right' } ) );
-        this.rightHinge = Constraint.create( {
-            pointA: { x: 510, y: 410 },
-            bodyB: this.rightFlipper,
-            pointB: { x: 40, y: 0 },
-            stiffness: 1,
-            length: 0,
-            render: { visible: false },
-        } );
-        World.add( w, [ this.rightFlipper, this.rightHinge ] );
-
-        // Rest / active angles for clamping. The left flipper rests at
-        // a slight downward tilt (+0.35 rad) and fires up to (-0.45 rad);
-        // mirror for the right.
+        this.leftPivot        = { x: 250, y: 410 };
+        this.leftHingeOffset  = { x: -40, y: 0 };
         this.leftRestAngle    = 0.35;
-        this.leftActiveAngle  = -0.45;
-        this.rightRestAngle   = -0.35;
-        this.rightActiveAngle = 0.45;
+        this.leftActiveAngle  = -0.55;
+        this.leftAngle        = this.leftRestAngle;
+        this.positionFlipper( this.leftFlipper, this.leftPivot,
+                              this.leftHingeOffset, this.leftAngle );
+        World.add( w, this.leftFlipper );
 
-        Body.setAngle( this.leftFlipper, this.leftRestAngle );
-        Body.setAngle( this.rightFlipper, this.rightRestAngle );
+        // RIGHT — pivots around world (510, 410). Hinge at body-local (+40, 0).
+        this.rightFlipper = Bodies.rectangle( 0, 0, 80, 14,
+            Object.assign( {}, flipperOpts, { label: 'flipper:right' } ) );
+        this.rightPivot        = { x: 510, y: 410 };
+        this.rightHingeOffset  = { x: 40, y: 0 };
+        this.rightRestAngle    = -0.35;
+        this.rightActiveAngle  = 0.55;
+        this.rightAngle        = this.rightRestAngle;
+        this.positionFlipper( this.rightFlipper, this.rightPivot,
+                              this.rightHingeOffset, this.rightAngle );
+        World.add( w, this.rightFlipper );
+    };
+
+    // Place a flipper so that its body-local hinge point sits at the
+    // given world pivot, with the body rotated by `angle`. The math:
+    // hinge_world = body.position + R(angle) * hingeOffset.
+    // We want hinge_world = pivot, so body.position = pivot - R(angle)*hingeOffset.
+    Pinball.prototype.positionFlipper = function ( body, pivot, hingeOffset, angle ) {
+        var cos = Math.cos( angle );
+        var sin = Math.sin( angle );
+        var rx  = cos * hingeOffset.x - sin * hingeOffset.y;
+        var ry  = sin * hingeOffset.x + cos * hingeOffset.y;
+        Body.setPosition( body, { x: pivot.x - rx, y: pivot.y - ry } );
+        Body.setAngle( body, angle );
     };
 
     // ================================================================
@@ -462,13 +494,20 @@
         // Only fires if the ball is in the chute and plunger was charging.
         if ( ! this.plungerActive || ! this.theBall ) {
             this.plungerActive = false;
+            this.plungerCharge = 0;
             return;
         }
         var b = this.theBall;
-        // Only fire if ball is still in the shooter lane (right side, lower half).
+        // Only fire if ball is still in the shooter lane (right side,
+        // lower half — i.e. resting on the chute floor).
         if ( b.position.x > TABLE_W - 60 && b.position.y > TABLE_H * 0.45 ) {
-            var force = -0.025 - 0.05 * this.plungerCharge; // upward
-            Body.applyForce( b, b.position, { x: 0, y: force } );
+            // Direct velocity set — applyForce is force * dt + mass
+            // dependent and was too quiet to get the ball up to the
+            // deflector arch. setVelocity is deterministic. Range:
+            // -8 (tap) to -18 (full charge) px per step — enough to
+            // reach the top and ricochet into the playfield.
+            var vy = -8 - 10 * this.plungerCharge;
+            Body.setVelocity( b, { x: 0, y: vy } );
         }
         this.plungerActive = false;
         this.plungerCharge = 0;
@@ -671,11 +710,11 @@
         var dt = Math.min( 32, ts - this.lastTs );
         this.lastTs = ts;
 
-        // Clamp flipper angles, drive them with angular velocity.
-        this.driveFlipper( this.leftFlipper, this.leftFlipperUp,
-            this.leftRestAngle, this.leftActiveAngle );
-        this.driveFlipper( this.rightFlipper, this.rightFlipperUp,
-            this.rightRestAngle, this.rightActiveAngle );
+        // Kinematic flippers — step each toward its target, override
+        // the body pose every frame. Must happen BEFORE Engine.update
+        // so the new pose is what collisions are resolved against.
+        this.driveFlipper( 'left',  this.leftFlipperUp,  dt );
+        this.driveFlipper( 'right', this.rightFlipperUp, dt );
 
         // Charge plunger while held.
         if ( this.plungerActive ) {
@@ -696,19 +735,51 @@
         requestAnimationFrame( this.tick );
     };
 
-    Pinball.prototype.driveFlipper = function ( body, isUp, restA, activeA ) {
-        // Goal: rotate toward activeA while held, toward restA when not.
-        // Use angular velocity directly; clamp the angle at the limit.
-        var target = isUp ? activeA : restA;
-        var diff   = target - body.angle;
-        // Snappy: high gain for fast response, capped so it doesn't tunnel.
-        var av = Math.sign( diff ) * Math.min( Math.abs( diff ) * 30, 0.7 );
-        Body.setAngularVelocity( body, av );
-        // Hard clamp at the limit if we've passed it.
-        var lo = Math.min( restA, activeA );
-        var hi = Math.max( restA, activeA );
-        if ( body.angle < lo ) Body.setAngle( body, lo );
-        if ( body.angle > hi ) Body.setAngle( body, hi );
+    // Kinematic flipper step. `side` is 'left' or 'right' — used to
+    // index into this[side+'Flipper'], this[side+'Pivot'], etc.
+    Pinball.prototype.driveFlipper = function ( side, isUp, dt ) {
+        var body         = this[ side + 'Flipper' ];
+        var pivot        = this[ side + 'Pivot' ];
+        var hingeOffset  = this[ side + 'HingeOffset' ];
+        var restA        = this[ side + 'RestAngle' ];
+        var activeA      = this[ side + 'ActiveAngle' ];
+        var prevAngle    = this[ side + 'Angle' ];
+
+        // Angular speed in rad / ms. 0.024 rad/ms = ~1370 deg/s — a
+        // full 0.9 rad swing takes about 38 ms, which feels arcade-
+        // snappy without tunneling through the ball. Return swing is
+        // slightly slower than the up-swing so the flipper "drops"
+        // back rather than snapping (more pinball-realistic).
+        var speedUp   = 0.024;
+        var speedDown = 0.014;
+        var speed     = isUp ? speedUp : speedDown;
+        var maxStep   = speed * dt;
+
+        var target    = isUp ? activeA : restA;
+        var diff      = target - prevAngle;
+        var step      = ( Math.abs( diff ) <= maxStep )
+                            ? diff
+                            : Math.sign( diff ) * maxStep;
+        var newAngle  = prevAngle + step;
+        this[ side + 'Angle' ] = newAngle;
+
+        // Compute the new world position from the pivot + offset.
+        var prevPos = { x: body.position.x, y: body.position.y };
+        this.positionFlipper( body, pivot, hingeOffset, newAngle );
+
+        // Set angular + linear velocity so the ball gets the right
+        // impulse on contact. (Matter uses body.angularVelocity and
+        // body.velocity when resolving collisions — without these,
+        // a kinematic flipper would feel "dead" and not impart force
+        // to the ball.)
+        var stepSec = dt / 1000;
+        if ( stepSec > 0 ) {
+            Body.setAngularVelocity( body, step / stepSec );
+            Body.setVelocity( body, {
+                x: ( body.position.x - prevPos.x ) / stepSec,
+                y: ( body.position.y - prevPos.y ) / stepSec,
+            } );
+        }
     };
 
     Pinball.prototype.render = function () {
