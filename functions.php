@@ -220,6 +220,53 @@ function tc_ventures_enqueue_scripts() {
 add_action( 'wp_enqueue_scripts', 'tc_ventures_enqueue_scripts' );
 
 /**
+ * Bing Webmaster Tools — site verification.
+ *
+ * Bing verifies ownership by fetching a token file at the site root.
+ * They generate a `BingSiteAuth.xml` containing a one-line user token
+ * and expect it served from `https://thomascheesman.ca/BingSiteAuth.xml`.
+ *
+ * Rather than ship the file via Hostinger's File Manager (which means
+ * a file that lives outside this repo and can drift), we intercept
+ * the exact URL via WordPress's `parse_request` action — which fires
+ * before WP tries to match the URL against posts/pages — and emit the
+ * XML response directly.
+ *
+ * Token from the Bing-generated file (Downloads/BingSiteAuth.xml,
+ * 2026-05-20). If Bing ever asks for re-verification with a new token,
+ * update this constant and push.
+ */
+const TC_BING_VERIFY_TOKEN = '5776B695B9937BEFEC7FA41711B62BA9';
+
+// Method 1: serve the XML token file at /BingSiteAuth.xml. Intercept
+// the URL before WP tries to match it to a post/page.
+add_action( 'parse_request', function () {
+    $req = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
+    // Match the exact path with or without a trailing slash and ignore
+    // any query string. Case-insensitive because Bing has historically
+    // probed with mixed casing.
+    $path = strtolower( strtok( $req, '?' ) );
+    if ( $path === '/bingsiteauth.xml' || $path === '/bingsiteauth.xml/' ) {
+        status_header( 200 );
+        nocache_headers();
+        header( 'Content-Type: application/xml; charset=UTF-8' );
+        echo "<?xml version=\"1.0\"?>\n";
+        echo "<users>\n";
+        echo "\t<user>" . TC_BING_VERIFY_TOKEN . "</user>\n";
+        echo "</users>\n";
+        exit;
+    }
+}, 0 );
+
+// Method 2: emit the <meta name="msvalidate.01"> tag in <head> on
+// every page. Bing's note when generating the tag: "don't remove
+// the meta tag even after verification succeeds" — they spot-check
+// periodically. wp_head priority 1 puts it near the top of <head>.
+add_action( 'wp_head', function () {
+    echo '<meta name="msvalidate.01" content="' . esc_attr( TC_BING_VERIFY_TOKEN ) . '" />' . "\n";
+}, 1 );
+
+/**
  * Theme setup: register features the theme supports.
  * Runs once, after Astra's own after_setup_theme.
  */
