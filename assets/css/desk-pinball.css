@@ -9,20 +9,25 @@
    the existing toad arcade (desk-games.js).
    ============================================ */
 
+/* Full-screen overlay. Appended to <body> by desk-pinball.js so no
+   ancestor's transform / filter / contain can break position:fixed.
+   Body scroll is locked while the game runs (also handled by JS). */
 .tc-pinball {
-    position: absolute;
+    position: fixed;
     inset: 0;
-    z-index: 5;
+    z-index: 10000;
     background:
-        radial-gradient(ellipse at 50% 30%,
-            rgba(0, 255, 102, 0.06) 0%,
-            transparent 60%),
-        rgba(4, 4, 12, 0.78);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    border-radius: 4px;
+        radial-gradient(ellipse at 50% 35%,
+            rgba(0, 255, 102, 0.05) 0%,
+            transparent 65%),
+        rgba(4, 4, 12, 0.96);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    animation: tc-pinball-fade-in 0.4s ease-out;
+    animation: tc-pinball-fade-in 0.35s ease-out;
 }
 
 @keyframes tc-pinball-fade-in {
@@ -30,17 +35,21 @@
     to   { opacity: 1; }
 }
 
+/* Canvas fills the viewport while preserving aspect ratio, letter-
+   boxed if the screen is the "wrong" shape. width caps at either
+   100vw or whatever 100vh would imply, whichever is smaller —
+   aspect-ratio derives the height. */
 .tc-pinball__canvas {
     display: block;
-    margin: 0 auto;
-    width: min(100%, 760px);
-    height: auto;
+    width: min(100vw, calc(100vh * 760 / 460));
+    max-height: 100vh;
     aspect-ratio: 760 / 460;
     background: #0a0814;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     cursor: crosshair;
     touch-action: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
 }
 
 /* CRT-phosphor HUD pinned to the corners of the overlay. */

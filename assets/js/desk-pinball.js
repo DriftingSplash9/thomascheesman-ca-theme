@@ -123,7 +123,11 @@
             return;
         }
 
-        // ---- overlay + canvas
+        // ---- overlay + canvas.
+        // Full-screen: the overlay is position:fixed covering the
+        // viewport. We append to <body> (not the drawer interior)
+        // so no ancestor transform/filter can break the fixed
+        // positioning. Body scroll is locked while the game runs.
         this.root = document.createElement( 'div' );
         this.root.className = 'tc-pinball';
         this.root.innerHTML =
@@ -138,7 +142,9 @@
             '<div class="tc-pinball__hint" data-pinball-hint>' +
                 '<strong>controls</strong> · A / L flippers · Space plunger · Esc exits' +
             '</div>';
-        this.interior.appendChild( this.root );
+        document.body.appendChild( this.root );
+        this.prevBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
         this.canvas = this.root.querySelector( 'canvas' );
         this.ctx = this.canvas.getContext( '2d' );
         this.scoreEl  = this.root.querySelector( '[data-pinball-score]' );
@@ -218,7 +224,10 @@
             // the ball rests on it until the plunger fires upward.
             // Without this the ball drops out the open bottom of the
             // chute into the drain sensor and the game ends instantly.
-            Bodies.rectangle( TABLE_W - 32, TABLE_H - 8, 56, 12, wallOpts ),
+            // Sized to sit between the inner and outer chute walls
+            // (inner wall right edge ~711, outer wall left edge ~746),
+            // so it doesn't visually protrude into the playfield.
+            Bodies.rectangle( ( 711 + 746 ) / 2, TABLE_H - 8, 36, 8, wallOpts ),
         ] );
 
         // ---- drain trough lips (slope inward at the bottom so the
@@ -768,18 +777,18 @@
         this.positionFlipper( body, pivot, hingeOffset, newAngle );
 
         // Set angular + linear velocity so the ball gets the right
-        // impulse on contact. (Matter uses body.angularVelocity and
-        // body.velocity when resolving collisions — without these,
-        // a kinematic flipper would feel "dead" and not impart force
-        // to the ball.)
-        var stepSec = dt / 1000;
-        if ( stepSec > 0 ) {
-            Body.setAngularVelocity( body, step / stepSec );
-            Body.setVelocity( body, {
-                x: ( body.position.x - prevPos.x ) / stepSec,
-                y: ( body.position.y - prevPos.y ) / stepSec,
-            } );
-        }
+        // impulse on contact. Matter's velocity unit is per-step
+        // displacement (NOT per-second) — Body.setVelocity sets
+        // positionPrev = position - velocity, and the next Engine
+        // .update integrates velocity = position - positionPrev.
+        // So we pass the raw per-frame delta. Dividing by dt/1000
+        // (an earlier mistake) gave velocity values ~62x too large,
+        // which teleported the flippers off-screen.
+        Body.setAngularVelocity( body, step );
+        Body.setVelocity( body, {
+            x: body.position.x - prevPos.x,
+            y: body.position.y - prevPos.y,
+        } );
     };
 
     Pinball.prototype.render = function () {
@@ -992,6 +1001,8 @@
         if ( this.root && this.root.parentNode ) {
             this.root.parentNode.removeChild( this.root );
         }
+        // Restore the body scroll-lock that boot() set.
+        document.body.style.overflow = this.prevBodyOverflow || '';
         this.footer.classList.remove( 'is-pinball' );
         if ( current === this ) current = null;
     };
