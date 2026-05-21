@@ -74,15 +74,15 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-// Hook on multiple candidate names because the WP 7.0 docs reference
-// `wp_abilities_api_init` but the actual fired hook in core 7.0 may
-// be `abilities_api_init` (no prefix) or the registration may need
-// to happen on the regular `init` action after the Abilities API
-// has loaded. Static guard inside the function makes multiple calls
-// safe (idempotent).
+// Abilities MUST be registered on this exact hook. Per WP 7.0
+// wp-includes/abilities-api.php docstring: "Attempting to register
+// an ability outside of this hook will fail and trigger a
+// _doing_it_wrong() notice." Earlier multi-hook attempt added
+// `init` priority 20 as a fallback -- which fires BEFORE this hook
+// in the same request, so the static guard locked the function in
+// and our wp_register_ability calls all ran outside the valid
+// window, silently returning NULL.
 add_action( 'wp_abilities_api_init', 'tc_register_agent_abilities' );
-add_action( 'abilities_api_init',    'tc_register_agent_abilities' );
-add_action( 'init',                  'tc_register_agent_abilities', 20 );
 
 // Debug endpoint — dumps the Abilities registry so we can see
 // whether registration is happening at all. Read-only, no secrets
