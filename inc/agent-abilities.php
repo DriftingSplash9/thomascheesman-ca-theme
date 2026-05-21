@@ -74,14 +74,61 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+// Hook on multiple candidate names because the WP 7.0 docs reference
+// `wp_abilities_api_init` but the actual fired hook in core 7.0 may
+// be `abilities_api_init` (no prefix) or the registration may need
+// to happen on the regular `init` action after the Abilities API
+// has loaded. Static guard inside the function makes multiple calls
+// safe (idempotent).
 add_action( 'wp_abilities_api_init', 'tc_register_agent_abilities' );
+add_action( 'abilities_api_init',    'tc_register_agent_abilities' );
+add_action( 'init',                  'tc_register_agent_abilities', 20 );
+
+// Debug endpoint — admin-only — dumps the Abilities registry so we
+// can see whether registration is happening at all. Remove once
+// the MCP Adapter is reliably picking our abilities up.
+add_action( 'rest_api_init', function () {
+    register_rest_route( 'tc-debug/v1', '/abilities', array(
+        'methods'             => 'GET',
+        'permission_callback' => function () { return current_user_can( 'manage_options' ); },
+        'callback'            => function () {
+            $info = array(
+                'has_wp_register_ability' => function_exists( 'wp_register_ability' ),
+                'has_wp_get_abilities'    => function_exists( 'wp_get_abilities' ),
+                'has_wp_get_ability'      => function_exists( 'wp_get_ability' ),
+                'fired_hooks'             => array(),
+                'abilities'               => array(),
+            );
+            global $wp_actions;
+            foreach ( array( 'wp_abilities_api_init', 'abilities_api_init', 'init' ) as $h ) {
+                $info['fired_hooks'][ $h ] = isset( $wp_actions[ $h ] ) ? (int) $wp_actions[ $h ] : 0;
+            }
+            if ( function_exists( 'wp_get_abilities' ) ) {
+                $all = wp_get_abilities();
+                if ( is_array( $all ) ) {
+                    foreach ( $all as $key => $a ) {
+                        $name = is_object( $a ) && isset( $a->name ) ? $a->name
+                              : ( is_array( $a ) && isset( $a['name'] ) ? $a['name'] : $key );
+                        $info['abilities'][] = $name;
+                    }
+                } else {
+                    $info['abilities_raw_type'] = gettype( $all );
+                }
+            }
+            return $info;
+        },
+    ) );
+} );
 
 function tc_register_agent_abilities() {
-    // Defensive: WP 7.0 ships the Abilities API; older WP installs
-    // don't. If the function isn't there, do nothing.
+    static $done = false;
+    if ( $done ) {
+        return;
+    }
     if ( ! function_exists( 'wp_register_ability' ) ) {
         return;
     }
+    $done = true;
 
     /*
      * ============================================================
