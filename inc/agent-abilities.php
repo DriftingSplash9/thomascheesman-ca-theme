@@ -207,6 +207,21 @@ function tc_register_agent_abilities() {
         'theme_version'                => function_exists( 'wp_get_theme' ) ? wp_get_theme()->get( 'Version' ) : 'n/a',
     );
 
+    // Register ability categories first. The registry silently
+    // rejects (returns null) any ability whose `category` arg
+    // refers to an unregistered category -- that was the actual
+    // root cause of the all-NULLs bug we were chasing.
+    if ( function_exists( 'wp_register_ability_category' ) ) {
+        wp_register_ability_category( 'tc-content', array(
+            'label'       => 'Portfolio content',
+            'description' => 'Pages, quotes / riddles, and other site content.',
+        ) );
+        wp_register_ability_category( 'tc-games', array(
+            'label'       => 'Arcade',
+            'description' => 'Leaderboard and other arcade-related abilities.',
+        ) );
+    }
+
     /*
      * ============================================================
      *  READ-ONLY ABILITIES
@@ -216,7 +231,7 @@ function tc_register_agent_abilities() {
     tc_capture_register( 'tc-portfolio/list-pages', array(
         'label'         => 'List pages',
         'description'   => 'List every page on the site with id, slug, title, and status. Read-only.',
-        'category'      => 'content',
+        'category'      => 'tc-content',
         'input_schema'  => array(
             'type'       => 'object',
             'properties' => array(
@@ -248,7 +263,7 @@ function tc_register_agent_abilities() {
     tc_capture_register( 'tc-portfolio/get-page', array(
         'label'         => 'Get a page by id or slug',
         'description'   => 'Return a single page including its full post_content. Read-only.',
-        'category'      => 'content',
+        'category'      => 'tc-content',
         'input_schema'  => array(
             'type'       => 'object',
             'properties' => array(
@@ -275,7 +290,7 @@ function tc_register_agent_abilities() {
     tc_capture_register( 'tc-portfolio/list-quotes', array(
         'label'         => 'List daily quote/riddle pool',
         'description'   => 'Return the current contents of inc/data/quotes.json — the rotation pool for the daily quote/riddle shown in the footer drawer. Read-only.',
-        'category'      => 'content',
+        'category'      => 'tc-content',
         'input_schema'  => array( 'type' => 'object' ),
         'output_schema' => array(
             'type'  => 'array',
@@ -289,7 +304,7 @@ function tc_register_agent_abilities() {
     tc_capture_register( 'tc-portfolio/get-leaderboard', array(
         'label'         => 'Get arcade leaderboard',
         'description'   => 'Return top scores for an arcade game (snake, pong, pacman, asteroids, brickles, solitaire, pinball). Read-only.',
-        'category'      => 'games',
+        'category'      => 'tc-games',
         'input_schema'  => array(
             'type'       => 'object',
             'properties' => array(
@@ -315,7 +330,7 @@ function tc_register_agent_abilities() {
     tc_capture_register( 'tc-portfolio/update-page-content', array(
         'label'         => 'Update a page\'s content',
         'description'   => 'Replace the post_content of a specific page. WordPress sanitises the HTML via wp_kses_post(). Writes a revision.',
-        'category'      => 'content',
+        'category'      => 'tc-content',
         'input_schema'  => array(
             'type'       => 'object',
             'properties' => array(
@@ -349,7 +364,7 @@ function tc_register_agent_abilities() {
     tc_capture_register( 'tc-portfolio/append-quote', array(
         'label'         => 'Append a quote or riddle to the pool',
         'description'   => 'Add a new entry to inc/data/quotes.json. Type must be "quote" (with text + author) or "riddle" (with question + answer). The drawer picker re-derives indices from list length, so additions take effect on the next page load.',
-        'category'      => 'content',
+        'category'      => 'tc-content',
         'input_schema'  => array(
             'type'       => 'object',
             'properties' => array(
