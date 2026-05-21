@@ -14,6 +14,7 @@ require_once get_stylesheet_directory() . '/inc/games-leaderboard.php';
 require_once get_stylesheet_directory() . '/inc/daily-quote.php';
 require_once get_stylesheet_directory() . '/inc/agent-role.php';
 require_once get_stylesheet_directory() . '/inc/agent-password-page.php';
+require_once get_stylesheet_directory() . '/inc/agent-abilities.php';
 
 /**
  * Enqueue parent and child theme styles and scripts.
