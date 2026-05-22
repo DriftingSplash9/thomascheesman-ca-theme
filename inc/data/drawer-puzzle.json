@@ -10,7 +10,7 @@
     "sticker-135": {
       "name": "13.5 racing sticker",
       "media": 3665,
-      "x": 44, "y": 23, "w": 13, "rot": -3,
+      "x": 48, "y": 23, "w": 9.75, "rot": -3,
       "state": "shown",
       "hint": "13.5 — odd number to race to"
     },
