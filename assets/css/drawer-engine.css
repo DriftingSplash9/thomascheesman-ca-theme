@@ -232,3 +232,82 @@
     .tc-drawer-flash { animation-duration: 0.2s; }
     .tc-clue__paper { transform: rotate(-1.4deg); }
 }
+
+/* ----------------------------------------------------------------
+   AUTHOR MODE (?author) — a layout toolbar plus free-drag
+   affordances on every object and zone. */
+.tc-author-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-width: 96vw;
+    padding: 8px 13px;
+    background: rgba(20, 12, 8, 0.96);
+    border: 1px solid rgba(184, 146, 78, 0.6);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 0.8rem;
+    color: var(--tc-brass-bright, #e7c98f);
+}
+.tc-author-bar strong { letter-spacing: 0.08em; }
+.tc-author-bar__hint { font-style: italic; opacity: 0.7; }
+.tc-author-bar button {
+    appearance: none;
+    cursor: pointer;
+    font: inherit;
+    color: #1a0e07;
+    background: linear-gradient(180deg,
+        var(--tc-brass-bright, #e7c98f), var(--tc-brass, #b8924e));
+    border: 1px solid #6b4d22;
+    border-radius: 5px;
+    padding: 5px 12px 6px;
+}
+.tc-author-bar__surface {
+    background: transparent !important;
+    color: var(--tc-brass-bright, #e7c98f) !important;
+    border-color: rgba(184, 146, 78, 0.4) !important;
+    font-size: 0.72rem;
+}
+.tc-author-bar__surface:hover { border-color: rgba(184, 146, 78, 0.95) !important; }
+
+/* Every object + zone is grab-draggable while authoring. */
+.tc-do.is-author,
+.tc-zone.is-author { cursor: grab; }
+.tc-do.is-author.is-dragging,
+.tc-zone.is-author.is-dragging { cursor: grabbing; }
+.tc-do.is-author:hover {
+    filter: brightness(1.1) drop-shadow(0 0 8px rgba(231, 201, 143, 0.7));
+}
+/* Zones don't pulse in author mode — held steady for placing. */
+.tc-zone.is-author { animation: none; opacity: 0.55; }
+.tc-zone.is-author:hover { opacity: 0.9; }
+/* Things not "shown" at start render dimmed, so it's clear they're
+   off by default but still placeable. */
+.tc-do.is-author-hidden,
+.tc-zone.is-author.is-author-hidden { opacity: 0.38; }
+.tc-do.is-author-hidden:hover,
+.tc-zone.is-author.is-author-hidden:hover { opacity: 0.85; }
+
+/* The id tag pinned under each object/zone. */
+.tc-author-tag {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 4px);
+    white-space: nowrap;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 10px;
+    color: #1a0e07;
+    background: rgba(231, 201, 143, 0.92);
+    padding: 1px 5px;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 61;
+}

@@ -35,12 +35,24 @@
  *
  * Phase 4 hook: window.TCDrawerEngine.reset() wipes progress (handy
  * while authoring). boot() is idempotent.
+ *
+ * --- Author mode (add ?author to the URL) ----------------------------
+ * Renders EVERY object + zone (hidden ones included, dimmed), makes
+ * them all free-drag, and disables interactions. Drag to place, wheel
+ * to resize (Shift+wheel = a zone's height). A toolbar offers "Copy
+ * layout" — the current coordinates as pasteable JSON. Author layout
+ * persists locally so a reload doesn't lose work. TCDrawerEngine.dump()
+ * returns the same JSON from the console.
  */
 window.TCDrawerEngine = ( function () {
     'use strict';
 
     var LS_KEY = 'tc_drawer_progress';
     var DRAG_THRESHOLD = 6; // px of movement before a press counts as a drag
+
+    // Author mode: ?author anywhere in the query string.
+    var AUTHOR = /[?&]author(=|&|$)/.test( location.search );
+    var AUTHOR_LS = 'tc_drawer_author';
 
     var P = null;      // puzzle data
     var W = null;      // world state
@@ -59,10 +71,12 @@ window.TCDrawerEngine = ( function () {
 
         if ( ! booted ) {
             W = loadProgress() || freshWorld();
+            if ( AUTHOR ) applyAuthorLayout();
             booted = true;
         }
         applySurface();
         render();
+        if ( AUTHOR ) buildAuthorToolbar();
     }
 
     function freshWorld() {
@@ -121,14 +135,16 @@ window.TCDrawerEngine = ( function () {
     function render() {
         if ( ! mount ) return;
         mount.innerHTML = '';
+        // Author mode renders EVERYTHING so it can all be placed;
+        // normal mode renders only what's currently "shown".
         // Zones first (lower z-index) so objects sit above them.
         for ( var z in P.zones ) {
-            if ( P.zones.hasOwnProperty( z ) && W.state[ z ] === 'shown' ) {
+            if ( P.zones.hasOwnProperty( z ) && ( AUTHOR || W.state[ z ] === 'shown' ) ) {
                 mount.appendChild( buildZone( z, P.zones[ z ] ) );
             }
         }
         for ( var o in P.objects ) {
-            if ( P.objects.hasOwnProperty( o ) && W.state[ o ] === 'shown' ) {
+            if ( P.objects.hasOwnProperty( o ) && ( AUTHOR || W.state[ o ] === 'shown' ) ) {
                 mount.appendChild( buildObject( o, P.objects[ o ] ) );
             }
         }
@@ -163,7 +179,11 @@ window.TCDrawerEngine = ( function () {
         }
         if ( def.hint ) el.appendChild( hintEl( def.hint ) );
 
-        bindObject( el, id, def );
+        if ( AUTHOR ) {
+            authorize( el, id, 'object' );
+        } else {
+            bindObject( el, id, def );
+        }
         return el;
     }
 
@@ -176,7 +196,20 @@ window.TCDrawerEngine = ( function () {
         el.style.width  = ( def.w || 10 ) + '%';
         el.style.height = ( def.h || 10 ) + '%';
         if ( def.hint ) el.appendChild( hintEl( def.hint ) );
+        if ( AUTHOR ) authorize( el, id, 'zone' );
         return el;
+    }
+
+    // Author-mode decoration shared by objects + zones: an id tag, a
+    // dimmed look for things not normally visible, and the drag binding.
+    function authorize( el, id, kind ) {
+        el.classList.add( 'is-author' );
+        if ( W.state[ id ] !== 'shown' ) el.classList.add( 'is-author-hidden' );
+        var tag = document.createElement( 'span' );
+        tag.className = 'tc-author-tag';
+        tag.textContent = id;
+        el.appendChild( tag );
+        bindAuthorDrag( el, id, kind );
     }
 
     function hintEl( text ) {
@@ -436,6 +469,152 @@ window.TCDrawerEngine = ( function () {
         dismiss.focus();
     }
 
+    // =================================================================
+    // AUTHOR MODE — free layout. Drag to reposition, wheel to resize.
+    // Interactions are off; this is purely for placing things and
+    // copying the coordinates back out.
+    function round1( n ) { return Math.round( n * 10 ) / 10; }
+
+    function bindAuthorDrag( el, id, kind ) {
+        var def = ( kind === 'zone' ? P.zones[ id ] : P.objects[ id ] );
+        if ( ! def ) return;
+        var dragging = false;
+
+        el.addEventListener( 'pointerdown', function ( e ) {
+            if ( e.button != null && e.button !== 0 ) return;
+            dragging = true;
+            el.setPointerCapture( e.pointerId );
+            el.classList.add( 'is-dragging' );
+            e.preventDefault();
+        } );
+        el.addEventListener( 'pointermove', function ( e ) {
+            if ( ! dragging ) return;
+            var r = mount.getBoundingClientRect();
+            def.x = round1( ( e.clientX - r.left ) / r.width  * 100 );
+            def.y = round1( ( e.clientY - r.top  ) / r.height * 100 );
+            el.style.left = def.x + '%';
+            el.style.top  = def.y + '%';
+        } );
+        el.addEventListener( 'pointerup', function ( e ) {
+            dragging = false;
+            el.classList.remove( 'is-dragging' );
+            try { el.releasePointerCapture( e.pointerId ); } catch ( ex ) {}
+            saveAuthorLayout();
+        } );
+        el.addEventListener( 'lostpointercapture', function () {
+            dragging = false;
+            el.classList.remove( 'is-dragging' );
+        } );
+        // Wheel = width; Shift+wheel = a zone's height.
+        el.addEventListener( 'wheel', function ( e ) {
+            e.preventDefault();
+            var step = e.deltaY < 0 ? 1.05 : 0.95;
+            if ( kind === 'zone' && e.shiftKey ) {
+                def.h = round1( Math.max( 2, ( def.h || 10 ) * step ) );
+                el.style.height = def.h + '%';
+            } else {
+                def.w = round1( Math.max( 2, ( def.w || 10 ) * step ) );
+                el.style.width = def.w + '%';
+            }
+            saveAuthorLayout();
+        }, { passive: false } );
+    }
+
+    // Author layout persists locally (applied OVER the puzzle defs) so
+    // an in-progress arrangement survives a reload.
+    function saveAuthorLayout() {
+        var out = { objects: {}, zones: {} };
+        for ( var o in P.objects ) if ( P.objects.hasOwnProperty( o ) ) {
+            var od = P.objects[ o ];
+            out.objects[ o ] = { x: od.x, y: od.y, w: od.w };
+        }
+        for ( var z in P.zones ) if ( P.zones.hasOwnProperty( z ) ) {
+            var zd = P.zones[ z ];
+            out.zones[ z ] = { x: zd.x, y: zd.y, w: zd.w, h: zd.h };
+        }
+        try { localStorage.setItem( AUTHOR_LS, JSON.stringify( out ) ); } catch ( e ) {}
+    }
+    function applyAuthorLayout() {
+        var saved;
+        try { saved = JSON.parse( localStorage.getItem( AUTHOR_LS ) || 'null' ); }
+        catch ( e ) { saved = null; }
+        if ( ! saved ) return;
+        applyCoords( saved.objects, P.objects );
+        applyCoords( saved.zones, P.zones );
+    }
+    function applyCoords( src, dst ) {
+        if ( ! src || ! dst ) return;
+        for ( var k in src ) {
+            if ( src.hasOwnProperty( k ) && dst[ k ] ) {
+                [ 'x', 'y', 'w', 'h' ].forEach( function ( p ) {
+                    if ( typeof src[ k ][ p ] === 'number' ) dst[ k ][ p ] = src[ k ][ p ];
+                } );
+            }
+        }
+    }
+
+    // The deliverable: current objects + zones as pasteable JSON.
+    function dumpLayout() {
+        var pick = function ( d, keys ) {
+            var o = {};
+            keys.forEach( function ( k ) { if ( d[ k ] !== undefined ) o[ k ] = d[ k ]; } );
+            return o;
+        };
+        var objs = {}, zns = {};
+        for ( var o in P.objects ) if ( P.objects.hasOwnProperty( o ) ) {
+            objs[ o ] = pick( P.objects[ o ], [ 'x', 'y', 'w', 'rot' ] );
+        }
+        for ( var z in P.zones ) if ( P.zones.hasOwnProperty( z ) ) {
+            zns[ z ] = pick( P.zones[ z ], [ 'x', 'y', 'w', 'h' ] );
+        }
+        return JSON.stringify( { objects: objs, zones: zns }, null, 2 );
+    }
+
+    function buildAuthorToolbar() {
+        if ( document.querySelector( '.tc-author-bar' ) ) return;
+        var bar = document.createElement( 'div' );
+        bar.className = 'tc-author-bar';
+        bar.innerHTML = '<strong>AUTHOR MODE</strong>' +
+            '<span class="tc-author-bar__hint">drag to place · wheel to resize</span>';
+
+        var copyBtn = document.createElement( 'button' );
+        copyBtn.type = 'button';
+        copyBtn.textContent = 'Copy layout';
+        copyBtn.addEventListener( 'click', function () {
+            var json = dumpLayout();
+            var done = function () {
+                copyBtn.textContent = 'Copied ✓';
+                setTimeout( function () { copyBtn.textContent = 'Copy layout'; }, 1800 );
+            };
+            if ( navigator.clipboard && navigator.clipboard.writeText ) {
+                navigator.clipboard.writeText( json ).then( done, function () {
+                    window.prompt( 'Copy the layout JSON:', json );
+                } );
+            } else {
+                window.prompt( 'Copy the layout JSON:', json );
+            }
+        } );
+        bar.appendChild( copyBtn );
+
+        // Surface previews — arrange objects against any drawer state.
+        for ( var s in P.surfaces ) {
+            if ( P.surfaces.hasOwnProperty( s ) ) {
+                ( function ( sid ) {
+                    var b = document.createElement( 'button' );
+                    b.type = 'button';
+                    b.className = 'tc-author-bar__surface';
+                    b.textContent = sid;
+                    b.addEventListener( 'click', function () {
+                        W.surface = sid;
+                        applySurface();
+                    } );
+                    bar.appendChild( b );
+                } )( s );
+            }
+        }
+        document.body.appendChild( bar );
+    }
+
     // -----------------------------------------------------------------
     function esc( s ) {
         return String( s ).replace( /[&<>"]/g, function ( c ) {
@@ -443,5 +622,5 @@ window.TCDrawerEngine = ( function () {
         } );
     }
 
-    return { boot: boot, reset: reset };
+    return { boot: boot, reset: reset, dump: dumpLayout };
 } )();
