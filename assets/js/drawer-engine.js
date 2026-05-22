@@ -203,7 +203,10 @@ window.TCDrawerEngine = ( function () {
         el.addEventListener( 'pointermove', function ( e ) {
             if ( ! dragging ) return;
             var dx = e.clientX - startX, dy = e.clientY - startY;
-            if ( ! moved && Math.abs( dx ) + Math.abs( dy ) > DRAG_THRESHOLD ) moved = true;
+            if ( ! moved && Math.abs( dx ) + Math.abs( dy ) > DRAG_THRESHOLD ) {
+                moved = true;
+                highlightTargets( id ); // light up valid drop targets
+            }
             if ( ! moved ) return;
             var r = mount.getBoundingClientRect();
             el.style.left = ( ( e.clientX - r.left ) / r.width  * 100 ) + '%';
@@ -212,20 +215,22 @@ window.TCDrawerEngine = ( function () {
 
         el.addEventListener( 'pointerup', function ( e ) {
             var wasDragging = dragging, didMove = moved;
-            dragging = false;
+            dragging = false; moved = false;
             el.classList.remove( 'is-dragging' );
+            clearHighlights();
             try { el.releasePointerCapture( e.pointerId ); } catch ( ex ) {}
 
             if ( wasDragging && didMove ) {
-                handleDrop( id, e.clientX, e.clientY );
+                handleDrop( id, el );
             } else {
                 handleClick( id );
             }
         } );
 
         el.addEventListener( 'lostpointercapture', function () {
-            dragging = false;
+            dragging = false; moved = false;
             el.classList.remove( 'is-dragging' );
+            clearHighlights();
         } );
     }
 
@@ -238,9 +243,11 @@ window.TCDrawerEngine = ( function () {
         else { render(); } // snap any stray transform back
     }
 
-    // A drag that was released → test against zones + other objects.
-    function handleDrop( id, cx, cy ) {
-        var target = hitTest( id, cx, cy );
+    // A drag that was released → test the dragged element against
+    // zones + other objects by rectangle OVERLAP (forgiving — you
+    // don't have to land the cursor pixel-perfect on a small zone).
+    function handleDrop( id, el ) {
+        var target = hitTest( el, id );
         var it = null;
         if ( target ) {
             if ( isZone( target ) ) {
@@ -258,18 +265,44 @@ window.TCDrawerEngine = ( function () {
         else { render(); } // no match → snap back home
     }
 
-    // Topmost shown object/zone (other than self) under the point.
-    function hitTest( selfId, cx, cy ) {
-        var els = mount.children, hit = null;
+    // The other shown object/zone the dragged element overlaps MOST.
+    function hitTest( selfEl, selfId ) {
+        var sr = selfEl.getBoundingClientRect();
+        var els = mount.children, best = null, bestArea = 0;
         for ( var i = 0; i < els.length; i++ ) {
             var el = els[ i ];
             if ( el.dataset.id === selfId ) continue;
             var r = el.getBoundingClientRect();
-            if ( cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom ) {
-                hit = el.dataset.id; // later children paint on top → keep last match
+            var ox = Math.min( sr.right, r.right ) - Math.max( sr.left, r.left );
+            var oy = Math.min( sr.bottom, r.bottom ) - Math.max( sr.top, r.top );
+            if ( ox > 0 && oy > 0 && ox * oy > bestArea ) {
+                bestArea = ox * oy;
+                best = el.dataset.id;
             }
         }
-        return hit;
+        return best;
+    }
+
+    // While dragging, glow every zone/object that has a live
+    // interaction with the dragged object — so it's obvious where
+    // things go (and confirms zones actually rendered).
+    function highlightTargets( draggedId ) {
+        var list = P.interactions || [], wanted = {};
+        for ( var i = 0; i < list.length; i++ ) {
+            var x = list[ i ];
+            if ( x.once && x.id && W.done.indexOf( x.id ) !== -1 ) continue;
+            if ( x.on === 'drop' && x.object === draggedId ) wanted[ x.zone ] = 1;
+            if ( x.on === 'combine' && x.a === draggedId )   wanted[ x.b ] = 1;
+            if ( x.on === 'combine' && x.b === draggedId )   wanted[ x.a ] = 1;
+        }
+        var els = mount.children;
+        for ( var j = 0; j < els.length; j++ ) {
+            els[ j ].classList.toggle( 'is-droptarget', !! wanted[ els[ j ].dataset.id ] );
+        }
+    }
+    function clearHighlights() {
+        var els = mount.children;
+        for ( var i = 0; i < els.length; i++ ) els[ i ].classList.remove( 'is-droptarget' );
     }
 
     function findInteraction( pred ) {

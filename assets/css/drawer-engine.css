@@ -74,14 +74,28 @@
     pointer-events: auto;
     z-index: 1;
     border-radius: 14px;
-    border: 2px dashed rgba(231, 201, 143, 0.45);
+    border: 2.5px dashed rgba(231, 201, 143, 0.85);
     background: radial-gradient(ellipse at center,
-        rgba(231, 201, 143, 0.14) 0%, transparent 70%);
+        rgba(231, 201, 143, 0.22) 0%, rgba(231, 201, 143, 0.04) 65%, transparent 80%);
+    box-shadow: 0 0 12px rgba(231, 201, 143, 0.3),
+                inset 0 0 14px rgba(231, 201, 143, 0.2);
     animation: tc-zone-pulse 2.4s ease-in-out infinite;
 }
 @keyframes tc-zone-pulse {
-    0%, 100% { opacity: 0.4; }
-    50%      { opacity: 0.92; }
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+}
+
+/* Valid drop target while a matching object is being dragged —
+   hold a bright steady glow so the player can see where it goes. */
+.tc-zone.is-droptarget,
+.tc-do.is-droptarget {
+    animation: none;
+    opacity: 1;
+    outline: 3px solid rgba(231, 201, 143, 0.95);
+    outline-offset: 2px;
+    box-shadow: 0 0 26px 8px rgba(231, 201, 143, 0.6);
+    border-radius: 12px;
 }
 
 /* ----------------------------------------------------------------
