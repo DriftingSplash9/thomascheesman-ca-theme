@@ -15,6 +15,8 @@ require_once get_stylesheet_directory() . '/inc/daily-quote.php';
 require_once get_stylesheet_directory() . '/inc/agent-role.php';
 require_once get_stylesheet_directory() . '/inc/agent-password-page.php';
 require_once get_stylesheet_directory() . '/inc/agent-abilities.php';
+require_once get_stylesheet_directory() . '/inc/email-smtp.php';
+require_once get_stylesheet_directory() . '/inc/drawer-events.php';
 
 /**
  * Enqueue parent and child theme styles and scripts.
@@ -294,6 +296,7 @@ function tc_ventures_enqueue_scripts() {
             ),
             'engineUrl'    => get_stylesheet_directory_uri()
                 . '/assets/js/drawer-engine.js?ver=' . rawurlencode( $tc_theme_ver ),
+            'eventUrl'     => esc_url_raw( rest_url( 'tc-drawer/v1/event' ) ),
             'signatureSvg' => $tc_signature_svg,
             'puzzle'       => $tc_puzzle,
         )

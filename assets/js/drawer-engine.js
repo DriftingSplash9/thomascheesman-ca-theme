@@ -25,6 +25,8 @@
  *   flag:name     — set a progress flag
  *   clue:text     — show a handwritten clue card (\n splits paragraphs)
  *   effect:name   — play an effect ("flash" implemented; others stub)
+ *   notify:name   — POST a milestone event so the site emails Thomas
+ *                   (the puzzle-completion alert; see inc/drawer-events.php)
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -334,7 +336,24 @@ window.TCDrawerEngine = ( function () {
             if ( a.flag )    W.flags[ a.flag ] = true;
             if ( a.clue )    showClue( a.clue );
             if ( a.effect )  playEffect( a.effect );
+            if ( a.notify )  sendEvent( a.notify );
         }
+    }
+
+    // Fire-and-forget milestone ping → inc/drawer-events.php emails
+    // Thomas. keepalive lets it complete even if the page is leaving.
+    function sendEvent( name ) {
+        var url = window.tcSecretDrawer && window.tcSecretDrawer.eventUrl;
+        if ( ! url || ! window.fetch ) return;
+        try {
+            fetch( url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify( { event: String( name ) } ),
+                keepalive: true,
+                credentials: 'same-origin'
+            } ).catch( function () {} );
+        } catch ( e ) {}
     }
     function setStates( ids, state ) {
         ( ids || [] ).forEach( function ( id ) { if ( id in W.state ) W.state[ id ] = state; } );

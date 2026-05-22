@@ -82,7 +82,8 @@
       "on": "click", "object": "duck-pin",
       "do": [
         { "clue": "\"Got any grapes?\"\n\nThe duck found you first. One small treasure down — the drawer keeps more." },
-        { "flag": "pin-found" }
+        { "flag": "pin-found" },
+        { "notify": "test" }
       ]
     },
     {
