@@ -13,6 +13,12 @@
  * desk-drawer.js lazy-loads Matter.js + boots desk-pinball.js,
  * which converts the drawer's contents into a pinball table.
  *
+ * THE LOOSE HANDLE (Phase 1 of the nested-drawer build): the brass
+ * pull is secretly a loose handle. Hover it for the "the handle is
+ * loose" bubble; click it for a choice; tighten it and the
+ * junk-drawer overlay slides open. secret-drawer.{css,js} drive it;
+ * the junk-drawer artwork is lazy-loaded on first hover.
+ *
  * No "back-to-the-desk" pill: the existing menu trigger in the
  * header capsule is the always-visible way in. The footer instead
  * carries the connect surface that the front-page CTA section
@@ -26,11 +32,23 @@
 <footer class="tc-drawer" role="contentinfo" data-tc-drawer>
 
     <!-- ============================================================
-         BRASS PULL — the visible "drawer pull" sitting above the
-         drawer body. Aria-hidden because clicking it is decorative;
-         the drawer opens on scroll-into-view automatically. -->
-    <div class="tc-drawer__lip" aria-hidden="true">
-        <span class="tc-drawer__pull"></span>
+         BRASS PULL — the "drawer pull" on the wooden lip. It is the
+         loose handle: hovering surfaces a bubble, clicking offers a
+         choice, tightening it opens the junk-drawer overlay below.
+         secret-drawer.js binds [data-tc-loose-handle]. -->
+    <div class="tc-drawer__lip">
+        <button type="button"
+                class="tc-drawer__pull"
+                data-tc-loose-handle
+                aria-haspopup="dialog"
+                aria-expanded="false"
+                aria-label="<?php esc_attr_e( 'The drawer handle — it feels loose', 'tc-ventures-child' ); ?>">
+            <span class="tc-drawer__handle-bubble" data-tc-handle-bubble aria-hidden="true">the handle is loose</span>
+        </button>
+        <div class="tc-drawer__handle-choice" data-tc-handle-choice hidden>
+            <button type="button" data-tc-handle-tighten>try tightening it</button>
+            <button type="button" data-tc-handle-nevermind>never mind</button>
+        </div>
     </div>
 
     <div class="tc-drawer__body">
@@ -191,6 +209,32 @@
                 aria-label="<?php esc_attr_e( 'Open the desk menu', 'tc-ventures-child' ); ?>">
             &larr; back to the desk
         </button>
+    </div>
+
+    <!-- ============================================================
+         THE SECRET DRAWER — the junk-drawer overlay. Hidden until the
+         loose handle is tightened (secret-drawer.js). Phase 1 ships
+         the stage + artwork + close affordances; the empty
+         [data-tc-secret-objects] layer is the mount point the Phase 2
+         interaction engine drops puzzle objects into. The background
+         <img> has no src — secret-drawer.js lazy-sets it from
+         tcSecretDrawer.assets so non-curious visitors download nothing. -->
+    <div class="tc-secret-drawer" data-tc-secret-drawer hidden
+         role="dialog" aria-modal="true"
+         aria-label="<?php esc_attr_e( 'The junk drawer', 'tc-ventures-child' ); ?>">
+        <div class="tc-secret-drawer__scrim" data-tc-secret-close></div>
+        <div class="tc-secret-drawer__stage">
+            <img class="tc-secret-drawer__bg"
+                 data-tc-secret-bg
+                 alt="<?php esc_attr_e( 'A junk drawer, its floor papered with stickers and memes', 'tc-ventures-child' ); ?>">
+            <div class="tc-secret-drawer__objects" data-tc-secret-objects>
+                <!-- Phase 2: the interaction engine mounts objects here. -->
+            </div>
+            <button type="button"
+                    class="tc-secret-drawer__close"
+                    data-tc-secret-close
+                    aria-label="<?php esc_attr_e( 'Close the drawer', 'tc-ventures-child' ); ?>">&times;</button>
+        </div>
     </div>
 
 </footer>

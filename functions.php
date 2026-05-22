@@ -219,6 +219,43 @@ function tc_ventures_enqueue_scripts() {
         true
     );
 
+    // The Secret Drawer — the loose-handle easter egg in the footer's
+    // brass pull. Tightening the handle opens the junk-drawer overlay.
+    // The CSS + JS are small and load site-wide (the handle interaction
+    // must be live on every page). The junk-drawer background image is
+    // lazy-set by the JS on first hover, so non-curious visitors pay
+    // nothing; the Phase 2 interaction engine will likewise lazy-load.
+    wp_enqueue_style(
+        'tc-secret-drawer',
+        get_stylesheet_directory_uri() . '/assets/css/secret-drawer.css',
+        array( 'tc-desk-drawer' ),
+        wp_get_theme()->get( 'Version' )
+    );
+    wp_enqueue_script(
+        'tc-secret-drawer',
+        get_stylesheet_directory_uri() . '/assets/js/secret-drawer.js',
+        array( 'tc-desk-drawer' ),
+        wp_get_theme()->get( 'Version' ),
+        true
+    );
+    // Drawer artwork URLs, resolved from the media library by
+    // attachment ID (uploaded this build — see drawer_assets_manifest).
+    // wp_get_attachment_image_url() returns false for a missing ID;
+    // secret-drawer.js guards against that.
+    wp_localize_script(
+        'tc-secret-drawer',
+        'tcSecretDrawer',
+        array(
+            'assets' => array(
+                'junkClean'        => wp_get_attachment_image_url( 3660, 'full' ),
+                'junkDusty'        => wp_get_attachment_image_url( 3661, 'full' ),
+                'compartmentClean' => wp_get_attachment_image_url( 3662, 'full' ),
+                'compartmentDusty' => wp_get_attachment_image_url( 3663, 'full' ),
+                'racingSticker'    => wp_get_attachment_image_url( 3665, 'full' ),
+            ),
+        )
+    );
+
 }
 add_action( 'wp_enqueue_scripts', 'tc_ventures_enqueue_scripts' );
 
