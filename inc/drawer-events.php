@@ -91,7 +91,9 @@ function tc_drawer_event_handler( WP_REST_Request $request ) {
 
     // Compose + send.
     $to      = defined( 'TC_ALERT_EMAIL' ) ? TC_ALERT_EMAIL : get_option( 'admin_email' );
-    $when    = wp_date( 'l, F j, Y \a\t g:i a T' );
+    // Format in Grande Prairie's timezone explicitly, so the alert
+    // always reads in Thomas's local time regardless of the site setting.
+    $when    = wp_date( 'l, F j, Y \a\t g:i a T', null, new DateTimeZone( 'America/Edmonton' ) );
     $subject = sprintf( '[thomascheesman.ca] secret-drawer event: %s', $event );
 
     $body  = "Someone just reached " . $labels[ $event ] . " in the secret drawer.\n\n";
