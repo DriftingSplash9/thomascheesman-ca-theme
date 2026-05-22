@@ -22,13 +22,21 @@
  *                                 media titles / alt text / captions
  *   edit_others_posts          — edit posts/attachments authored by others
  *                                 (needed for media uploaded by Thomas)
+ *   delete_posts               — delete own posts AND media attachments
+ *   delete_others_posts        — delete posts/attachments authored by
+ *                                 others (needed for media-library cleanup
+ *                                 of images uploaded by Thomas/admin)
+ *   delete_published_posts     — delete attachments/posts in a published
+ *                                 state (attachments are not "draft")
  *
- * SIDE EFFECT of edit_posts + edit_others_posts: the agent can now also
- * edit blog Posts, not just media. The site keeps a couple of dormant
- * draft posts (single-post-make-canada-great-again, page-journal); the
- * agent can edit those drafts. It still cannot publish or delete them
- * (no publish_posts / delete_posts cap), so the blast radius is "edit
- * an unpublished draft," which is revision-tracked and recoverable.
+ * SIDE EFFECT of the post-type caps: the agent can edit AND delete blog
+ * Posts, not just media. The site keeps a couple of dormant draft posts
+ * (single-post-make-canada-great-again, page-journal); the agent could
+ * edit or delete those drafts. It still cannot publish them (no
+ * publish_posts). CRITICALLY, it still cannot touch Pages: every
+ * page-deletion cap remains denied, so the 17 bespoke page templates
+ * are safe. Posts deleted via REST go to Trash and are recoverable;
+ * media attachments have no trash and delete permanently.
  *
  * INTENTIONALLY DENIED (do NOT add without conscious risk review):
  *   edit_themes, edit_plugins  — agent should never edit code files
@@ -38,9 +46,9 @@
  *   manage_options             — Settings → anything is off-limits
  *   edit_users, create_users,  — agent cannot manage user accounts
  *     delete_users, promote_users
- *   delete_pages,              — agent cannot delete content
- *     delete_published_pages,
- *     delete_others_pages
+ *   delete_pages,              — agent cannot delete PAGES (the 17
+ *     delete_published_pages,     bespoke templates stay protected);
+ *     delete_others_pages         post + media deletion IS now granted
  *
  * --- Registration strategy -------------------------------------
  *
@@ -80,7 +88,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 const TC_AGENT_ROLE_SLUG    = 'agent_page_editor';
 const TC_AGENT_ROLE_LABEL   = 'Agent (Page Editor)';
-const TC_AGENT_ROLE_VERSION = 2;
+const TC_AGENT_ROLE_VERSION = 3;
 
 /**
  * Force-enable Application Passwords site-wide.
@@ -151,10 +159,14 @@ function tc_register_agent_role() {
             'upload_files'         => true,
             'edit_posts'           => true,
             'edit_others_posts'    => true,
-            // No admin caps. No deletion caps. No plugin / theme caps.
-            // No user-management caps. No publish_posts (drafts stay
+            'delete_posts'         => true,
+            'delete_others_posts'  => true,
+            'delete_published_posts' => true,
+            // No admin caps. No PAGE-deletion caps (the 17 bespoke
+            // templates stay protected). No plugin / theme caps. No
+            // user-management caps. No publish_posts (drafts stay
             // drafts). See the docblock above for the deliberate
-            // denial list and the edit_posts side-effect note.
+            // denial list and the post-type-cap side-effect note.
         )
     );
 
