@@ -220,28 +220,67 @@ function tc_ventures_enqueue_scripts() {
     );
 
     // The Secret Drawer — the loose-handle easter egg in the footer's
-    // brass pull. Tightening the handle opens the junk-drawer overlay.
-    // The CSS + JS are small and load site-wide (the handle interaction
-    // must be live on every page). The junk-drawer background image is
-    // lazy-set by the JS on first hover, so non-curious visitors pay
-    // nothing; the Phase 2 interaction engine will likewise lazy-load.
+    // brass pull. Tightening the handle opens the junk-drawer overlay;
+    // opening it lazy-loads the Phase 2 interaction engine.
+    // The shell CSS + JS are small and load site-wide (the handle must
+    // be live on every page). The junk-drawer background image AND
+    // drawer-engine.js are lazy-loaded only once a visitor opens the
+    // drawer — so non-curious visitors pay nothing.
+    $tc_theme_ver = wp_get_theme()->get( 'Version' );
+
     wp_enqueue_style(
         'tc-secret-drawer',
         get_stylesheet_directory_uri() . '/assets/css/secret-drawer.css',
         array( 'tc-desk-drawer' ),
-        wp_get_theme()->get( 'Version' )
+        $tc_theme_ver
+    );
+    wp_enqueue_style(
+        'tc-drawer-engine',
+        get_stylesheet_directory_uri() . '/assets/css/drawer-engine.css',
+        array( 'tc-secret-drawer' ),
+        $tc_theme_ver
     );
     wp_enqueue_script(
         'tc-secret-drawer',
         get_stylesheet_directory_uri() . '/assets/js/secret-drawer.js',
         array( 'tc-desk-drawer' ),
-        wp_get_theme()->get( 'Version' ),
+        $tc_theme_ver,
         true
     );
-    // Drawer artwork URLs, resolved from the media library by
-    // attachment ID (uploaded this build — see drawer_assets_manifest).
-    // wp_get_attachment_image_url() returns false for a missing ID;
-    // secret-drawer.js guards against that.
+
+    // Load + enrich the puzzle data: resolve every surface/object
+    // attachment ID to a URL so the engine (JS) never has to. Phase 4
+    // edits drawer-puzzle.json only; this code does not change.
+    $tc_puzzle      = array();
+    $tc_puzzle_path = get_stylesheet_directory() . '/inc/data/drawer-puzzle.json';
+    if ( is_readable( $tc_puzzle_path ) ) {
+        $tc_decoded = json_decode( file_get_contents( $tc_puzzle_path ), true );
+        if ( is_array( $tc_decoded ) ) {
+            $tc_puzzle = $tc_decoded;
+        }
+    }
+    if ( ! empty( $tc_puzzle['surfaces'] ) && is_array( $tc_puzzle['surfaces'] ) ) {
+        foreach ( $tc_puzzle['surfaces'] as $tc_sk => $tc_sid ) {
+            $tc_puzzle['surfaces'][ $tc_sk ] = wp_get_attachment_image_url( (int) $tc_sid, 'full' );
+        }
+    }
+    if ( ! empty( $tc_puzzle['objects'] ) && is_array( $tc_puzzle['objects'] ) ) {
+        foreach ( $tc_puzzle['objects'] as $tc_ok => $tc_obj ) {
+            if ( ! empty( $tc_obj['media'] ) ) {
+                $tc_puzzle['objects'][ $tc_ok ]['mediaUrl'] =
+                    wp_get_attachment_image_url( (int) $tc_obj['media'], 'full' );
+            }
+        }
+    }
+
+    // The signature SVG, inlined so the engine's clue cards can sign
+    // themselves without baking a separate paper image.
+    $tc_signature_svg = '';
+    $tc_sig_file      = get_stylesheet_directory() . '/assets/svg/signature.svg';
+    if ( is_readable( $tc_sig_file ) ) {
+        $tc_signature_svg = file_get_contents( $tc_sig_file );
+    }
+
     wp_localize_script(
         'tc-secret-drawer',
         'tcSecretDrawer',
@@ -253,6 +292,10 @@ function tc_ventures_enqueue_scripts() {
                 'compartmentDusty' => wp_get_attachment_image_url( 3663, 'full' ),
                 'racingSticker'    => wp_get_attachment_image_url( 3665, 'full' ),
             ),
+            'engineUrl'    => get_stylesheet_directory_uri()
+                . '/assets/js/drawer-engine.js?ver=' . rawurlencode( $tc_theme_ver ),
+            'signatureSvg' => $tc_signature_svg,
+            'puzzle'       => $tc_puzzle,
         )
     );
 

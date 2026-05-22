@@ -51,10 +51,12 @@
         this.bgImg       = overlay.querySelector( '[data-tc-secret-bg]' );
         this.objectsLayer = overlay.querySelector( '[data-tc-secret-objects]' );
 
-        this.choiceOpen  = false;
-        this.isOpen      = false;
-        this.bgRequested = false;
-        this.lastFocus   = null;
+        this.choiceOpen   = false;
+        this.isOpen       = false;
+        this.bgRequested  = false;
+        this.lastFocus    = null;
+        this.engineBooted = false;
+        this.engineLoading = false;
 
         this.tightened = false;
         try { this.tightened = localStorage.getItem( LS_KEY ) === '1'; } catch ( e ) {}
@@ -187,8 +189,40 @@
         this.overlay.classList.add( 'is-open' );
         document.documentElement.classList.add( 'tc-secret-lock' );
 
+        this.ensureEngine();
+
         var closeBtn = this.overlay.querySelector( '[data-tc-secret-close]' );
         if ( closeBtn ) closeBtn.focus();
+    };
+
+    // Lazy-load the Phase 2 interaction engine the first time the
+    // drawer opens, then boot it onto the objects layer. Visitors who
+    // never tighten the handle never download drawer-engine.js.
+    SecretDrawer.prototype.ensureEngine = function () {
+        var self = this;
+        var bootIt = function () {
+            if ( window.TCDrawerEngine && window.TCDrawerEngine.boot ) {
+                window.TCDrawerEngine.boot( self.objectsLayer );
+                self.engineBooted = true;
+            }
+        };
+        if ( this.engineBooted || ! this.objectsLayer ) return;
+        if ( window.TCDrawerEngine && window.TCDrawerEngine.boot ) { bootIt(); return; }
+        if ( this.engineLoading ) return;
+
+        var url = window.tcSecretDrawer && window.tcSecretDrawer.engineUrl;
+        if ( ! url ) return;
+        this.engineLoading = true;
+
+        var s = document.createElement( 'script' );
+        s.src = url;
+        s.async = true;
+        s.onload = function () { self.engineLoading = false; bootIt(); };
+        s.onerror = function () {
+            self.engineLoading = false;
+            console.warn( 'Drawer engine failed to load.' );
+        };
+        document.head.appendChild( s );
     };
 
     SecretDrawer.prototype.close = function () {

@@ -1,0 +1,220 @@
+/* ============================================
+   THE SECRET DRAWER — interaction engine (Phase 2).
+
+   Styles everything drawer-engine.js renders into
+   .tc-secret-drawer__objects: puzzle objects,
+   placeholder chips, drop zones, hover hints,
+   drag feedback, clue cards and effects.
+
+   Brass/wood custom props (--tc-brass etc.) are
+   inherited from the enclosing <footer class="tc-drawer">.
+   ============================================ */
+
+/* ----------------------------------------------------------------
+   OBJECTS — positioned by the engine via inline left/top/width %
+   and a --rot custom property. Centre-anchored so rotation and the
+   drag scale-up pivot cleanly. */
+.tc-do {
+    position: absolute;
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+    pointer-events: auto;
+    z-index: 2;
+    transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1),
+                filter 0.18s ease;
+    touch-action: none;          /* the pointer drag owns the gesture */
+    -webkit-user-select: none;
+    user-select: none;
+}
+.tc-do img {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
+}
+.tc-do.is-draggable { cursor: grab; }
+.tc-do.is-draggable:hover {
+    filter: brightness(1.08) drop-shadow(0 0 7px rgba(231, 201, 143, 0.6));
+}
+.tc-do.is-dragging {
+    cursor: grabbing;
+    transition: none;
+    z-index: 50;
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) scale(1.12);
+}
+.tc-do.is-dragging img {
+    filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.6));
+}
+
+/* Placeholder chip — an object whose real cutout hasn't been shot
+   yet. Reads clearly as "swap me out" but is fully interactive. */
+.tc-do.is-placeholder .tc-do__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    padding: 8px 13px;
+    border-radius: 6px;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: #f3e8cf;
+    background: linear-gradient(180deg, #3a2414 0%, #1a0e07 100%);
+    border: 1px dashed rgba(184, 146, 78, 0.7);
+    box-shadow: 0 6px 13px rgba(0, 0, 0, 0.5);
+}
+.tc-do__icon { font-style: normal; font-size: 1.15rem; }
+
+/* ----------------------------------------------------------------
+   ZONES — drop targets. A soft dashed well that gently pulses so
+   the player can tell something belongs here. */
+.tc-zone {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    z-index: 1;
+    border-radius: 14px;
+    border: 2px dashed rgba(231, 201, 143, 0.45);
+    background: radial-gradient(ellipse at center,
+        rgba(231, 201, 143, 0.14) 0%, transparent 70%);
+    animation: tc-zone-pulse 2.4s ease-in-out infinite;
+}
+@keyframes tc-zone-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 0.92; }
+}
+
+/* ----------------------------------------------------------------
+   HOVER HINT — handwritten label above an object or zone. Objects
+   and zones share the .tc-do__hint element. */
+.tc-do__hint {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    margin-bottom: 9px;
+    transform: translate(-50%, 4px);
+    white-space: nowrap;
+    font-family: 'Caveat', 'Segoe Script', cursive;
+    font-size: 1.05rem;
+    color: var(--tc-brass-bright, #e7c98f);
+    background: rgba(20, 12, 8, 0.96);
+    border: 1px solid rgba(184, 146, 78, 0.5);
+    padding: 3px 11px 4px;
+    border-radius: 4px;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 60;
+}
+.tc-do:hover > .tc-do__hint,
+.tc-zone:hover > .tc-do__hint {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+.tc-do.is-dragging > .tc-do__hint { opacity: 0 !important; }
+
+/* ----------------------------------------------------------------
+   FLASH — a brief warm bloom over the stage; covers a surface swap
+   or punctuates a completed step. */
+.tc-drawer-flash {
+    position: absolute;
+    inset: 0;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 70;
+    background: radial-gradient(ellipse at center,
+        rgba(255, 240, 200, 0.85) 0%, rgba(255, 240, 200, 0) 70%);
+    animation: tc-flash 0.6s ease-out forwards;
+}
+@keyframes tc-flash {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ----------------------------------------------------------------
+   CLUE CARD — a handwritten note on aged paper, signed. Covers the
+   stage with a soft scrim; dismissed by button / Escape / scrim. */
+.tc-clue {
+    position: absolute;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: rgba(8, 5, 3, 0.55);
+    opacity: 0;
+    transition: opacity 0.24s ease;
+}
+.tc-clue.is-in { opacity: 1; }
+
+.tc-clue__paper {
+    position: relative;
+    width: min(78vw, 460px);
+    padding: 30px 34px 22px;
+    color: #2a2316;
+    background:
+        repeating-linear-gradient(0deg,
+            rgba(255, 255, 255, 0.015) 0 26px,
+            rgba(120, 90, 40, 0.07) 27px 28px),
+        linear-gradient(180deg, #fbf6e7 0%, #f0e4c6 100%);
+    border-radius: 3px;
+    transform: rotate(-1.4deg) translateY(14px);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6);
+    transition: transform 0.3s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.tc-clue.is-in .tc-clue__paper { transform: rotate(-1.4deg) translateY(0); }
+
+.tc-clue__body p {
+    margin: 0 0 8px;
+    font-family: 'Caveat', 'Segoe Script', cursive;
+    font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+    line-height: 1.34;
+}
+.tc-clue__body p:empty { height: 0.5em; margin: 0; }
+
+.tc-clue__sig {
+    margin-top: 10px;
+    text-align: right;
+    color: #3a2a14;
+}
+.tc-clue__sig svg,
+.tc-clue__sig .tc-signature-svg {
+    display: inline-block;
+    width: 130px;
+    height: auto;
+}
+
+.tc-clue__dismiss {
+    appearance: none;
+    cursor: pointer;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 0.9rem;
+    color: #1a0e07;
+    background: linear-gradient(180deg,
+        var(--tc-brass-bright, #e7c98f) 0%, var(--tc-brass, #b8924e) 100%);
+    border: 1px solid #6b4d22;
+    border-radius: 5px;
+    padding: 8px 20px 9px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+    transition: transform 0.15s ease;
+}
+.tc-clue__dismiss:hover,
+.tc-clue__dismiss:focus-visible {
+    transform: translateY(-2px);
+    outline: none;
+}
+
+/* ----------------------------------------------------------------
+   REDUCED MOTION. */
+@media (prefers-reduced-motion: reduce) {
+    .tc-do,
+    .tc-clue,
+    .tc-clue__paper { transition: none; }
+    .tc-zone { animation: none; opacity: 0.72; }
+    .tc-drawer-flash { animation-duration: 0.2s; }
+    .tc-clue__paper { transform: rotate(-1.4deg); }
+}
