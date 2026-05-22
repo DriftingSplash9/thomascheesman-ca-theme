@@ -16,6 +16,19 @@
  *                                 (most pages were authored by the admin)
  *   publish_pages              — publish drafts (allows autonomous publishing)
  *   upload_files               — add to the media library
+ *   edit_posts                 — edit own posts AND media attachments;
+ *                                 WP maps edit_post on an attachment to the
+ *                                 post-type caps, so this is required to set
+ *                                 media titles / alt text / captions
+ *   edit_others_posts          — edit posts/attachments authored by others
+ *                                 (needed for media uploaded by Thomas)
+ *
+ * SIDE EFFECT of edit_posts + edit_others_posts: the agent can now also
+ * edit blog Posts, not just media. The site keeps a couple of dormant
+ * draft posts (single-post-make-canada-great-again, page-journal); the
+ * agent can edit those drafts. It still cannot publish or delete them
+ * (no publish_posts / delete_posts cap), so the blast radius is "edit
+ * an unpublished draft," which is revision-tracked and recoverable.
  *
  * INTENTIONALLY DENIED (do NOT add without conscious risk review):
  *   edit_themes, edit_plugins  — agent should never edit code files
@@ -67,7 +80,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 const TC_AGENT_ROLE_SLUG    = 'agent_page_editor';
 const TC_AGENT_ROLE_LABEL   = 'Agent (Page Editor)';
-const TC_AGENT_ROLE_VERSION = 1;
+const TC_AGENT_ROLE_VERSION = 2;
 
 /**
  * Force-enable Application Passwords site-wide.
@@ -136,9 +149,12 @@ function tc_register_agent_role() {
             'edit_others_pages'    => true,
             'publish_pages'        => true,
             'upload_files'         => true,
+            'edit_posts'           => true,
+            'edit_others_posts'    => true,
             // No admin caps. No deletion caps. No plugin / theme caps.
-            // No user-management caps. See the docblock above for
-            // the deliberate denial list.
+            // No user-management caps. No publish_posts (drafts stay
+            // drafts). See the docblock above for the deliberate
+            // denial list and the edit_posts side-effect note.
         )
     );
 
