@@ -308,7 +308,8 @@ function tc_ventures_enqueue_scripts() {
                 // of the brass pull). Once the engine boots, the puzzle's
                 // `surfaces` array takes over — this is just so the very
                 // first frame after opening already has art behind it.
-                'junkClean' => wp_get_attachment_image_url( 3724, 'full' ),
+                // Must match `start` in drawer-puzzle.json (junk-clean).
+                'junkClean' => wp_get_attachment_image_url( 3660, 'full' ),
             ),
             'engineUrl'    => get_stylesheet_directory_uri()
                 . '/assets/js/drawer-engine.js?ver=' . rawurlencode( $tc_theme_ver ),

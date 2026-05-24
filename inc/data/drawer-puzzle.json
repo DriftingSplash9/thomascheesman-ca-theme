@@ -1,16 +1,18 @@
 {
   "version": 2,
-  "_comment": "Phase 4 — the real Secret Drawer puzzle. Source of truth: Secret-Drawer-Items (NEW2).docx + Secret-Drawer-Playbook.docx (off-repo, on Thomas's Desktop). Background: the empty-compartment artwork. Every visible item is an engine overlay placed on top. Surface state flips between `clean` (#3724) and `dusty` (#3725). Chains land in commit-sized batches; each chain commit bumps the theme version. The engine's full action-verb surface is documented in the docblock of drawer-engine.js — Phase 4 adds: `video`, `fullscreen`, `passcode`, and `require` (interaction-level flag preconditions). Object coordinates are placeholders until the ?author-mode layout pass; the layout commit lands at the end of Phase 4.",
+  "_comment": "Phase 4 — the real Secret Drawer puzzle. Source of truth: Secret-Drawer-Items (NEW2).docx + Secret-Drawer-Playbook.docx (off-repo, on Thomas's Desktop). Background: real photos of Thomas's actual drawer (meme stickers baked in as permanent flavor). Two view states (`junk-*` wide top-down vs `secret-*` close-up of the recessed compartments) × two dust states (clean / dusty) = four surfaces. The wide junk view is the start; chain 8 (padlock) gates the transition to the secret view. Every puzzle item is an engine overlay placed on top. Chains land in commit-sized batches; each chain commit bumps the theme version. The engine's full action-verb surface is documented in the docblock of drawer-engine.js — Phase 4 adds: `video`, `fullscreen`, `passcode`, and `require` (interaction-level flag preconditions). Object coordinates are placeholders until the ?author-mode layout pass; the layout commit lands at the end of Phase 4.",
 
   "_chains": {
     "0-todo":      "You Got This notebook → click → to-do clue (Find Ring · Tidy drawer · Dust)"
   },
 
   "surfaces": {
-    "clean": 3724,
-    "dusty": 3725
+    "junk-clean":   3660,
+    "junk-dusty":   3661,
+    "secret-clean": 3724,
+    "secret-dusty": 3725
   },
-  "start": "clean",
+  "start": "junk-clean",
 
   "objects": {
     "todo-notebook": {
