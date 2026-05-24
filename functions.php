@@ -288,11 +288,11 @@ function tc_ventures_enqueue_scripts() {
         'tcSecretDrawer',
         array(
             'assets' => array(
-                'junkClean'        => wp_get_attachment_image_url( 3660, 'full' ),
-                'junkDusty'        => wp_get_attachment_image_url( 3661, 'full' ),
-                'compartmentClean' => wp_get_attachment_image_url( 3662, 'full' ),
-                'compartmentDusty' => wp_get_attachment_image_url( 3663, 'full' ),
-                'racingSticker'    => wp_get_attachment_image_url( 3665, 'full' ),
+                // The initial overlay background (preloaded on first hover
+                // of the brass pull). Once the engine boots, the puzzle's
+                // `surfaces` array takes over — this is just so the very
+                // first frame after opening already has art behind it.
+                'junkClean' => wp_get_attachment_image_url( 3724, 'full' ),
             ),
             'engineUrl'    => get_stylesheet_directory_uri()
                 . '/assets/js/drawer-engine.js?ver=' . rawurlencode( $tc_theme_ver ),

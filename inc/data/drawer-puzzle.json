@@ -1,97 +1,12 @@
 {
-  "version": 1,
-  "_comment": "Phase 2 DEMO puzzle. Proves the engine end-to-end: drag-to-zone (drop), drag-to-object (combine), click, hover hints, surface-swap, reveal/hide/remove, clue cards, effects, localStorage persistence. Phase 4 REPLACES this content with the real escape-room chains. Objects with no 'media' render as labelled placeholder chips until their real cutouts are shot (Phase 3); to swap one in, delete 'placeholder' and add 'media': <attachment-id>.",
+  "version": 2,
+  "_comment": "Phase 4 — the real Secret Drawer puzzle. Source of truth: Secret-Drawer-Items (NEW2).docx + Secret-Drawer-Playbook.docx (off-repo, on Thomas's Desktop). Background: the empty-compartment artwork. Every visible item is an engine overlay placed on top. Surface state flips between `clean` (#3724) and `dusty` (#3725). Chains land in commit-sized batches; each chain commit bumps the theme version. The engine's full action-verb surface is documented in the docblock of drawer-engine.js — Phase 4 adds: `video`, `fullscreen`, `passcode`, and `require` (interaction-level flag preconditions).",
   "surfaces": {
-    "junk-clean": 3660,
-    "junk-dusty": 3661
+    "clean": 3724,
+    "dusty": 3725
   },
-  "start": "junk-clean",
-  "objects": {
-    "sticker-135": {
-      "name": "13.5 racing sticker",
-      "media": 3665,
-      "x": 48, "y": 33, "w": 9.75, "rot": -3,
-      "state": "shown",
-      "hint": "13.5 — odd number to race to"
-    },
-    "screwdriver": {
-      "name": "screwdriver",
-      "media": 3609,
-      "x": 21, "y": 71, "w": 24, "rot": -14,
-      "state": "shown",
-      "draggable": true,
-      "hint": "good for tightening things"
-    },
-    "swiffer": {
-      "name": "swiffer",
-      "placeholder": { "label": "swiffer", "icon": "🧹" },
-      "x": 74, "y": 64, "w": 13, "rot": 9,
-      "state": "hidden",
-      "draggable": true,
-      "hint": "this'll clear the dust"
-    },
-    "duck-pin": {
-      "name": "duck pin",
-      "media": 3654,
-      "x": 53, "y": 63, "w": 9, "rot": 6,
-      "state": "hidden",
-      "draggable": true,
-      "hint": "got any grapes?"
-    }
-  },
-  "zones": {
-    "loose-screw": {
-      "x": 49, "y": 49, "w": 9, "h": 10,
-      "state": "shown",
-      "hint": "this screw is loose"
-    },
-    "dust-corner": {
-      "x": 83, "y": 19, "w": 20, "h": 18,
-      "state": "hidden",
-      "hint": "dust in the corner"
-    }
-  },
-  "interactions": [
-    {
-      "id": "tighten-screw",
-      "on": "drop", "object": "screwdriver", "zone": "loose-screw",
-      "once": true,
-      "do": [
-        { "effect": "flash" },
-        { "surface": "junk-dusty" },
-        { "reveal": ["dust-corner", "swiffer"] },
-        { "hide": ["loose-screw"] },
-        { "flag": "screw-tight" }
-      ]
-    },
-    {
-      "id": "clear-dust",
-      "on": "drop", "object": "swiffer", "zone": "dust-corner",
-      "once": true,
-      "do": [
-        { "effect": "flash" },
-        { "surface": "junk-clean" },
-        { "remove": ["swiffer"] },
-        { "hide": ["dust-corner"] },
-        { "reveal": ["duck-pin"] },
-        { "flag": "dust-cleared" }
-      ]
-    },
-    {
-      "id": "duck-clue",
-      "on": "click", "object": "duck-pin",
-      "do": [
-        { "clue": "\"Got any grapes?\"\n\nThe duck found you first. One small treasure down — the drawer keeps more." },
-        { "flag": "pin-found" },
-        { "notify": "test" }
-      ]
-    },
-    {
-      "id": "screwdriver-sticker-joke",
-      "on": "combine", "a": "screwdriver", "b": "sticker-135",
-      "do": [
-        { "clue": "You cannot tighten a sticker. Nice try." }
-      ]
-    }
-  ]
+  "start": "clean",
+  "objects": {},
+  "zones": {},
+  "interactions": []
 }
