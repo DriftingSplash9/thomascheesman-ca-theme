@@ -729,9 +729,17 @@ window.TCDrawerEngine = ( function () {
             dragging = false;
             el.classList.remove( 'is-dragging' );
         } );
-        // Wheel = width; Shift+wheel = a zone's height.
+        // Wheel = width; Shift+wheel = a zone's height; Alt+wheel = rotate
+        // (objects only — zones are axis-aligned rectangles).
         el.addEventListener( 'wheel', function ( e ) {
             e.preventDefault();
+            if ( kind === 'object' && e.altKey ) {
+                var delta = e.deltaY < 0 ? -3 : 3;
+                def.rot = round1( ( def.rot || 0 ) + delta );
+                el.style.setProperty( '--rot', def.rot + 'deg' );
+                saveAuthorLayout();
+                return;
+            }
             var step = e.deltaY < 0 ? 1.05 : 0.95;
             if ( kind === 'zone' && e.shiftKey ) {
                 def.h = round1( Math.max( 2, ( def.h || 10 ) * step ) );
@@ -750,7 +758,7 @@ window.TCDrawerEngine = ( function () {
         var out = { objects: {}, zones: {} };
         for ( var o in P.objects ) if ( P.objects.hasOwnProperty( o ) ) {
             var od = P.objects[ o ];
-            out.objects[ o ] = { x: od.x, y: od.y, w: od.w };
+            out.objects[ o ] = { x: od.x, y: od.y, w: od.w, rot: od.rot };
         }
         for ( var z in P.zones ) if ( P.zones.hasOwnProperty( z ) ) {
             var zd = P.zones[ z ];
@@ -770,7 +778,7 @@ window.TCDrawerEngine = ( function () {
         if ( ! src || ! dst ) return;
         for ( var k in src ) {
             if ( src.hasOwnProperty( k ) && dst[ k ] ) {
-                [ 'x', 'y', 'w', 'h' ].forEach( function ( p ) {
+                [ 'x', 'y', 'w', 'h', 'rot' ].forEach( function ( p ) {
                     if ( typeof src[ k ][ p ] === 'number' ) dst[ k ][ p ] = src[ k ][ p ];
                 } );
             }
@@ -799,7 +807,7 @@ window.TCDrawerEngine = ( function () {
         var bar = document.createElement( 'div' );
         bar.className = 'tc-author-bar';
         bar.innerHTML = '<strong>AUTHOR MODE</strong>' +
-            '<span class="tc-author-bar__hint">drag to place · wheel to resize</span>';
+            '<span class="tc-author-bar__hint">drag to place · wheel resize · alt+wheel rotate · shift+wheel zone height</span>';
 
         var copyBtn = document.createElement( 'button' );
         copyBtn.type = 'button';

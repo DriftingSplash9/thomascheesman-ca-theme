@@ -29,7 +29,7 @@
       "id": "todo-list",
       "on": "click", "object": "todo-notebook",
       "do": [
-        { "clue": "TO DO\n\n  · Find Ring\n  · Tidy drawer\n  · Dust\n\n(In that order. Dust is last for a reason.)" }
+        { "clue": "TO DO\n\n  · Find Ring\n  · Tidy drawer\n  · Dust" }
       ]
     }
   ]
