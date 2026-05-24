@@ -268,9 +268,25 @@ function tc_ventures_enqueue_scripts() {
     }
     if ( ! empty( $tc_puzzle['objects'] ) && is_array( $tc_puzzle['objects'] ) ) {
         foreach ( $tc_puzzle['objects'] as $tc_ok => $tc_obj ) {
-            if ( ! empty( $tc_obj['media'] ) ) {
+            if ( empty( $tc_obj['media'] ) ) {
+                continue;
+            }
+            $tc_aid  = (int) $tc_obj['media'];
+            $tc_mime = (string) get_post_mime_type( $tc_aid );
+            if ( $tc_mime && 0 === strpos( $tc_mime, 'video/' ) ) {
+                // Video attachments don't have wp_get_attachment_image_url
+                // variants — pull the raw file URL for the engine's
+                // `video:` verb. If the video has a featured-image still
+                // assigned, that becomes the on-drawer thumbnail.
+                $tc_puzzle['objects'][ $tc_ok ]['videoUrl'] = wp_get_attachment_url( $tc_aid );
+                $tc_poster_id = (int) get_post_thumbnail_id( $tc_aid );
+                if ( $tc_poster_id ) {
+                    $tc_puzzle['objects'][ $tc_ok ]['mediaUrl'] =
+                        wp_get_attachment_image_url( $tc_poster_id, 'full' );
+                }
+            } else {
                 $tc_puzzle['objects'][ $tc_ok ]['mediaUrl'] =
-                    wp_get_attachment_image_url( (int) $tc_obj['media'], 'full' );
+                    wp_get_attachment_image_url( $tc_aid, 'full' );
             }
         }
     }

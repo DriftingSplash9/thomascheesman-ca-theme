@@ -14,10 +14,22 @@
  *   objects      id -> { name, media|placeholder, x,y,w,rot, state,
  *                        draggable, hint }
  *   zones        id -> { x,y,w,h, state, hint }   (drop targets)
- *   interactions [ { on:'click'|'drop'|'combine', ..., once, do:[...] } ]
+ *   interactions [ { on:'click'|'drop'|'combine', ..., once, require,
+ *                    do:[...] } ]
  *
  * Object/zone ids share ONE namespace. State is "shown" | "hidden" |
  * "gone". x/y are the CENTRE of the element as a % of the artwork.
+ *
+ * --- Interaction-level gates ------------------------------------------
+ *   once:true        — fire at most one time
+ *   require:{ all:[flag,…], none:[flag,…] }
+ *                    — precondition gate. An interaction is invisible to
+ *                      the engine until its flags match. Used for chains
+ *                      that depend on earlier progress (the padlock only
+ *                      opens with keys + charms, the prize fork branches
+ *                      on `dust-cleared`, etc.). `all` and `none` are
+ *                      both optional; both default to []. The flag set
+ *                      is global to the puzzle.
  *
  * --- Action verbs (inside an interaction's "do" list) ----------------
  *   reveal:[ids]  hide:[ids]  remove:[ids]   — state changes
@@ -27,6 +39,16 @@
  *   effect:name   — play an effect ("flash" implemented; others stub)
  *   notify:name   — POST a milestone event so the site emails Thomas
  *                   (the puzzle-completion alert; see inc/drawer-events.php)
+ *   video:id      — open a centred video player for the given WP
+ *                   attachment id (resolved to a URL by functions.php).
+ *                   Closes on backdrop click / Escape / playback end.
+ *   fullscreen:id — request element.requestFullscreen() with the named
+ *                   object's image at full bleed. Tap to exit early.
+ *   passcode:{ expected, success:[…], failure:[…] }
+ *                 — show a number-pad modal. The entered digits are
+ *                   compared to `expected` (string). On match, the
+ *                   `success` action list runs; on mismatch, `failure`.
+ *                   Both lists are recursively interpreted by runActions.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -326,6 +348,7 @@ window.TCDrawerEngine = ( function () {
         for ( var i = 0; i < list.length; i++ ) {
             var x = list[ i ];
             if ( x.once && x.id && W.done.indexOf( x.id ) !== -1 ) continue;
+            if ( ! meetsRequire( x.require ) ) continue;
             if ( x.on === 'drop' && x.object === draggedId ) wanted[ x.zone ] = 1;
             if ( x.on === 'combine' && x.a === draggedId )   wanted[ x.b ] = 1;
             if ( x.on === 'combine' && x.b === draggedId )   wanted[ x.a ] = 1;
@@ -345,9 +368,27 @@ window.TCDrawerEngine = ( function () {
         for ( var i = 0; i < list.length; i++ ) {
             var x = list[ i ];
             if ( x.once && x.id && W.done.indexOf( x.id ) !== -1 ) continue;
+            if ( ! meetsRequire( x.require ) ) continue;
             if ( pred( x ) ) return x;
         }
         return null;
+    }
+
+    // `require: { all:[flag,…], none:[flag,…] }` — both optional. An
+    // interaction with an unmet require is hidden from findInteraction
+    // and from drag-time highlighting. The opposite flag combination
+    // makes the OTHER path light up instead — the prize fork's two
+    // ends sit on the same drop target with opposite requires.
+    function meetsRequire( req ) {
+        if ( ! req ) return true;
+        var i;
+        if ( req.all ) {
+            for ( i = 0; i < req.all.length; i++ ) if ( ! W.flags[ req.all[ i ] ] ) return false;
+        }
+        if ( req.none ) {
+            for ( i = 0; i < req.none.length; i++ ) if ( W.flags[ req.none[ i ] ] ) return false;
+        }
+        return true;
     }
 
     // -----------------------------------------------------------------
@@ -362,14 +403,17 @@ window.TCDrawerEngine = ( function () {
     function runActions( list ) {
         for ( var i = 0; i < list.length; i++ ) {
             var a = list[ i ];
-            if ( a.reveal )  setStates( a.reveal, 'shown' );
-            if ( a.hide )    setStates( a.hide, 'hidden' );
-            if ( a.remove )  setStates( a.remove, 'gone' );
-            if ( a.surface ) { W.surface = a.surface; applySurface(); }
-            if ( a.flag )    W.flags[ a.flag ] = true;
-            if ( a.clue )    showClue( a.clue );
-            if ( a.effect )  playEffect( a.effect );
-            if ( a.notify )  sendEvent( a.notify );
+            if ( a.reveal )     setStates( a.reveal, 'shown' );
+            if ( a.hide )       setStates( a.hide, 'hidden' );
+            if ( a.remove )     setStates( a.remove, 'gone' );
+            if ( a.surface )    { W.surface = a.surface; applySurface(); }
+            if ( a.flag )       W.flags[ a.flag ] = true;
+            if ( a.clue )       showClue( a.clue );
+            if ( a.effect )     playEffect( a.effect );
+            if ( a.notify )     sendEvent( a.notify );
+            if ( a.video )      playVideo( a.video );
+            if ( a.fullscreen ) goFullscreen( a.fullscreen );
+            if ( a.passcode )   showPasscode( a.passcode );
         }
     }
 
@@ -467,6 +511,186 @@ window.TCDrawerEngine = ( function () {
         void card.offsetWidth;          // reflow so the entrance animates
         card.classList.add( 'is-in' );
         dismiss.focus();
+    }
+
+    // -----------------------------------------------------------------
+    // Video overlay — centred player for a WP video attachment. The
+    // target is an OBJECT id; functions.php resolves the attachment's
+    // mime and, if it's a video, sets def.videoUrl alongside (or in
+    // place of) def.mediaUrl. Closes on backdrop click, Escape, or
+    // playback end. Auto-plays muted-on-fail (autoplay-policy fallback).
+    function playVideo( objectId ) {
+        if ( ! overlay ) return;
+        var def = P.objects && P.objects[ objectId ];
+        var src = def && ( def.videoUrl || def.mediaUrl );
+        if ( ! src ) return;
+
+        var stage = document.createElement( 'div' );
+        stage.className = 'tc-drawer-video';
+        stage.setAttribute( 'role', 'dialog' );
+        stage.setAttribute( 'aria-modal', 'true' );
+
+        var video = document.createElement( 'video' );
+        video.src = src;
+        video.controls = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.preload = 'auto';
+        stage.appendChild( video );
+
+        function close() {
+            try { video.pause(); } catch ( e ) {}
+            stage.classList.remove( 'is-in' );
+            document.removeEventListener( 'keydown', onKey, true );
+            setTimeout( function () { if ( stage.parentNode ) stage.remove(); }, 220 );
+        }
+        function onKey( e ) {
+            if ( e.key === 'Escape' || e.key === 'Esc' ) {
+                e.stopImmediatePropagation();
+                close();
+            }
+        }
+        stage.addEventListener( 'click', function ( e ) { if ( e.target === stage ) close(); } );
+        video.addEventListener( 'ended', close );
+        document.addEventListener( 'keydown', onKey, true );
+
+        overlay.appendChild( stage );
+        void stage.offsetWidth;
+        stage.classList.add( 'is-in' );
+
+        // The Promise rejection path covers Chrome's audible-autoplay
+        // policy: if the browser blocks sound, mute and retry so the
+        // payoff isn't a frozen first frame.
+        var p = video.play();
+        if ( p && p.catch ) p.catch( function () { video.muted = true; video.play().catch( function () {} ); } );
+    }
+
+    // -----------------------------------------------------------------
+    // Fullscreen — the giant duck head crushes the whole browser. The
+    // host element is a wrapper we create on the fly (we don't full-
+    // screen the drawer itself because exiting would dismiss the
+    // overlay too). On exit we tear the wrapper down.
+    function goFullscreen( objectId ) {
+        var def = P.objects && P.objects[ objectId ];
+        var src = def && def.mediaUrl;
+        if ( ! src ) return;
+
+        var stage = document.createElement( 'div' );
+        stage.className = 'tc-drawer-fullscreen';
+        var img = document.createElement( 'img' );
+        img.src = src;
+        img.alt = def.name || '';
+        img.draggable = false;
+        stage.appendChild( img );
+        document.body.appendChild( stage );
+
+        function cleanup() {
+            document.removeEventListener( 'fullscreenchange', onChange );
+            if ( stage.parentNode ) stage.remove();
+        }
+        function onChange() { if ( ! document.fullscreenElement ) cleanup(); }
+        document.addEventListener( 'fullscreenchange', onChange );
+        stage.addEventListener( 'click', function () {
+            if ( document.exitFullscreen ) document.exitFullscreen().catch( cleanup );
+            else cleanup();
+        } );
+
+        // requestFullscreen may reject (not user-activated, denied).
+        // Fall back to the in-page fullscreen stage rather than nothing —
+        // the gag still lands, just without locking the OS chrome away.
+        var req = stage.requestFullscreen && stage.requestFullscreen();
+        if ( req && req.catch ) req.catch( function () { /* stage stays as overlay */ } );
+    }
+
+    // -----------------------------------------------------------------
+    // Passcode pad — used by the Ledger. A small modal: digit pad,
+    // entered string, CLEAR + OK. On match, success do-list fires;
+    // on mismatch, failure (typically a "wrong code" clue).
+    function showPasscode( spec ) {
+        if ( ! overlay || ! spec || ! spec.expected ) return;
+        var expected = String( spec.expected );
+        var entered = '';
+
+        var card = document.createElement( 'div' );
+        card.className = 'tc-passcode';
+        card.setAttribute( 'role', 'dialog' );
+        card.setAttribute( 'aria-modal', 'true' );
+
+        var paper = document.createElement( 'div' );
+        paper.className = 'tc-passcode__paper';
+
+        var screen = document.createElement( 'div' );
+        screen.className = 'tc-passcode__screen';
+        screen.textContent = ''.padEnd( expected.length, '·' );
+        paper.appendChild( screen );
+
+        var pad = document.createElement( 'div' );
+        pad.className = 'tc-passcode__pad';
+        // 1-9 top, then ⌫ / 0 / ✓ on the bottom row.
+        [ '1','2','3','4','5','6','7','8','9','⌫','0','✓' ].forEach( function ( label ) {
+            var b = document.createElement( 'button' );
+            b.type = 'button';
+            b.className = 'tc-passcode__key';
+            b.textContent = label;
+            b.addEventListener( 'click', function () {
+                if ( label === '⌫' ) {
+                    entered = entered.slice( 0, -1 );
+                } else if ( label === '✓' ) {
+                    return submit();
+                } else if ( entered.length < expected.length ) {
+                    entered += label;
+                }
+                paint();
+                if ( entered.length === expected.length ) submit();
+            } );
+            pad.appendChild( b );
+        } );
+        paper.appendChild( pad );
+        card.appendChild( paper );
+
+        function paint() {
+            var dots = entered.replace( /./g, '●' );
+            screen.textContent = dots + ''.padEnd( expected.length - entered.length, '·' );
+        }
+        function close() {
+            card.classList.remove( 'is-in' );
+            document.removeEventListener( 'keydown', onKey, true );
+            setTimeout( function () { if ( card.parentNode ) card.remove(); }, 220 );
+        }
+        function submit() {
+            if ( entered === expected ) {
+                close();
+                runActions( spec.success || [] );
+            } else {
+                screen.classList.add( 'is-bad' );
+                setTimeout( function () {
+                    entered = '';
+                    paint();
+                    screen.classList.remove( 'is-bad' );
+                    close();
+                    runActions( spec.failure || [] );
+                }, 480 );
+            }
+        }
+        function onKey( e ) {
+            if ( /^[0-9]$/.test( e.key ) ) {
+                if ( entered.length < expected.length ) { entered += e.key; paint(); }
+                if ( entered.length === expected.length ) submit();
+            } else if ( e.key === 'Backspace' ) {
+                entered = entered.slice( 0, -1 );
+                paint();
+            } else if ( e.key === 'Enter' ) {
+                submit();
+            } else if ( e.key === 'Escape' || e.key === 'Esc' ) {
+                e.stopImmediatePropagation();
+                close();
+            }
+        }
+        document.addEventListener( 'keydown', onKey, true );
+
+        overlay.appendChild( card );
+        void card.offsetWidth;
+        card.classList.add( 'is-in' );
     }
 
     // =================================================================

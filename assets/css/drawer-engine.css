@@ -311,3 +311,132 @@
     pointer-events: none;
     z-index: 61;
 }
+
+/* ----------------------------------------------------------------
+   VIDEO PLAYER OVERLAY — `video:<id>` action. Centred, dim scrim.
+   The Faberge reveal lives here; future video payoffs reuse it. */
+.tc-drawer-video {
+    position: absolute;
+    inset: 0;
+    z-index: 85;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4vw;
+    background: rgba(4, 3, 2, 0.78);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+}
+.tc-drawer-video.is-in { opacity: 1; }
+.tc-drawer-video video {
+    width: 100%;
+    max-width: 92vw;
+    max-height: 86vh;
+    background: #000;
+    border-radius: 4px;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.75);
+}
+
+/* ----------------------------------------------------------------
+   FULLSCREEN STAGE — `fullscreen:<id>` action. Lives at body root
+   (not inside the drawer overlay) so requestFullscreen escalates
+   to the WHOLE browser viewport, not just the drawer rectangle.
+   The giant duck head lives here. */
+.tc-drawer-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    cursor: pointer;
+}
+.tc-drawer-fullscreen img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;     /* never crop — Thomas's rule */
+    pointer-events: none;
+    filter: drop-shadow(0 22px 50px rgba(255, 255, 255, 0.18));
+}
+/* When fullscreen is actually granted, fill the screen exactly. */
+.tc-drawer-fullscreen:fullscreen { background: #000; }
+
+/* ----------------------------------------------------------------
+   PASSCODE PAD — `passcode:` action. The Ledger Wallet's gate. A
+   blocky calculator-style pad on the same aged-paper stock as the
+   clue card, so the puzzle's tactile vocabulary stays consistent. */
+.tc-passcode {
+    position: absolute;
+    inset: 0;
+    z-index: 82;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 5, 3, 0.6);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+}
+.tc-passcode.is-in { opacity: 1; }
+.tc-passcode__paper {
+    width: min(78vw, 320px);
+    padding: 22px 22px 26px;
+    color: #2a2316;
+    background: linear-gradient(180deg, #fbf6e7 0%, #eadfba 100%);
+    border-radius: 6px;
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.65);
+    transform: rotate(-1deg) translateY(10px);
+    transition: transform 0.28s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.tc-passcode.is-in .tc-passcode__paper { transform: rotate(-1deg) translateY(0); }
+.tc-passcode__screen {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 1.7rem;
+    letter-spacing: 0.4em;
+    text-align: center;
+    padding: 10px 0 14px;
+    color: #1a0e07;
+    border-bottom: 1px dashed rgba(80, 60, 30, 0.45);
+    margin-bottom: 14px;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+.tc-passcode__screen.is-bad {
+    color: #a33;
+    animation: tc-passcode-shake 0.34s ease;
+}
+@keyframes tc-passcode-shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-6px); }
+    50%      { transform: translateX(5px); }
+    75%      { transform: translateX(-3px); }
+}
+.tc-passcode__pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+}
+.tc-passcode__key {
+    appearance: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.1rem;
+    color: #1a0e07;
+    background: linear-gradient(180deg, #f6ecd0 0%, #d8c694 100%);
+    border: 1px solid #b8924e;
+    border-radius: 5px;
+    padding: 11px 0;
+    box-shadow: 0 3px 0 #97743a;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.tc-passcode__key:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #97743a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tc-drawer-video,
+    .tc-passcode,
+    .tc-passcode__paper { transition: none; }
+    .tc-passcode__paper { transform: rotate(-1deg); }
+    .tc-passcode__screen.is-bad { animation: none; }
+}
