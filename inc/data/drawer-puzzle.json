@@ -31,7 +31,7 @@
       "id": "todo-list",
       "on": "click", "object": "todo-notebook",
       "do": [
-        { "clue": "TO DO\n\n  · Find Ring\n  · Tidy drawer\n  · Dust" }
+        { "clue": "TO DO\n  · Find Ring\n  · Tidy drawer\n  · Dust\n\n— notes to self —\n  · banana → eat it, or save it?\n  · drink the Ensure\n  · 67676767 ←" }
       ]
     }
   ]
