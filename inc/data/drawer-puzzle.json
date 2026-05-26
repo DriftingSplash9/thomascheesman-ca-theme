@@ -4,7 +4,8 @@
 
   "_chains": {
     "0-todo":       "You Got This notebook → click → to-do clue (Find Ring · Tidy drawer · Dust + scribbled notes)",
-    "1-start":      "screwdriver + screw → dust appears → duster clears it → reveals duck pin (Top Prize path). Leaving dust = Golden Egg path."
+    "1-start":      "screwdriver + screw → dust appears → duster clears it → reveals duck pin (Top Prize path). Leaving dust = Golden Egg path.",
+    "2-hulk":       "Hulk + hammer → armed Hulk → smash silver nugget → Rings (Find Ring ✓). Torch on Rings → 'one PEZ dispenser to rule them all'. Click PEZ → Auction Receipt ($264M Faberge foreshadow)."
   },
 
   "surfaces": {
@@ -54,6 +55,69 @@
       "x": 50, "y": 50, "w": 9, "rot": 0,
       "state": "hidden",
       "hint": "got any grapes?"
+    },
+
+    "hulk-no-hammer": {
+      "name": "Hulk (unarmed)",
+      "media": 3673,
+      "x": 50, "y": 50, "w": 12, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "missing something"
+    },
+    "hulks-hammer": {
+      "name": "Hulk's hammer",
+      "media": 3670,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "rebar handle, concrete head"
+    },
+    "armed-hulk": {
+      "name": "armed Hulk",
+      "media": 3657,
+      "x": 50, "y": 50, "w": 12, "rot": 0,
+      "state": "hidden",
+      "draggable": true,
+      "hint": "HULK SMASH"
+    },
+    "silver-nugget": {
+      "name": "silver nugget",
+      "media": 3659,
+      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "heavy"
+    },
+    "rings": {
+      "name": "rings",
+      "media": 3636,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "hidden",
+      "draggable": true,
+      "hint": "the precious"
+    },
+    "torch-lighter": {
+      "name": "iridescent torch lighter",
+      "media": 3658,
+      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "burns hotter than it looks"
+    },
+    "pez": {
+      "name": "PEZ dispenser",
+      "media": 3641,
+      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "state": "shown",
+      "hint": "PEZ"
+    },
+    "auction-receipt": {
+      "name": "auction receipt",
+      "media": 3642,
+      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "state": "hidden",
+      "hint": "$264,000,000"
     }
 
   },
@@ -109,6 +173,77 @@
       "do": [
         { "clue": "\"Got any grapes?\"\n\nThe duck found you first. One small treasure down — the drawer keeps more." },
         { "flag": "pin-found" }
+      ]
+    },
+
+    {
+      "id": "arm-hulk",
+      "on": "combine", "a": "hulk-no-hammer", "b": "hulks-hammer",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "reveal": ["armed-hulk"] },
+        { "remove": ["hulk-no-hammer", "hulks-hammer"] },
+        { "flag": "hulk-armed" }
+      ]
+    },
+    {
+      "id": "smash-nugget",
+      "on": "combine", "a": "armed-hulk", "b": "silver-nugget",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "reveal": ["rings"] },
+        { "remove": ["armed-hulk", "silver-nugget"] },
+        { "flag": "nugget-smashed" },
+        { "flag": "ring-found" }
+      ]
+    },
+    {
+      "id": "torch-rings",
+      "on": "combine", "a": "torch-lighter", "b": "rings",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "clue": "Held to the Ring, the metal whispers:\n\n  \"one PEZ dispenser to rule them all\"" },
+        { "remove": ["torch-lighter"] },
+        { "flag": "torch-clue-given" }
+      ]
+    },
+
+    {
+      "id": "pez-dispenses-receipt",
+      "on": "click", "object": "pez",
+      "once": true,
+      "require": { "all": ["torch-clue-given"] },
+      "do": [
+        { "effect": "flash" },
+        { "reveal": ["auction-receipt"] },
+        { "clue": "*click*\n\nThe PEZ pops out a folded slip of paper." },
+        { "flag": "receipt-dispensed" }
+      ]
+    },
+    {
+      "id": "pez-stale-joke",
+      "on": "click", "object": "pez",
+      "require": { "none": ["torch-clue-given"] },
+      "do": [
+        { "clue": "*click*\n\nA PEZ candy pops out. It's stale.\n(For now, anyway.)" }
+      ]
+    },
+    {
+      "id": "pez-empty",
+      "on": "click", "object": "pez",
+      "do": [
+        { "clue": "*click*\n\nEmpty. The good stuff is already out." }
+      ]
+    },
+
+    {
+      "id": "read-receipt",
+      "on": "click", "object": "auction-receipt",
+      "do": [
+        { "clue": "AUCTION RECEIPT — SOTHEBY'S\n\nLot 7: Golden Faberge Egg D'Elegance\n\nHammer price: $264,000,000\n\n(So that's a thing.)" }
       ]
     }
 
