@@ -3,7 +3,8 @@
   "_comment": "Phase 4 — the real Secret Drawer puzzle. Source of truth: Secret-Drawer-Items (NEW2).docx + Secret-Drawer-Playbook.docx (off-repo, on Thomas's Desktop). Background: real photos of Thomas's actual drawer (meme stickers baked in as permanent flavor). Two view states (`junk-*` wide top-down vs `secret-*` close-up of the recessed compartments) × two dust states (clean / dusty) = four surfaces. The wide junk view is the start; chain 8 (padlock) gates the transition to the secret view. Every puzzle item is an engine overlay placed on top. Chains land in commit-sized batches; each chain commit bumps the theme version. The engine's full action-verb surface is documented in the docblock of drawer-engine.js — Phase 4 adds: `video`, `fullscreen`, `passcode`, and `require` (interaction-level flag preconditions). Object coordinates are placeholders until the ?author-mode layout pass; the layout commit lands at the end of Phase 4.",
 
   "_chains": {
-    "0-todo":      "You Got This notebook → click → to-do clue (Find Ring · Tidy drawer · Dust)"
+    "0-todo":       "You Got This notebook → click → to-do clue (Find Ring · Tidy drawer · Dust + scribbled notes)",
+    "1-start":      "screwdriver + screw → dust appears → duster clears it → reveals duck pin (Top Prize path). Leaving dust = Golden Egg path."
   },
 
   "surfaces": {
@@ -15,24 +16,101 @@
   "start": "junk-clean",
 
   "objects": {
+
     "todo-notebook": {
       "name": "You Got This notebook",
       "media": 3632,
       "x": 50, "y": 28, "w": 18, "rot": -2,
       "state": "shown",
       "hint": "the to-do list"
+    },
+
+    "screw": {
+      "name": "loose screw",
+      "media": 3690,
+      "x": 50, "y": 50, "w": 6, "rot": 0,
+      "state": "shown",
+      "hint": "this looks loose"
+    },
+    "screwdriver": {
+      "name": "multi-bit screwdriver",
+      "media": 3609,
+      "x": 50, "y": 50, "w": 16, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "for tightening things"
+    },
+    "green-duster": {
+      "name": "green duster",
+      "media": 3683,
+      "x": 50, "y": 50, "w": 14, "rot": 0,
+      "state": "hidden",
+      "draggable": true,
+      "hint": "green duster"
+    },
+    "duck-pin": {
+      "name": "lemonade duck pin",
+      "media": 3654,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "hidden",
+      "hint": "got any grapes?"
     }
+
   },
 
-  "zones": {},
+  "zones": {
+
+    "dust-spot": {
+      "x": 80, "y": 22, "w": 18, "h": 16,
+      "state": "hidden",
+      "hint": "dust"
+    }
+
+  },
 
   "interactions": [
+
     {
       "id": "todo-list",
       "on": "click", "object": "todo-notebook",
       "do": [
         { "clue": "TO DO\n  · Find Ring\n  · Tidy drawer\n  · Dust\n\n— notes to self —\n  · banana → eat it, or save it?\n  · drink the Ensure\n  · 67676767 ←" }
       ]
+    },
+
+    {
+      "id": "tighten-screw",
+      "on": "combine", "a": "screwdriver", "b": "screw",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "surface": "junk-dusty" },
+        { "reveal": ["green-duster", "dust-spot"] },
+        { "remove": ["screw", "screwdriver"] },
+        { "flag": "screw-tight" }
+      ]
+    },
+    {
+      "id": "clear-dust",
+      "on": "drop", "object": "green-duster", "zone": "dust-spot",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "surface": "junk-clean" },
+        { "remove": ["green-duster"] },
+        { "hide": ["dust-spot"] },
+        { "reveal": ["duck-pin"] },
+        { "flag": "dust-cleared" }
+      ]
+    },
+    {
+      "id": "duck-pin-clue",
+      "on": "click", "object": "duck-pin",
+      "do": [
+        { "clue": "\"Got any grapes?\"\n\nThe duck found you first. One small treasure down — the drawer keeps more." },
+        { "flag": "pin-found" }
+      ]
     }
+
   ]
 }
