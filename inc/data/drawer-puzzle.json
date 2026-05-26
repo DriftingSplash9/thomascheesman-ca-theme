@@ -46,7 +46,7 @@
       "name": "green duster",
       "media": 3683,
       "x": 50, "y": 50, "w": 14, "rot": 0,
-      "state": "hidden",
+      "state": "shown",
       "draggable": true,
       "hint": "green duster"
     },
@@ -189,7 +189,7 @@
       "do": [
         { "effect": "flash" },
         { "surface": "junk-dusty" },
-        { "reveal": ["green-duster", "dust-spot"] },
+        { "reveal": ["dust-spot"] },
         { "remove": ["screw", "screwdriver"] },
         { "flag": "screw-tight" }
       ]
