@@ -5,7 +5,8 @@
   "_chains": {
     "0-todo":       "You Got This notebook → click → to-do clue (Find Ring · Tidy drawer · Dust + scribbled notes)",
     "1-start":      "screwdriver + screw → dust appears → duster clears it → reveals duck pin (Top Prize path). Leaving dust = Golden Egg path.",
-    "2-hulk":       "Hulk + hammer → armed Hulk → smash silver nugget → Rings (Find Ring ✓). Torch on Rings → 'one PEZ dispenser to rule them all'. Click PEZ → Auction Receipt ($264M Faberge foreshadow)."
+    "2-hulk":       "Hulk + hammer → armed Hulk → smash silver nugget → Rings (Find Ring ✓). Torch on Rings → 'one PEZ dispenser to rule them all'. Click PEZ → Auction Receipt ($264M Faberge foreshadow).",
+    "3-duck":       "Mini Pump + small duck → midway duck → giant duck. Click giant duck → fullscreen browser crush. Pineapple duck is a one-liner easter egg."
   },
 
   "surfaces": {
@@ -118,6 +119,45 @@
       "x": 50, "y": 50, "w": 11, "rot": 0,
       "state": "hidden",
       "hint": "$264,000,000"
+    },
+
+    "mini-pump": {
+      "name": "mini air pump",
+      "media": 3680,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "for inflating things"
+    },
+    "duck-small": {
+      "name": "rubber duck (small)",
+      "media": 3671,
+      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "rubber duck"
+    },
+    "duck-mid": {
+      "name": "rubber duck (mid)",
+      "media": 3672,
+      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "state": "hidden",
+      "draggable": true,
+      "hint": "bigger"
+    },
+    "duck-giant": {
+      "name": "rubber duck head",
+      "media": 3677,
+      "x": 50, "y": 50, "w": 18, "rot": 0,
+      "state": "hidden",
+      "hint": "click."
+    },
+    "duck-pineapple": {
+      "name": "pineapple duck",
+      "media": 3686,
+      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "state": "shown",
+      "hint": "?"
     }
 
   },
@@ -244,6 +284,45 @@
       "on": "click", "object": "auction-receipt",
       "do": [
         { "clue": "AUCTION RECEIPT — SOTHEBY'S\n\nLot 7: Golden Faberge Egg D'Elegance\n\nHammer price: $264,000,000\n\n(So that's a thing.)" }
+      ]
+    },
+
+    {
+      "id": "pump-duck-1",
+      "on": "combine", "a": "mini-pump", "b": "duck-small",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "reveal": ["duck-mid"] },
+        { "remove": ["duck-small"] },
+        { "flag": "duck-stage-1" }
+      ]
+    },
+    {
+      "id": "pump-duck-2",
+      "on": "combine", "a": "mini-pump", "b": "duck-mid",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "reveal": ["duck-giant"] },
+        { "remove": ["mini-pump", "duck-mid"] },
+        { "flag": "duck-stage-2" }
+      ]
+    },
+    {
+      "id": "duck-crush-browser",
+      "on": "click", "object": "duck-giant",
+      "do": [
+        { "fullscreen": "duck-giant" },
+        { "flag": "duck-crushed" }
+      ]
+    },
+
+    {
+      "id": "pineapple-duck-joke",
+      "on": "click", "object": "duck-pineapple",
+      "do": [
+        { "clue": "It's a pineapple.\n\nOr a duck.\n\nYou decide." }
       ]
     }
 
