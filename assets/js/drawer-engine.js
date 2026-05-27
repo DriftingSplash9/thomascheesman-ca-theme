@@ -786,6 +786,9 @@ window.TCDrawerEngine = ( function () {
             if ( entered === expected ) {
                 close();
                 runActions( spec.success || [] );
+                save();
+                render();
+                sweepAutoInteractions();
             } else {
                 screen.classList.add( 'is-bad' );
                 setTimeout( function () {
@@ -794,6 +797,9 @@ window.TCDrawerEngine = ( function () {
                     screen.classList.remove( 'is-bad' );
                     close();
                     runActions( spec.failure || [] );
+                    save();
+                    render();
+                    sweepAutoInteractions();
                 }, 480 );
             }
         }
@@ -1023,7 +1029,14 @@ window.TCDrawerEngine = ( function () {
             b.textContent = opt.label || '?';
             b.addEventListener( 'click', function () {
                 close();
+                // The button's `do` list runs async (after user click)
+                // so it lives outside the original fire()'s save/render
+                // pass. Persist + repaint + re-sweep autos here so the
+                // state change actually shows on screen.
                 runActions( opt.do || [] );
+                save();
+                render();
+                sweepAutoInteractions();
             } );
             btnRow.appendChild( b );
         } );

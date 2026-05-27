@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "_comment": "Phase 4 — the real Secret Drawer puzzle. Source of truth: Secret-Drawer-Items (NEW2).docx + Secret-Drawer-Playbook.docx (off-repo, on Thomas's Desktop). Background: real photos of Thomas's actual drawer (meme stickers baked in as permanent flavor). Two view states (`junk-*` wide top-down vs `secret-*` close-up of the recessed compartments) × two dust states (clean / dusty) = four surfaces. The wide junk view is the start; chain 8 (padlock) gates the transition to the secret view. Every puzzle item is an engine overlay placed on top. Chains land in commit-sized batches; each chain commit bumps the theme version. The engine's full action-verb surface is documented in the docblock of drawer-engine.js — Phase 4 adds: `video`, `fullscreen`, `passcode`, and `require` (interaction-level flag preconditions). Coordinates were placed in ?author mode and baked back here as the layout pass for each chain batch.",
 
   "_chains": {
@@ -605,16 +605,37 @@
     },
 
     {
+      "id": "screw-look",
+      "_comment": "Pre-tighten flavour click. Sets no flags — just lets the player know what they're looking at.",
+      "on": "click", "object": "screw",
+      "require": { "none": ["screw-tight"] },
+      "do": [
+        { "clue": "A loose screw at the corner of the drawer.\nLooks like it wants the screwdriver." }
+      ]
+    },
+    {
       "id": "tighten-screw",
+      "_comment": "Removes only the screw — the screwdriver sticks around (it's still useful) until the train batteries land, then an auto rule below sweeps it away.",
       "on": "combine", "a": "screwdriver", "b": "screw",
       "once": true,
       "do": [
         { "effect": "flash" },
         { "surface": "junk-dusty" },
         { "reveal": ["dust-spot"] },
-        { "remove": ["screw", "screwdriver"] },
+        { "remove": ["screw"] },
         { "flag": "screw-tight" },
         { "flag": "dust-appeared" }
+      ]
+    },
+    {
+      "id": "screwdriver-pocketed",
+      "_comment": "Once the train has its batteries (train-ready flag is set), the multi-bit screwdriver has done all its work. Quietly pockets itself.",
+      "on": "auto",
+      "once": true,
+      "require": { "all": ["screw-tight", "train-ready"] },
+      "do": [
+        { "remove": ["screwdriver"] },
+        { "flag": "screwdriver-done" }
       ]
     },
     {
@@ -716,6 +737,7 @@
       "once": true,
       "do": [
         { "effect": "flash" },
+        { "clue": "*pssft*\n\nThe little duck swells. Bigger now. You wonder\nhow much more it can take." },
         { "reveal": ["duck-mid"] },
         { "remove": ["duck-small"] },
         { "flag": "duck-stage-1" }
@@ -723,13 +745,24 @@
     },
     {
       "id": "pump-duck-2",
+      "_comment": "Pump stays after this second inflation — the player should be able to keep going at the giant duck for the over-inflate fullscreen gag.",
       "on": "combine", "a": "mini-pump", "b": "duck-mid",
       "once": true,
       "do": [
         { "effect": "flash" },
+        { "clue": "*PSSFT*\n\nThe duck balloons. It's now ridiculous. One more\npump and you're not sure what'll happen.\n\n(Click the giant when you're ready.)" },
         { "reveal": ["duck-giant"] },
-        { "remove": ["mini-pump", "duck-mid"] },
+        { "remove": ["duck-mid"] },
         { "flag": "duck-stage-2" }
+      ]
+    },
+    {
+      "id": "pump-duck-overinflate",
+      "_comment": "Bonus pump on the giant — narrative only, no state change. Gives the player a reason to keep tapping the pump on the giant before clicking it.",
+      "on": "combine", "a": "mini-pump", "b": "duck-giant",
+      "do": [
+        { "effect": "flash" },
+        { "clue": "*PSSFT PSSFT PSSFT*\n\nThe duck has reached maximum legal capacity.\n(Click it. Trust me.)" }
       ]
     },
     {
