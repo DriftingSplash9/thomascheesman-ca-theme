@@ -9,7 +9,8 @@
     "3-duck":       "Mini Pump + small duck → midway duck → giant duck. Click giant duck → fullscreen browser crush. Pineapple duck is a one-liner easter egg.",
     "4-scroll":     "BIC Lighter + Rolled Scroll → Bitcoin whitepaper clue. BIC + Jack-o-Lantern → pumpkin lit. The BIC stays in the drawer for both.",
     "5-hotwheels":  "STUB until Thomas + Daniel film the bracket. 13.5 sticker (hover hint) + two race cars + Hot Rod collectible. Click any car → 'race video coming soon' clue.",
-    "6-glasses":    "Ensure (alertness) → Glasses Case → Eyeglasses → combine with Clip-Ons → Sunglasses → click reveals the Elf prelude ('See you again Dec. 1st 2026...'). Fugglers Notebook is the in-puzzle hint for the clip-on combine."
+    "6-glasses":    "Ensure (alertness) → Glasses Case → Eyeglasses → combine with Clip-Ons → Sunglasses → click reveals the Elf prelude ('See you again Dec. 1st 2026...'). Fugglers Notebook is the in-puzzle hint for the clip-on combine.",
+    "7-batteries":  "Car Keys → Toy Train (unlocks battery cover) → AAA Batteries → Train ready → click → chugs. iPhone is direct: click → muted family videos."
   },
 
   "surfaces": {
@@ -259,6 +260,37 @@
       "x": 53.7, "y": 26.3, "w": 12, "rot": 0,
       "state": "shown",
       "hint": "monsters"
+    },
+
+    "aaa-batteries": {
+      "name": "AAA batteries",
+      "media": 3618,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "two AAA"
+    },
+    "car-keys": {
+      "name": "car keys",
+      "media": 3627,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "keychain with a tiny screwdriver"
+    },
+    "iphone": {
+      "name": "iPhone",
+      "media": 3613,
+      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "state": "shown",
+      "hint": "click"
+    },
+    "toy-train": {
+      "name": "toy train",
+      "media": 3691,
+      "x": 50, "y": 50, "w": 14, "rot": 0,
+      "state": "shown",
+      "hint": "needs power"
     }
 
   },
@@ -533,6 +565,61 @@
       "do": [
         { "clue": "You put the sunglasses on. The drawer takes\non a tinted hue.\n\nOn the bottom of the drawer, written in\nchildish hand where it was invisible before,\nyou can just make out:\n\n  \"See you again Dec. 1st 2026!!!\n   I can't wait to see what mischief\n   I get into now!!\"\n\n  — Jake" },
         { "flag": "elf-prelude-seen" }
+      ]
+    },
+
+    {
+      "id": "open-train-cover",
+      "on": "combine", "a": "car-keys", "b": "toy-train",
+      "once": true,
+      "do": [
+        { "clue": "The little screwdriver on the keychain fits\nthe battery cover. The screws back out cleanly." },
+        { "flag": "battery-cover-open" }
+      ]
+    },
+    {
+      "id": "install-batteries",
+      "on": "combine", "a": "aaa-batteries", "b": "toy-train",
+      "once": true,
+      "require": { "all": ["battery-cover-open"] },
+      "do": [
+        { "effect": "flash" },
+        { "clue": "Two AAA snap into place. The train hums to life." },
+        { "remove": ["aaa-batteries"] },
+        { "flag": "train-ready" }
+      ]
+    },
+    {
+      "id": "batteries-no-cover",
+      "on": "combine", "a": "aaa-batteries", "b": "toy-train",
+      "require": { "none": ["battery-cover-open"] },
+      "do": [
+        { "clue": "The battery cover is screwed shut. Need to\nget that open first." }
+      ]
+    },
+    {
+      "id": "train-chugs",
+      "on": "click", "object": "toy-train",
+      "require": { "all": ["train-ready"] },
+      "do": [
+        { "clue": "*chugga chugga chugga*\n\nThe little train rumbles across the desk,\ndoes a tight loop, and stops where it started." },
+        { "flag": "train-chugged" }
+      ]
+    },
+    {
+      "id": "train-silent",
+      "on": "click", "object": "toy-train",
+      "require": { "none": ["train-ready"] },
+      "do": [
+        { "clue": "The train sits silent. No spark." }
+      ]
+    },
+
+    {
+      "id": "iphone-videos",
+      "on": "click", "object": "iphone",
+      "do": [
+        { "clue": "The screen wakes. Muted family videos play —\nsilly faces, kids cracking up, gone in seconds.\n\n(You can't hear them, but you remember anyway.)" }
       ]
     }
 
