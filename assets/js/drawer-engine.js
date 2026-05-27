@@ -702,33 +702,38 @@ window.TCDrawerEngine = ( function () {
     function bindAuthorDrag( el, id, kind ) {
         var def = ( kind === 'zone' ? P.zones[ id ] : P.objects[ id ] );
         if ( ! def ) return;
-        var dragging = false;
 
+        // pointerdown on the object → start a drag. The MOVE and UP
+        // listeners go on `document` (not the element) so the drag
+        // survives the cursor leaving the small element rectangle and
+        // any DOM reflow under the cursor. More robust than pointer
+        // capture, which can get released by the browser unexpectedly.
         el.addEventListener( 'pointerdown', function ( e ) {
             if ( e.button != null && e.button !== 0 ) return;
-            dragging = true;
-            el.setPointerCapture( e.pointerId );
-            el.classList.add( 'is-dragging' );
             e.preventDefault();
+            e.stopPropagation();
+            el.classList.add( 'is-dragging' );
+
+            function onMove( ev ) {
+                var r = mount.getBoundingClientRect();
+                if ( ! r.width || ! r.height ) return;
+                def.x = round1( ( ev.clientX - r.left ) / r.width  * 100 );
+                def.y = round1( ( ev.clientY - r.top  ) / r.height * 100 );
+                el.style.left = def.x + '%';
+                el.style.top  = def.y + '%';
+            }
+            function onUp() {
+                el.classList.remove( 'is-dragging' );
+                document.removeEventListener( 'pointermove', onMove );
+                document.removeEventListener( 'pointerup',   onUp );
+                document.removeEventListener( 'pointercancel', onUp );
+                saveAuthorLayout();
+            }
+            document.addEventListener( 'pointermove', onMove );
+            document.addEventListener( 'pointerup',   onUp );
+            document.addEventListener( 'pointercancel', onUp );
         } );
-        el.addEventListener( 'pointermove', function ( e ) {
-            if ( ! dragging ) return;
-            var r = mount.getBoundingClientRect();
-            def.x = round1( ( e.clientX - r.left ) / r.width  * 100 );
-            def.y = round1( ( e.clientY - r.top  ) / r.height * 100 );
-            el.style.left = def.x + '%';
-            el.style.top  = def.y + '%';
-        } );
-        el.addEventListener( 'pointerup', function ( e ) {
-            dragging = false;
-            el.classList.remove( 'is-dragging' );
-            try { el.releasePointerCapture( e.pointerId ); } catch ( ex ) {}
-            saveAuthorLayout();
-        } );
-        el.addEventListener( 'lostpointercapture', function () {
-            dragging = false;
-            el.classList.remove( 'is-dragging' );
-        } );
+
         // Wheel = width; Shift+wheel = a zone's height; Alt+wheel = rotate
         // (objects only — zones are axis-aligned rectangles).
         el.addEventListener( 'wheel', function ( e ) {
