@@ -49,6 +49,11 @@
  *                   compared to `expected` (string). On match, the
  *                   `success` action list runs; on mismatch, `failure`.
  *                   Both lists are recursively interpreted by runActions.
+ *   hangman:true  — open the Hangman mini-game. Picks a random word
+ *                   from P.hangman[currentMonth] (the 12-month word
+ *                   rotation in drawer-puzzle.json). Wins set flag
+ *                   `hangman-won`; either outcome shows a clue card.
+ *                   Re-playable from the same combine.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -414,6 +419,7 @@ window.TCDrawerEngine = ( function () {
             if ( a.video )      playVideo( a.video );
             if ( a.fullscreen ) goFullscreen( a.fullscreen );
             if ( a.passcode )   showPasscode( a.passcode );
+            if ( a.hangman )    playHangman();
         }
     }
 
@@ -691,6 +697,136 @@ window.TCDrawerEngine = ( function () {
         overlay.appendChild( card );
         void card.offsetWidth;
         card.classList.add( 'is-in' );
+    }
+
+    // -----------------------------------------------------------------
+    // Hangman mini-game (chain 9). Word source: P.hangman[month], a
+    // 12-keyed object of 20-word arrays. Picks one at random for the
+    // current calendar month. Classic A-Z guessing — 6 wrong = noose.
+    // Win sets the `hangman-won` flag. Either outcome closes the modal
+    // and shows a clue card with the answer.
+    var HANGMAN_GALLOWS = [
+        "  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n========="
+    ];
+
+    function playHangman() {
+        if ( ! overlay || ! P.hangman ) return;
+        var month = new Date().getMonth() + 1;
+        var pool = P.hangman[ month ] || P.hangman[ String( month ) ] || P.hangman[ 1 ] || P.hangman[ '1' ];
+        if ( ! pool || ! pool.length ) return;
+        var word = String( pool[ Math.floor( Math.random() * pool.length ) ] ).toUpperCase();
+        var guessed = {};
+        var wrong   = 0;
+        var MAX_WRONG = HANGMAN_GALLOWS.length - 1;
+        var settled = false;
+
+        var card = document.createElement( 'div' );
+        card.className = 'tc-hangman';
+        card.setAttribute( 'role', 'dialog' );
+        card.setAttribute( 'aria-modal', 'true' );
+
+        var paper = document.createElement( 'div' );
+        paper.className = 'tc-hangman__paper';
+
+        var gallows = document.createElement( 'pre' );
+        gallows.className = 'tc-hangman__gallows';
+        paper.appendChild( gallows );
+
+        var wordEl = document.createElement( 'div' );
+        wordEl.className = 'tc-hangman__word';
+        paper.appendChild( wordEl );
+
+        var usedEl = document.createElement( 'div' );
+        usedEl.className = 'tc-hangman__used';
+        paper.appendChild( usedEl );
+
+        var keyboard = document.createElement( 'div' );
+        keyboard.className = 'tc-hangman__keys';
+        var buttons = {};
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split( '' ).forEach( function ( L ) {
+            var b = document.createElement( 'button' );
+            b.type = 'button';
+            b.className = 'tc-hangman__key';
+            b.textContent = L;
+            b.addEventListener( 'click', function () { guess( L ); } );
+            buttons[ L ] = b;
+            keyboard.appendChild( b );
+        } );
+        paper.appendChild( keyboard );
+
+        card.appendChild( paper );
+
+        function renderWord() {
+            return word.split( '' ).map( function ( c ) {
+                if ( /[A-Z]/.test( c ) ) return guessed[ c ] ? c : '_';
+                return c; // spaces, hyphens — passed through
+            } ).join( ' ' );
+        }
+        function isWon() {
+            for ( var i = 0; i < word.length; i++ ) {
+                var c = word.charAt( i );
+                if ( /[A-Z]/.test( c ) && ! guessed[ c ] ) return false;
+            }
+            return true;
+        }
+        function paint() {
+            gallows.textContent = HANGMAN_GALLOWS[ Math.min( wrong, MAX_WRONG ) ];
+            wordEl.textContent = renderWord();
+            var used = Object.keys( guessed ).sort().join( ' ' );
+            usedEl.textContent = used ? 'Tried: ' + used : '';
+        }
+        function close( finalMsg ) {
+            settled = true;
+            card.classList.remove( 'is-in' );
+            document.removeEventListener( 'keydown', onKey, true );
+            setTimeout( function () {
+                if ( card.parentNode ) card.remove();
+                if ( finalMsg ) showClue( finalMsg );
+            }, 240 );
+        }
+        function guess( L ) {
+            if ( settled || guessed[ L ] ) return;
+            guessed[ L ] = true;
+            var hit = word.indexOf( L ) !== -1;
+            if ( ! hit ) wrong++;
+            var btn = buttons[ L ];
+            if ( btn ) {
+                btn.disabled = true;
+                btn.classList.add( hit ? 'is-hit' : 'is-miss' );
+            }
+            paint();
+            if ( isWon() ) {
+                W.flags[ 'hangman-won' ] = true;
+                save();
+                setTimeout( function () {
+                    close( "You cracked it.\n\nThe word was " + word + "." );
+                }, 360 );
+            } else if ( wrong >= MAX_WRONG ) {
+                setTimeout( function () {
+                    close( "The noose pulls.\n\nThe word was " + word + ".\n\n(Words rotate by month — try again.)" );
+                }, 520 );
+            }
+        }
+        function onKey( e ) {
+            var k = ( e.key || '' ).toUpperCase();
+            if ( /^[A-Z]$/.test( k ) ) { e.stopImmediatePropagation(); guess( k ); }
+            else if ( k === 'ESCAPE' || k === 'ESC' ) {
+                e.stopImmediatePropagation();
+                close();
+            }
+        }
+        document.addEventListener( 'keydown', onKey, true );
+
+        overlay.appendChild( card );
+        void card.offsetWidth;
+        card.classList.add( 'is-in' );
+        paint();
     }
 
     // =================================================================
