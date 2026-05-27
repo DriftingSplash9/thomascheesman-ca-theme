@@ -469,6 +469,7 @@
       "media": 3703,
       "x": 66, "y": 20.5, "w": 6.6, "rot": 0,
       "state": "shown",
+      "draggable": false,
       "hint": "locked"
     },
     "padlock-keys": {
