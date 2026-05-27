@@ -787,6 +787,37 @@
     },
 
     {
+      "id": "bic-pocket-offer",
+      "_comment": "Once both BIC jobs are done (scroll + lantern), clicking the lighter offers to pocket it. Pre-completion clicks fall through to bic-flick.",
+      "on": "click", "object": "bic-lighter",
+      "require": { "all": ["whitepaper-read", "lantern-lit"], "none": ["bic-decided"] },
+      "do": [
+        { "choice": {
+            "prompt": "*flick*\n\nThe BIC's done what you needed.\nPocket it for later, or leave it in the drawer?",
+            "options": [
+              { "label": "pocket it", "do": [
+                { "clue": "Into the pocket it goes. Always handy." },
+                { "remove": ["bic-lighter"] },
+                { "flag": "bic-decided" },
+                { "flag": "bic-pocketed" }
+              ]},
+              { "label": "leave it", "do": [
+                { "flag": "bic-decided" },
+                { "flag": "bic-kept" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "bic-flick",
+      "on": "click", "object": "bic-lighter",
+      "do": [
+        { "clue": "*flick*\n\nThe flame catches, holds, dies. Still got fuel." }
+      ]
+    },
+
+    {
       "id": "hot-wheels-1-stub",
       "on": "click", "object": "hot-wheels-1",
       "do": [
@@ -882,10 +913,29 @@
     {
       "id": "train-chugs",
       "on": "click", "object": "toy-train",
-      "require": { "all": ["train-ready"] },
+      "require": { "all": ["train-ready"], "none": ["train-chugged"] },
       "do": [
         { "clue": "*chugga chugga chugga*\n\nThe little train rumbles across the desk,\ndoes a tight loop, and stops where it started." },
         { "flag": "train-chugged" }
+      ]
+    },
+    {
+      "id": "train-chug-or-bin",
+      "on": "click", "object": "toy-train",
+      "require": { "all": ["train-chugged"] },
+      "do": [
+        { "choice": {
+            "prompt": "The train sits, ready for another lap.\n\nChug it again, or put it in the kids' toy bin?",
+            "options": [
+              { "label": "chug it again", "do": [
+                { "clue": "*chugga chugga chugga*" }
+              ]},
+              { "label": "to the toy bin", "do": [
+                { "remove": ["toy-train"] },
+                { "flag": "train-binned" }
+              ]}
+            ]
+        }}
       ]
     },
     {
@@ -1180,10 +1230,31 @@
       ]
     },
     {
-      "id": "speaker-play",
+      "id": "speaker-channel-picker",
+      "_comment": "Click → 4-channel chooser. Each channel fires a YouTube embed via the youtube: action. The IDs below are placeholders — Thomas to swap in real video IDs (any YouTube URL or 11-char id works). If an id is invalid, playYoutube silently no-ops and the fallback clue still fires.",
       "on": "click", "object": "bluetooth-speaker",
       "do": [
-        { "clue": "*press play*\n\nThe speaker hums. Somewhere, music plays.\n(Audio is coming — for now, imagine it.)" }
+        { "choice": {
+            "prompt": "*press play*\n\nThe speaker hums to life.\nPick a channel:",
+            "options": [
+              { "label": "today's pop",   "do": [
+                { "youtube": "TODO_TODAYS_POP" },
+                { "clue": "*today's pop plays softly*\n\n(Thomas to wire a real video id.)" }
+              ]},
+              { "label": "country",       "do": [
+                { "youtube": "TODO_COUNTRY" },
+                { "clue": "*a country song plays softly*\n\n(Thomas to wire a real video id.)" }
+              ]},
+              { "label": "classical",     "do": [
+                { "youtube": "TODO_CLASSICAL" },
+                { "clue": "*classical strings*\n\n(Thomas to wire a real video id.)" }
+              ]},
+              { "label": "90's hits",     "do": [
+                { "youtube": "TODO_90S_HITS" },
+                { "clue": "*a 90's hit plays softly*\n\n(Thomas to wire a real video id.)" }
+              ]}
+            ]
+        }}
       ]
     },
     {
@@ -1297,7 +1368,7 @@
         { "surface": "secret-clean" },
         { "remove": ["padlock-closed", "padlock-keys"] },
         { "reveal": ["padlock-open", "ledger"] },
-        { "clue": "The keys turn. The lock gives.\n\nThe view shifts — you're looking into\nthe secret compartment now. A Ledger\nhardware wallet rests inside." },
+        { "clue": "The keys turn. The lock gives.\n\nYou pocket the keys as the view shifts —\nyou're looking into the secret compartment\nnow. A Ledger hardware wallet rests inside." },
         { "flag": "padlock-open" }
       ]
     },
@@ -1405,13 +1476,14 @@
 
     {
       "id": "wallet-passcode-reveal",
-      "_comment": "Auto-fires once all four wallet items are in. Surfaces the 67676767 passcode the Ledger will ask for in chain 14. The 67 sticker was the hint.",
+      "_comment": "Auto-fires once all four wallet items are in. Surfaces the 67676767 passcode the Ledger will ask for in chain 14, then the wallet goes in the player's pocket (removed). The 67 sticker was the hint.",
       "on": "auto",
       "once": true,
       "require": { "all": ["wallet-has-67sticker", "wallet-has-bills", "wallet-has-gpcard", "wallet-has-coins"] },
       "do": [
         { "effect": "flash" },
-        { "clue": "The wallet is full.\n\nWritten on the inside flap, in tidy block hand:\n\n  6 7 6 7 6 7 6 7\n\n(The 67 sticker was the hint.)" },
+        { "clue": "The wallet is full.\n\nWritten on the inside flap, in tidy block hand:\n\n  6 7 6 7 6 7 6 7\n\n(The 67 sticker was the hint.)\n\nYou tuck the wallet into your pocket." },
+        { "remove": ["wallet"] },
         { "flag": "wallet-complete" }
       ]
     },
