@@ -174,6 +174,57 @@
 }
 
 /* ----------------------------------------------------------------
+   BUBBLES — `bubbles:true` action. Pearlescent circles rise from
+   the bottom of the drawer stage with a slight horizontal sway
+   and pop out the top. Pure GPU transform + opacity animation.
+   Container sits behind clue cards / modals so the bubbles drift
+   serenely behind whatever the player is reading. */
+.tc-bubbles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 65;
+    overflow: hidden;
+    border-radius: 6px;     /* match the drawer stage rounding */
+}
+.tc-bubble {
+    position: absolute;
+    bottom: -40px;
+    border-radius: 50%;
+    background:
+        radial-gradient( ellipse at 32% 28%,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(220, 240, 255, 0.7)  18%,
+            rgba(170, 215, 255, 0.42) 42%,
+            rgba(100, 180, 230, 0.22) 70%,
+            rgba(60, 140, 200, 0.08)  92%,
+            transparent 100% );
+    box-shadow:
+        inset 0 -4px 7px rgba(255, 255, 255, 0.55),
+        inset 0  3px 6px rgba(200, 230, 255, 0.45),
+        0 0 8px rgba(170, 220, 255, 0.25);
+    --travel: 400px;
+    --sway:   0px;
+    opacity: 0;
+    animation: tc-bubble-rise linear forwards;
+    will-change: transform, opacity;
+}
+@keyframes tc-bubble-rise {
+    0%   { transform: translate(0, 0) scale(0.5);
+           opacity: 0; }
+    12%  { opacity: 0.9; transform: translate(0, calc(var(--travel) * -0.05)) scale(1); }
+    50%  { opacity: 0.95;
+           transform: translate(calc(var(--sway) * 0.6), calc(var(--travel) * -0.55)) scale(1); }
+    85%  { opacity: 0.7; }
+    100% { transform: translate(var(--sway), calc(var(--travel) * -1)) scale(1.02);
+           opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .tc-bubble { animation-duration: 1s !important;
+                 animation-delay: 0s !important; opacity: 0.4; }
+}
+
+/* ----------------------------------------------------------------
    BLACKHOLE — the astronaut sticker's gag. Spirals the stage down
    to a near-singularity, then springs back. Pure CSS. */
 .tc-fx-blackhole {

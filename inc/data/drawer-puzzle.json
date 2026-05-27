@@ -1264,10 +1264,12 @@
     },
     {
       "id": "bubble-do-not-pop",
+      "_comment": "Click the bottle → bubbles drift up through the drawer (CSS animation, ~18 by default) AND the keep/bin choice opens. Modal sits on top of the bubbles so they're a serene backdrop behind the prompt.",
       "on": "click", "object": "bubble-bottle",
       "do": [
+        { "bubbles": true },
         { "choice": {
-            "prompt": "You twist the cap and dip the wand.\n\nA single bubble drifts up, catches the light, rises out of frame. DO NOT POP.\n\nKeep the bottle, or to the toy bin?",
+            "prompt": "You twist the cap and dip the wand.\n\nBubbles drift up — catching the light, rising out of frame. DO NOT POP.\n\nKeep the bottle, or to the toy bin?",
             "options": [
               { "label": "keep", "do": [{ "flag": "bubbles-kept" }] },
               { "label": "to the toy bin", "do": [

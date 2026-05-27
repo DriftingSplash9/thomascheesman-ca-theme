@@ -93,6 +93,12 @@
  *                   game over, offers play-again or close. If desk-
  *                   games.js isn't loaded, falls back to a clue card
  *                   pointing the player at the toad on the desk.
+ *   bubbles:true|{count} — release N pearlescent bubbles that drift
+ *                   up through the drawer stage and pop out the top.
+ *                   Pure CSS animation, GPU-only (transform/opacity),
+ *                   pointer-events none. Self-cleans after the longest
+ *                   bubble finishes its rise. Used by the bubble-bottle
+ *                   click — fires alongside the keep/bin choice modal.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -596,6 +602,7 @@ window.TCDrawerEngine = ( function () {
             if ( a.youtube )    playYoutube( a.youtube );
             if ( a.stream )     playStream( a.stream );
             if ( a.pacman )     playPacman();
+            if ( a.bubbles )    playBubbles( a.bubbles );
         }
     }
 
@@ -1254,6 +1261,54 @@ window.TCDrawerEngine = ( function () {
         void card.offsetWidth;
         card.classList.add( 'is-in' );
         paint();
+    }
+
+    // -----------------------------------------------------------------
+    // Bubbles — pearlescent divs that rise from the bottom of the
+    // drawer stage and drift out the top. Each gets a random size,
+    // start x, sway amount, duration, and delay so the cloud feels
+    // organic. Pure CSS animation on transform + opacity (GPU-only),
+    // pointer-events none, self-cleans on the longest lifetime.
+    function playBubbles( opts ) {
+        if ( ! overlay ) return;
+        var stage = overlay.querySelector( '.tc-secret-drawer__stage' );
+        if ( ! stage ) return;
+        var count = ( opts && typeof opts === 'object' && opts.count ) || 18;
+
+        var container = document.createElement( 'div' );
+        container.className = 'tc-bubbles';
+        container.setAttribute( 'aria-hidden', 'true' );
+
+        var stageRect = stage.getBoundingClientRect();
+        var travel    = stageRect.height + 60;    // travel out the top
+        var maxDelay  = 0;
+        var maxDur    = 0;
+
+        for ( var i = 0; i < count; i++ ) {
+            var b      = document.createElement( 'div' );
+            b.className = 'tc-bubble';
+            var size   = 10 + Math.random() * 26;
+            var leftPc = Math.random() * 100;
+            var dur    = 3 + Math.random() * 3.5;
+            var delay  = Math.random() * 1.2;
+            var sway   = -40 + Math.random() * 80;
+            b.style.width  = size + 'px';
+            b.style.height = size + 'px';
+            b.style.left   = leftPc + '%';
+            b.style.setProperty( '--travel', travel + 'px' );
+            b.style.setProperty( '--sway',   sway   + 'px' );
+            b.style.animationDuration = dur   + 's';
+            b.style.animationDelay    = delay + 's';
+            if ( dur   > maxDur   ) maxDur   = dur;
+            if ( delay > maxDelay ) maxDelay = delay;
+            container.appendChild( b );
+        }
+
+        stage.appendChild( container );
+
+        setTimeout( function () {
+            if ( container.parentNode ) container.remove();
+        }, ( maxDur + maxDelay ) * 1000 + 400 );
     }
 
     // -----------------------------------------------------------------
