@@ -250,7 +250,20 @@ window.TCDrawerEngine = ( function () {
         // to find what's buried, and the engine still treats a
         // press-without-movement as a click — so the click→clue flow
         // for "flavour-only" items keeps working.
-        el.className = 'tc-do' + ( def.draggable === false ? '' : ' is-draggable' );
+        var classes = [ 'tc-do' ];
+        if ( def.draggable !== false ) classes.push( 'is-draggable' );
+        // classWhen: a map of { className: flagName } — adds the class
+        // whenever the flag is set. Lets a def declare conditional
+        // visual states (e.g. the jack-o-lantern's lit-glow when
+        // `lantern-lit` is set) without runtime CSS injection.
+        if ( def.classWhen ) {
+            for ( var cls in def.classWhen ) {
+                if ( def.classWhen.hasOwnProperty( cls ) && W.flags[ def.classWhen[ cls ] ] ) {
+                    classes.push( cls );
+                }
+            }
+        }
+        el.className = classes.join( ' ' );
         el.dataset.id = id;
         place( el, def );
 
@@ -415,22 +428,47 @@ window.TCDrawerEngine = ( function () {
         }
     }
 
-    // The other shown object/zone the dragged element overlaps MOST.
+    // The dragged element's best target by rectangle overlap. We
+    // PREFER targets that have a live interaction with the dragged
+    // object — so in a stacked drawer, dragging the screwdriver onto
+    // an area where the screw is partially hidden under another
+    // object still picks the SCREW (the valid target) instead of
+    // whatever overlaps the most. Falls back to "any overlap" so the
+    // drag still has feedback even when there's no matching rule.
     function hitTest( selfEl, selfId ) {
         var sr = selfEl.getBoundingClientRect();
-        var els = mount.children, best = null, bestArea = 0;
+        var validTargets = {};
+        var list = P.interactions || [];
+        for ( var k = 0; k < list.length; k++ ) {
+            var x = list[ k ];
+            if ( x.once && x.id && W.done.indexOf( x.id ) !== -1 ) continue;
+            if ( ! meetsRequire( x.require ) ) continue;
+            if ( x.on === 'drop'    && x.object === selfId ) validTargets[ x.zone ] = 1;
+            if ( x.on === 'combine' && x.a      === selfId ) validTargets[ x.b ]    = 1;
+            if ( x.on === 'combine' && x.b      === selfId ) validTargets[ x.a ]    = 1;
+        }
+        var els = mount.children;
+        var bestValid = null, bestValidArea = 0;
+        var bestAny   = null, bestAnyArea   = 0;
         for ( var i = 0; i < els.length; i++ ) {
             var el = els[ i ];
             if ( el.dataset.id === selfId ) continue;
             var r = el.getBoundingClientRect();
             var ox = Math.min( sr.right, r.right ) - Math.max( sr.left, r.left );
             var oy = Math.min( sr.bottom, r.bottom ) - Math.max( sr.top, r.top );
-            if ( ox > 0 && oy > 0 && ox * oy > bestArea ) {
-                bestArea = ox * oy;
-                best = el.dataset.id;
+            if ( ox <= 0 || oy <= 0 ) continue;
+            var area = ox * oy;
+            var id   = el.dataset.id;
+            if ( validTargets[ id ] && area > bestValidArea ) {
+                bestValidArea = area;
+                bestValid = id;
+            }
+            if ( area > bestAnyArea ) {
+                bestAnyArea = area;
+                bestAny = id;
             }
         }
-        return best;
+        return bestValid || bestAny;
     }
 
     // While dragging, glow every zone/object that has a live

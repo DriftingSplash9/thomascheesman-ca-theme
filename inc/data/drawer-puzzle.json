@@ -209,7 +209,8 @@
       "media": 3693,
       "x": 44.1, "y": 26.5, "w": 8.5, "rot": 0,
       "state": "shown",
-      "hint": "an unlit pumpkin"
+      "hint": "an unlit pumpkin",
+      "classWhen": { "is-lit": "lantern-lit" }
     },
 
     "racing-sticker": {
@@ -733,11 +734,11 @@
 
     {
       "id": "pump-duck-1",
+      "_comment": "Each pump just flashes + swaps in the next-bigger duck — no clue card, so the player isn't interrupted. The size change IS the feedback.",
       "on": "combine", "a": "mini-pump", "b": "duck-small",
       "once": true,
       "do": [
         { "effect": "flash" },
-        { "clue": "*pssft*\n\nThe little duck swells. Bigger now. You wonder\nhow much more it can take." },
         { "reveal": ["duck-mid"] },
         { "remove": ["duck-small"] },
         { "flag": "duck-stage-1" }
@@ -745,24 +746,13 @@
     },
     {
       "id": "pump-duck-2",
-      "_comment": "Pump stays after this second inflation — the player should be able to keep going at the giant duck for the over-inflate fullscreen gag.",
       "on": "combine", "a": "mini-pump", "b": "duck-mid",
       "once": true,
       "do": [
         { "effect": "flash" },
-        { "clue": "*PSSFT*\n\nThe duck balloons. It's now ridiculous. One more\npump and you're not sure what'll happen.\n\n(Click the giant when you're ready.)" },
         { "reveal": ["duck-giant"] },
         { "remove": ["duck-mid"] },
         { "flag": "duck-stage-2" }
-      ]
-    },
-    {
-      "id": "pump-duck-overinflate",
-      "_comment": "Bonus pump on the giant — narrative only, no state change. Gives the player a reason to keep tapping the pump on the giant before clicking it.",
-      "on": "combine", "a": "mini-pump", "b": "duck-giant",
-      "do": [
-        { "effect": "flash" },
-        { "clue": "*PSSFT PSSFT PSSFT*\n\nThe duck has reached maximum legal capacity.\n(Click it. Trust me.)" }
       ]
     },
     {
@@ -799,16 +789,39 @@
       "once": true,
       "do": [
         { "effect": "flash" },
-        { "clue": "*click — flick — flame*\n\nThe wick catches. The pumpkin glows from the inside." },
+        { "clue": "*click — flick — flame*\n\nThe wick catches. The pumpkin glows from\nthe inside, warm and flickering." },
         { "flag": "lantern-lit" }
       ]
     },
     {
-      "id": "lantern-lit-look",
+      "id": "lantern-dresser-offer",
+      "_comment": "Post-lit click → offer to take the lit lantern up to the dresser (where it belongs as Halloween decor) or leave it glowing in the drawer.",
       "on": "click", "object": "jack-o-lantern",
-      "require": { "all": ["lantern-lit"] },
+      "require": { "all": ["lantern-lit"], "none": ["lantern-decided"] },
       "do": [
-        { "clue": "The candle still flickers behind the carved grin." }
+        { "choice": {
+            "prompt": "The pumpkin glows steadily now.\nIt belongs upstairs on the dresser.\n\nTake it up, or leave it glowing here?",
+            "options": [
+              { "label": "to the dresser", "do": [
+                { "clue": "Upstairs it goes. The dresser's a better stage." },
+                { "remove": ["jack-o-lantern"] },
+                { "flag": "lantern-decided" },
+                { "flag": "lantern-on-dresser" }
+              ]},
+              { "label": "leave it glowing", "do": [
+                { "flag": "lantern-decided" },
+                { "flag": "lantern-kept" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "lantern-kept-look",
+      "on": "click", "object": "jack-o-lantern",
+      "require": { "all": ["lantern-kept"] },
+      "do": [
+        { "clue": "Still flickering. Quietly Halloween, in May." }
       ]
     },
     {
@@ -821,30 +834,8 @@
     },
 
     {
-      "id": "bic-pocket-offer",
-      "_comment": "Once both BIC jobs are done (scroll + lantern), clicking the lighter offers to pocket it. Pre-completion clicks fall through to bic-flick.",
-      "on": "click", "object": "bic-lighter",
-      "require": { "all": ["whitepaper-read", "lantern-lit"], "none": ["bic-decided"] },
-      "do": [
-        { "choice": {
-            "prompt": "*flick*\n\nThe BIC's done what you needed.\nPocket it for later, or leave it in the drawer?",
-            "options": [
-              { "label": "pocket it", "do": [
-                { "clue": "Into the pocket it goes. Always handy." },
-                { "remove": ["bic-lighter"] },
-                { "flag": "bic-decided" },
-                { "flag": "bic-pocketed" }
-              ]},
-              { "label": "leave it", "do": [
-                { "flag": "bic-decided" },
-                { "flag": "bic-kept" }
-              ]}
-            ]
-        }}
-      ]
-    },
-    {
       "id": "bic-flick",
+      "_comment": "BIC stays in the drawer permanently — Thomas's call. Always usable, just a *flick* on click. Combines with scroll + jack-o-lantern remain wired below.",
       "on": "click", "object": "bic-lighter",
       "do": [
         { "clue": "*flick*\n\nThe flame catches, holds, dies. Still got fuel." }
@@ -907,11 +898,43 @@
       ]
     },
     {
+      "id": "reveal-elf-prelude",
+      "_comment": "First click on the sunglasses reveals the Jake prelude. Second click (post-flag) offers to wear them (vacate the drawer) or leave them.",
+      "on": "click", "object": "sunglasses",
+      "require": { "none": ["elf-prelude-seen"] },
+      "do": [
+        { "clue": "You hold the sunglasses up. The drawer takes\non a tinted hue.\n\nOn the bottom of the drawer, written in\nchildish hand where it was invisible before,\nyou can just make out:\n\n  \"See you again Dec. 1st 2026!!!\n   I can't wait to see what mischief\n   I get into now!!\"\n\n  — Jake" },
+        { "flag": "elf-prelude-seen" }
+      ]
+    },
+    {
       "id": "wear-sunglasses",
       "on": "click", "object": "sunglasses",
+      "require": { "all": ["elf-prelude-seen"], "none": ["sunglasses-decided"] },
       "do": [
-        { "clue": "You put the sunglasses on. The drawer takes\non a tinted hue.\n\nOn the bottom of the drawer, written in\nchildish hand where it was invisible before,\nyou can just make out:\n\n  \"See you again Dec. 1st 2026!!!\n   I can't wait to see what mischief\n   I get into now!!\"\n\n  — Jake" },
-        { "flag": "elf-prelude-seen" }
+        { "choice": {
+            "prompt": "The sunglasses, ready.\n\nWear them out, or leave them in the drawer?",
+            "options": [
+              { "label": "wear them", "do": [
+                { "clue": "On the face. Everything tints a degree warmer." },
+                { "remove": ["sunglasses"] },
+                { "flag": "sunglasses-decided" },
+                { "flag": "sunglasses-worn" }
+              ]},
+              { "label": "leave them", "do": [
+                { "flag": "sunglasses-decided" },
+                { "flag": "sunglasses-kept" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "sunglasses-kept-look",
+      "on": "click", "object": "sunglasses",
+      "require": { "all": ["sunglasses-kept"] },
+      "do": [
+        { "clue": "The sunglasses. The under-drawer text is still\nthere when you hold them up." }
       ]
     },
 
@@ -1111,13 +1134,19 @@
 
     {
       "id": "marble-blue",
+      "_comment": "Both marbles offer the same fork: pocket-for-the-pinball (the marble becomes a bonus ball in the footer pinball when that integration lands) or to-the-toy-bin. Either option removes the marble from the drawer; the pocketed-* flags are what the pinball will read later.",
       "on": "click", "object": "marble-1",
       "require": { "none": ["marble-blue-decided"] },
       "do": [
         { "choice": {
-            "prompt": "A swirl of blue-green glass. Picks up the drawer's brass light. Cool to the touch.\n\nKeep it, or to the toy bin?",
+            "prompt": "A swirl of blue-green glass. Cool to the touch.\nGood weight. The pinball downstairs could use\nan extra ball.\n\nPocket it for the pinball, or to the toy bin?",
             "options": [
-              { "label": "keep", "do": [{ "flag": "marble-blue-decided" }, { "flag": "marble-blue-kept" }] },
+              { "label": "pocket — for the pinball", "do": [
+                { "clue": "In the pocket. Saved for the flippers." },
+                { "remove": ["marble-1"] },
+                { "flag": "marble-blue-decided" },
+                { "flag": "marble-blue-pocketed" }
+              ]},
               { "label": "to the toy bin", "do": [
                 { "remove": ["marble-1"] },
                 { "flag": "marble-blue-decided" }
@@ -1127,36 +1156,25 @@
       ]
     },
     {
-      "id": "marble-blue-kept-look",
-      "on": "click", "object": "marble-1",
-      "require": { "all": ["marble-blue-kept"] },
-      "do": [
-        { "clue": "Blue marble. Still here." }
-      ]
-    },
-    {
       "id": "marble-warm",
       "on": "click", "object": "marble-2",
       "require": { "none": ["marble-warm-decided"] },
       "do": [
         { "choice": {
-            "prompt": "A swirl of warm orange. Smaller than the other, somehow heavier.\n\nKeep it, or to the toy bin?",
+            "prompt": "A swirl of warm orange. Smaller than the other,\nsomehow heavier.\n\nPocket it for the pinball, or to the toy bin?",
             "options": [
-              { "label": "keep", "do": [{ "flag": "marble-warm-decided" }, { "flag": "marble-warm-kept" }] },
+              { "label": "pocket — for the pinball", "do": [
+                { "clue": "In the pocket. Saved for the flippers." },
+                { "remove": ["marble-2"] },
+                { "flag": "marble-warm-decided" },
+                { "flag": "marble-warm-pocketed" }
+              ]},
               { "label": "to the toy bin", "do": [
                 { "remove": ["marble-2"] },
                 { "flag": "marble-warm-decided" }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "marble-warm-kept-look",
-      "on": "click", "object": "marble-2",
-      "require": { "all": ["marble-warm-kept"] },
-      "do": [
-        { "clue": "Warm marble. Still here." }
       ]
     },
 
@@ -1313,8 +1331,8 @@
             "options": [
               { "label": "today's pop",   "do": [
                 { "stream": {
-                    "url": "TODO_TODAYS_POP",
-                    "label": "Today's Pop"
+                    "url": "https://ice1.somafm.com/indiepop-128-mp3",
+                    "label": "SomaFM Indie Pop Rocks"
                 }}
               ]},
               { "label": "country",       "do": [
@@ -1331,8 +1349,8 @@
               ]},
               { "label": "90's hits",     "do": [
                 { "stream": {
-                    "url": "TODO_90S_HITS",
-                    "label": "90's Rewind"
+                    "url": "https://ice1.somafm.com/u80s-128-mp3",
+                    "label": "SomaFM Underground 80s"
                 }}
               ]}
             ]
