@@ -64,7 +64,7 @@
     "hulk-no-hammer": {
       "name": "Hulk (unarmed)",
       "media": 3673,
-      "x": 46.5, "y": 44.3, "w": 16.3, "rot": 0,
+      "x": 42.4, "y": 44.7, "w": 16.3, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "missing something"
@@ -151,7 +151,7 @@
     "duck-giant": {
       "name": "rubber duck head",
       "media": 3677,
-      "x": 79.1, "y": 57.2, "w": 10.1, "rot": 27,
+      "x": 71.1, "y": 29.3, "w": 10.1, "rot": 27,
       "state": "hidden",
       "hint": "click."
     },
@@ -166,7 +166,7 @@
     "rolled-scroll": {
       "name": "rolled scroll",
       "media": 3637,
-      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "x": 50, "y": 50, "w": 19.8, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "tied with twine"
@@ -174,7 +174,7 @@
     "bic-lighter": {
       "name": "BIC lighter",
       "media": 3698,
-      "x": 50, "y": 50, "w": 5, "rot": 0,
+      "x": 49.5, "y": 65.8, "w": 7.5, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "BIC"
@@ -182,7 +182,7 @@
     "jack-o-lantern": {
       "name": "jack-o-lantern",
       "media": 3693,
-      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "x": 44.1, "y": 26.5, "w": 8.5, "rot": 0,
       "state": "shown",
       "hint": "an unlit pumpkin"
     },
@@ -190,28 +190,28 @@
     "racing-sticker": {
       "name": "13.5 racing sticker",
       "media": 3665,
-      "x": 50, "y": 50, "w": 9, "rot": -3,
+      "x": 48.1, "y": 35.5, "w": 9, "rot": -3,
       "state": "shown",
       "hint": "13.5"
     },
     "hot-wheels-1": {
       "name": "Hot Wheels car",
       "media": 3678,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 60.6, "y": 41.4, "w": 12.8, "rot": 0,
       "state": "shown",
       "hint": "race-ready"
     },
     "hot-wheels-2": {
       "name": "Hot Wheels car (alt)",
       "media": 3684,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 49, "y": 62.5, "w": 9, "rot": 0,
       "state": "shown",
       "hint": "race-ready"
     },
     "hot-rod": {
       "name": "Hot Wheels hot rod",
       "media": 3645,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 57.6, "y": 66.1, "w": 21.8, "rot": 0,
       "state": "shown",
       "hint": "Daniel's favourite"
     },
@@ -219,21 +219,21 @@
     "ensure-bottle": {
       "name": "Ensure bottle",
       "media": 3614,
-      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "x": 61.5, "y": 35.7, "w": 13.2, "rot": 0,
       "state": "shown",
       "hint": "drink up"
     },
     "glasses-case": {
       "name": "eyeglasses case",
       "media": 3621,
-      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "x": 77.3, "y": 39.6, "w": 11, "rot": 0,
       "state": "hidden",
       "hint": "snap it open"
     },
     "eyeglasses": {
       "name": "eyeglasses",
       "media": 3648,
-      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "x": 73.1, "y": 79.5, "w": 11, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "clear lenses"
@@ -241,7 +241,7 @@
     "clip-ons": {
       "name": "clip-on sunglasses",
       "media": 3644,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 24.5, "y": 64.2, "w": 6.9, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "clip-ons"
@@ -249,14 +249,14 @@
     "sunglasses": {
       "name": "sunglasses",
       "media": 3699,
-      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "x": 33.9, "y": 72.3, "w": 17.1, "rot": 0,
       "state": "hidden",
       "hint": "put them on"
     },
     "doodle-notebook": {
       "name": "Fugglers doodle notebook",
       "media": 3631,
-      "x": 50, "y": 50, "w": 12, "rot": 0,
+      "x": 53.7, "y": 26.3, "w": 12, "rot": 0,
       "state": "shown",
       "hint": "monsters"
     }
