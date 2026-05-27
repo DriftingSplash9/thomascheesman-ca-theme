@@ -17,7 +17,8 @@
     "13-marbles":   "Two marbles. Click each → flavour clue. The footer-marble swap + pinball ball-colour matching is a separate cross-component refactor.",
     "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). The rest are click→clue flavour beats: Pac-Man, Yin-Yang, Kids Camera, Ganesha, Handwritten Note, Shark, Speaker, Bubbles, Cards, Nivea (toss), Teaspoon, Banana Muffin (eat).",
     "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set + dust-cleared. Combine keys + padlock → flip to secret view, reveal Ledger (chain 14 takes it from there). The Golden Egg fork bypasses this entirely — it lives in chain 14 with require: { all: ['dust-appeared'], none: ['dust-cleared'] }.",
-    "15-wallet":    "Flip MFF → reveal 67-sticker. Lift GP card (click) → reveal Polaroid. Pac-Man click → reveal Coins (replaces the stub). Combine each of: 67-sticker, $20 bills, GP card, coins WITH the Bifold Wallet → goes in. Auto-reveal: when wallet has all 4, the 67676767 passcode surfaces (the Ledger's gate, used in chain 14)."
+    "15-wallet":    "Flip MFF → reveal 67-sticker. Lift GP card (click) → reveal Polaroid. Pac-Man click → reveal Coins (replaces the stub). Combine each of: 67-sticker, $20 bills, GP card, coins WITH the Bifold Wallet → goes in. Auto-reveal: when wallet has all 4, the 67676767 passcode surfaces (the Ledger's gate, used in chain 14).",
+    "14-prizes":    "ENDGAME. Banana + Gorilla Tape → Duct-Taped Banana (the hero shot). Click Ledger (secret view, after padlock) → passcode 67676767 → TOP PRIZE (notify). Click duct-banana when all chain flags set + dust-appeared + !dust-cleared → EAT or SELL choice: EAT = GOLDEN EGG (notify); SELL = $6.4M + Faberge video #3727 + BIGGER REWARD (notify)."
   },
 
   "surfaces": {
@@ -538,6 +539,46 @@
       "state": "hidden",
       "draggable": true,
       "hint": "loose change"
+    },
+
+    "banana": {
+      "name": "banana",
+      "media": 3616,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "still good"
+    },
+    "gorilla-tape": {
+      "name": "gorilla tape",
+      "media": 3723,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "industrial strength"
+    },
+    "duct-banana": {
+      "name": "duct-taped banana",
+      "media": 3726,
+      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "state": "hidden",
+      "hint": "$6.4M, somehow"
+    },
+    "faberge-video": {
+      "_comment": "Never rendered on the drawer — only used as the target of the `video:` action when the player sells the banana. State stays hidden; view set to a non-existent bucket so author mode + render skip it.",
+      "name": "Faberge Egg video",
+      "media": 3727,
+      "x": 50, "y": 50, "w": 1, "rot": 0,
+      "state": "hidden",
+      "view": "_none"
+    },
+    "ledger": {
+      "name": "Ledger hardware wallet",
+      "media": 3682,
+      "x": 50, "y": 50, "w": 14, "rot": 0,
+      "state": "hidden",
+      "view": "secret",
+      "hint": "tap to wake"
     }
 
   },
@@ -1061,9 +1102,9 @@
       "do": [
         { "effect": "flash" },
         { "surface": "secret-clean" },
-        { "remove": ["padlock-closed"] },
-        { "reveal": ["padlock-open"] },
-        { "clue": "The keys turn. The lock gives.\n\nThe view shifts — you're looking into\nthe secret compartment now." },
+        { "remove": ["padlock-closed", "padlock-keys"] },
+        { "reveal": ["padlock-open", "ledger"] },
+        { "clue": "The keys turn. The lock gives.\n\nThe view shifts — you're looking into\nthe secret compartment now. A Ledger\nhardware wallet rests inside." },
         { "flag": "padlock-open" }
       ]
     },
@@ -1149,6 +1190,84 @@
         { "effect": "flash" },
         { "clue": "The wallet is full.\n\nWritten on the inside flap, in tidy block hand:\n\n  6 7 6 7 6 7 6 7\n\n(The 67 sticker was the hint.)" },
         { "flag": "wallet-complete" }
+      ]
+    },
+
+    {
+      "id": "tape-the-banana",
+      "on": "combine", "a": "banana", "b": "gorilla-tape",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "clue": "You wrap a strip of gorilla tape around the\nbanana. It feels mysteriously precious.\n\n(You've made the thing.)" },
+        { "remove": ["banana", "gorilla-tape"] },
+        { "reveal": ["duct-banana"] },
+        { "flag": "banana-taped" }
+      ]
+    },
+    {
+      "id": "duct-banana-prize-fork",
+      "_comment": "The Golden Egg moment. Player has tidied the drawer AND deliberately left the dust AND made the duct-taped banana. Choice: EAT (golden-egg notify) or SELL ($6.4M → Faberge video → bigger-reward notify).",
+      "on": "click", "object": "duct-banana",
+      "once": true,
+      "require": { "all": ["banana-taped", "screw-tight", "dust-appeared", "receipt-dispensed", "duck-stage-2", "whitepaper-read", "lantern-lit", "train-ready", "sunglasses-made", "proverb-read"], "none": ["dust-cleared"] },
+      "do": [
+        { "choice": {
+            "prompt": "The duct-taped banana, in your hand.\n\nYou could eat it. Or you could sell it.",
+            "options": [
+              { "label": "EAT it",  "do": [
+                { "clue": "You peel the tape, peel the banana, take a bite.\n\nDelicious. Quietly perfect.\n\n(The GOLDEN EGG. The drawer remembers.)" },
+                { "remove": ["duct-banana"] },
+                { "flag": "golden-egg-eaten" },
+                { "notify": "golden-egg" }
+              ]},
+              { "label": "SELL it ($6.4M)", "do": [
+                { "clue": "You sell the banana for $6.4M.\n(Same price as the Cattelan piece.)\n\nWith the cash, you commission the\nGolden Faberge Egg D'Elegance." },
+                { "video": "faberge-video" },
+                { "remove": ["duct-banana"] },
+                { "flag": "banana-sold" },
+                { "flag": "faberge-commissioned" },
+                { "notify": "bigger-reward" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "duct-banana-flavour",
+      "_comment": "Pre-prize click on the duct-banana — before all conditions are met, just gives a teasing flavour.",
+      "on": "click", "object": "duct-banana",
+      "do": [
+        { "clue": "A banana, duct-taped. Suspiciously valuable.\n\n(Comes alive when the drawer is otherwise empty.)" }
+      ]
+    },
+
+    {
+      "id": "ledger-passcode",
+      "_comment": "Click the Ledger → passcode prompt. Success = Top Prize notify + the (decoy) seed phrase reveal. Failure shows a brief 'incorrect' clue and lets the player try again. The require:none gates this off once top-prize-claimed is set so post-success clicks fall through to ledger-claimed.",
+      "on": "click", "object": "ledger",
+      "require": { "none": ["top-prize-claimed"] },
+      "do": [
+        { "passcode": {
+            "expected": "67676767",
+            "success": [
+              { "effect": "flash" },
+              { "clue": "ENTER PIN  ✓\n\nThe Ledger wakes.\n\n  Balance:  ₿  1,337.00000000\n  USD eq:   $89,420,000\n\n  Seed phrase (24 words):\n  song lyric placeholder placeholder\n  placeholder lyric song placeholder…\n  (decoy — do not trust)\n\n— TOP PRIZE —" },
+              { "flag": "top-prize-claimed" },
+              { "notify": "top-prize" }
+            ],
+            "failure": [
+              { "clue": "PIN INCORRECT\n\n(Try again — no lockout. The hint's in\nthe wallet, the wallet's nearby.)" }
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "ledger-claimed",
+      "on": "click", "object": "ledger",
+      "require": { "all": ["top-prize-claimed"] },
+      "do": [
+        { "clue": "The Ledger sleeps. You've already seen what's\ninside.\n\n(The drawer remembers. So does Thomas.)" }
       ]
     }
 

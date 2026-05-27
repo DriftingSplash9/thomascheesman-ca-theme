@@ -51,9 +51,10 @@ add_action( 'rest_api_init', function () {
  */
 function tc_drawer_event_labels() {
     return array(
-        'test'       => 'a test ping',
-        'golden-egg' => 'the GOLDEN EGG (the rare lazy-finish — they left the dust!)',
-        'top-prize'  => 'the Top Prize',
+        'test'          => 'a test ping',
+        'golden-egg'    => 'the GOLDEN EGG (the rare lazy-finish — they left the dust and ATE the banana!)',
+        'top-prize'     => 'the Top Prize (the Ledger Wallet)',
+        'bigger-reward' => 'the BIGGER REWARD (they sold the banana for $6.4M — Faberge Egg commissioned!)',
     );
 }
 

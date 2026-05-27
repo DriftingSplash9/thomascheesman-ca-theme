@@ -67,6 +67,12 @@
  *                   rotation in drawer-puzzle.json). Wins set flag
  *                   `hangman-won`; either outcome shows a clue card.
  *                   Re-playable from the same combine.
+ *   choice:{ prompt, options:[ { label, do:[…] }, … ] }
+ *                 — present a one-shot decision modal: the prompt
+ *                   text + N labelled buttons. Clicking a button
+ *                   runs that option's `do` list and closes the
+ *                   modal. Used for the Golden-Egg EAT/SELL fork
+ *                   and any future branching choice.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -479,6 +485,7 @@ window.TCDrawerEngine = ( function () {
             if ( a.fullscreen ) goFullscreen( a.fullscreen );
             if ( a.passcode )   showPasscode( a.passcode );
             if ( a.hangman )    playHangman();
+            if ( a.choice )     showChoice( a.choice );
         }
     }
 
@@ -754,6 +761,68 @@ window.TCDrawerEngine = ( function () {
             } else if ( e.key === 'Enter' ) {
                 submit();
             } else if ( e.key === 'Escape' || e.key === 'Esc' ) {
+                e.stopImmediatePropagation();
+                close();
+            }
+        }
+        document.addEventListener( 'keydown', onKey, true );
+
+        overlay.appendChild( card );
+        void card.offsetWidth;
+        card.classList.add( 'is-in' );
+    }
+
+    // -----------------------------------------------------------------
+    // Choice modal — the Golden-Egg EAT/SELL fork and any future
+    // branching decision. A prompt + N buttons; clicking one runs
+    // that option's sub-action list and closes. Same paper aesthetic
+    // as the clue card / passcode pad.
+    function showChoice( spec ) {
+        if ( ! overlay || ! spec || ! spec.options || ! spec.options.length ) return;
+
+        var card = document.createElement( 'div' );
+        card.className = 'tc-choice';
+        card.setAttribute( 'role', 'dialog' );
+        card.setAttribute( 'aria-modal', 'true' );
+
+        var paper = document.createElement( 'div' );
+        paper.className = 'tc-choice__paper';
+
+        if ( spec.prompt ) {
+            var p = document.createElement( 'div' );
+            p.className = 'tc-choice__prompt';
+            String( spec.prompt ).split( '\n' ).forEach( function ( line ) {
+                var l = document.createElement( 'p' );
+                l.textContent = line;
+                p.appendChild( l );
+            } );
+            paper.appendChild( p );
+        }
+
+        var btnRow = document.createElement( 'div' );
+        btnRow.className = 'tc-choice__btns';
+        spec.options.forEach( function ( opt ) {
+            var b = document.createElement( 'button' );
+            b.type = 'button';
+            b.className = 'tc-choice__btn';
+            b.textContent = opt.label || '?';
+            b.addEventListener( 'click', function () {
+                close();
+                runActions( opt.do || [] );
+            } );
+            btnRow.appendChild( b );
+        } );
+        paper.appendChild( btnRow );
+
+        card.appendChild( paper );
+
+        function close() {
+            card.classList.remove( 'is-in' );
+            document.removeEventListener( 'keydown', onKey, true );
+            setTimeout( function () { if ( card.parentNode ) card.remove(); }, 240 );
+        }
+        function onKey( e ) {
+            if ( e.key === 'Escape' || e.key === 'Esc' ) {
                 e.stopImmediatePropagation();
                 close();
             }
