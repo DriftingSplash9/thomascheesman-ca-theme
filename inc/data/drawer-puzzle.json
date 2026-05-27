@@ -7,7 +7,8 @@
     "1-start":      "screwdriver + screw → dust appears → duster clears it → reveals duck pin (Top Prize path). Leaving dust = Golden Egg path.",
     "2-hulk":       "Hulk + hammer → armed Hulk → smash silver nugget → Rings (Find Ring ✓). Torch on Rings → 'one PEZ dispenser to rule them all'. Click PEZ → Auction Receipt ($264M Faberge foreshadow).",
     "3-duck":       "Mini Pump + small duck → midway duck → giant duck. Click giant duck → fullscreen browser crush. Pineapple duck is a one-liner easter egg.",
-    "4-scroll":     "BIC Lighter + Rolled Scroll → Bitcoin whitepaper clue. BIC + Jack-o-Lantern → pumpkin lit. The BIC stays in the drawer for both."
+    "4-scroll":     "BIC Lighter + Rolled Scroll → Bitcoin whitepaper clue. BIC + Jack-o-Lantern → pumpkin lit. The BIC stays in the drawer for both.",
+    "5-hotwheels":  "STUB until Thomas + Daniel film the bracket. 13.5 sticker (hover hint) + two race cars + Hot Rod collectible. Click any car → 'race video coming soon' clue."
   },
 
   "surfaces": {
@@ -183,6 +184,35 @@
       "x": 50, "y": 50, "w": 11, "rot": 0,
       "state": "shown",
       "hint": "an unlit pumpkin"
+    },
+
+    "racing-sticker": {
+      "name": "13.5 racing sticker",
+      "media": 3665,
+      "x": 50, "y": 50, "w": 9, "rot": -3,
+      "state": "shown",
+      "hint": "13.5"
+    },
+    "hot-wheels-1": {
+      "name": "Hot Wheels car",
+      "media": 3678,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "race-ready"
+    },
+    "hot-wheels-2": {
+      "name": "Hot Wheels car (alt)",
+      "media": 3684,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "race-ready"
+    },
+    "hot-rod": {
+      "name": "Hot Wheels hot rod",
+      "media": 3645,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "Daniel's favourite"
     }
 
   },
@@ -386,6 +416,28 @@
       "require": { "none": ["lantern-lit"] },
       "do": [
         { "clue": "An unlit pumpkin. Would be more festive lit." }
+      ]
+    },
+
+    {
+      "id": "hot-wheels-1-stub",
+      "on": "click", "object": "hot-wheels-1",
+      "do": [
+        { "clue": "RACE — best of 13.5\n\n(Thomas and Daniel still have to film this one.\nClue here when the bracket lands.)" }
+      ]
+    },
+    {
+      "id": "hot-wheels-2-stub",
+      "on": "click", "object": "hot-wheels-2",
+      "do": [
+        { "clue": "RACE — best of 13.5\n\n(Thomas and Daniel still have to film this one.\nClue here when the bracket lands.)" }
+      ]
+    },
+    {
+      "id": "hot-rod-flavour",
+      "on": "click", "object": "hot-rod",
+      "do": [
+        { "clue": "The hot rod. Daniel's favourite. Doesn't race —\nit's just here to be admired." }
       ]
     }
 
