@@ -1,12 +1,12 @@
 {
-  "version": 3,
+  "version": 4,
   "_comment": "Phase 4 — the real Secret Drawer puzzle. Source of truth: Secret-Drawer-Items (NEW2).docx + Secret-Drawer-Playbook.docx (off-repo, on Thomas's Desktop). Background: real photos of Thomas's actual drawer (meme stickers baked in as permanent flavor). Two view states (`junk-*` wide top-down vs `secret-*` close-up of the recessed compartments) × two dust states (clean / dusty) = four surfaces. The wide junk view is the start; chain 8 (padlock) gates the transition to the secret view. Every puzzle item is an engine overlay placed on top. Chains land in commit-sized batches; each chain commit bumps the theme version. The engine's full action-verb surface is documented in the docblock of drawer-engine.js — Phase 4 adds: `video`, `fullscreen`, `passcode`, and `require` (interaction-level flag preconditions). Coordinates were placed in ?author mode and baked back here as the layout pass for each chain batch.",
 
   "_chains": {
     "0-todo":       "You Got This notebook → click → to-do clue (Find Ring · Tidy drawer · Dust + scribbled notes)",
     "1-start":      "screwdriver + screw → dust appears → duster clears it → reveals duck pin (Top Prize path). Leaving dust = Golden Egg path.",
     "2-hulk":       "Hulk + hammer → armed Hulk → smash silver nugget → Rings (Find Ring ✓). Torch on Rings → 'one PEZ dispenser to rule them all'. Click PEZ → Auction Receipt ($264M Faberge foreshadow).",
-    "3-duck":       "Mini Pump + small duck → midway duck → giant duck. Click giant duck → fullscreen browser crush. Pineapple duck is a one-liner easter egg.",
+    "3-duck":       "Mini Pump + small duck → midway duck → giant duck. Click giant duck → fullscreen browser crush.",
     "4-scroll":     "BIC Lighter + Rolled Scroll → Bitcoin whitepaper clue. BIC + Jack-o-Lantern → pumpkin lit. The BIC stays in the drawer for both.",
     "5-hotwheels":  "STUB until Thomas + Daniel film the bracket. 13.5 sticker (hover hint) + two race cars + Hot Rod collectible. Click any car → 'race video coming soon' clue.",
     "6-glasses":    "Ensure (alertness) → Glasses Case → Eyeglasses → combine with Clip-Ons → Sunglasses → click reveals the Elf prelude ('See you again Dec. 1st 2026...'). Fugglers Notebook is the in-puzzle hint for the clip-on combine.",
@@ -15,9 +15,9 @@
     "10-bible":     "Click the Antique Book → opens to reveal the Bible. Click the Bible → Proverbs 25:2 clue: 'It is the glory of God to conceal a thing...' — the whole puzzle's thesis.",
     "12-keepsakes": "Spinning Top + Toy Jet. Click each → a sentimental keepsake clue. No interactions between them; just two small artifacts that earn a moment.",
     "13-marbles":   "Two marbles. Click each → flavour clue. The footer-marble swap + pinball ball-colour matching is a separate cross-component refactor.",
-    "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). The rest are click→clue flavour beats: Pac-Man, Yin-Yang, Kids Camera, Ganesha, Handwritten Note, Shark, Speaker, Bubbles, Cards, Nivea (toss), Teaspoon, Banana Muffin (eat).",
-    "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set + dust-cleared. Combine keys + padlock → flip to secret view, reveal Ledger (chain 14 takes it from there). The Golden Egg fork bypasses this entirely — it lives in chain 14 with require: { all: ['dust-appeared'], none: ['dust-cleared'] }.",
-    "15-wallet":    "Flip MFF → reveal 67-sticker. Lift GP card (click) → reveal Polaroid. Pac-Man click → reveal Coins (replaces the stub). Combine each of: 67-sticker, $20 bills, GP card, coins WITH the Bifold Wallet → goes in. Auto-reveal: when wallet has all 4, the 67676767 passcode surfaces (the Ledger's gate, used in chain 14).",
+    "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). The rest are click→clue flavour beats: Pac-Man arcade (coin-insert + game), Yin-Yang, Kids Camera, Ganesha, Shark, Speaker, Bubbles (animated bubbles), Cards, Nivea (toss), Teaspoon, Banana Muffin (eat). Handwritten note has moved to chain 8 (lives in the secret drawer alongside the Ledger).",
+    "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set + dust-cleared. Combine keys + padlock → flip to secret view, reveal Ledger AND the handwritten note (passcode hint). Chain 14 takes it from there. The Golden Egg fork bypasses this entirely — it lives in chain 14 with require: { all: ['dust-appeared'], none: ['dust-cleared'] }.",
+    "15-wallet":    "Flip MFF → reveal 67-sticker. Coins live in the drawer; must be inserted into the Pac-Man arcade first, then go in the wallet. Combine each of: 67-sticker, $20 bills, GP card, coins, auction receipt WITH the Bifold Wallet → goes in. Auto-reveal: when wallet has all FIVE, the 67676767 passcode surfaces (the Ledger's gate, used in chain 14).",
     "14-prizes":    "ENDGAME. Banana + Gorilla Tape → Duct-Taped Banana (the hero shot). Click Ledger (secret view, after padlock) → passcode 67676767 → TOP PRIZE (notify). Click duct-banana when all chain flags set + dust-appeared + !dust-cleared → EAT or SELL choice: EAT = GOLDEN EGG (notify); SELL = $6.4M + Faberge video #3727 + BIGGER REWARD (notify)."
   },
 
@@ -180,14 +180,6 @@
       "state": "hidden",
       "hint": "click."
     },
-    "duck-pineapple": {
-      "name": "pineapple duck",
-      "media": 3686,
-      "x": 69.1, "y": 26.1, "w": 8.5, "rot": 0,
-      "state": "shown",
-      "hint": "?"
-    },
-
     "rolled-scroll": {
       "name": "rolled scroll",
       "media": 3637,
@@ -412,8 +404,9 @@
       "name": "handwritten note",
       "media": 3674,
       "x": 65.4, "y": 64, "w": 13.4, "rot": 0,
-      "state": "shown",
-      "hint": "folded paper"
+      "state": "hidden",
+      "view": "secret",
+      "hint": "for you"
     },
     "support-shark": {
       "name": "emotional support shark",
@@ -525,22 +518,15 @@
       "x": 72.4, "y": 40.1, "w": 6.6, "rot": 0,
       "state": "shown",
       "draggable": true,
-      "hint": "lift it"
-    },
-    "polaroid": {
-      "name": "polaroid (Jake letter)",
-      "media": 3722,
-      "x": 71.8, "y": 8.6, "w": 10, "rot": -3,
-      "state": "hidden",
-      "hint": "something's on the back"
+      "hint": "for the wallet"
     },
     "coins": {
       "name": "arcade coins",
       "media": 3694,
       "x": 70.5, "y": 42.7, "w": 8, "rot": 0,
-      "state": "hidden",
+      "state": "shown",
       "draggable": true,
-      "hint": "loose change"
+      "hint": "for the arcade"
     },
 
     "banana": {
@@ -656,8 +642,21 @@
       "id": "duck-pin-clue",
       "on": "click", "object": "duck-pin",
       "do": [
-        { "clue": "\"Got any grapes?\"\n\nThe duck found you first. One small treasure down — the drawer keeps more." },
-        { "flag": "pin-found" }
+        { "choice": {
+            "prompt": "\"Got any grapes?\"\n\nThe duck found you first. A small enamel pin.\n\nWear it, or leave it in the drawer?",
+            "options": [
+              { "label": "wear it", "do": [
+                { "clue": "On the lapel. The duck rides along." },
+                { "remove": ["duck-pin"] },
+                { "flag": "pin-found" },
+                { "flag": "duck-pin-worn" }
+              ]},
+              { "label": "leave it", "do": [
+                { "flag": "pin-found" },
+                { "flag": "duck-pin-kept" }
+              ]}
+            ]
+        }}
       ]
     },
 
@@ -693,6 +692,27 @@
         { "clue": "Held to the Ring, the metal whispers two things:\n\n  \"one PEZ dispenser to rule them all\"\n  \"a banana, taped, where there once was none\"\n\n(Two clues. Two ways out.)" },
         { "remove": ["torch-lighter"] },
         { "flag": "torch-clue-given" }
+      ]
+    },
+    {
+      "id": "wear-rings",
+      "_comment": "After the torch has revealed the rings' secrets, clicking the rings offers to wear them.",
+      "on": "click", "object": "rings",
+      "require": { "all": ["torch-clue-given"] },
+      "do": [
+        { "choice": {
+            "prompt": "The rings, warm from the flame and now legible.\n\nSlip them on, or leave them in the drawer?",
+            "options": [
+              { "label": "wear them", "do": [
+                { "clue": "On the fingers. They fit. The secret stays\nwith you." },
+                { "remove": ["rings"] },
+                { "flag": "rings-worn" }
+              ]},
+              { "label": "leave them", "do": [
+                { "flag": "rings-kept" }
+              ]}
+            ]
+        }}
       ]
     },
 
@@ -765,14 +785,6 @@
     },
 
     {
-      "id": "pineapple-duck-joke",
-      "on": "click", "object": "duck-pineapple",
-      "do": [
-        { "clue": "It's a pineapple.\n\nOr a duck.\n\nYou decide." }
-      ]
-    },
-
-    {
       "id": "burn-scroll",
       "on": "combine", "a": "bic-lighter", "b": "rolled-scroll",
       "once": true,
@@ -833,17 +845,28 @@
     },
 
     {
-      "id": "hot-wheels-1-stub",
+      "id": "hotwheels-race",
+      "_comment": "Two Hot Wheels combined → the race. Stub for now: clue card pointing at the still-to-be-shot race video with Daniel. Once the video lands, swap the clue for a `video:` action.",
+      "on": "combine", "a": "hot-wheels-1", "b": "hot-rod",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "clue": "GREEN LIGHT — best of 13.5\n\n(Thomas and Daniel still have to film this one.\nWhen the race video lands, this combine plays it.)" },
+        { "flag": "hotwheels-raced" }
+      ]
+    },
+    {
+      "id": "hot-wheels-1-hint",
       "on": "click", "object": "hot-wheels-1",
       "do": [
-        { "clue": "RACE — best of 13.5\n\n(Thomas and Daniel still have to film this one.\nClue here when the bracket lands.)" }
+        { "clue": "A race car. Wants another car to race against." }
       ]
     },
     {
       "id": "hot-rod-flavour",
       "on": "click", "object": "hot-rod",
       "do": [
-        { "clue": "The hot rod. Daniel's favourite. Doesn't race —\nit's just here to be admired." }
+        { "clue": "The hot rod — Daniel's favourite. Wants a\nracer of its own to face." }
       ]
     },
 
@@ -1016,10 +1039,36 @@
 
     {
       "id": "iphone-banana-doc",
-      "_comment": "Plays a YouTube clip about Cattelan's duct-taped banana — quietly relevant to the Golden Egg path. Re-clickable so the player can re-watch.",
+      "_comment": "First click plays the YouTube clip about Cattelan's duct-taped banana — quietly relevant to the Golden Egg path. Sets the iphone-watched flag so the next click can offer rewatch / pocket / leave.",
       "on": "click", "object": "iphone",
+      "require": { "none": ["iphone-watched"] },
       "do": [
-        { "youtube": "2fyqvZ_nmO8" }
+        { "youtube": "2fyqvZ_nmO8" },
+        { "flag": "iphone-watched" }
+      ]
+    },
+    {
+      "id": "iphone-after-video",
+      "_comment": "Post-watch choice — rewatch, pocket, or leave. Re-pops on every click so the player can keep changing their mind.",
+      "on": "click", "object": "iphone",
+      "require": { "all": ["iphone-watched"] },
+      "do": [
+        { "choice": {
+            "prompt": "The phone, video done.\n\nWatch again, pocket it for later, or leave it in the drawer?",
+            "options": [
+              { "label": "watch again", "do": [
+                { "youtube": "2fyqvZ_nmO8" }
+              ]},
+              { "label": "pocket it", "do": [
+                { "clue": "Slipped into the pocket. Always within reach." },
+                { "remove": ["iphone"] },
+                { "flag": "iphone-pocketed" }
+              ]},
+              { "label": "leave it", "do": [
+                { "flag": "iphone-kept" }
+              ]}
+            ]
+        }}
       ]
     },
 
@@ -1132,22 +1181,31 @@
       ]
     },
     {
-      "id": "pacman-first-play",
-      "_comment": "First click on the arcade — drops the coins (they're the wallet-collection chain link) AND boots a real Pac-Man game. Coins reveal only happens once; subsequent clicks fall through to pacman-replay below for pure play.",
-      "on": "click", "object": "pacman-arcade",
+      "id": "pacman-insert-coins",
+      "_comment": "Coins dropped onto the arcade = game starts. Sets pacman-played (which gates the wallet-add-coins drop) and unlocks pacman-replay below. Coins are NOT removed — they stay in the drawer so the player can still drop them into the wallet later.",
+      "on": "combine", "a": "coins", "b": "pacman-arcade",
       "once": true,
       "do": [
         { "effect": "flash" },
-        { "reveal": ["coins"] },
-        { "flag": "pacman-played" },
-        { "pacman": true }
+        { "pacman": true },
+        { "flag": "pacman-played" }
       ]
     },
     {
       "id": "pacman-replay",
+      "_comment": "After coins have been inserted once, the arcade remembers — replays are free. Ordered ABOVE pacman-needs-coins so the engine picks this first when pacman-played is set.",
       "on": "click", "object": "pacman-arcade",
+      "require": { "all": ["pacman-played"] },
       "do": [
         { "pacman": true }
+      ]
+    },
+    {
+      "id": "pacman-needs-coins",
+      "_comment": "Pre-coin click — flavour pointing at the coins in the drawer.",
+      "on": "click", "object": "pacman-arcade",
+      "do": [
+        { "clue": "*the arcade hums in attract mode*\n\nIt's waiting for coins. Drop some in to play." }
       ]
     },
     {
@@ -1196,17 +1254,11 @@
     },
     {
       "id": "read-handwritten-note",
+      "_comment": "Note lives in the secret drawer (view: secret), revealed alongside the Ledger when the padlock opens. Click = the passcode hint, pointing the player at the wallet.",
       "on": "click", "object": "handwritten-note",
       "do": [
-        { "choice": {
-            "prompt": "The note unfolds. The handwriting is yours (from years ago), but you don't remember writing it. It says, simply:\n\n  \"keep going.\"\n\nKeep the note, or toss it?",
-            "options": [
-              { "label": "keep", "do": [{ "flag": "note-kept" }] },
-              { "label": "toss it", "do": [
-                { "remove": ["handwritten-note"] }
-              ]}
-            ]
-        }}
+        { "clue": "The note unfolds. Familiar handwriting:\n\n  Behind this lock is what you came for.\n  The number you need is written inside\n  the wallet you're carrying.\n\n  Everything you need —\n\n  for you" },
+        { "flag": "note-read" }
       ]
     },
     {
@@ -1354,8 +1406,8 @@
         { "effect": "flash" },
         { "surface": "secret-clean" },
         { "remove": ["padlock-closed", "padlock-keys"] },
-        { "reveal": ["padlock-open", "ledger"] },
-        { "clue": "The keys turn. The lock gives.\n\nThe view shifts — you're looking into\nthe secret compartment now. A Ledger\nhardware wallet rests inside." },
+        { "reveal": ["padlock-open", "ledger", "handwritten-note"] },
+        { "clue": "The keys turn. The lock gives.\n\nThe view shifts — you're looking into\nthe secret compartment now. A Ledger\nhardware wallet rests inside, with a folded\nnote tucked beside it." },
         { "flag": "padlock-open" }
       ]
     },
@@ -1393,25 +1445,6 @@
       ]
     },
     {
-      "id": "lift-gp-card",
-      "on": "click", "object": "gp-card",
-      "once": true,
-      "do": [
-        { "clue": "You lift the gift card.\n\nUnderneath: a polaroid, face-down.\nSomething's written on the back." },
-        { "reveal": ["polaroid"] },
-        { "flag": "gp-card-lifted" }
-      ]
-    },
-    {
-      "id": "read-polaroid",
-      "on": "click", "object": "polaroid",
-      "do": [
-        { "clue": "POLAROID (back, in childish hand):\n\n  \"I miss you dearly, I cannot wait until\n   December when we meet again. I have soooo\n   much mischief in store for you this year!\n\n   — Jake\"" },
-        { "flag": "jake-letter-read" }
-      ]
-    },
-
-    {
       "id": "wallet-add-67sticker",
       "on": "combine", "a": "sixty-seven-sticker", "b": "wallet",
       "once": true,
@@ -1443,13 +1476,23 @@
     },
     {
       "id": "wallet-add-coins",
-      "_comment": "Coins are revealed by the first Pac-Man play, so they can only reach the wallet after the player has actually played the game.",
+      "_comment": "Coins are visible in the drawer from the start, but they must be USED on the arcade first. The require here gates dropping them in the wallet until pacman-played is set.",
       "on": "combine", "a": "coins", "b": "wallet",
       "once": true,
+      "require": { "all": ["pacman-played"] },
       "do": [
-        { "clue": "Coins drop into the change pocket with a\nsatisfying weight." },
+        { "clue": "The coins — now warm from the arcade slot —\ndrop into the change pocket with a satisfying weight." },
         { "remove": ["coins"] },
         { "flag": "wallet-has-coins" }
+      ]
+    },
+    {
+      "id": "wallet-coins-too-early",
+      "_comment": "Player tried to put coins in the wallet before playing Pac-Man. Nudge them at the arcade.",
+      "on": "combine", "a": "coins", "b": "wallet",
+      "require": { "none": ["pacman-played"] },
+      "do": [
+        { "clue": "These coins want the arcade first. Play a round\nof Pac-Man, then the wallet." }
       ]
     },
     {
