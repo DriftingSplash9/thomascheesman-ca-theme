@@ -12,7 +12,8 @@
     "6-glasses":    "Ensure (alertness) → Glasses Case → Eyeglasses → combine with Clip-Ons → Sunglasses → click reveals the Elf prelude ('See you again Dec. 1st 2026...'). Fugglers Notebook is the in-puzzle hint for the clip-on combine.",
     "7-batteries":  "Car Keys → Toy Train (unlocks battery cover) → AAA Batteries → Train ready → click → chugs. iPhone is direct: click → muted family videos.",
     "9-hangman":    "Combine Sticky Notes + Mechanical Pencil → Hangman mini-game. Word picked from the current month's 20-word rotation (top-level `hangman` block). Win sets flag `hangman-won`. Re-playable.",
-    "10-bible":     "Click the Antique Book → opens to reveal the Bible. Click the Bible → Proverbs 25:2 clue: 'It is the glory of God to conceal a thing...' — the whole puzzle's thesis."
+    "10-bible":     "Click the Antique Book → opens to reveal the Bible. Click the Bible → Proverbs 25:2 clue: 'It is the glory of God to conceal a thing...' — the whole puzzle's thesis.",
+    "11-olestyr":   "Scissors + Olestyr packet → 'snipped open, powdered medicine, you put it back.' Both items stay in the drawer, inert after."
   },
 
   "surfaces": {
@@ -341,6 +342,22 @@
       "x": 53.2, "y": 32.7, "w": 23.5, "rot": 0,
       "state": "hidden",
       "hint": "open"
+    },
+
+    "scissors": {
+      "name": "scissors",
+      "media": 3700,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "sharp"
+    },
+    "olestyr": {
+      "name": "Olestyr packet",
+      "media": 3646,
+      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "state": "shown",
+      "hint": "sealed packet"
     }
 
   },
@@ -699,6 +716,16 @@
       "do": [
         { "clue": "PROVERBS 25:2\n\n  \"It is the glory of God to conceal a thing:\n   but the honour of kings to search out a matter.\"\n\n(The whole puzzle's thesis, hiding in plain sight.)" },
         { "flag": "proverb-read" }
+      ]
+    },
+
+    {
+      "id": "snip-olestyr",
+      "on": "combine", "a": "scissors", "b": "olestyr",
+      "once": true,
+      "do": [
+        { "clue": "*snip*\n\nThe packet falls open. Powdered medicine.\n(You don't need it. Back in the drawer it goes.)" },
+        { "flag": "olestyr-snipped" }
       ]
     }
 
