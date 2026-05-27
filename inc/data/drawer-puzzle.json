@@ -891,6 +891,45 @@
       ]
     },
     {
+      "id": "car-keys-pre-use",
+      "on": "click", "object": "car-keys",
+      "require": { "none": ["battery-cover-open"] },
+      "do": [
+        { "clue": "*jingle*\n\nA fob, a couple of keys, and a tiny\nscrewdriver tucked between them.\n(Useful for something small and screwed shut.)" }
+      ]
+    },
+    {
+      "id": "car-keys-pocket-offer",
+      "_comment": "After the keys have done their job (opened the train's battery cover), clicking them offers to pocket. Pre-use clicks fall through to car-keys-pre-use above.",
+      "on": "click", "object": "car-keys",
+      "require": { "all": ["battery-cover-open"], "none": ["car-keys-decided"] },
+      "do": [
+        { "choice": {
+            "prompt": "The car keys, job done.\n\nPocket them, or leave in the drawer?",
+            "options": [
+              { "label": "pocket them", "do": [
+                { "clue": "Into the pocket. You'll need these later." },
+                { "remove": ["car-keys"] },
+                { "flag": "car-keys-decided" },
+                { "flag": "car-keys-pocketed" }
+              ]},
+              { "label": "leave them", "do": [
+                { "flag": "car-keys-decided" },
+                { "flag": "car-keys-kept" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "car-keys-kept-look",
+      "on": "click", "object": "car-keys",
+      "require": { "all": ["car-keys-kept"] },
+      "do": [
+        { "clue": "*jingle*\n\nThe keys, still in the drawer." }
+      ]
+    },
+    {
       "id": "install-batteries",
       "on": "combine", "a": "aaa-batteries", "b": "toy-train",
       "once": true,
@@ -1376,7 +1415,7 @@
         { "surface": "secret-clean" },
         { "remove": ["padlock-closed", "padlock-keys"] },
         { "reveal": ["padlock-open", "ledger"] },
-        { "clue": "The keys turn. The lock gives.\n\nYou pocket the keys as the view shifts —\nyou're looking into the secret compartment\nnow. A Ledger hardware wallet rests inside." },
+        { "clue": "The keys turn. The lock gives.\n\nThe view shifts — you're looking into\nthe secret compartment now. A Ledger\nhardware wallet rests inside." },
         { "flag": "padlock-open" }
       ]
     },
