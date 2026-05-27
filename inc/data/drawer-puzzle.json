@@ -1443,6 +1443,7 @@
     },
     {
       "id": "wallet-add-coins",
+      "_comment": "Coins are revealed by the first Pac-Man play, so they can only reach the wallet after the player has actually played the game.",
       "on": "combine", "a": "coins", "b": "wallet",
       "once": true,
       "do": [
@@ -1451,13 +1452,24 @@
         { "flag": "wallet-has-coins" }
       ]
     },
+    {
+      "id": "wallet-add-receipt",
+      "_comment": "The auction receipt folds up and slides into the wallet alongside the gift card. Needed for the passcode reveal — wallet-passcode-reveal now requires this flag too.",
+      "on": "combine", "a": "auction-receipt", "b": "wallet",
+      "once": true,
+      "do": [
+        { "clue": "The receipt folds twice and slips into the\nwallet's bill pocket. ($264M is heavier than\nit looks.)" },
+        { "remove": ["auction-receipt"] },
+        { "flag": "wallet-has-receipt" }
+      ]
+    },
 
     {
       "id": "wallet-passcode-reveal",
-      "_comment": "Auto-fires once all four wallet items are in. Surfaces the 67676767 passcode the Ledger will ask for in chain 14, then the wallet goes in the player's pocket (removed). The 67 sticker was the hint.",
+      "_comment": "Auto-fires once all FIVE wallet items are in (67-sticker, bills, GP card, coins, receipt). Surfaces the 67676767 passcode the Ledger will ask for in chain 14, then the wallet goes in the player's pocket (removed). The 67 sticker was the hint.",
       "on": "auto",
       "once": true,
-      "require": { "all": ["wallet-has-67sticker", "wallet-has-bills", "wallet-has-gpcard", "wallet-has-coins"] },
+      "require": { "all": ["wallet-has-67sticker", "wallet-has-bills", "wallet-has-gpcard", "wallet-has-coins", "wallet-has-receipt"] },
       "do": [
         { "effect": "flash" },
         { "clue": "The wallet is full.\n\nWritten on the inside flap, in tidy block hand:\n\n  6 7 6 7 6 7 6 7\n\n(The 67 sticker was the hint.)\n\nYou tuck the wallet into your pocket." },
