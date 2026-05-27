@@ -16,7 +16,8 @@
     "12-keepsakes": "Spinning Top + Toy Jet. Click each → a sentimental keepsake clue. No interactions between them; just two small artifacts that earn a moment.",
     "13-marbles":   "Two marbles. Click each → flavour clue. The footer-marble swap + pinball ball-colour matching is a separate cross-component refactor.",
     "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). The rest are click→clue flavour beats: Pac-Man, Yin-Yang, Kids Camera, Ganesha, Handwritten Note, Shark, Speaker, Bubbles, Cards, Nivea (toss), Teaspoon, Banana Muffin (eat).",
-    "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set + dust-cleared. Combine keys + padlock → flip to secret view, reveal Ledger (chain 14 takes it from there). The Golden Egg fork bypasses this entirely — it lives in chain 14 with require: { all: ['dust-appeared'], none: ['dust-cleared'] }."
+    "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set + dust-cleared. Combine keys + padlock → flip to secret view, reveal Ledger (chain 14 takes it from there). The Golden Egg fork bypasses this entirely — it lives in chain 14 with require: { all: ['dust-appeared'], none: ['dust-cleared'] }.",
+    "15-wallet":    "Flip MFF → reveal 67-sticker. Lift GP card (click) → reveal Polaroid. Pac-Man click → reveal Coins (replaces the stub). Combine each of: 67-sticker, $20 bills, GP card, coins WITH the Bifold Wallet → goes in. Auto-reveal: when wallet has all 4, the 67676767 passcode surfaces (the Ledger's gate, used in chain 14)."
   },
 
   "surfaces": {
@@ -483,6 +484,60 @@
       "x": 50, "y": 50, "w": 9, "rot": 0,
       "state": "hidden",
       "hint": "the lock gives"
+    },
+
+    "mff": {
+      "name": "middle-finger figurine",
+      "media": 3635,
+      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "state": "shown",
+      "hint": "flip it"
+    },
+    "sixty-seven-sticker": {
+      "name": "67 sticker",
+      "media": 3653,
+      "x": 50, "y": 50, "w": 5, "rot": 0,
+      "state": "hidden",
+      "draggable": true,
+      "hint": "67"
+    },
+    "wallet": {
+      "name": "bifold wallet",
+      "media": 3610,
+      "x": 50, "y": 50, "w": 14, "rot": 0,
+      "state": "shown",
+      "hint": "open it up"
+    },
+    "twenty-bills": {
+      "name": "crumpled $20 bills",
+      "media": 3708,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "cash"
+    },
+    "gp-card": {
+      "name": "Grande Prairie gift card",
+      "media": 3706,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "lift it"
+    },
+    "polaroid": {
+      "name": "polaroid (Jake letter)",
+      "media": 3722,
+      "x": 50, "y": 50, "w": 10, "rot": -3,
+      "state": "hidden",
+      "hint": "something's on the back"
+    },
+    "coins": {
+      "name": "arcade coins",
+      "media": 3694,
+      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "state": "hidden",
+      "draggable": true,
+      "hint": "loose change"
     }
 
   },
@@ -877,10 +932,21 @@
       ]
     },
     {
-      "id": "pacman-stub",
+      "id": "pacman-play",
+      "on": "click", "object": "pacman-arcade",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "clue": "*wakka wakka*\n\nThe mini arcade boots up. You play a quick round —\na handful of coins drop out the side." },
+        { "reveal": ["coins"] },
+        { "flag": "pacman-played" }
+      ]
+    },
+    {
+      "id": "pacman-replay",
       "on": "click", "object": "pacman-arcade",
       "do": [
-        { "clue": "*wakka wakka*\n\nThe mini arcade boots up. (Coins earned here\ngo in the Wallet — coming soon.)" }
+        { "clue": "*wakka wakka*\n\nThe arcade hums. (The full Pac-Man lives over\nin the desk arcade.)" }
       ]
     },
     {
@@ -999,6 +1065,90 @@
         { "reveal": ["padlock-open"] },
         { "clue": "The keys turn. The lock gives.\n\nThe view shifts — you're looking into\nthe secret compartment now." },
         { "flag": "padlock-open" }
+      ]
+    },
+
+    {
+      "id": "flip-mff",
+      "on": "click", "object": "mff",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "clue": "You flip the figurine over.\n\nStuck to the base: a small 67 sticker.\n(Worth remembering.)" },
+        { "reveal": ["sixty-seven-sticker"] },
+        { "flag": "mff-flipped" }
+      ]
+    },
+    {
+      "id": "lift-gp-card",
+      "on": "click", "object": "gp-card",
+      "once": true,
+      "do": [
+        { "clue": "You lift the gift card.\n\nUnderneath: a polaroid, face-down.\nSomething's written on the back." },
+        { "reveal": ["polaroid"] },
+        { "flag": "gp-card-lifted" }
+      ]
+    },
+    {
+      "id": "read-polaroid",
+      "on": "click", "object": "polaroid",
+      "do": [
+        { "clue": "POLAROID (back, in childish hand):\n\n  \"I miss you dearly, I cannot wait until\n   December when we meet again. I have soooo\n   much mischief in store for you this year!\n\n   — Jake\"" },
+        { "flag": "jake-letter-read" }
+      ]
+    },
+
+    {
+      "id": "wallet-add-67sticker",
+      "on": "combine", "a": "sixty-seven-sticker", "b": "wallet",
+      "once": true,
+      "do": [
+        { "clue": "The 67 sticker goes in. (Hint, hint.)" },
+        { "remove": ["sixty-seven-sticker"] },
+        { "flag": "wallet-has-67sticker" }
+      ]
+    },
+    {
+      "id": "wallet-add-bills",
+      "on": "combine", "a": "twenty-bills", "b": "wallet",
+      "once": true,
+      "do": [
+        { "clue": "The bills uncrumple and slot in." },
+        { "remove": ["twenty-bills"] },
+        { "flag": "wallet-has-bills" }
+      ]
+    },
+    {
+      "id": "wallet-add-gpcard",
+      "on": "combine", "a": "gp-card", "b": "wallet",
+      "once": true,
+      "do": [
+        { "clue": "The Grande Prairie gift card slides into the\ncard slot." },
+        { "remove": ["gp-card"] },
+        { "flag": "wallet-has-gpcard" }
+      ]
+    },
+    {
+      "id": "wallet-add-coins",
+      "on": "combine", "a": "coins", "b": "wallet",
+      "once": true,
+      "do": [
+        { "clue": "Coins drop into the change pocket with a\nsatisfying weight." },
+        { "remove": ["coins"] },
+        { "flag": "wallet-has-coins" }
+      ]
+    },
+
+    {
+      "id": "wallet-passcode-reveal",
+      "_comment": "Auto-fires once all four wallet items are in. Surfaces the 67676767 passcode the Ledger will ask for in chain 14. The 67 sticker was the hint.",
+      "on": "auto",
+      "once": true,
+      "require": { "all": ["wallet-has-67sticker", "wallet-has-bills", "wallet-has-gpcard", "wallet-has-coins"] },
+      "do": [
+        { "effect": "flash" },
+        { "clue": "The wallet is full.\n\nWritten on the inside flap, in tidy block hand:\n\n  6 7 6 7 6 7 6 7\n\n(The 67 sticker was the hint.)" },
+        { "flag": "wallet-complete" }
       ]
     }
 
