@@ -41,7 +41,24 @@
     // than misleading 0s that look like real high scores.
     // ----------------------------------------------------------------
     var SCORES_URL = ( window.tcDeskGames && window.tcDeskGames.scoresUrl ) || '/wp-json/tc-games/v1/scores';
+    var AUDIO_URLS = ( window.tcDeskGames && window.tcDeskGames.audio ) || {};
     var boards = {};
+
+    // One-shot SFX helper. Each call spawns a fresh Audio() so rapid
+    // events (Asteroids' five-bullet salvo, Pong rallies on the wall +
+    // paddles) overlap cleanly instead of cutting each other off.
+    // play() returns a Promise that rejects under autoplay-policy;
+    // failures are silently swallowed so a muted browser doesn't
+    // make the games error out.
+    function playSfx( url, volume ) {
+        if ( ! url ) return;
+        try {
+            var a = new Audio( url );
+            if ( typeof volume === 'number' ) a.volume = volume;
+            var p = a.play();
+            if ( p && p.catch ) p.catch( function () {} );
+        } catch ( e ) {}
+    }
 
     function fetchBoards() {
         return fetch( SCORES_URL, { credentials: 'same-origin' } )
@@ -523,12 +540,14 @@
                 ballX = 20 + PAD_W;
                 ballVX = -ballVX * 1.03;
                 ballVY += ( ballY - ( playerY + PAD_H / 2 ) ) * 0.06;
+                playSfx( AUDIO_URLS.pongHit, 0.35 );
             }
             // Right paddle collision
             if ( ballVX > 0 && ballX >= canvas.width - 20 - PAD_W && ballY >= cpuY && ballY <= cpuY + PAD_H ) {
                 ballX = canvas.width - 20 - PAD_W;
                 ballVX = -ballVX * 1.03;
                 ballVY += ( ballY - ( cpuY + PAD_H / 2 ) ) * 0.06;
+                playSfx( AUDIO_URLS.pongHit, 0.35 );
             }
 
             // Score
@@ -1098,6 +1117,7 @@
                 life: 60,
             } );
             fireCooldown = 8;
+            playSfx( AUDIO_URLS.asteroidsShoot, 0.4 );
         }
 
         function onKey( e ) {

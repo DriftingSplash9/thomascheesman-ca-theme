@@ -1,37 +1,90 @@
 # Audio credits
 
-Theme-bundled audio in this directory. License terms below; both
-files are free for use with attribution.
+Theme-bundled audio in this directory. License terms below; every
+file is free for use with attribution. Attribution markup that
+must accompany each file is reproduced verbatim where each clip
+is played in the running site.
 
-## pacman-startup.mp3 — arcade startup ding
+---
+
+## pacman-startup.mp3 — Pac-Man modal startup ding
 
 - Source file: `lucadialessandro-arcade-fx-288597.mp3`
 - Author: Luca Di Alessandro
-- Provider: Pixabay — https://pixabay.com/sound-effects/
-- Item: https://pixabay.com/sound-effects/arcade-fx-288597/
-- Required attribution (HTML):
+- Provider: Pixabay — https://pixabay.com/sound-effects/arcade-fx-288597/
+- Plays once when the Pac-Man modal opens
+- Attribution markup:
 
 ```
 Sound Effect by <a href="https://pixabay.com/users/lucadialessandro-25927643/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=288597">Luca Di Alessandro</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=288597">Pixabay</a>
 ```
 
-## pacman-loop.mp3 — gameplay loop
+## pacman-loop.mp3 — Pac-Man gameplay background loop
 
 - Source file: `freesound_community-playing-pac-man-6783.mp3`
-- Author: freesound.org community contributor (file id 6783)
-- Provider: Pixabay (via freesound community) — original page:
-  https://pixabay.com/sound-effects/playing-pac-man-6783/
-- Required attribution (HTML):
+- Author: freesound.org community contributor (Pixabay item 6783)
+- Provider: Pixabay — https://pixabay.com/sound-effects/playing-pac-man-6783/
+- Plays on `loop: true` for the duration of the Pac-Man modal
+- Attribution markup:
 
 ```
 Sound Effect from <a href="https://pixabay.com/sound-effects/playing-pac-man-6783/">freesound community on Pixabay</a>
 ```
 
-## Where the attribution is rendered
+---
 
-Both credits are shown as a small footer line inside the Pac-Man
-modal (`.tc-pacman__credits` in `assets/css/drawer-engine.css`,
-built in `playPacman()` in `assets/js/drawer-engine.js`).
+## asteroids-shoot.mp3 — Asteroids weapon fire
 
-If either source file is replaced, update both this CREDITS file
-and the link/text in `playPacman()` to keep attribution honest.
+- Source file: `lucadialessandro-arcade-fx-288597 (1).mp3`
+  (same author as the Pac-Man ding; a different upload)
+- Author: Luca Di Alessandro
+- Provider: Pixabay
+- Plays each time the Asteroids ship fires a bullet
+- Attribution markup:
+
+```
+Sound Effect by <a href="https://pixabay.com/users/lucadialessandro-25927643/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=288597">Luca Di Alessandro</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=288597">Pixabay</a>
+```
+
+## pong-hit.mp3 — Pong paddle hit
+
+- Source file: `freesound_community-071658_pongwav-93028.mp3`
+- Author: freesound.org community contributor (Pixabay item 93028)
+- Provider: Pixabay
+- Plays each time the ball hits a paddle
+- Attribution markup:
+
+```
+Sound Effect by <a href="https://pixabay.com/users/freesound_community-46691455/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=93028">freesound_community</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=93028">Pixabay</a>
+```
+
+---
+
+## combine-whoosh.mp3 — drawer combine SFX
+
+- Source file: `dragon-studio-whoosh-cinematic-376875.mp3`
+- Author: DRAGON-STUDIO
+- Provider: Pixabay — https://pixabay.com/sound-effects/whoosh-cinematic-376875/
+- Plays each time a `combine` interaction fires in the secret
+  drawer (screwdriver+screw, banana+tape, etc.). Interactions can
+  opt out by setting `silent: true` on the interaction definition
+  — e.g. for moments that ship their own audio (the Faberge reveal
+  is a `video:` action and never hits this code path anyway).
+- Attribution markup:
+
+```
+Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=376875">DRAGON-STUDIO</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=376875">Pixabay</a>
+```
+
+---
+
+## Where attribution is rendered
+
+The Pac-Man modal carries an inline credit line (`.tc-pacman__credits`)
+that points at the three Pac-Man / arcade sources. Pong, Asteroids,
+and the drawer-combine whoosh do not have a dedicated UI footer
+yet; if/when one lands, the markup above should be copied verbatim
+to satisfy the licenses.
+
+If any source file is replaced, update this CREDITS file and the
+relevant rendered attribution in lockstep.

@@ -187,6 +187,13 @@ function tc_ventures_enqueue_scripts() {
         'tcDeskGames',
         array(
             'scoresUrl' => esc_url_raw( rest_url( 'tc-games/v1/scores' ) ),
+            // Per-game SFX. Played inline inside the game loops via a
+            // small playSfx() helper at the top of desk-games.js. See
+            // assets/audio/CREDITS.md for attribution.
+            'audio' => array(
+                'pongHit'         => get_stylesheet_directory_uri() . '/assets/audio/pong-hit.mp3?ver=' . rawurlencode( wp_get_theme()->get( 'Version' ) ),
+                'asteroidsShoot'  => get_stylesheet_directory_uri() . '/assets/audio/asteroids-shoot.mp3?ver=' . rawurlencode( wp_get_theme()->get( 'Version' ) ),
+            ),
             // Cache-buster for the lazy-loaded desk-pinball.js; reads
             // the same Version: header that cache-busts every other
             // CSS/JS handle, so a single style.css version bump
@@ -310,11 +317,16 @@ function tc_ventures_enqueue_scripts() {
                 // first frame after opening already has art behind it.
                 // Must match `start` in drawer-puzzle.json (junk-clean).
                 'junkClean' => wp_get_attachment_image_url( 3660, 'full' ),
-                // Pac-Man modal audio. Theme-bundled rather than WP media,
-                // so the files ship with the deploy and need no library
-                // upload. See assets/audio/CREDITS.md for attribution.
-                'pacmanStartup' => get_stylesheet_directory_uri() . '/assets/audio/pacman-startup.mp3?ver=' . rawurlencode( $tc_theme_ver ),
-                'pacmanLoop'    => get_stylesheet_directory_uri() . '/assets/audio/pacman-loop.mp3?ver=' . rawurlencode( $tc_theme_ver ),
+                // Theme-bundled audio. Files ship with the deploy
+                // (assets/audio/) and need no media-library upload.
+                // See assets/audio/CREDITS.md for attribution.
+                'pacmanStartup'  => get_stylesheet_directory_uri() . '/assets/audio/pacman-startup.mp3?ver=' . rawurlencode( $tc_theme_ver ),
+                'pacmanLoop'     => get_stylesheet_directory_uri() . '/assets/audio/pacman-loop.mp3?ver=' . rawurlencode( $tc_theme_ver ),
+                // Whoosh played on every drawer combine (screwdriver+
+                // screw, banana+tape, etc.). The Faberge reveal is a
+                // `video:` action, not a combine, so it plays its own
+                // audio independently.
+                'combineWhoosh'  => get_stylesheet_directory_uri() . '/assets/audio/combine-whoosh.mp3?ver=' . rawurlencode( $tc_theme_ver ),
             ),
             'engineUrl'    => get_stylesheet_directory_uri()
                 . '/assets/js/drawer-engine.js?ver=' . rawurlencode( $tc_theme_ver ),

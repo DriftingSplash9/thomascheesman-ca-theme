@@ -526,12 +526,31 @@ window.TCDrawerEngine = ( function () {
     // Fire an interaction: run its actions, mark once-fired, persist.
     function fire( it ) {
         if ( it.once && it.id && W.done.indexOf( it.id ) === -1 ) W.done.push( it.id );
+        // Combine-whoosh — every drag-onto-target combine gets a
+        // cinematic swoosh by default (DRAGON-STUDIO via Pixabay).
+        // Interactions can opt out with `silent: true` for moments
+        // that own their own audio (the Faberge reveal video does).
+        if ( it.on === 'combine' && ! it.silent ) playCombineWhoosh();
         runActions( it.do || [] );
         save();
         render();
         // Newly-set flags may have unlocked an `on: 'auto'` rule
         // (e.g. the keys reveal once every chain flag is in).
         sweepAutoInteractions();
+    }
+
+    // One Audio per call so overlapping combines don't cut each other
+    // off — the file is small enough that the cost is fine.
+    function playCombineWhoosh() {
+        var url = window.tcSecretDrawer && window.tcSecretDrawer.assets &&
+                  window.tcSecretDrawer.assets.combineWhoosh;
+        if ( ! url ) return;
+        try {
+            var a = new Audio( url );
+            a.volume = 0.35;
+            var p = a.play();
+            if ( p && p.catch ) p.catch( function () {} );
+        } catch ( e ) {}
     }
 
     // Walk the interactions list and fire any `on: 'auto'` whose
