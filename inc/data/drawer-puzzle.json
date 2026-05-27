@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "_comment": "Phase 4 — the real Secret Drawer puzzle. Source of truth: Secret-Drawer-Items (NEW2).docx + Secret-Drawer-Playbook.docx (off-repo, on Thomas's Desktop). Background: real photos of Thomas's actual drawer (meme stickers baked in as permanent flavor). Two view states (`junk-*` wide top-down vs `secret-*` close-up of the recessed compartments) × two dust states (clean / dusty) = four surfaces. The wide junk view is the start; chain 8 (padlock) gates the transition to the secret view. Every puzzle item is an engine overlay placed on top. Chains land in commit-sized batches; each chain commit bumps the theme version. The engine's full action-verb surface is documented in the docblock of drawer-engine.js — Phase 4 adds: `video`, `fullscreen`, `passcode`, and `require` (interaction-level flag preconditions). Object coordinates are placeholders until the ?author-mode layout pass; the layout commit lands at the end of Phase 4.",
+  "_comment": "Phase 4 — the real Secret Drawer puzzle. Source of truth: Secret-Drawer-Items (NEW2).docx + Secret-Drawer-Playbook.docx (off-repo, on Thomas's Desktop). Background: real photos of Thomas's actual drawer (meme stickers baked in as permanent flavor). Two view states (`junk-*` wide top-down vs `secret-*` close-up of the recessed compartments) × two dust states (clean / dusty) = four surfaces. The wide junk view is the start; chain 8 (padlock) gates the transition to the secret view. Every puzzle item is an engine overlay placed on top. Chains land in commit-sized batches; each chain commit bumps the theme version. The engine's full action-verb surface is documented in the docblock of drawer-engine.js — Phase 4 adds: `video`, `fullscreen`, `passcode`, and `require` (interaction-level flag preconditions). Coordinates were placed in ?author mode and baked back here as the layout pass for each chain batch.",
 
   "_chains": {
     "0-todo":       "You Got This notebook → click → to-do clue (Find Ring · Tidy drawer · Dust + scribbled notes)",
@@ -22,7 +22,7 @@
     "todo-notebook": {
       "name": "You Got This notebook",
       "media": 3632,
-      "x": 50, "y": 28, "w": 18, "rot": -2,
+      "x": 32.3, "y": 28.8, "w": 15.9, "rot": -2,
       "state": "shown",
       "hint": "the to-do list"
     },
@@ -30,14 +30,14 @@
     "screw": {
       "name": "loose screw",
       "media": 3690,
-      "x": 50, "y": 50, "w": 6, "rot": 0,
+      "x": 64.2, "y": 25, "w": 3.6, "rot": 0,
       "state": "shown",
       "hint": "this looks loose"
     },
     "screwdriver": {
       "name": "multi-bit screwdriver",
       "media": 3609,
-      "x": 50, "y": 50, "w": 16, "rot": 0,
+      "x": 52.7, "y": 63.3, "w": 27.2, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "for tightening things"
@@ -45,7 +45,7 @@
     "green-duster": {
       "name": "green duster",
       "media": 3683,
-      "x": 50, "y": 50, "w": 14, "rot": 0,
+      "x": 42.4, "y": 61.2, "w": 14, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "green duster"
@@ -53,7 +53,7 @@
     "duck-pin": {
       "name": "lemonade duck pin",
       "media": 3654,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 59, "y": 57.7, "w": 9, "rot": 0,
       "state": "hidden",
       "hint": "got any grapes?"
     },
@@ -61,7 +61,7 @@
     "hulk-no-hammer": {
       "name": "Hulk (unarmed)",
       "media": 3673,
-      "x": 50, "y": 50, "w": 12, "rot": 0,
+      "x": 46.5, "y": 44.3, "w": 16.3, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "missing something"
@@ -69,7 +69,7 @@
     "hulks-hammer": {
       "name": "Hulk's hammer",
       "media": 3670,
-      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "x": 58.3, "y": 31.6, "w": 12.6, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "rebar handle, concrete head"
@@ -77,7 +77,7 @@
     "armed-hulk": {
       "name": "armed Hulk",
       "media": 3657,
-      "x": 50, "y": 50, "w": 12, "rot": 0,
+      "x": 69.6, "y": 50.8, "w": 14.6, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "HULK SMASH"
@@ -85,7 +85,7 @@
     "silver-nugget": {
       "name": "silver nugget",
       "media": 3659,
-      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "x": 29.4, "y": 61.7, "w": 9.5, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "heavy"
@@ -93,7 +93,7 @@
     "rings": {
       "name": "rings",
       "media": 3636,
-      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "x": 62, "y": 41.3, "w": 6.2, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "the precious"
@@ -101,7 +101,7 @@
     "torch-lighter": {
       "name": "iridescent torch lighter",
       "media": 3658,
-      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "x": 32.1, "y": 48.7, "w": 8, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "burns hotter than it looks"
@@ -109,14 +109,14 @@
     "pez": {
       "name": "PEZ dispenser",
       "media": 3641,
-      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "x": 74.6, "y": 46.9, "w": 10.5, "rot": 0,
       "state": "shown",
       "hint": "PEZ"
     },
     "auction-receipt": {
       "name": "auction receipt",
       "media": 3642,
-      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "x": 65.2, "y": 56.6, "w": 12.5, "rot": 0,
       "state": "hidden",
       "hint": "$264,000,000"
     },
@@ -124,7 +124,7 @@
     "mini-pump": {
       "name": "mini air pump",
       "media": 3680,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 42.5, "y": 72.7, "w": 9, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "for inflating things"
@@ -132,7 +132,7 @@
     "duck-small": {
       "name": "rubber duck (small)",
       "media": 3671,
-      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "x": 69.9, "y": 30, "w": 7, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "rubber duck"
@@ -140,7 +140,7 @@
     "duck-mid": {
       "name": "rubber duck (mid)",
       "media": 3672,
-      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "x": 70.5, "y": 32.7, "w": 12.4, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "bigger"
@@ -148,14 +148,14 @@
     "duck-giant": {
       "name": "rubber duck head",
       "media": 3677,
-      "x": 50, "y": 50, "w": 18, "rot": 0,
+      "x": 79.1, "y": 57.2, "w": 10.1, "rot": 27,
       "state": "hidden",
       "hint": "click."
     },
     "duck-pineapple": {
       "name": "pineapple duck",
       "media": 3686,
-      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "x": 69.1, "y": 26.1, "w": 8.5, "rot": 0,
       "state": "shown",
       "hint": "?"
     }
@@ -165,7 +165,7 @@
   "zones": {
 
     "dust-spot": {
-      "x": 80, "y": 22, "w": 18, "h": 16,
+      "x": 80.2, "y": 23.4, "w": 18, "h": 16,
       "state": "hidden",
       "hint": "dust"
     }
