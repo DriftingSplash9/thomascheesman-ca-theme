@@ -87,6 +87,12 @@
  *                   volume, close. Only one stream plays at a time
  *                   — calling `stream:` again hard-cuts to the new
  *                   station. Used by the Bluetooth speaker channels.
+ *   pacman:true   — open the desk arcade's Pac-Man on a modal canvas
+ *                   inside the drawer. Reuses the game loop exposed
+ *                   by desk-games.js (window.TCDeskGames.pacman). On
+ *                   game over, offers play-again or close. If desk-
+ *                   games.js isn't loaded, falls back to a clue card
+ *                   pointing the player at the toad on the desk.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -532,6 +538,7 @@ window.TCDrawerEngine = ( function () {
             if ( a.choice )     showChoice( a.choice );
             if ( a.youtube )    playYoutube( a.youtube );
             if ( a.stream )     playStream( a.stream );
+            if ( a.pacman )     playPacman();
         }
     }
 
@@ -1190,6 +1197,102 @@ window.TCDrawerEngine = ( function () {
         void card.offsetWidth;
         card.classList.add( 'is-in' );
         paint();
+    }
+
+    // -----------------------------------------------------------------
+    // Pac-Man modal (chain 16 — the mini arcade). Mounts a canvas
+    // inside the overlay and hands it to desk-games.js's startPacman
+    // via window.TCDeskGames.pacman. Reuses the existing game loop
+    // wholesale; this just wraps it in our modal aesthetic.
+    function playPacman() {
+        if ( ! overlay ) return;
+        var starter = window.TCDeskGames && window.TCDeskGames.pacman;
+        if ( typeof starter !== 'function' ) {
+            // desk-games.js loads site-wide, but be defensive — if for
+            // any reason it's missing, point the player at the desk arcade.
+            showClue( "The arcade is sleeping.\n\n(Click the toad on the desk-menu\nto wake the full Pac-Man.)" );
+            return;
+        }
+
+        var card = document.createElement( 'div' );
+        card.className = 'tc-pacman';
+        card.setAttribute( 'role', 'dialog' );
+        card.setAttribute( 'aria-modal', 'true' );
+
+        var stage = document.createElement( 'div' );
+        stage.className = 'tc-pacman__stage';
+
+        var hud = document.createElement( 'div' );
+        hud.className = 'tc-pacman__hud';
+        hud.innerHTML =
+            '<span class="tc-pacman__title">PAC-MAN</span>' +
+            '<span class="tc-pacman__score">score <b>0</b></span>' +
+            '<button type="button" class="tc-pacman__close" aria-label="close">✕</button>';
+        stage.appendChild( hud );
+
+        var canvas = document.createElement( 'canvas' );
+        canvas.className = 'tc-pacman__canvas';
+        canvas.tabIndex = 0;
+        stage.appendChild( canvas );
+
+        var controls = document.createElement( 'div' );
+        controls.className = 'tc-pacman__controls';
+        controls.innerHTML = '← ↑ ↓ → — eat the dots';
+        stage.appendChild( controls );
+
+        var gameover = document.createElement( 'div' );
+        gameover.className = 'tc-pacman__gameover';
+        gameover.hidden = true;
+        stage.appendChild( gameover );
+
+        card.appendChild( stage );
+
+        var scoreEl = hud.querySelector( '.tc-pacman__score b' );
+        var closeBtn = hud.querySelector( '.tc-pacman__close' );
+        var stopFn = null;
+
+        function teardown() {
+            if ( stopFn ) { try { stopFn(); } catch ( e ) {} stopFn = null; }
+            card.classList.remove( 'is-in' );
+            document.removeEventListener( 'keydown', onKey, true );
+            setTimeout( function () { if ( card.parentNode ) card.remove(); }, 240 );
+        }
+        function onKey( e ) {
+            // Esc closes the modal; everything else goes to the game.
+            if ( e.key === 'Escape' || e.key === 'Esc' ) {
+                e.stopImmediatePropagation();
+                teardown();
+            }
+        }
+        closeBtn.addEventListener( 'click', teardown );
+        document.addEventListener( 'keydown', onKey, true );
+
+        overlay.appendChild( card );
+        void card.offsetWidth;
+        card.classList.add( 'is-in' );
+
+        stopFn = starter( canvas, {
+            onScore: function ( n ) { scoreEl.textContent = String( n ); },
+            onGameOver: function ( score, msg ) {
+                gameover.innerHTML =
+                    '<div class="tc-pacman__msg">' + ( msg ? String( msg ) : 'game over' ) + '</div>' +
+                    '<div class="tc-pacman__final">final score: <b>' + score + '</b></div>' +
+                    '<div class="tc-pacman__btns">' +
+                        '<button type="button" class="tc-pacman__btn tc-pacman__again">play again</button>' +
+                        '<button type="button" class="tc-pacman__btn tc-pacman__quit">close</button>' +
+                    '</div>';
+                gameover.hidden = false;
+                gameover.querySelector( '.tc-pacman__again' ).addEventListener( 'click', function () {
+                    teardown();
+                    setTimeout( playPacman, 220 );
+                } );
+                gameover.querySelector( '.tc-pacman__quit' ).addEventListener( 'click', teardown );
+            }
+        } );
+
+        // Focus the canvas so the game's document-level key handler
+        // doesn't fight with any other focused control.
+        try { canvas.focus(); } catch ( e ) {}
     }
 
     // =================================================================

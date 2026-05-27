@@ -1787,6 +1787,19 @@
         };
     }
 
+    // Expose individual game starters so other UIs (e.g. the secret-
+    // drawer arcade interaction) can mount them onto their own canvas
+    // without having to copy the desk-menu drawer markup. Each takes
+    // (canvas, hooks) and returns a stop function — same contract the
+    // desk drawer already uses internally.
+    window.TCDeskGames = window.TCDeskGames || {};
+    window.TCDeskGames.pacman    = startPacman;
+    window.TCDeskGames.snake     = startSnake;
+    window.TCDeskGames.pong      = startPong;
+    window.TCDeskGames.asteroids = startAsteroids;
+    window.TCDeskGames.brickles  = startBrickles;
+    window.TCDeskGames.solitaire = startSolitaire;
+
     if ( doc.readyState === 'loading' ) {
         doc.addEventListener( 'DOMContentLoaded', init );
     } else {

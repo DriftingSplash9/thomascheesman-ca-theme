@@ -689,7 +689,7 @@
       "once": true,
       "do": [
         { "effect": "flash" },
-        { "clue": "Held to the Ring, the metal whispers:\n\n  \"one PEZ dispenser to rule them all\"" },
+        { "clue": "Held to the Ring, the metal whispers two things:\n\n  \"one PEZ dispenser to rule them all\"\n  \"a banana, taped, where there once was none\"\n\n(Two clues. Two ways out.)" },
         { "remove": ["torch-lighter"] },
         { "flag": "torch-clue-given" }
       ]
@@ -1169,21 +1169,22 @@
       ]
     },
     {
-      "id": "pacman-play",
+      "id": "pacman-first-play",
+      "_comment": "First click on the arcade — drops the coins (they're the wallet-collection chain link) AND boots a real Pac-Man game. Coins reveal only happens once; subsequent clicks fall through to pacman-replay below for pure play.",
       "on": "click", "object": "pacman-arcade",
       "once": true,
       "do": [
         { "effect": "flash" },
-        { "clue": "*wakka wakka*\n\nThe mini arcade boots up. You play a quick round —\na handful of coins drop out the side." },
         { "reveal": ["coins"] },
-        { "flag": "pacman-played" }
+        { "flag": "pacman-played" },
+        { "pacman": true }
       ]
     },
     {
       "id": "pacman-replay",
       "on": "click", "object": "pacman-arcade",
       "do": [
-        { "clue": "*wakka wakka*\n\nThe arcade hums. (The full Pac-Man lives over\nin the desk arcade.)" }
+        { "pacman": true }
       ]
     },
     {

@@ -732,3 +732,104 @@
     .tc-hangman__paper { transition: none; }
     .tc-hangman__paper { transform: rotate(-0.6deg); }
 }
+
+/* ----------------------------------------------------------------
+   PAC-MAN MODAL — `pacman:true` action. CRT phosphor aesthetic to
+   match the desk arcade. Reuses desk-games.js's startPacman game
+   loop wholesale; we just mount the canvas + HUD. */
+.tc-pacman {
+    position: absolute;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.88);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+}
+.tc-pacman.is-in { opacity: 1; }
+.tc-pacman__stage {
+    background: #000;
+    border: 2px solid #2050ff;
+    border-radius: 6px;
+    padding: 12px 14px 14px;
+    color: #ffe200;
+    font-family: ui-monospace, "Menlo", "Consolas", monospace;
+    box-shadow: 0 0 32px rgba(32, 80, 255, 0.45),
+                0 18px 50px rgba(0, 0, 0, 0.7);
+    max-width: 96vw;
+    max-height: 96vh;
+    overflow: auto;
+}
+.tc-pacman__hud {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+.tc-pacman__title { font-size: 1.1rem; font-weight: bold; letter-spacing: 0.1em; }
+.tc-pacman__score { margin-left: auto; color: #fff5d0; }
+.tc-pacman__score b { color: #ffe200; }
+.tc-pacman__close {
+    appearance: none;
+    background: transparent;
+    border: 1px solid #ffe200;
+    color: #ffe200;
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 2px 9px 3px;
+    font-family: inherit;
+    line-height: 1;
+}
+.tc-pacman__close:hover { background: rgba(255, 226, 0, 0.15); }
+.tc-pacman__canvas {
+    display: block;
+    image-rendering: pixelated;
+    background: #000;
+    /* The game's startPacman sets canvas.width/height directly (14
+       cols × 13 rows × 26px = 364×338). Let the canvas keep its
+       intrinsic pixel size but cap visually to the modal width. */
+    max-width: 100%;
+    height: auto;
+}
+.tc-pacman__controls {
+    text-align: center;
+    margin-top: 8px;
+    color: #80f8ff;
+    font-size: 0.82rem;
+}
+.tc-pacman__gameover {
+    margin-top: 12px;
+    text-align: center;
+    background: rgba(255, 226, 0, 0.06);
+    border: 1px solid rgba(255, 226, 0, 0.35);
+    border-radius: 4px;
+    padding: 12px;
+}
+.tc-pacman__msg   { color: #ff5588; margin-bottom: 4px; font-weight: bold; }
+.tc-pacman__final { color: #fff5d0; margin-bottom: 12px; }
+.tc-pacman__final b { color: #ffe200; }
+.tc-pacman__btns  { display: flex; justify-content: center; gap: 10px; }
+.tc-pacman__btn {
+    appearance: none;
+    cursor: pointer;
+    font: inherit;
+    font-family: ui-monospace, "Menlo", "Consolas", monospace;
+    background: linear-gradient(180deg, #ffe200 0%, #c89a00 100%);
+    border: 1px solid #806000;
+    color: #1a0e07;
+    padding: 7px 14px 8px;
+    font-weight: bold;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+    transition: transform 0.1s ease, filter 0.15s ease;
+}
+.tc-pacman__btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.tc-pacman__btn:active { transform: translateY(1px); }
+@media (prefers-reduced-motion: reduce) {
+    .tc-pacman { transition: none; }
+    .tc-pacman__btn { transition: none; }
+}
