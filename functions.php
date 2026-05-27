@@ -310,6 +310,11 @@ function tc_ventures_enqueue_scripts() {
                 // first frame after opening already has art behind it.
                 // Must match `start` in drawer-puzzle.json (junk-clean).
                 'junkClean' => wp_get_attachment_image_url( 3660, 'full' ),
+                // Pac-Man modal audio. Theme-bundled rather than WP media,
+                // so the files ship with the deploy and need no library
+                // upload. See assets/audio/CREDITS.md for attribution.
+                'pacmanStartup' => get_stylesheet_directory_uri() . '/assets/audio/pacman-startup.mp3?ver=' . rawurlencode( $tc_theme_ver ),
+                'pacmanLoop'    => get_stylesheet_directory_uri() . '/assets/audio/pacman-loop.mp3?ver=' . rawurlencode( $tc_theme_ver ),
             ),
             'engineUrl'    => get_stylesheet_directory_uri()
                 . '/assets/js/drawer-engine.js?ver=' . rawurlencode( $tc_theme_ver ),

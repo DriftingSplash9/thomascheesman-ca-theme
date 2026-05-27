@@ -1283,14 +1283,53 @@ window.TCDrawerEngine = ( function () {
         gameover.hidden = true;
         stage.appendChild( gameover );
 
+        // Tiny attribution line at the bottom of the modal — Pixabay and
+        // freesound.org both require credit when their assets ship in a
+        // public project. Keeps the licenses honest without taking over
+        // the screen.
+        var credits = document.createElement( 'div' );
+        credits.className = 'tc-pacman__credits';
+        credits.innerHTML =
+            'music: <a href="https://pixabay.com/users/lucadialessandro-25927643/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=music&amp;utm_content=288597" target="_blank" rel="noopener">Luca Di Alessandro</a> &middot; ' +
+            '<a href="https://freesound.org/" target="_blank" rel="noopener">freesound.org</a> &middot; ' +
+            '<a href="https://pixabay.com/" target="_blank" rel="noopener">Pixabay</a>';
+        stage.appendChild( credits );
+
         card.appendChild( stage );
 
         var scoreEl = hud.querySelector( '.tc-pacman__score b' );
         var closeBtn = hud.querySelector( '.tc-pacman__close' );
         var stopFn = null;
 
+        // Audio: a short startup ding (Luca Di Alessandro arcade SFX)
+        // followed by the gameplay loop (freesound community). Both are
+        // theme-bundled at /assets/audio/. Volume kept low — the game is
+        // about visuals, not blasting music.
+        var audioCfg = window.tcSecretDrawer && window.tcSecretDrawer.assets;
+        var startupAudio = null;
+        var loopAudio    = null;
+        if ( audioCfg && audioCfg.pacmanStartup ) {
+            startupAudio = new Audio( audioCfg.pacmanStartup );
+            startupAudio.volume = 0.5;
+        }
+        if ( audioCfg && audioCfg.pacmanLoop ) {
+            loopAudio = new Audio( audioCfg.pacmanLoop );
+            loopAudio.loop = true;
+            loopAudio.volume = 0.3;
+        }
+
+        function stopAudio() {
+            [ startupAudio, loopAudio ].forEach( function ( a ) {
+                if ( ! a ) return;
+                try { a.pause(); a.src = ''; } catch ( e ) {}
+            } );
+            startupAudio = null;
+            loopAudio    = null;
+        }
+
         function teardown() {
             if ( stopFn ) { try { stopFn(); } catch ( e ) {} stopFn = null; }
+            stopAudio();
             card.classList.remove( 'is-in' );
             document.removeEventListener( 'keydown', onKey, true );
             setTimeout( function () { if ( card.parentNode ) card.remove(); }, 240 );
@@ -1331,6 +1370,32 @@ window.TCDrawerEngine = ( function () {
         // Focus the canvas so the game's document-level key handler
         // doesn't fight with any other focused control.
         try { canvas.focus(); } catch ( e ) {}
+
+        // Kick off audio: startup ding, then handoff to the looping
+        // bg music when the ding ends. play() returns a Promise that
+        // rejects on autoplay-policy block — Chrome may refuse without
+        // a user gesture. The arcade click that opened the modal IS a
+        // user gesture so it usually passes, but we swallow failures
+        // so a silent game isn't an error.
+        if ( startupAudio ) {
+            startupAudio.addEventListener( 'ended', function () {
+                if ( loopAudio ) {
+                    var lp = loopAudio.play();
+                    if ( lp && lp.catch ) lp.catch( function () {} );
+                }
+            }, { once: true } );
+            var sp = startupAudio.play();
+            if ( sp && sp.catch ) sp.catch( function () {
+                // Skip the ding, jump straight to the loop
+                if ( loopAudio ) {
+                    var lp = loopAudio.play();
+                    if ( lp && lp.catch ) lp.catch( function () {} );
+                }
+            } );
+        } else if ( loopAudio ) {
+            var lp = loopAudio.play();
+            if ( lp && lp.catch ) lp.catch( function () {} );
+        }
     }
 
     // =================================================================

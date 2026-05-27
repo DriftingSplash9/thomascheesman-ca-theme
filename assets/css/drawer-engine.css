@@ -855,6 +855,19 @@
 }
 .tc-pacman__btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .tc-pacman__btn:active { transform: translateY(1px); }
+.tc-pacman__credits {
+    margin-top: 10px;
+    text-align: center;
+    color: rgba(255, 245, 208, 0.4);
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+}
+.tc-pacman__credits a {
+    color: rgba(255, 245, 208, 0.5);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+.tc-pacman__credits a:hover { color: rgba(255, 245, 208, 0.85); }
 @media (prefers-reduced-motion: reduce) {
     .tc-pacman { transition: none; }
     .tc-pacman__btn { transition: none; }
