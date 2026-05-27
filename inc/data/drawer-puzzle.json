@@ -185,7 +185,7 @@
     "rolled-scroll": {
       "name": "rolled scroll",
       "media": 3637,
-      "x": 50, "y": 50, "w": 19.8, "rot": 0,
+      "x": 52.4, "y": 58.5, "w": 19.8, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "tied with twine"
@@ -230,7 +230,7 @@
     "hot-rod": {
       "name": "Hot Wheels hot rod",
       "media": 3645,
-      "x": 57.6, "y": 66.1, "w": 21.8, "rot": 0,
+      "x": 69.4, "y": 57.9, "w": 21.8, "rot": 0,
       "state": "shown",
       "hint": "Daniel's favourite"
     },
@@ -252,7 +252,7 @@
     "eyeglasses": {
       "name": "eyeglasses",
       "media": 3648,
-      "x": 73.1, "y": 79.5, "w": 11, "rot": 0,
+      "x": 72.4, "y": 72.5, "w": 11, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "clear lenses"
@@ -268,7 +268,7 @@
     "sunglasses": {
       "name": "sunglasses",
       "media": 3699,
-      "x": 33.9, "y": 72.3, "w": 17.1, "rot": 0,
+      "x": 34.6, "y": 69.7, "w": 17.1, "rot": 0,
       "state": "hidden",
       "hint": "put them on"
     },
@@ -283,7 +283,7 @@
     "aaa-batteries": {
       "name": "AAA batteries",
       "media": 3618,
-      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "x": 35.1, "y": 48.8, "w": 10, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "two AAA"
@@ -291,7 +291,7 @@
     "car-keys": {
       "name": "car keys",
       "media": 3627,
-      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "x": 27.3, "y": 47, "w": 10, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "keychain with a tiny screwdriver"
@@ -299,14 +299,14 @@
     "iphone": {
       "name": "iPhone",
       "media": 3613,
-      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "x": 40.4, "y": 55.2, "w": 14.3, "rot": 0,
       "state": "shown",
       "hint": "click"
     },
     "toy-train": {
       "name": "toy train",
       "media": 3691,
-      "x": 50, "y": 50, "w": 14, "rot": 0,
+      "x": 51.7, "y": 73.3, "w": 14, "rot": 0,
       "state": "shown",
       "hint": "needs power"
     },
@@ -314,7 +314,7 @@
     "sticky-notes": {
       "name": "red sticky notes",
       "media": 3623,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 77.4, "y": 72.5, "w": 14.8, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "blank pages"
@@ -322,7 +322,7 @@
     "mech-pencil": {
       "name": "mechanical pencil",
       "media": 3620,
-      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "x": 72.5, "y": 44.2, "w": 11, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "click for lead"
@@ -331,14 +331,14 @@
     "antique-book": {
       "name": "antique leather book",
       "media": 3649,
-      "x": 50, "y": 50, "w": 13, "rot": 0,
+      "x": 64.6, "y": 65.2, "w": 13, "rot": 0,
       "state": "shown",
       "hint": "leather cover, no title"
     },
     "open-bible": {
       "name": "open Bible",
       "media": 3650,
-      "x": 50, "y": 50, "w": 15, "rot": 0,
+      "x": 53.2, "y": 32.7, "w": 23.5, "rot": 0,
       "state": "hidden",
       "hint": "open"
     }
