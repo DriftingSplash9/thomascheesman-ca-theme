@@ -124,6 +124,7 @@ window.TCDrawerEngine = ( function () {
         if ( ! booted ) {
             W = loadProgress() || freshWorld();
             if ( AUTHOR ) applyAuthorLayout();
+            applyUserPositions();
             booted = true;
         }
         applySurface();
@@ -367,8 +368,29 @@ window.TCDrawerEngine = ( function () {
                 } );
             }
         }
-        if ( it ) { fire( it ); }
-        else { render(); } // no match → snap back home
+        if ( it ) {
+            fire( it );
+        } else {
+            // No interaction matched — honour the player's intent
+            // and leave the object where they dropped it. They were
+            // probably moving it out of the way to reveal what's
+            // buried underneath. Persist the new coords in W so the
+            // nudge survives a reload. Soft-clamp keeps the element
+            // grabbable if a drop wandered off the stage edge.
+            var def = P.objects[ id ];
+            if ( def ) {
+                var lx = parseFloat( el.style.left );
+                var ly = parseFloat( el.style.top );
+                if ( ! isNaN( lx ) ) def.x = Math.max( -3, Math.min( 103, lx ) );
+                if ( ! isNaN( ly ) ) def.y = Math.max( -3, Math.min( 103, ly ) );
+                W.userPositions = W.userPositions || {};
+                W.userPositions[ id ] = { x: def.x, y: def.y };
+                save();
+                // Re-paint the inline style in case the clamp moved it.
+                el.style.left = def.x + '%';
+                el.style.top  = def.y + '%';
+            }
+        }
     }
 
     // The other shown object/zone the dragged element overlaps MOST.
@@ -1125,6 +1147,24 @@ window.TCDrawerEngine = ( function () {
         if ( ! saved ) return;
         applyCoords( saved.objects, P.objects );
         applyCoords( saved.zones, P.zones );
+    }
+
+    // Player-side position overrides. When a player nudges an object
+    // out of the way and the drop doesn't match any interaction, the
+    // new x/y is stashed in W.userPositions (per-puzzle-version). On
+    // every boot we splice those back into P so the arrangement
+    // survives a reload. Distinct from the author layout cache,
+    // which is editor state and lives at a different LS key.
+    function applyUserPositions() {
+        if ( ! W || ! W.userPositions || ! P.objects ) return;
+        var up = W.userPositions;
+        for ( var id in up ) {
+            if ( ! up.hasOwnProperty( id ) ) continue;
+            var dst = P.objects[ id ];
+            if ( ! dst ) continue;
+            if ( typeof up[ id ].x === 'number' ) dst.x = up[ id ].x;
+            if ( typeof up[ id ].y === 'number' ) dst.y = up[ id ].y;
+        }
     }
     function applyCoords( src, dst ) {
         if ( ! src || ! dst ) return;
