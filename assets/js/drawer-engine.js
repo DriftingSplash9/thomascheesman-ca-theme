@@ -231,7 +231,12 @@ window.TCDrawerEngine = ( function () {
 
     function buildObject( id, def ) {
         var el = document.createElement( 'div' );
-        el.className = 'tc-do' + ( def.draggable ? ' is-draggable' : '' );
+        // Every object is draggable unless the def explicitly opts out
+        // with `draggable: false`. Players need to nudge clutter aside
+        // to find what's buried, and the engine still treats a
+        // press-without-movement as a click — so the click→clue flow
+        // for "flavour-only" items keeps working.
+        el.className = 'tc-do' + ( def.draggable === false ? '' : ' is-draggable' );
         el.dataset.id = id;
         place( el, def );
 
@@ -300,7 +305,10 @@ window.TCDrawerEngine = ( function () {
             if ( e.button != null && e.button !== 0 ) return;
             startX = e.clientX; startY = e.clientY;
             moved = false;
-            dragging = !! def.draggable;
+            // Draggable unless explicitly opted out. A press without
+            // enough movement still falls through to handleClick on
+            // pointerup, so click→clue interactions remain intact.
+            dragging = def.draggable !== false;
             if ( dragging ) {
                 el.setPointerCapture( e.pointerId );
                 el.classList.add( 'is-dragging' );

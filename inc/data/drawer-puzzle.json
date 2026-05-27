@@ -938,30 +938,102 @@
     {
       "id": "spin-top",
       "on": "click", "object": "spinning-top",
+      "require": { "none": ["top-decided"] },
       "do": [
-        { "clue": "*you give it a flick*\n\nIt spins, catches the light, throws iridescence\nacross the drawer for a moment — then slows,\nsettles. Some toys outlast their owners." }
+        { "choice": {
+            "prompt": "*you give it a flick*\n\nIt spins, catches the light, throws iridescence across the drawer for a moment — then slows, settles.\n\nSome toys outlast their owners.\n\nKeep it, or to the toy bin?",
+            "options": [
+              { "label": "keep (sentimental)", "do": [{ "flag": "top-decided" }, { "flag": "top-kept" }] },
+              { "label": "to the toy bin", "do": [
+                { "remove": ["spinning-top"] },
+                { "flag": "top-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "top-kept-look",
+      "on": "click", "object": "spinning-top",
+      "require": { "all": ["top-kept"] },
+      "do": [
+        { "clue": "The top spins again — same iridescence." }
       ]
     },
     {
       "id": "hold-jet",
       "on": "click", "object": "toy-jet",
+      "require": { "none": ["jet-decided"] },
       "do": [
-        { "clue": "A little metal jet. Weightier than it looks.\nThe kind of toy that survives." }
+        { "choice": {
+            "prompt": "A little metal jet. Weightier than it looks.\nThe kind of toy that survives.\n\nKeep it, or to the toy bin?",
+            "options": [
+              { "label": "keep (sentimental)", "do": [{ "flag": "jet-decided" }, { "flag": "jet-kept" }] },
+              { "label": "to the toy bin", "do": [
+                { "remove": ["toy-jet"] },
+                { "flag": "jet-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "jet-kept-look",
+      "on": "click", "object": "toy-jet",
+      "require": { "all": ["jet-kept"] },
+      "do": [
+        { "clue": "The toy jet. Still here." }
       ]
     },
 
     {
       "id": "marble-blue",
       "on": "click", "object": "marble-1",
+      "require": { "none": ["marble-blue-decided"] },
       "do": [
-        { "clue": "A swirl of blue-green glass. Picks up\nthe drawer's brass light. Cool to the touch." }
+        { "choice": {
+            "prompt": "A swirl of blue-green glass. Picks up the drawer's brass light. Cool to the touch.\n\nKeep it, or to the toy bin?",
+            "options": [
+              { "label": "keep", "do": [{ "flag": "marble-blue-decided" }, { "flag": "marble-blue-kept" }] },
+              { "label": "to the toy bin", "do": [
+                { "remove": ["marble-1"] },
+                { "flag": "marble-blue-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "marble-blue-kept-look",
+      "on": "click", "object": "marble-1",
+      "require": { "all": ["marble-blue-kept"] },
+      "do": [
+        { "clue": "Blue marble. Still here." }
       ]
     },
     {
       "id": "marble-warm",
       "on": "click", "object": "marble-2",
+      "require": { "none": ["marble-warm-decided"] },
       "do": [
-        { "clue": "A swirl of warm orange. Smaller than the\nother, somehow heavier." }
+        { "choice": {
+            "prompt": "A swirl of warm orange. Smaller than the other, somehow heavier.\n\nKeep it, or to the toy bin?",
+            "options": [
+              { "label": "keep", "do": [{ "flag": "marble-warm-decided" }, { "flag": "marble-warm-kept" }] },
+              { "label": "to the toy bin", "do": [
+                { "remove": ["marble-2"] },
+                { "flag": "marble-warm-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "marble-warm-kept-look",
+      "on": "click", "object": "marble-2",
+      "require": { "all": ["marble-warm-kept"] },
+      "do": [
+        { "clue": "Warm marble. Still here." }
       ]
     },
 
@@ -994,36 +1066,117 @@
     {
       "id": "wear-yin-yang",
       "on": "click", "object": "yin-yang-bracelet",
+      "require": { "none": ["yin-yang-decided"] },
       "do": [
-        { "clue": "You slip the bracelet on.\n\nIt was a gift. The giver wanted you to have\nsomething small to carry around with you.\n\n(Thank you.)" }
+        { "choice": {
+            "prompt": "You hold the bracelet up.\nIt was a gift — the giver wanted you to carry something small.\n\nWear it (carry with you), or leave it in the drawer?",
+            "options": [
+              { "label": "wear it", "do": [
+                { "clue": "On the wrist. Quiet weight. Thank you." },
+                { "remove": ["yin-yang-bracelet"] },
+                { "flag": "yin-yang-decided" },
+                { "flag": "yin-yang-worn" }
+              ]},
+              { "label": "leave it", "do": [
+                { "flag": "yin-yang-decided" },
+                { "flag": "yin-yang-kept" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "yin-yang-kept-look",
+      "on": "click", "object": "yin-yang-bracelet",
+      "require": { "all": ["yin-yang-kept"] },
+      "do": [
+        { "clue": "The bracelet, still here. A gift waiting to be\nput on." }
       ]
     },
     {
       "id": "kids-camera-snap",
       "on": "click", "object": "kids-camera",
+      "require": { "none": ["camera-decided"] },
       "do": [
-        { "clue": "*click*\n\nA random photo: blurry, off-kilter, a finger\nover half the lens. Definitely taken by a kid.\n\n(They're the best photos in the house.)" }
+        { "choice": {
+            "prompt": "*click*\n\nA random photo: blurry, off-kilter, a finger over half the lens. Definitely taken by a kid.\n\nKeep it, or to the toy bin?",
+            "options": [
+              { "label": "keep", "do": [{ "flag": "camera-decided" }, { "flag": "camera-kept" }] },
+              { "label": "to the toy bin", "do": [
+                { "remove": ["kids-camera"] },
+                { "flag": "camera-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "kids-camera-kept",
+      "on": "click", "object": "kids-camera",
+      "require": { "all": ["camera-kept"] },
+      "do": [
+        { "clue": "*click*\n\nAnother blurry kid-photo. They're the best\nphotos in the house." }
       ]
     },
     {
       "id": "ganesha-stick",
       "on": "click", "object": "ganesha-sticker",
+      "once": true,
       "do": [
-        { "clue": "Ganesha. Remover of obstacles.\n\nYou stick him on the inside wall of the drawer.\nA small protection for what's hidden here." }
+        { "clue": "Ganesha. Remover of obstacles.\n\nYou peel the backing and stick him on the\ninside wall of the drawer. A small protection\nfor what's hidden here." },
+        { "remove": ["ganesha-sticker"] },
+        { "flag": "ganesha-stuck" }
       ]
     },
     {
       "id": "read-handwritten-note",
       "on": "click", "object": "handwritten-note",
+      "require": { "none": ["note-decided"] },
       "do": [
-        { "clue": "The note unfolds. The handwriting is yours\n(from years ago), but you don't remember\nwriting it. It says, simply:\n\n  \"keep going.\"" }
+        { "choice": {
+            "prompt": "The note unfolds. The handwriting is yours (from years ago), but you don't remember writing it. It says, simply:\n\n  \"keep going.\"\n\nKeep the note, or toss it?",
+            "options": [
+              { "label": "keep", "do": [{ "flag": "note-decided" }, { "flag": "note-kept" }] },
+              { "label": "toss it", "do": [
+                { "remove": ["handwritten-note"] },
+                { "flag": "note-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "note-kept-look",
+      "on": "click", "object": "handwritten-note",
+      "require": { "all": ["note-kept"] },
+      "do": [
+        { "clue": "The note: \"keep going.\"" }
       ]
     },
     {
       "id": "shark-fintastic",
       "on": "click", "object": "support-shark",
+      "require": { "none": ["shark-decided"] },
       "do": [
-        { "clue": "The shark grins up at you.\n\n  \"Always there to remind you,\n   you're fin-tastic.\"\n\n(Keep the note.)" }
+        { "choice": {
+            "prompt": "The shark grins up at you.\n\"Always there to remind you, you're fin-tastic.\"\n\nKeep it, or to the kids' toy bin?",
+            "options": [
+              { "label": "keep", "do": [{ "flag": "shark-decided" }, { "flag": "shark-kept" }] },
+              { "label": "to the toy bin", "do": [
+                { "remove": ["support-shark"] },
+                { "flag": "shark-decided" },
+                { "flag": "shark-binned" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "shark-kept-look",
+      "on": "click", "object": "support-shark",
+      "require": { "all": ["shark-kept"] },
+      "do": [
+        { "clue": "The shark sits in the drawer, fin-tastic." }
       ]
     },
     {
@@ -1036,15 +1189,51 @@
     {
       "id": "bubble-do-not-pop",
       "on": "click", "object": "bubble-bottle",
+      "require": { "none": ["bubbles-decided"] },
       "do": [
-        { "clue": "You twist the cap and dip the wand.\n\nA single bubble drifts up, catches the light,\nrises out of frame. DO NOT POP." }
+        { "choice": {
+            "prompt": "You twist the cap and dip the wand.\n\nA single bubble drifts up, catches the light, rises out of frame. DO NOT POP.\n\nKeep the bottle, or to the toy bin?",
+            "options": [
+              { "label": "keep", "do": [{ "flag": "bubbles-decided" }, { "flag": "bubbles-kept" }] },
+              { "label": "to the toy bin", "do": [
+                { "remove": ["bubble-bottle"] },
+                { "flag": "bubbles-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "bubbles-kept-look",
+      "on": "click", "object": "bubble-bottle",
+      "require": { "all": ["bubbles-kept"] },
+      "do": [
+        { "clue": "The bottle. Half-full. A small temptation." }
       ]
     },
     {
       "id": "solitaire-stub",
       "on": "click", "object": "playing-cards",
+      "require": { "none": ["cards-decided"] },
       "do": [
-        { "clue": "A worn deck. Standard 52.\n\n(Solitaire lives over in the arcade.)" }
+        { "choice": {
+            "prompt": "A worn deck. Standard 52.\n(Solitaire lives over in the desk arcade.)\n\nKeep the deck, or to the toy bin?",
+            "options": [
+              { "label": "keep", "do": [{ "flag": "cards-decided" }, { "flag": "cards-kept" }] },
+              { "label": "to the toy bin", "do": [
+                { "remove": ["playing-cards"] },
+                { "flag": "cards-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "cards-kept-look",
+      "on": "click", "object": "playing-cards",
+      "require": { "all": ["cards-kept"] },
+      "do": [
+        { "clue": "The deck. (Solitaire over at the arcade.)" }
       ]
     },
     {
@@ -1060,8 +1249,11 @@
     {
       "id": "teaspoon-belongs-upstairs",
       "on": "click", "object": "teaspoon",
+      "once": true,
       "do": [
-        { "clue": "A teaspoon. Doesn't belong here — it goes\nupstairs at the coffee cup. (You'll put it back\nat the desk later.)" }
+        { "clue": "A teaspoon. Doesn't belong in this drawer —\nit belongs upstairs at the desk's coffee cup.\n\nYou drop it in the dishwasher on your way." },
+        { "remove": ["teaspoon"] },
+        { "flag": "teaspoon-returned" }
       ]
     },
     {
@@ -1119,6 +1311,36 @@
         { "clue": "You flip the figurine over.\n\nStuck to the base: a small 67 sticker.\n(Worth remembering.)" },
         { "reveal": ["sixty-seven-sticker"] },
         { "flag": "mff-flipped" }
+      ]
+    },
+    {
+      "id": "mff-keep-or-take",
+      "on": "click", "object": "mff",
+      "require": { "all": ["mff-flipped"], "none": ["mff-decided"] },
+      "do": [
+        { "choice": {
+            "prompt": "The middle-finger figurine.\nYou could clip it onto your keychain — a small\nbeautiful objection to carry around.\n\nPut it on the chain?",
+            "options": [
+              { "label": "yes (take it)", "do": [
+                { "clue": "*clip*\n\nOn the keychain. Ready for any occasion." },
+                { "remove": ["mff"] },
+                { "flag": "mff-decided" },
+                { "flag": "mff-taken" }
+              ]},
+              { "label": "no (leave it)", "do": [
+                { "flag": "mff-decided" },
+                { "flag": "mff-kept" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "mff-after-decided",
+      "on": "click", "object": "mff",
+      "require": { "all": ["mff-kept"] },
+      "do": [
+        { "clue": "Just a middle finger.\n(The sticker's already off.)" }
       ]
     },
     {
