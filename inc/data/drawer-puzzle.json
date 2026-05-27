@@ -6,7 +6,8 @@
     "0-todo":       "You Got This notebook → click → to-do clue (Find Ring · Tidy drawer · Dust + scribbled notes)",
     "1-start":      "screwdriver + screw → dust appears → duster clears it → reveals duck pin (Top Prize path). Leaving dust = Golden Egg path.",
     "2-hulk":       "Hulk + hammer → armed Hulk → smash silver nugget → Rings (Find Ring ✓). Torch on Rings → 'one PEZ dispenser to rule them all'. Click PEZ → Auction Receipt ($264M Faberge foreshadow).",
-    "3-duck":       "Mini Pump + small duck → midway duck → giant duck. Click giant duck → fullscreen browser crush. Pineapple duck is a one-liner easter egg."
+    "3-duck":       "Mini Pump + small duck → midway duck → giant duck. Click giant duck → fullscreen browser crush. Pineapple duck is a one-liner easter egg.",
+    "4-scroll":     "BIC Lighter + Rolled Scroll → Bitcoin whitepaper clue. BIC + Jack-o-Lantern → pumpkin lit. The BIC stays in the drawer for both."
   },
 
   "surfaces": {
@@ -158,6 +159,30 @@
       "x": 69.1, "y": 26.1, "w": 8.5, "rot": 0,
       "state": "shown",
       "hint": "?"
+    },
+
+    "rolled-scroll": {
+      "name": "rolled scroll",
+      "media": 3637,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "tied with twine"
+    },
+    "bic-lighter": {
+      "name": "BIC lighter",
+      "media": 3698,
+      "x": 50, "y": 50, "w": 5, "rot": 0,
+      "state": "shown",
+      "draggable": true,
+      "hint": "BIC"
+    },
+    "jack-o-lantern": {
+      "name": "jack-o-lantern",
+      "media": 3693,
+      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "state": "shown",
+      "hint": "an unlit pumpkin"
     }
 
   },
@@ -323,6 +348,44 @@
       "on": "click", "object": "duck-pineapple",
       "do": [
         { "clue": "It's a pineapple.\n\nOr a duck.\n\nYou decide." }
+      ]
+    },
+
+    {
+      "id": "burn-scroll",
+      "on": "combine", "a": "bic-lighter", "b": "rolled-scroll",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "clue": "THE SCROLL UNROLLS\n\n  Bitcoin: A Peer-to-Peer Electronic\n  Cash System\n\n  — Satoshi Nakamoto, 2008\n\n(You hold the genesis of the thing.)" },
+        { "remove": ["rolled-scroll"] },
+        { "flag": "whitepaper-read" }
+      ]
+    },
+    {
+      "id": "light-lantern",
+      "on": "combine", "a": "bic-lighter", "b": "jack-o-lantern",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "clue": "*click — flick — flame*\n\nThe wick catches. The pumpkin glows from the inside." },
+        { "flag": "lantern-lit" }
+      ]
+    },
+    {
+      "id": "lantern-lit-look",
+      "on": "click", "object": "jack-o-lantern",
+      "require": { "all": ["lantern-lit"] },
+      "do": [
+        { "clue": "The candle still flickers behind the carved grin." }
+      ]
+    },
+    {
+      "id": "lantern-unlit-look",
+      "on": "click", "object": "jack-o-lantern",
+      "require": { "none": ["lantern-lit"] },
+      "do": [
+        { "clue": "An unlit pumpkin. Would be more festive lit." }
       ]
     }
 
