@@ -298,7 +298,7 @@
     "iphone": {
       "name": "iPhone",
       "media": 3613,
-      "x": 40.4, "y": 55.2, "w": 14.3, "rot": 0,
+      "x": 48.1, "y": 52.4, "w": 14.3, "rot": 0,
       "state": "shown",
       "hint": "click"
     },
@@ -337,7 +337,7 @@
     "open-bible": {
       "name": "open Bible",
       "media": 3650,
-      "x": 51.4, "y": 28.6, "w": 12.6, "rot": 0,
+      "x": 51.4, "y": 28.6, "w": 13.9, "rot": 0,
       "state": "hidden",
       "hint": "open"
     },
@@ -375,7 +375,7 @@
     "astronaut-sticker": {
       "name": "astronaut sticker",
       "media": 3647,
-      "x": 46.2, "y": 50, "w": 9, "rot": 0,
+      "x": 47.4, "y": 46, "w": 9, "rot": 0,
       "state": "shown",
       "hint": "click"
     },
@@ -403,7 +403,7 @@
     "ganesha-sticker": {
       "name": "Ganesha sticker",
       "media": 3608,
-      "x": 57.3, "y": 47.5, "w": 8.8, "rot": 0,
+      "x": 62.5, "y": 48.8, "w": 8.8, "rot": 0,
       "state": "shown",
       "hint": "remover of obstacles"
     },
@@ -467,14 +467,14 @@
     "padlock-closed": {
       "name": "padlock (closed)",
       "media": 3703,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 66, "y": 20.5, "w": 6.6, "rot": 0,
       "state": "shown",
       "hint": "locked"
     },
     "padlock-keys": {
       "name": "padlock keys",
       "media": 3704,
-      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "x": 51.8, "y": 71.5, "w": 7.6, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "kid-charm keychain"
@@ -482,7 +482,7 @@
     "padlock-open": {
       "name": "padlock (open)",
       "media": 3705,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 53.1, "y": 18.1, "w": 9.5, "rot": 0,
       "state": "hidden",
       "hint": "the lock gives"
     },
@@ -490,14 +490,14 @@
     "mff": {
       "name": "middle-finger figurine",
       "media": 3635,
-      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "x": 56.9, "y": 60.1, "w": 10, "rot": 0,
       "state": "shown",
       "hint": "flip it"
     },
     "sixty-seven-sticker": {
       "name": "67 sticker",
       "media": 3653,
-      "x": 50, "y": 50, "w": 5, "rot": 0,
+      "x": 59.1, "y": 47.7, "w": 5.6, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "67"
@@ -505,14 +505,14 @@
     "wallet": {
       "name": "bifold wallet",
       "media": 3610,
-      "x": 50, "y": 50, "w": 14, "rot": 0,
+      "x": 31.1, "y": 65.1, "w": 22.8, "rot": 0,
       "state": "shown",
       "hint": "open it up"
     },
     "twenty-bills": {
       "name": "crumpled $20 bills",
       "media": 3708,
-      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "x": 66.7, "y": 71.4, "w": 5.7, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "cash"
@@ -520,7 +520,7 @@
     "gp-card": {
       "name": "Grande Prairie gift card",
       "media": 3706,
-      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "x": 72.4, "y": 40.1, "w": 6.6, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "lift it"
@@ -528,14 +528,14 @@
     "polaroid": {
       "name": "polaroid (Jake letter)",
       "media": 3722,
-      "x": 50, "y": 50, "w": 10, "rot": -3,
+      "x": 71.8, "y": 8.6, "w": 10, "rot": -3,
       "state": "hidden",
       "hint": "something's on the back"
     },
     "coins": {
       "name": "arcade coins",
       "media": 3694,
-      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "x": 70.5, "y": 42.7, "w": 8, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "loose change"
@@ -544,7 +544,7 @@
     "banana": {
       "name": "banana",
       "media": 3616,
-      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "x": 29.2, "y": 64.5, "w": 10.5, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "still good"
@@ -552,7 +552,7 @@
     "gorilla-tape": {
       "name": "gorilla tape",
       "media": 3723,
-      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "x": 71.2, "y": 67.7, "w": 9, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "industrial strength"
@@ -560,7 +560,7 @@
     "duct-banana": {
       "name": "duct-taped banana",
       "media": 3726,
-      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "x": 22.8, "y": 5.2, "w": 4.2, "rot": 0,
       "state": "hidden",
       "hint": "$6.4M, somehow"
     },
@@ -575,7 +575,7 @@
     "ledger": {
       "name": "Ledger hardware wallet",
       "media": 3682,
-      "x": 50, "y": 50, "w": 14, "rot": 0,
+      "x": 29.1, "y": 73.4, "w": 11.4, "rot": 0,
       "state": "hidden",
       "view": "secret",
       "hint": "tap to wake"
