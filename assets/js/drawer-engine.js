@@ -73,6 +73,12 @@
  *                   runs that option's `do` list and closes the
  *                   modal. Used for the Golden-Egg EAT/SELL fork
  *                   and any future branching choice.
+ *   youtube:"<id|url>"
+ *                 — open a YouTube iframe overlay (autoplay,
+ *                   no related videos, modestbranding). Accepts a
+ *                   raw 11-character video id OR any youtu.be /
+ *                   youtube.com / embed / shorts URL — the engine
+ *                   extracts the id. Used by the iPhone click.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -486,6 +492,7 @@ window.TCDrawerEngine = ( function () {
             if ( a.passcode )   showPasscode( a.passcode );
             if ( a.hangman )    playHangman();
             if ( a.choice )     showChoice( a.choice );
+            if ( a.youtube )    playYoutube( a.youtube );
         }
     }
 
@@ -770,6 +777,54 @@ window.TCDrawerEngine = ( function () {
         overlay.appendChild( card );
         void card.offsetWidth;
         card.classList.add( 'is-in' );
+    }
+
+    // -----------------------------------------------------------------
+    // YouTube overlay — for embeds that aren't WP attachments (most
+    // famously the duct-taped-banana research video on the iPhone).
+    // Accepts either an 11-char video id or any YouTube URL form;
+    // anything else is rejected. Reuses the .tc-drawer-video scrim
+    // styles so a YouTube clip and a WP video read the same.
+    function playYoutube( ref ) {
+        if ( ! overlay || ! ref ) return;
+        var id = String( ref ).trim();
+        var m = id.match( /(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/ );
+        if ( m ) id = m[ 1 ];
+        if ( ! /^[A-Za-z0-9_-]{11}$/.test( id ) ) return;
+
+        var stage = document.createElement( 'div' );
+        stage.className = 'tc-drawer-video tc-drawer-youtube';
+        stage.setAttribute( 'role', 'dialog' );
+        stage.setAttribute( 'aria-modal', 'true' );
+
+        var iframe = document.createElement( 'iframe' );
+        iframe.src = 'https://www.youtube-nocookie.com/embed/' + id +
+            '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+        iframe.setAttribute( 'allow',
+            'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture' );
+        iframe.setAttribute( 'allowfullscreen', '' );
+        iframe.setAttribute( 'frameborder', '0' );
+        iframe.setAttribute( 'title', 'YouTube video' );
+        stage.appendChild( iframe );
+
+        function close() {
+            try { iframe.src = ''; } catch ( e ) {} // stop playback
+            stage.classList.remove( 'is-in' );
+            document.removeEventListener( 'keydown', onKey, true );
+            setTimeout( function () { if ( stage.parentNode ) stage.remove(); }, 220 );
+        }
+        function onKey( e ) {
+            if ( e.key === 'Escape' || e.key === 'Esc' ) {
+                e.stopImmediatePropagation();
+                close();
+            }
+        }
+        stage.addEventListener( 'click', function ( e ) { if ( e.target === stage ) close(); } );
+        document.addEventListener( 'keydown', onKey, true );
+
+        overlay.appendChild( stage );
+        void stage.offsetWidth;
+        stage.classList.add( 'is-in' );
     }
 
     // -----------------------------------------------------------------
