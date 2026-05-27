@@ -795,9 +795,9 @@
     },
     {
       "id": "lantern-dresser-offer",
-      "_comment": "Post-lit click → offer to take the lit lantern up to the dresser (where it belongs as Halloween decor) or leave it glowing in the drawer.",
+      "_comment": "Post-lit click → offer to take the lit lantern up to the dresser (where it belongs as Halloween decor) or leave it glowing in the drawer. No decided-lock — the choice persists so the player can change their mind later.",
       "on": "click", "object": "jack-o-lantern",
-      "require": { "all": ["lantern-lit"], "none": ["lantern-decided"] },
+      "require": { "all": ["lantern-lit"] },
       "do": [
         { "choice": {
             "prompt": "The pumpkin glows steadily now.\nIt belongs upstairs on the dresser.\n\nTake it up, or leave it glowing here?",
@@ -805,23 +805,13 @@
               { "label": "to the dresser", "do": [
                 { "clue": "Upstairs it goes. The dresser's a better stage." },
                 { "remove": ["jack-o-lantern"] },
-                { "flag": "lantern-decided" },
                 { "flag": "lantern-on-dresser" }
               ]},
               { "label": "leave it glowing", "do": [
-                { "flag": "lantern-decided" },
                 { "flag": "lantern-kept" }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "lantern-kept-look",
-      "on": "click", "object": "jack-o-lantern",
-      "require": { "all": ["lantern-kept"] },
-      "do": [
-        { "clue": "Still flickering. Quietly Halloween, in May." }
       ]
     },
     {
@@ -909,8 +899,9 @@
     },
     {
       "id": "wear-sunglasses",
+      "_comment": "After the prelude has been revealed, every click brings up the wear/leave choice again — player can change their mind.",
       "on": "click", "object": "sunglasses",
-      "require": { "all": ["elf-prelude-seen"], "none": ["sunglasses-decided"] },
+      "require": { "all": ["elf-prelude-seen"] },
       "do": [
         { "choice": {
             "prompt": "The sunglasses, ready.\n\nWear them out, or leave them in the drawer?",
@@ -918,23 +909,13 @@
               { "label": "wear them", "do": [
                 { "clue": "On the face. Everything tints a degree warmer." },
                 { "remove": ["sunglasses"] },
-                { "flag": "sunglasses-decided" },
                 { "flag": "sunglasses-worn" }
               ]},
               { "label": "leave them", "do": [
-                { "flag": "sunglasses-decided" },
                 { "flag": "sunglasses-kept" }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "sunglasses-kept-look",
-      "on": "click", "object": "sunglasses",
-      "require": { "all": ["sunglasses-kept"] },
-      "do": [
-        { "clue": "The sunglasses. The under-drawer text is still\nthere when you hold them up." }
       ]
     },
 
@@ -957,9 +938,9 @@
     },
     {
       "id": "car-keys-pocket-offer",
-      "_comment": "After the keys have done their job (opened the train's battery cover), clicking them offers to pocket. Pre-use clicks fall through to car-keys-pre-use above.",
+      "_comment": "After the keys have done their job (opened the train's battery cover), clicking them offers to pocket. Pre-use clicks fall through to car-keys-pre-use above. No decided-lock — the choice persists.",
       "on": "click", "object": "car-keys",
-      "require": { "all": ["battery-cover-open"], "none": ["car-keys-decided"] },
+      "require": { "all": ["battery-cover-open"] },
       "do": [
         { "choice": {
             "prompt": "The car keys, job done.\n\nPocket them, or leave in the drawer?",
@@ -967,23 +948,13 @@
               { "label": "pocket them", "do": [
                 { "clue": "Into the pocket. You'll need these later." },
                 { "remove": ["car-keys"] },
-                { "flag": "car-keys-decided" },
                 { "flag": "car-keys-pocketed" }
               ]},
               { "label": "leave them", "do": [
-                { "flag": "car-keys-decided" },
                 { "flag": "car-keys-kept" }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "car-keys-kept-look",
-      "on": "click", "object": "car-keys",
-      "require": { "all": ["car-keys-kept"] },
-      "do": [
-        { "clue": "*jingle*\n\nThe keys, still in the drawer." }
       ]
     },
     {
@@ -1084,59 +1055,38 @@
     {
       "id": "spin-top",
       "on": "click", "object": "spinning-top",
-      "require": { "none": ["top-decided"] },
       "do": [
         { "choice": {
             "prompt": "*you give it a flick*\n\nIt spins, catches the light, throws iridescence across the drawer for a moment — then slows, settles.\n\nSome toys outlast their owners.\n\nKeep it, or to the toy bin?",
             "options": [
-              { "label": "keep (sentimental)", "do": [{ "flag": "top-decided" }, { "flag": "top-kept" }] },
+              { "label": "keep (sentimental)", "do": [{ "flag": "top-kept" }] },
               { "label": "to the toy bin", "do": [
-                { "remove": ["spinning-top"] },
-                { "flag": "top-decided" }
+                { "remove": ["spinning-top"] }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "top-kept-look",
-      "on": "click", "object": "spinning-top",
-      "require": { "all": ["top-kept"] },
-      "do": [
-        { "clue": "The top spins again — same iridescence." }
       ]
     },
     {
       "id": "hold-jet",
       "on": "click", "object": "toy-jet",
-      "require": { "none": ["jet-decided"] },
       "do": [
         { "choice": {
             "prompt": "A little metal jet. Weightier than it looks.\nThe kind of toy that survives.\n\nKeep it, or to the toy bin?",
             "options": [
-              { "label": "keep (sentimental)", "do": [{ "flag": "jet-decided" }, { "flag": "jet-kept" }] },
+              { "label": "keep (sentimental)", "do": [{ "flag": "jet-kept" }] },
               { "label": "to the toy bin", "do": [
-                { "remove": ["toy-jet"] },
-                { "flag": "jet-decided" }
+                { "remove": ["toy-jet"] }
               ]}
             ]
         }}
       ]
     },
-    {
-      "id": "jet-kept-look",
-      "on": "click", "object": "toy-jet",
-      "require": { "all": ["jet-kept"] },
-      "do": [
-        { "clue": "The toy jet. Still here." }
-      ]
-    },
 
     {
       "id": "marble-blue",
-      "_comment": "Both marbles offer the same fork: pocket-for-the-pinball (the marble becomes a bonus ball in the footer pinball when that integration lands) or to-the-toy-bin. Either option removes the marble from the drawer; the pocketed-* flags are what the pinball will read later.",
+      "_comment": "Both options remove the marble (pocketed = saved for footer-pinball integration; toy-bin = just gone). Once removed, the click can't recur — no gate needed.",
       "on": "click", "object": "marble-1",
-      "require": { "none": ["marble-blue-decided"] },
       "do": [
         { "choice": {
             "prompt": "A swirl of blue-green glass. Cool to the touch.\nGood weight. The pinball downstairs could use\nan extra ball.\n\nPocket it for the pinball, or to the toy bin?",
@@ -1144,12 +1094,10 @@
               { "label": "pocket — for the pinball", "do": [
                 { "clue": "In the pocket. Saved for the flippers." },
                 { "remove": ["marble-1"] },
-                { "flag": "marble-blue-decided" },
                 { "flag": "marble-blue-pocketed" }
               ]},
               { "label": "to the toy bin", "do": [
-                { "remove": ["marble-1"] },
-                { "flag": "marble-blue-decided" }
+                { "remove": ["marble-1"] }
               ]}
             ]
         }}
@@ -1158,7 +1106,6 @@
     {
       "id": "marble-warm",
       "on": "click", "object": "marble-2",
-      "require": { "none": ["marble-warm-decided"] },
       "do": [
         { "choice": {
             "prompt": "A swirl of warm orange. Smaller than the other,\nsomehow heavier.\n\nPocket it for the pinball, or to the toy bin?",
@@ -1166,12 +1113,10 @@
               { "label": "pocket — for the pinball", "do": [
                 { "clue": "In the pocket. Saved for the flippers." },
                 { "remove": ["marble-2"] },
-                { "flag": "marble-warm-decided" },
                 { "flag": "marble-warm-pocketed" }
               ]},
               { "label": "to the toy bin", "do": [
-                { "remove": ["marble-2"] },
-                { "flag": "marble-warm-decided" }
+                { "remove": ["marble-2"] }
               ]}
             ]
         }}
@@ -1208,7 +1153,6 @@
     {
       "id": "wear-yin-yang",
       "on": "click", "object": "yin-yang-bracelet",
-      "require": { "none": ["yin-yang-decided"] },
       "do": [
         { "choice": {
             "prompt": "You hold the bracelet up.\nIt was a gift — the giver wanted you to carry something small.\n\nWear it (carry with you), or leave it in the drawer?",
@@ -1216,11 +1160,9 @@
               { "label": "wear it", "do": [
                 { "clue": "On the wrist. Quiet weight. Thank you." },
                 { "remove": ["yin-yang-bracelet"] },
-                { "flag": "yin-yang-decided" },
                 { "flag": "yin-yang-worn" }
               ]},
               { "label": "leave it", "do": [
-                { "flag": "yin-yang-decided" },
                 { "flag": "yin-yang-kept" }
               ]}
             ]
@@ -1228,36 +1170,18 @@
       ]
     },
     {
-      "id": "yin-yang-kept-look",
-      "on": "click", "object": "yin-yang-bracelet",
-      "require": { "all": ["yin-yang-kept"] },
-      "do": [
-        { "clue": "The bracelet, still here. A gift waiting to be\nput on." }
-      ]
-    },
-    {
       "id": "kids-camera-snap",
       "on": "click", "object": "kids-camera",
-      "require": { "none": ["camera-decided"] },
       "do": [
         { "choice": {
             "prompt": "*click*\n\nA random photo: blurry, off-kilter, a finger over half the lens. Definitely taken by a kid.\n\nKeep it, or to the toy bin?",
             "options": [
-              { "label": "keep", "do": [{ "flag": "camera-decided" }, { "flag": "camera-kept" }] },
+              { "label": "keep", "do": [{ "flag": "camera-kept" }] },
               { "label": "to the toy bin", "do": [
-                { "remove": ["kids-camera"] },
-                { "flag": "camera-decided" }
+                { "remove": ["kids-camera"] }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "kids-camera-kept",
-      "on": "click", "object": "kids-camera",
-      "require": { "all": ["camera-kept"] },
-      "do": [
-        { "clue": "*click*\n\nAnother blurry kid-photo. They're the best\nphotos in the house." }
       ]
     },
     {
@@ -1273,52 +1197,33 @@
     {
       "id": "read-handwritten-note",
       "on": "click", "object": "handwritten-note",
-      "require": { "none": ["note-decided"] },
       "do": [
         { "choice": {
             "prompt": "The note unfolds. The handwriting is yours (from years ago), but you don't remember writing it. It says, simply:\n\n  \"keep going.\"\n\nKeep the note, or toss it?",
             "options": [
-              { "label": "keep", "do": [{ "flag": "note-decided" }, { "flag": "note-kept" }] },
+              { "label": "keep", "do": [{ "flag": "note-kept" }] },
               { "label": "toss it", "do": [
-                { "remove": ["handwritten-note"] },
-                { "flag": "note-decided" }
+                { "remove": ["handwritten-note"] }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "note-kept-look",
-      "on": "click", "object": "handwritten-note",
-      "require": { "all": ["note-kept"] },
-      "do": [
-        { "clue": "The note: \"keep going.\"" }
       ]
     },
     {
       "id": "shark-fintastic",
+      "_comment": "No gate — the choice modal pops every click. Picking 'keep' leaves the shark; the player can re-click later and bin it. 'to the toy bin' removes it (terminal).",
       "on": "click", "object": "support-shark",
-      "require": { "none": ["shark-decided"] },
       "do": [
         { "choice": {
             "prompt": "The shark grins up at you.\n\"Always there to remind you, you're fin-tastic.\"\n\nKeep it, or to the kids' toy bin?",
             "options": [
-              { "label": "keep", "do": [{ "flag": "shark-decided" }, { "flag": "shark-kept" }] },
+              { "label": "keep", "do": [{ "flag": "shark-kept" }] },
               { "label": "to the toy bin", "do": [
                 { "remove": ["support-shark"] },
-                { "flag": "shark-decided" },
                 { "flag": "shark-binned" }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "shark-kept-look",
-      "on": "click", "object": "support-shark",
-      "require": { "all": ["shark-kept"] },
-      "do": [
-        { "clue": "The shark sits in the drawer, fin-tastic." }
       ]
     },
     {
@@ -1360,51 +1265,31 @@
     {
       "id": "bubble-do-not-pop",
       "on": "click", "object": "bubble-bottle",
-      "require": { "none": ["bubbles-decided"] },
       "do": [
         { "choice": {
             "prompt": "You twist the cap and dip the wand.\n\nA single bubble drifts up, catches the light, rises out of frame. DO NOT POP.\n\nKeep the bottle, or to the toy bin?",
             "options": [
-              { "label": "keep", "do": [{ "flag": "bubbles-decided" }, { "flag": "bubbles-kept" }] },
+              { "label": "keep", "do": [{ "flag": "bubbles-kept" }] },
               { "label": "to the toy bin", "do": [
-                { "remove": ["bubble-bottle"] },
-                { "flag": "bubbles-decided" }
+                { "remove": ["bubble-bottle"] }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "bubbles-kept-look",
-      "on": "click", "object": "bubble-bottle",
-      "require": { "all": ["bubbles-kept"] },
-      "do": [
-        { "clue": "The bottle. Half-full. A small temptation." }
       ]
     },
     {
       "id": "solitaire-stub",
       "on": "click", "object": "playing-cards",
-      "require": { "none": ["cards-decided"] },
       "do": [
         { "choice": {
             "prompt": "A worn deck. Standard 52.\n(Solitaire lives over in the desk arcade.)\n\nKeep the deck, or to the toy bin?",
             "options": [
-              { "label": "keep", "do": [{ "flag": "cards-decided" }, { "flag": "cards-kept" }] },
+              { "label": "keep", "do": [{ "flag": "cards-kept" }] },
               { "label": "to the toy bin", "do": [
-                { "remove": ["playing-cards"] },
-                { "flag": "cards-decided" }
+                { "remove": ["playing-cards"] }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "cards-kept-look",
-      "on": "click", "object": "playing-cards",
-      "require": { "all": ["cards-kept"] },
-      "do": [
-        { "clue": "The deck. (Solitaire over at the arcade.)" }
       ]
     },
     {
@@ -1486,8 +1371,9 @@
     },
     {
       "id": "mff-keep-or-take",
+      "_comment": "Persistent choice — player can re-click the figurine and change their mind about putting it on the chain.",
       "on": "click", "object": "mff",
-      "require": { "all": ["mff-flipped"], "none": ["mff-decided"] },
+      "require": { "all": ["mff-flipped"] },
       "do": [
         { "choice": {
             "prompt": "The middle-finger figurine.\nYou could clip it onto your keychain — a small\nbeautiful objection to carry around.\n\nPut it on the chain?",
@@ -1495,23 +1381,13 @@
               { "label": "yes (take it)", "do": [
                 { "clue": "*clip*\n\nOn the keychain. Ready for any occasion." },
                 { "remove": ["mff"] },
-                { "flag": "mff-decided" },
                 { "flag": "mff-taken" }
               ]},
               { "label": "no (leave it)", "do": [
-                { "flag": "mff-decided" },
                 { "flag": "mff-kept" }
               ]}
             ]
         }}
-      ]
-    },
-    {
-      "id": "mff-after-decided",
-      "on": "click", "object": "mff",
-      "require": { "all": ["mff-kept"] },
-      "do": [
-        { "clue": "Just a middle finger.\n(The sticker's already off.)" }
       ]
     },
     {
