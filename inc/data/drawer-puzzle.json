@@ -1231,27 +1231,35 @@
     },
     {
       "id": "speaker-channel-picker",
-      "_comment": "Click → 4-channel chooser. Each channel fires a YouTube embed via the youtube: action. The IDs below are placeholders — Thomas to swap in real video IDs (any YouTube URL or 11-char id works). If an id is invalid, playYoutube silently no-ops and the fallback clue still fires.",
+      "_comment": "Click → 4-channel chooser. Each channel starts a live radio stream via the `stream:` action — same pattern as the tc-timeline radio player. Country + Classical use real stations carried over from the timeline; today's pop + 90's hits are placeholders (any non-https URL is ignored by playStream, so the picker is testable). Swap the TODO strings for real station URLs.",
       "on": "click", "object": "bluetooth-speaker",
       "do": [
         { "choice": {
             "prompt": "*press play*\n\nThe speaker hums to life.\nPick a channel:",
             "options": [
               { "label": "today's pop",   "do": [
-                { "youtube": "TODO_TODAYS_POP" },
-                { "clue": "*today's pop plays softly*\n\n(Thomas to wire a real video id.)" }
+                { "stream": {
+                    "url": "TODO_TODAYS_POP",
+                    "label": "Today's Pop"
+                }}
               ]},
               { "label": "country",       "do": [
-                { "youtube": "TODO_COUNTRY" },
-                { "clue": "*a country song plays softly*\n\n(Thomas to wire a real video id.)" }
+                { "stream": {
+                    "url": "https://stream.jpbgdigital.com/CIKT/HEAAC/48k/playlist.m3u8",
+                    "label": "Big Country 93.1 GP"
+                }}
               ]},
               { "label": "classical",     "do": [
-                { "youtube": "TODO_CLASSICAL" },
-                { "clue": "*classical strings*\n\n(Thomas to wire a real video id.)" }
+                { "stream": {
+                    "url": "https://allclassical.streamguys1.com/ac96k",
+                    "label": "All Classical Portland"
+                }}
               ]},
               { "label": "90's hits",     "do": [
-                { "youtube": "TODO_90S_HITS" },
-                { "clue": "*a 90's hit plays softly*\n\n(Thomas to wire a real video id.)" }
+                { "stream": {
+                    "url": "TODO_90S_HITS",
+                    "label": "90's Rewind"
+                }}
               ]}
             ]
         }}

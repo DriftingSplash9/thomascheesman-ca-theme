@@ -79,6 +79,14 @@
  *                   raw 11-character video id OR any youtu.be /
  *                   youtube.com / embed / shorts URL — the engine
  *                   extracts the id. Used by the iPhone click.
+ *   stream:{ url, label }
+ *                 — start (or replace) the corner radio widget
+ *                   with this station. Direct mp3/aac/icecast URLs
+ *                   use a plain <audio> element; .m3u8 URLs lazy-
+ *                   load HLS.js from a CDN. Widget has play/pause,
+ *                   volume, close. Only one stream plays at a time
+ *                   — calling `stream:` again hard-cuts to the new
+ *                   station. Used by the Bluetooth speaker channels.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -523,6 +531,7 @@ window.TCDrawerEngine = ( function () {
             if ( a.hangman )    playHangman();
             if ( a.choice )     showChoice( a.choice );
             if ( a.youtube )    playYoutube( a.youtube );
+            if ( a.stream )     playStream( a.stream );
         }
     }
 
@@ -855,6 +864,127 @@ window.TCDrawerEngine = ( function () {
         overlay.appendChild( stage );
         void stage.offsetWidth;
         stage.classList.add( 'is-in' );
+    }
+
+    // -----------------------------------------------------------------
+    // Radio-stream widget — modeled on the tc-timeline radio player.
+    // One stream at a time; calling `stream:` again replaces the
+    // current station. HLS (.m3u8) URLs lazy-load HLS.js from a CDN
+    // the first time they're needed (only Chrome/Edge need it — Safari
+    // plays HLS natively). Direct mp3/aac/icecast URLs go straight to
+    // a plain <audio> element. The widget sits in the bottom-right
+    // corner of the drawer overlay with play/pause, volume, close.
+    var activeStream = null;
+    var hlsLoading   = false;
+
+    function playStream( spec ) {
+        if ( ! overlay || ! spec || ! spec.url ) return;
+        var url = String( spec.url ).trim();
+        if ( ! /^https?:\/\//.test( url ) ) return; // ignore TODO placeholders
+        var label = spec.label || 'Radio';
+
+        stopStream(); // hard-cut any existing stream
+
+        var widget = document.createElement( 'div' );
+        widget.className = 'tc-drawer-stream';
+
+        var labelEl = document.createElement( 'span' );
+        labelEl.className = 'tc-stream__label';
+        labelEl.textContent = label;
+        widget.appendChild( labelEl );
+
+        var playBtn = document.createElement( 'button' );
+        playBtn.type = 'button';
+        playBtn.className = 'tc-stream__btn tc-stream__playpause';
+        playBtn.setAttribute( 'aria-label', 'pause' );
+        playBtn.textContent = '⏸';
+        widget.appendChild( playBtn );
+
+        var vol = document.createElement( 'input' );
+        vol.type = 'range';
+        vol.className = 'tc-stream__vol';
+        vol.min = '0'; vol.max = '1'; vol.step = '0.05';
+        vol.value = '0.25';
+        widget.appendChild( vol );
+
+        var closeBtn = document.createElement( 'button' );
+        closeBtn.type = 'button';
+        closeBtn.className = 'tc-stream__btn tc-stream__close';
+        closeBtn.setAttribute( 'aria-label', 'close' );
+        closeBtn.textContent = '✕';
+        widget.appendChild( closeBtn );
+
+        var audio = document.createElement( 'audio' );
+        audio.preload = 'auto';
+        audio.volume  = parseFloat( vol.value );
+        widget.appendChild( audio );
+
+        playBtn.addEventListener( 'click', function () {
+            if ( audio.paused ) {
+                audio.play().catch( function () {} );
+                playBtn.textContent = '⏸';
+                playBtn.setAttribute( 'aria-label', 'pause' );
+            } else {
+                audio.pause();
+                playBtn.textContent = '▶';
+                playBtn.setAttribute( 'aria-label', 'play' );
+            }
+        } );
+        vol.addEventListener( 'input', function () {
+            audio.volume = parseFloat( vol.value );
+        } );
+        closeBtn.addEventListener( 'click', stopStream );
+
+        overlay.appendChild( widget );
+        activeStream = { widget: widget, audio: audio, hls: null };
+
+        var isHLS = /\.m3u8(\?|#|$)/i.test( url );
+
+        function attachSrc() {
+            if ( isHLS && typeof window.Hls !== 'undefined' && window.Hls.isSupported && window.Hls.isSupported() ) {
+                var hls = new window.Hls();
+                hls.loadSource( url );
+                hls.attachMedia( audio );
+                if ( activeStream ) activeStream.hls = hls;
+            } else {
+                // Either non-HLS (direct mp3) or Safari (native HLS).
+                audio.src = url;
+            }
+            var p = audio.play();
+            if ( p && p.catch ) p.catch( function () { /* autoplay blocked — play button still works */ } );
+        }
+
+        if ( isHLS && typeof window.Hls === 'undefined' ) {
+            if ( ! hlsLoading ) {
+                hlsLoading = true;
+                var s = document.createElement( 'script' );
+                s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5/dist/hls.min.js';
+                s.onload  = function () { hlsLoading = false; attachSrc(); };
+                s.onerror = function () { hlsLoading = false; };
+                document.head.appendChild( s );
+            } else {
+                // Already loading; wait it out
+                var poll = setInterval( function () {
+                    if ( ! hlsLoading ) { clearInterval( poll ); attachSrc(); }
+                }, 200 );
+                setTimeout( function () { clearInterval( poll ); }, 6000 );
+            }
+        } else {
+            attachSrc();
+        }
+    }
+
+    function stopStream() {
+        if ( ! activeStream ) return;
+        try {
+            activeStream.audio.pause();
+            activeStream.audio.src = '';
+            if ( activeStream.hls ) activeStream.hls.destroy();
+        } catch ( e ) {}
+        if ( activeStream.widget && activeStream.widget.parentNode ) {
+            activeStream.widget.remove();
+        }
+        activeStream = null;
     }
 
     // -----------------------------------------------------------------
