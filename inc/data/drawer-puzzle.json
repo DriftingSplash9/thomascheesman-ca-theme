@@ -14,7 +14,8 @@
     "9-hangman":    "Combine Sticky Notes + Mechanical Pencil → Hangman mini-game. Word picked from the current month's 20-word rotation (top-level `hangman` block). Win sets flag `hangman-won`. Re-playable.",
     "10-bible":     "Click the Antique Book → opens to reveal the Bible. Click the Bible → Proverbs 25:2 clue: 'It is the glory of God to conceal a thing...' — the whole puzzle's thesis.",
     "11-olestyr":   "Scissors + Olestyr packet → 'snipped open, powdered medicine, you put it back.' Both items stay in the drawer, inert after.",
-    "12-keepsakes": "Spinning Top + Toy Jet. Click each → a sentimental keepsake clue. No interactions between them; just two small artifacts that earn a moment."
+    "12-keepsakes": "Spinning Top + Toy Jet. Click each → a sentimental keepsake clue. No interactions between them; just two small artifacts that earn a moment.",
+    "13-marbles":   "Two marbles. Click each → flavour clue. The footer-marble swap + pinball ball-colour matching is a separate cross-component refactor."
   },
 
   "surfaces": {
@@ -374,6 +375,21 @@
       "x": 50, "y": 50, "w": 9, "rot": 0,
       "state": "shown",
       "hint": "metal, weighty"
+    },
+
+    "marble-1": {
+      "name": "marble (blue)",
+      "media": 3685,
+      "x": 50, "y": 50, "w": 5, "rot": 0,
+      "state": "shown",
+      "hint": "swirl of blue"
+    },
+    "marble-2": {
+      "name": "marble (warm)",
+      "media": 3689,
+      "x": 50, "y": 50, "w": 5, "rot": 0,
+      "state": "shown",
+      "hint": "swirl of warm"
     }
 
   },
@@ -757,6 +773,21 @@
       "on": "click", "object": "toy-jet",
       "do": [
         { "clue": "A little metal jet. Weightier than it looks.\nThe kind of toy that survives." }
+      ]
+    },
+
+    {
+      "id": "marble-blue",
+      "on": "click", "object": "marble-1",
+      "do": [
+        { "clue": "A swirl of blue-green glass. Picks up\nthe drawer's brass light. Cool to the touch." }
+      ]
+    },
+    {
+      "id": "marble-warm",
+      "on": "click", "object": "marble-2",
+      "do": [
+        { "clue": "A swirl of warm orange. Smaller than the\nother, somehow heavier." }
       ]
     }
 
