@@ -277,9 +277,12 @@
 }
 .tc-author-bar__surface:hover { border-color: rgba(184, 146, 78, 0.95) !important; }
 
-/* Every object + zone is grab-draggable while authoring. */
+/* Every object + zone is grab-draggable while authoring. Transitions
+   are KILLED in author mode so the visual position is always
+   instantaneously what `style.left/top` says — no animation, no
+   interpolation, no risk of a visible snap-back artifact. */
 .tc-do.is-author,
-.tc-zone.is-author { cursor: grab; }
+.tc-zone.is-author { cursor: grab; transition: none !important; }
 .tc-do.is-author.is-dragging,
 .tc-zone.is-author.is-dragging { cursor: grabbing; }
 .tc-do.is-author:hover {

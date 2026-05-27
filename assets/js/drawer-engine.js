@@ -699,39 +699,60 @@ window.TCDrawerEngine = ( function () {
     // copying the coordinates back out.
     function round1( n ) { return Math.round( n * 10 ) / 10; }
 
+    // Author-mode drag state. ONE active drag at a time, tracked here
+    // so the single set of global document handlers below can find it.
+    // Per-element handlers are minimal — they just register intent
+    // (set authorDragActive on pointerdown) and let the document
+    // handlers do the work.
+    var authorDragActive = null;
+    var authorGlobalsBound = false;
+
+    function ensureAuthorGlobals() {
+        if ( authorGlobalsBound ) return;
+        authorGlobalsBound = true;
+
+        document.addEventListener( 'pointermove', function ( e ) {
+            var a = authorDragActive;
+            if ( ! a || ! mount ) return;
+            var r = mount.getBoundingClientRect();
+            if ( ! r.width || ! r.height ) return;
+            a.def.x = round1( ( e.clientX - r.left ) / r.width  * 100 );
+            a.def.y = round1( ( e.clientY - r.top  ) / r.height * 100 );
+            a.el.style.left = a.def.x + '%';
+            a.el.style.top  = a.def.y + '%';
+        }, true );
+
+        var endDrag = function () {
+            var a = authorDragActive;
+            if ( ! a ) return;
+            a.el.classList.remove( 'is-dragging' );
+            authorDragActive = null;
+            saveAuthorLayout();
+        };
+        document.addEventListener( 'pointerup',     endDrag, true );
+        document.addEventListener( 'pointercancel', endDrag, true );
+
+        // Defensive net: if the page loses focus (alt-tab, blur) mid-drag,
+        // any subsequent move events stop firing and we never end the
+        // drag. Treat blur as a release too.
+        window.addEventListener( 'blur', endDrag );
+    }
+
     function bindAuthorDrag( el, id, kind ) {
         var def = ( kind === 'zone' ? P.zones[ id ] : P.objects[ id ] );
         if ( ! def ) return;
+        ensureAuthorGlobals();
 
-        // pointerdown on the object → start a drag. The MOVE and UP
-        // listeners go on `document` (not the element) so the drag
-        // survives the cursor leaving the small element rectangle and
-        // any DOM reflow under the cursor. More robust than pointer
-        // capture, which can get released by the browser unexpectedly.
         el.addEventListener( 'pointerdown', function ( e ) {
             if ( e.button != null && e.button !== 0 ) return;
             e.preventDefault();
-            e.stopPropagation();
+            // Release any implicit pointer capture so the document-level
+            // handlers receive subsequent pointer events without being
+            // intercepted. (Chrome sets implicit capture on the
+            // pointerdown target.)
+            try { el.releasePointerCapture( e.pointerId ); } catch ( ex ) {}
+            authorDragActive = { el: el, def: def, id: id };
             el.classList.add( 'is-dragging' );
-
-            function onMove( ev ) {
-                var r = mount.getBoundingClientRect();
-                if ( ! r.width || ! r.height ) return;
-                def.x = round1( ( ev.clientX - r.left ) / r.width  * 100 );
-                def.y = round1( ( ev.clientY - r.top  ) / r.height * 100 );
-                el.style.left = def.x + '%';
-                el.style.top  = def.y + '%';
-            }
-            function onUp() {
-                el.classList.remove( 'is-dragging' );
-                document.removeEventListener( 'pointermove', onMove );
-                document.removeEventListener( 'pointerup',   onUp );
-                document.removeEventListener( 'pointercancel', onUp );
-                saveAuthorLayout();
-            }
-            document.addEventListener( 'pointermove', onMove );
-            document.addEventListener( 'pointerup',   onUp );
-            document.addEventListener( 'pointercancel', onUp );
         } );
 
         // Wheel = width; Shift+wheel = a zone's height; Alt+wheel = rotate
