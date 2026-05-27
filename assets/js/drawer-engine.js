@@ -453,9 +453,16 @@ window.TCDrawerEngine = ( function () {
             stage.appendChild( f );
             f.addEventListener( 'animationend', function () { f.remove(); }, { once: true } );
             setTimeout( function () { if ( f.parentNode ) f.remove(); }, 900 );
+        } else if ( name === 'blackhole' ) {
+            // The astronaut sticker's gag. Spiral the whole stage into
+            // a near-singularity, then settle back. Pure CSS animation;
+            // we just toggle a class and clean up on animationend.
+            stage.classList.add( 'tc-fx-blackhole' );
+            var clear = function () { stage.classList.remove( 'tc-fx-blackhole' ); };
+            stage.addEventListener( 'animationend', clear, { once: true } );
+            setTimeout( clear, 1800 );
         }
-        // Other effect types (giant-duck overlay, smash, video) land in
-        // later phases once their assets exist.
+        // Other effect types (smash, others) land as the puzzle asks for them.
     }
 
     // -----------------------------------------------------------------

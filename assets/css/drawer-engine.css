@@ -148,6 +148,22 @@
 }
 
 /* ----------------------------------------------------------------
+   BLACKHOLE — the astronaut sticker's gag. Spirals the stage down
+   to a near-singularity, then springs back. Pure CSS. */
+.tc-fx-blackhole {
+    animation: tc-blackhole 1.5s cubic-bezier(0.55, 0, 0.5, 1.18) both;
+    transform-origin: center;
+}
+@keyframes tc-blackhole {
+    0%   { transform: scale(1)    rotate(0deg);   filter: blur(0)   brightness(1); }
+    50%  { transform: scale(0.04) rotate(720deg); filter: blur(10px) brightness(0.25); }
+    100% { transform: scale(1)    rotate(0deg);   filter: blur(0)   brightness(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .tc-fx-blackhole { animation: none; }
+}
+
+/* ----------------------------------------------------------------
    CLUE CARD — a handwritten note on aged paper, signed. Covers the
    stage with a soft scrim; dismissed by button / Escape / scrim. */
 .tc-clue {

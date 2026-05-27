@@ -15,7 +15,8 @@
     "10-bible":     "Click the Antique Book → opens to reveal the Bible. Click the Bible → Proverbs 25:2 clue: 'It is the glory of God to conceal a thing...' — the whole puzzle's thesis.",
     "11-olestyr":   "Scissors + Olestyr packet → 'snipped open, powdered medicine, you put it back.' Both items stay in the drawer, inert after.",
     "12-keepsakes": "Spinning Top + Toy Jet. Click each → a sentimental keepsake clue. No interactions between them; just two small artifacts that earn a moment.",
-    "13-marbles":   "Two marbles. Click each → flavour clue. The footer-marble swap + pinball ball-colour matching is a separate cross-component refactor."
+    "13-marbles":   "Two marbles. Click each → flavour clue. The footer-marble swap + pinball ball-colour matching is a separate cross-component refactor.",
+    "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). The rest are click→clue flavour beats: Pac-Man, Yin-Yang, Kids Camera, Ganesha, Handwritten Note, Shark, Speaker, Bubbles, Cards, Raven, Nivea (toss), Teaspoon, Banana Muffin (eat)."
   },
 
   "surfaces": {
@@ -390,6 +391,105 @@
       "x": 50, "y": 50, "w": 5, "rot": 0,
       "state": "shown",
       "hint": "swirl of warm"
+    },
+
+    "astronaut-sticker": {
+      "name": "astronaut sticker",
+      "media": 3647,
+      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "state": "shown",
+      "hint": "click"
+    },
+    "pacman-arcade": {
+      "name": "Pac-Man mini arcade",
+      "media": 3633,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "wakka wakka"
+    },
+    "yin-yang-bracelet": {
+      "name": "yin-yang bracelet",
+      "media": 3634,
+      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "state": "shown",
+      "hint": "a gift"
+    },
+    "kids-camera": {
+      "name": "kids' camera",
+      "media": 3630,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "click"
+    },
+    "ganesha-sticker": {
+      "name": "Ganesha sticker",
+      "media": 3608,
+      "x": 50, "y": 50, "w": 6, "rot": 0,
+      "state": "shown",
+      "hint": "remover of obstacles"
+    },
+    "handwritten-note": {
+      "name": "handwritten note",
+      "media": 3674,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "folded paper"
+    },
+    "support-shark": {
+      "name": "emotional support shark",
+      "media": 3710,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "fin-tastic"
+    },
+    "bluetooth-speaker": {
+      "name": "bluetooth speaker",
+      "media": 3695,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "press play"
+    },
+    "bubble-bottle": {
+      "name": "bubble bottle",
+      "media": 3692,
+      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "state": "shown",
+      "hint": "tiny wand inside"
+    },
+    "playing-cards": {
+      "name": "playing cards",
+      "media": 3707,
+      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "state": "shown",
+      "hint": "a deck"
+    },
+    "raven-page": {
+      "name": "The Raven (page)",
+      "media": 3652,
+      "x": 50, "y": 50, "w": 11, "rot": 0,
+      "state": "shown",
+      "hint": "torn from a book"
+    },
+    "nivea-lip": {
+      "name": "Nivea lip balm",
+      "media": 3622,
+      "x": 50, "y": 50, "w": 6, "rot": 0,
+      "state": "shown",
+      "hint": "Nivea"
+    },
+    "teaspoon": {
+      "name": "teaspoon",
+      "media": 3617,
+      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "state": "shown",
+      "hint": "for stirring"
+    },
+    "banana-muffin": {
+      "name": "banana muffin",
+      "media": 3612,
+      "x": 50, "y": 50, "w": 8, "rot": 0,
+      "state": "shown",
+      "hint": "looks moist"
     }
 
   },
@@ -788,6 +888,112 @@
       "on": "click", "object": "marble-2",
       "do": [
         { "clue": "A swirl of warm orange. Smaller than the\nother, somehow heavier." }
+      ]
+    },
+
+    {
+      "id": "astronaut-blackhole",
+      "on": "click", "object": "astronaut-sticker",
+      "do": [
+        { "effect": "blackhole" },
+        { "flag": "blackhole-seen" }
+      ]
+    },
+    {
+      "id": "pacman-stub",
+      "on": "click", "object": "pacman-arcade",
+      "do": [
+        { "clue": "*wakka wakka*\n\nThe mini arcade boots up. (Coins earned here\ngo in the Wallet — coming soon.)" }
+      ]
+    },
+    {
+      "id": "wear-yin-yang",
+      "on": "click", "object": "yin-yang-bracelet",
+      "do": [
+        { "clue": "You slip the bracelet on.\n\nIt was a gift. The giver wanted you to have\nsomething small to carry around with you.\n\n(Thank you.)" }
+      ]
+    },
+    {
+      "id": "kids-camera-snap",
+      "on": "click", "object": "kids-camera",
+      "do": [
+        { "clue": "*click*\n\nA random photo: blurry, off-kilter, a finger\nover half the lens. Definitely taken by a kid.\n\n(They're the best photos in the house.)" }
+      ]
+    },
+    {
+      "id": "ganesha-stick",
+      "on": "click", "object": "ganesha-sticker",
+      "do": [
+        { "clue": "Ganesha. Remover of obstacles.\n\nYou stick him on the inside wall of the drawer.\nA small protection for what's hidden here." }
+      ]
+    },
+    {
+      "id": "read-handwritten-note",
+      "on": "click", "object": "handwritten-note",
+      "do": [
+        { "clue": "The note unfolds. The handwriting is yours\n(from years ago), but you don't remember\nwriting it. It says, simply:\n\n  \"keep going.\"" }
+      ]
+    },
+    {
+      "id": "shark-fintastic",
+      "on": "click", "object": "support-shark",
+      "do": [
+        { "clue": "The shark grins up at you.\n\n  \"Always there to remind you,\n   you're fin-tastic.\"\n\n(Keep the note.)" }
+      ]
+    },
+    {
+      "id": "speaker-play",
+      "on": "click", "object": "bluetooth-speaker",
+      "do": [
+        { "clue": "*press play*\n\nThe speaker hums. Somewhere, music plays.\n(Audio is coming — for now, imagine it.)" }
+      ]
+    },
+    {
+      "id": "bubble-do-not-pop",
+      "on": "click", "object": "bubble-bottle",
+      "do": [
+        { "clue": "You twist the cap and dip the wand.\n\nA single bubble drifts up, catches the light,\nrises out of frame. DO NOT POP." }
+      ]
+    },
+    {
+      "id": "solitaire-stub",
+      "on": "click", "object": "playing-cards",
+      "do": [
+        { "clue": "A worn deck. Standard 52.\n\n(Solitaire lives over in the arcade.)" }
+      ]
+    },
+    {
+      "id": "raven-nevermore",
+      "on": "click", "object": "raven-page",
+      "do": [
+        { "clue": "A page torn from a book — Poe.\n\n  \"...is there — is there balm in Gilead? —\n   tell me — tell me, I implore!\n   Quoth the Knife — Nevermore.\"\n\n(That's not how it goes.)" }
+      ]
+    },
+    {
+      "id": "nivea-toss",
+      "on": "click", "object": "nivea-lip",
+      "once": true,
+      "do": [
+        { "clue": "You twist it open.\n\nEmpty. You toss it." },
+        { "remove": ["nivea-lip"] },
+        { "flag": "nivea-tossed" }
+      ]
+    },
+    {
+      "id": "teaspoon-belongs-upstairs",
+      "on": "click", "object": "teaspoon",
+      "do": [
+        { "clue": "A teaspoon. Doesn't belong here — it goes\nupstairs at the coffee cup. (You'll put it back\nat the desk later.)" }
+      ]
+    },
+    {
+      "id": "eat-muffin",
+      "on": "click", "object": "banana-muffin",
+      "once": true,
+      "do": [
+        { "clue": "You take a bite.\n\nWildly moist. Banana, real bananas — surprising\nfor a drawer muffin. You finish it." },
+        { "remove": ["banana-muffin"] },
+        { "flag": "muffin-eaten" }
       ]
     }
 
