@@ -14,11 +14,24 @@
  *   objects      id -> { name, media|placeholder, x,y,w,rot, state,
  *                        draggable, hint }
  *   zones        id -> { x,y,w,h, state, hint }   (drop targets)
- *   interactions [ { on:'click'|'drop'|'combine', ..., once, require,
- *                    do:[...] } ]
+ *   interactions [ { on:'click'|'drop'|'combine'|'auto', ..., once,
+ *                    require, do:[...] } ]
  *
  * Object/zone ids share ONE namespace. State is "shown" | "hidden" |
  * "gone". x/y are the CENTRE of the element as a % of the artwork.
+ *
+ * An object/zone may carry an optional `view` field (e.g. "junk" or
+ * "secret"). When set, the engine renders that element only while the
+ * current surface key starts with the matching prefix — so a "secret"
+ * object stays hidden while the player is on a junk-* surface and
+ * vice-versa. Useful for the secret-drawer reveal: items inside the
+ * lock-up shouldn't render while the player is in the wide junk view.
+ *
+ * `on: 'auto'` interactions fire themselves whenever the world state
+ * satisfies their `require` precondition — after every other fire()
+ * the engine sweeps autos and triggers any that newly qualify. Used
+ * for "the keys reveal when the puzzle is complete" — no user action
+ * directly triggers it; it's a function of accumulated flags.
  *
  * --- Interaction-level gates ------------------------------------------
  *   once:true        — fire at most one time
@@ -162,19 +175,38 @@ window.TCDrawerEngine = ( function () {
     function render() {
         if ( ! mount ) return;
         mount.innerHTML = '';
+        var view = currentView();
         // Author mode renders EVERYTHING so it can all be placed;
-        // normal mode renders only what's currently "shown".
+        // normal mode renders only what's currently "shown" AND
+        // matches the active view (if the def declared one).
         // Zones first (lower z-index) so objects sit above them.
         for ( var z in P.zones ) {
-            if ( P.zones.hasOwnProperty( z ) && ( AUTHOR || W.state[ z ] === 'shown' ) ) {
-                mount.appendChild( buildZone( z, P.zones[ z ] ) );
-            }
+            if ( ! P.zones.hasOwnProperty( z ) ) continue;
+            if ( ! AUTHOR && W.state[ z ] !== 'shown' ) continue;
+            if ( ! AUTHOR && ! matchesView( P.zones[ z ], view ) ) continue;
+            mount.appendChild( buildZone( z, P.zones[ z ] ) );
         }
         for ( var o in P.objects ) {
-            if ( P.objects.hasOwnProperty( o ) && ( AUTHOR || W.state[ o ] === 'shown' ) ) {
-                mount.appendChild( buildObject( o, P.objects[ o ] ) );
-            }
+            if ( ! P.objects.hasOwnProperty( o ) ) continue;
+            if ( ! AUTHOR && W.state[ o ] !== 'shown' ) continue;
+            if ( ! AUTHOR && ! matchesView( P.objects[ o ], view ) ) continue;
+            mount.appendChild( buildObject( o, P.objects[ o ] ) );
         }
+    }
+
+    // The current surface key (e.g. "junk-clean") collapses to a view
+    // bucket via its prefix ("junk"). Objects/zones with no `view`
+    // field render in every view; those with one render only when it
+    // matches.
+    function currentView() {
+        var key = W && W.surface;
+        if ( ! key ) return '';
+        var dash = key.indexOf( '-' );
+        return dash >= 0 ? key.slice( 0, dash ) : key;
+    }
+    function matchesView( def, view ) {
+        if ( ! def || ! def.view ) return true;
+        return def.view === view;
     }
 
     function place( el, def ) {
@@ -403,6 +435,33 @@ window.TCDrawerEngine = ( function () {
         runActions( it.do || [] );
         save();
         render();
+        // Newly-set flags may have unlocked an `on: 'auto'` rule
+        // (e.g. the keys reveal once every chain flag is in).
+        sweepAutoInteractions();
+    }
+
+    // Walk the interactions list and fire any `on: 'auto'` whose
+    // preconditions are newly met. Guard against recursion + the same
+    // auto firing twice with `once` + done-list bookkeeping.
+    function sweepAutoInteractions() {
+        var list = P.interactions || [];
+        var fired = false;
+        for ( var i = 0; i < list.length; i++ ) {
+            var x = list[ i ];
+            if ( x.on !== 'auto' ) continue;
+            if ( x.once && x.id && W.done.indexOf( x.id ) !== -1 ) continue;
+            if ( ! meetsRequire( x.require ) ) continue;
+            if ( x.once && x.id ) W.done.push( x.id );
+            runActions( x.do || [] );
+            fired = true;
+        }
+        if ( fired ) {
+            save();
+            render();
+            // Another auto might have unlocked further autos; cap depth
+            // by relying on `once` to terminate the chain.
+            sweepAutoInteractions();
+        }
     }
 
     function runActions( list ) {

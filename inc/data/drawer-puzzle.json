@@ -15,7 +15,8 @@
     "10-bible":     "Click the Antique Book → opens to reveal the Bible. Click the Bible → Proverbs 25:2 clue: 'It is the glory of God to conceal a thing...' — the whole puzzle's thesis.",
     "12-keepsakes": "Spinning Top + Toy Jet. Click each → a sentimental keepsake clue. No interactions between them; just two small artifacts that earn a moment.",
     "13-marbles":   "Two marbles. Click each → flavour clue. The footer-marble swap + pinball ball-colour matching is a separate cross-component refactor.",
-    "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). The rest are click→clue flavour beats: Pac-Man, Yin-Yang, Kids Camera, Ganesha, Handwritten Note, Shark, Speaker, Bubbles, Cards, Nivea (toss), Teaspoon, Banana Muffin (eat)."
+    "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). The rest are click→clue flavour beats: Pac-Man, Yin-Yang, Kids Camera, Ganesha, Handwritten Note, Shark, Speaker, Bubbles, Cards, Nivea (toss), Teaspoon, Banana Muffin (eat).",
+    "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set + dust-cleared. Combine keys + padlock → flip to secret view, reveal Ledger (chain 14 takes it from there). The Golden Egg fork bypasses this entirely — it lives in chain 14 with require: { all: ['dust-appeared'], none: ['dust-cleared'] }."
   },
 
   "surfaces": {
@@ -459,6 +460,29 @@
       "x": 78.2, "y": 70.8, "w": 23.5, "rot": 0,
       "state": "shown",
       "hint": "looks moist"
+    },
+
+    "padlock-closed": {
+      "name": "padlock (closed)",
+      "media": 3703,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "locked"
+    },
+    "padlock-keys": {
+      "name": "padlock keys",
+      "media": 3704,
+      "x": 50, "y": 50, "w": 10, "rot": 0,
+      "state": "hidden",
+      "draggable": true,
+      "hint": "kid-charm keychain"
+    },
+    "padlock-open": {
+      "name": "padlock (open)",
+      "media": 3705,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "hidden",
+      "hint": "the lock gives"
     }
 
   },
@@ -492,7 +516,8 @@
         { "surface": "junk-dusty" },
         { "reveal": ["dust-spot"] },
         { "remove": ["screw", "screwdriver"] },
-        { "flag": "screw-tight" }
+        { "flag": "screw-tight" },
+        { "flag": "dust-appeared" }
       ]
     },
     {
@@ -939,6 +964,41 @@
         { "clue": "You take a bite.\n\nWildly moist. Banana, real bananas — surprising\nfor a drawer muffin. You finish it." },
         { "remove": ["banana-muffin"] },
         { "flag": "muffin-eaten" }
+      ]
+    },
+
+    {
+      "id": "padlock-locked-look",
+      "on": "click", "object": "padlock-closed",
+      "do": [
+        { "clue": "A padlock. Locked. You don't have a key —\nbut something tells you tidying the rest of\nthis drawer might surface one." }
+      ]
+    },
+
+    {
+      "id": "reveal-padlock-keys",
+      "_comment": "Fires when every real-chain flag is set AND the player has cleared the dust (Top Prize path). The Golden Egg fork bypasses this — it has its own auto in chain 14 that gates on dust-appeared + !dust-cleared.",
+      "on": "auto",
+      "once": true,
+      "require": { "all": ["screw-tight", "dust-cleared", "receipt-dispensed", "duck-stage-2", "whitepaper-read", "lantern-lit", "train-ready", "sunglasses-made", "proverb-read"] },
+      "do": [
+        { "effect": "flash" },
+        { "reveal": ["padlock-keys"] },
+        { "clue": "Something glints in the corner of the drawer.\n\nA set of keys, on a kid-charm chain — a tiny\nhandprint and an 'I love you' charm.\n\n(The drawer is finally tidy enough that they\nsurface.)" },
+        { "flag": "keys-revealed" }
+      ]
+    },
+    {
+      "id": "unlock-padlock",
+      "on": "combine", "a": "padlock-keys", "b": "padlock-closed",
+      "once": true,
+      "do": [
+        { "effect": "flash" },
+        { "surface": "secret-clean" },
+        { "remove": ["padlock-closed"] },
+        { "reveal": ["padlock-open"] },
+        { "clue": "The keys turn. The lock gives.\n\nThe view shifts — you're looking into\nthe secret compartment now." },
+        { "flag": "padlock-open" }
       ]
     }
 
