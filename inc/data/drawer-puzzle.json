@@ -13,7 +13,8 @@
     "7-batteries":  "Car Keys → Toy Train (unlocks battery cover) → AAA Batteries → Train ready → click → chugs. iPhone is direct: click → muted family videos.",
     "9-hangman":    "Combine Sticky Notes + Mechanical Pencil → Hangman mini-game. Word picked from the current month's 20-word rotation (top-level `hangman` block). Win sets flag `hangman-won`. Re-playable.",
     "10-bible":     "Click the Antique Book → opens to reveal the Bible. Click the Bible → Proverbs 25:2 clue: 'It is the glory of God to conceal a thing...' — the whole puzzle's thesis.",
-    "11-olestyr":   "Scissors + Olestyr packet → 'snipped open, powdered medicine, you put it back.' Both items stay in the drawer, inert after."
+    "11-olestyr":   "Scissors + Olestyr packet → 'snipped open, powdered medicine, you put it back.' Both items stay in the drawer, inert after.",
+    "12-keepsakes": "Spinning Top + Toy Jet. Click each → a sentimental keepsake clue. No interactions between them; just two small artifacts that earn a moment."
   },
 
   "surfaces": {
@@ -358,6 +359,21 @@
       "x": 50, "y": 50, "w": 8, "rot": 0,
       "state": "shown",
       "hint": "sealed packet"
+    },
+
+    "spinning-top": {
+      "name": "iridescent spinning top",
+      "media": 3655,
+      "x": 50, "y": 50, "w": 7, "rot": 0,
+      "state": "shown",
+      "hint": "give it a flick"
+    },
+    "toy-jet": {
+      "name": "toy jet",
+      "media": 3640,
+      "x": 50, "y": 50, "w": 9, "rot": 0,
+      "state": "shown",
+      "hint": "metal, weighty"
     }
 
   },
@@ -726,6 +742,21 @@
       "do": [
         { "clue": "*snip*\n\nThe packet falls open. Powdered medicine.\n(You don't need it. Back in the drawer it goes.)" },
         { "flag": "olestyr-snipped" }
+      ]
+    },
+
+    {
+      "id": "spin-top",
+      "on": "click", "object": "spinning-top",
+      "do": [
+        { "clue": "*you give it a flick*\n\nIt spins, catches the light, throws iridescence\nacross the drawer for a moment — then slows,\nsettles. Some toys outlast their owners." }
+      ]
+    },
+    {
+      "id": "hold-jet",
+      "on": "click", "object": "toy-jet",
+      "do": [
+        { "clue": "A little metal jet. Weightier than it looks.\nThe kind of toy that survives." }
       ]
     }
 
