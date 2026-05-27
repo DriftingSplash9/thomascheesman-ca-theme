@@ -187,12 +187,16 @@ function tc_ventures_enqueue_scripts() {
         'tcDeskGames',
         array(
             'scoresUrl' => esc_url_raw( rest_url( 'tc-games/v1/scores' ) ),
-            // Per-game SFX. Played inline inside the game loops via a
-            // small playSfx() helper at the top of desk-games.js. See
-            // assets/audio/CREDITS.md for attribution.
+            // Per-game SFX + a shared background loop. Played inline
+            // inside the game loops via a small playSfx() helper at
+            // the top of desk-games.js. The bg loop is owned by the
+            // picker→play transition (started on play, stopped on
+            // back/game-over). See assets/audio/CREDITS.md for
+            // attribution.
             'audio' => array(
                 'pongHit'         => get_stylesheet_directory_uri() . '/assets/audio/pong-hit.mp3?ver=' . rawurlencode( wp_get_theme()->get( 'Version' ) ),
                 'asteroidsShoot'  => get_stylesheet_directory_uri() . '/assets/audio/asteroids-shoot.mp3?ver=' . rawurlencode( wp_get_theme()->get( 'Version' ) ),
+                'arcadeBg'        => get_stylesheet_directory_uri() . '/assets/audio/arcade-bg.mp3?ver=' . rawurlencode( wp_get_theme()->get( 'Version' ) ),
             ),
             // Cache-buster for the lazy-loaded desk-pinball.js; reads
             // the same Version: header that cache-busts every other

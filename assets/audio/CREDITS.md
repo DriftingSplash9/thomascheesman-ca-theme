@@ -60,6 +60,25 @@ Sound Effect by <a href="https://pixabay.com/users/freesound_community-46691455/
 
 ---
 
+## arcade-bg.mp3 — desk arcade background loop
+
+- Source file: `freesound_community-retro-wave-style-track-59892.mp3`
+- Author: freesound.org community contributor (Pixabay item 59892)
+- Provider: Pixabay
+- Plays on `loop: true` at low volume (~18%) while ANY game is
+  active in the desk arcade (Snake, Pong, Pac-Man, Asteroids,
+  Brickles, Solitaire). Owned by play() / stopCurrent() in
+  desk-games.js. The secret-drawer's separate Pac-Man modal
+  keeps its own dedicated loop (pacman-loop.mp3); they don't
+  overlap because the two contexts are mutually exclusive.
+- Attribution markup:
+
+```
+Sound Effect from <a href="https://pixabay.com/sound-effects/retro-wave-style-track-59892/">Pixabay</a>
+```
+
+---
+
 ## combine-whoosh.mp3 — drawer combine SFX
 
 - Source file: `dragon-studio-whoosh-cinematic-376875.mp3`

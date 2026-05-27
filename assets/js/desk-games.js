@@ -60,6 +60,27 @@
         } catch ( e ) {}
     }
 
+    // Shared background loop — one element reused across game starts
+    // so we don't stack tracks if the player jumps between games.
+    // Lifecycle: started in play(), stopped in stopCurrent().
+    var bgLoop = null;
+    function startBgLoop() {
+        if ( ! AUDIO_URLS.arcadeBg ) return;
+        if ( bgLoop ) { try { bgLoop.pause(); bgLoop.src = ''; } catch ( e ) {} }
+        try {
+            bgLoop = new Audio( AUDIO_URLS.arcadeBg );
+            bgLoop.loop   = true;
+            bgLoop.volume = 0.18; // low; SFX should sit on top of it
+            var p = bgLoop.play();
+            if ( p && p.catch ) p.catch( function () {} );
+        } catch ( e ) { bgLoop = null; }
+    }
+    function stopBgLoop() {
+        if ( ! bgLoop ) return;
+        try { bgLoop.pause(); bgLoop.src = ''; } catch ( e ) {}
+        bgLoop = null;
+    }
+
     function fetchBoards() {
         return fetch( SCORES_URL, { credentials: 'same-origin' } )
             .then( function ( r ) { return r.ok ? r.json() : {}; } )
@@ -207,6 +228,7 @@
             }
             currentStop = null;
             currentKey  = null;
+            stopBgLoop();
         }
 
         function play( key ) {
@@ -216,6 +238,7 @@
             currentKey = key;
             picker.hidden = true;
             playView.hidden = false;
+            startBgLoop();
             titleEl.textContent = game.title;
             controlsEl.innerHTML = game.controls;
             scoreEl.textContent = '0';
