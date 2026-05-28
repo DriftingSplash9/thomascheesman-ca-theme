@@ -84,8 +84,9 @@
         rampHcs:       '#ff5a8c',
         dropTarget:    '#e7c98f',
         dropTargetOff: '#3a2616',
-        ball:          '#dde8f0',
-        ballShine:     '#ffffff',
+        ball:          '#3fc7da',
+        ballShine:     '#e6fbff',
+        ballRim:       '#0e4a55',
         hud:           '#00ff66',
         hudDim:        '#057a2f',
     };
@@ -885,7 +886,8 @@
                 b.position.x, b.position.y, BALL_R
             );
             bg2.addColorStop( 0, COLORS.ballShine );
-            bg2.addColorStop( 1, '#7790a0' );
+            bg2.addColorStop( 0.45, COLORS.ball );
+            bg2.addColorStop( 1, COLORS.ballRim );
             ctx.fillStyle = bg2;
             ctx.beginPath();
             ctx.arc( b.position.x, b.position.y, BALL_R, 0, Math.PI * 2 );

@@ -111,6 +111,16 @@
  *                   the player to the actual Bitcoin whitepaper PDF
  *                   when the scroll burns open. Non-https URLs are
  *                   rejected for safety.
+ *   gallery:[{src,w,h},…]  + optional `after:[…]`
+ *                 — open a PhotoSwipe v5 lightbox showing the given
+ *                   images in sequence. Attachment IDs are resolved
+ *                   to {src,w,h} server-side by functions.php so the
+ *                   engine doesn't fetch metadata at runtime. If an
+ *                   `after` action list is provided it runs when the
+ *                   lightbox closes (used by the kids-camera chain
+ *                   to follow the gallery with a keep/bin choice).
+ *                   PhotoSwipe core is lazy-loaded from jsDelivr on
+ *                   first use.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -617,6 +627,7 @@ window.TCDrawerEngine = ( function () {
             if ( a.bubbles )    playBubbles( a.bubbles );
             if ( a.crash )      doCrash( a.crash );
             if ( a.link )       openLink( a.link );
+            if ( a.gallery )    playGallery( a.gallery, a.after );
         }
     }
 
@@ -628,6 +639,56 @@ window.TCDrawerEngine = ( function () {
         if ( ! url || typeof url !== 'string' ) return;
         if ( ! /^https:\/\//i.test( url ) ) return;
         try { window.open( url, '_blank', 'noopener,noreferrer' ); } catch ( e ) {}
+    }
+
+    // Open a PhotoSwipe v5 lightbox with the supplied items. Items are
+    // pre-resolved to {src,w,h} by functions.php. An optional `after`
+    // action list fires when the lightbox closes — runs through the full
+    // modal-action epilogue (save → render → sweep) so any state
+    // changes persist and any auto-fires get a chance to qualify.
+    //
+    // PhotoSwipe core is reused across calls: the dataSource gets
+    // swapped in place rather than re-importing the module per click.
+    var pswpModule = null;
+    var pswpLightboxClass = null;
+    function playGallery( items, afterList ) {
+        if ( ! Array.isArray( items ) || ! items.length ) return;
+
+        function open() {
+            var lightbox = new pswpLightboxClass( {
+                dataSource: items.map( function ( it ) {
+                    return { src: it.src, width: it.w, height: it.h, alt: '' };
+                } ),
+                pswpModule: function () { return Promise.resolve( pswpModule ); },
+                showHideAnimationType: 'fade',
+                bgOpacity: 0.96,
+            } );
+            lightbox.on( 'destroy', function () {
+                if ( afterList && afterList.length ) {
+                    runActions( afterList );
+                    save();
+                    render();
+                    sweepAutoInteractions();
+                }
+            } );
+            lightbox.init();
+            lightbox.loadAndOpen( 0 );
+        }
+
+        if ( pswpLightboxClass && pswpModule ) {
+            open();
+            return;
+        }
+        Promise.all( [
+            import( 'https://unpkg.com/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.js' ),
+            import( 'https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.esm.js' ),
+        ] ).then( function ( mods ) {
+            pswpLightboxClass = mods[ 0 ].default;
+            pswpModule = mods[ 1 ];
+            open();
+        } ).catch( function ( err ) {
+            console.warn( '[drawer-engine] PhotoSwipe failed to load.', err );
+        } );
     }
 
     // Fire-and-forget milestone ping → inc/drawer-events.php emails

@@ -184,6 +184,12 @@
                         class="tc-drawer__marble"
                         data-tc-pinball-trigger
                         aria-label="<?php esc_attr_e( 'Play pinball', 'tc-ventures-child' ); ?>">
+                    <img class="tc-drawer__marble-img"
+                         src="https://thomascheesman.ca/wp-content/uploads/2026/05/img_4454.png"
+                         alt=""
+                         aria-hidden="true"
+                         loading="lazy"
+                         decoding="async">
                     <span class="tc-drawer__marble-tip" aria-hidden="true">tap to play</span>
                 </button>
             </div>

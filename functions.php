@@ -302,6 +302,61 @@ function tc_ventures_enqueue_scripts() {
         }
     }
 
+    // Resolve any `gallery: [id, id, …]` action arrays to
+    // `[ {src,w,h}, … ]` so the engine can feed them straight into
+    // PhotoSwipe without a runtime REST round-trip per image.
+    // Walks recursively because gallery actions can live inside choice
+    // option do-lists, passcode success/failure, etc.
+    if ( ! empty( $tc_puzzle['interactions'] ) && is_array( $tc_puzzle['interactions'] ) ) {
+        $tc_resolve_gallery = function ( &$list ) use ( &$tc_resolve_gallery ) {
+            if ( ! is_array( $list ) ) {
+                return;
+            }
+            foreach ( $list as &$tc_node ) {
+                if ( ! is_array( $tc_node ) ) {
+                    continue;
+                }
+                if ( isset( $tc_node['gallery'] ) && is_array( $tc_node['gallery'] ) ) {
+                    $tc_resolved = array();
+                    foreach ( $tc_node['gallery'] as $tc_gid ) {
+                        if ( ! is_numeric( $tc_gid ) ) {
+                            continue;
+                        }
+                        $tc_info = wp_get_attachment_image_src( (int) $tc_gid, 'full' );
+                        if ( $tc_info ) {
+                            $tc_resolved[] = array(
+                                'src' => $tc_info[0],
+                                'w'   => (int) $tc_info[1],
+                                'h'   => (int) $tc_info[2],
+                            );
+                        }
+                    }
+                    $tc_node['gallery'] = $tc_resolved;
+                }
+                if ( isset( $tc_node['after'] ) )   $tc_resolve_gallery( $tc_node['after'] );
+                if ( isset( $tc_node['success'] ) ) $tc_resolve_gallery( $tc_node['success'] );
+                if ( isset( $tc_node['failure'] ) ) $tc_resolve_gallery( $tc_node['failure'] );
+                if ( isset( $tc_node['passcode']['success'] ) ) $tc_resolve_gallery( $tc_node['passcode']['success'] );
+                if ( isset( $tc_node['passcode']['failure'] ) ) $tc_resolve_gallery( $tc_node['passcode']['failure'] );
+                if ( isset( $tc_node['choice']['options'] ) && is_array( $tc_node['choice']['options'] ) ) {
+                    foreach ( $tc_node['choice']['options'] as &$tc_opt ) {
+                        if ( isset( $tc_opt['do'] ) ) {
+                            $tc_resolve_gallery( $tc_opt['do'] );
+                        }
+                    }
+                    unset( $tc_opt );
+                }
+            }
+            unset( $tc_node );
+        };
+        foreach ( $tc_puzzle['interactions'] as &$tc_it ) {
+            if ( isset( $tc_it['do'] ) ) {
+                $tc_resolve_gallery( $tc_it['do'] );
+            }
+        }
+        unset( $tc_it );
+    }
+
     // The signature SVG, inlined so the engine's clue cards can sign
     // themselves without baking a separate paper image.
     $tc_signature_svg = '';

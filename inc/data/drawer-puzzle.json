@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "_comment": "Phase 4 — the real Secret Drawer puzzle. Source of truth: Secret-Drawer-Items (NEW2).docx + Secret-Drawer-Playbook.docx (off-repo, on Thomas's Desktop). Background: real photos of Thomas's actual drawer (meme stickers baked in as permanent flavor). Two view states (`junk-*` wide top-down vs `secret-*` close-up of the recessed compartments) × two dust states (clean / dusty) = four surfaces. The wide junk view is the start; chain 8 (padlock) gates the transition to the secret view. Every puzzle item is an engine overlay placed on top. Chains land in commit-sized batches; each chain commit bumps the theme version. The engine's full action-verb surface is documented in the docblock of drawer-engine.js — Phase 4 adds: `video`, `fullscreen`, `passcode`, and `require` (interaction-level flag preconditions). Coordinates were placed in ?author mode and baked back here as the layout pass for each chain batch.",
 
   "_chains": {
@@ -15,7 +15,7 @@
     "10-bible":     "Click the Antique Book → opens to reveal the Bible. Click the Bible → Proverbs 25:2 clue: 'It is the glory of God to conceal a thing...' — the whole puzzle's thesis.",
     "12-keepsakes": "Spinning Top + Toy Jet. Click each → a sentimental keepsake clue. No interactions between them; just two small artifacts that earn a moment.",
     "13-marbles":   "Two marbles. Click each → flavour clue. The footer-marble swap + pinball ball-colour matching is a separate cross-component refactor.",
-    "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). The rest are click→clue flavour beats: Pac-Man arcade (coin-insert + game), Yin-Yang, Kids Camera, Ganesha, Shark, Speaker, Bubbles (animated bubbles), Cards, Nivea (toss), Teaspoon, Banana Muffin (eat). Handwritten note has moved to chain 8 (lives in the secret drawer alongside the Ledger).",
+    "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). Kids Camera → PhotoSwipe gallery of 14 actual goofy kid-camera shots (ids 3731–3744 incl. an Elf shot) via the engine's `gallery:` action, then keep/bin. The rest are click→clue flavour beats: Pac-Man arcade (coin-insert + game), Yin-Yang, Ganesha, Shark, Speaker, Bubbles (animated bubbles), Cards, Nivea (toss), Teaspoon, Banana Muffin (eat). Handwritten note has moved to chain 8 (lives in the secret drawer alongside the Ledger).",
     "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set + dust-cleared. Combine keys + padlock → flip to secret view, reveal Ledger AND the handwritten note (passcode hint). Chain 14 takes it from there. The Golden Egg fork bypasses this entirely — it lives in chain 14 with require: { all: ['dust-appeared'], none: ['dust-cleared'] }.",
     "15-wallet":    "Flip MFF → reveal 67-sticker. Coins live in the drawer; must be inserted into the Pac-Man arcade first, then go in the wallet. Combine each of: 67-sticker, $20 bills, GP card, coins, auction receipt WITH the Bifold Wallet → goes in. Auto-reveal: when wallet has all FIVE, the 67676767 passcode surfaces (the Ledger's gate, used in chain 14).",
     "14-prizes":    "ENDGAME. Banana + Gorilla Tape → Duct-Taped Banana (the hero shot). Click Ledger (secret view, after padlock) → passcode 67676767 → TOP PRIZE (notify). Click duct-banana when all chain flags set + dust-appeared + !dust-cleared → EAT or SELL choice: EAT = GOLDEN EGG (notify); SELL = $6.4M + Faberge video #3727 + BIGGER REWARD (notify)."
@@ -1291,17 +1291,23 @@
     },
     {
       "id": "kids-camera-snap",
+      "_comment": "Click the camera → opens a PhotoSwipe gallery of the 14 most recent kids-camera shots (Thomas uploaded a batch on 2026-05-28, attachment ids 3731–3744; one of them is the Elf from their childhood). When the lightbox closes, a follow-up choice offers keep/bin. PHP resolves the ids to {src,w,h} before localization so the engine can hand them straight to PhotoSwipe.",
       "on": "click", "object": "kids-camera",
       "do": [
-        { "choice": {
-            "prompt": "*click*\n\nA random photo: blurry, off-kilter, a finger over half the lens. Definitely taken by a kid.\n\nKeep it, or to the toy bin?",
-            "options": [
-              { "label": "keep", "do": [{ "flag": "camera-kept" }] },
-              { "label": "to the toy bin", "do": [
-                { "remove": ["kids-camera"] }
-              ]}
-            ]
-        }}
+        {
+          "gallery": [3731, 3732, 3733, 3734, 3735, 3736, 3737, 3738, 3739, 3740, 3741, 3742, 3743, 3744],
+          "after": [
+            { "choice": {
+                "prompt": "Blurry, off-kilter, a finger over half the lens — definitely taken by a kid.\n\nKeep the camera, or to the toy bin?",
+                "options": [
+                  { "label": "keep", "do": [{ "flag": "camera-kept" }] },
+                  { "label": "to the toy bin", "do": [
+                    { "remove": ["kids-camera"] }
+                  ]}
+                ]
+            }}
+          ]
+        }
       ]
     },
     {
