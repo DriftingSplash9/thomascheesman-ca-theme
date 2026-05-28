@@ -99,6 +99,13 @@
  *                   pointer-events none. Self-cleans after the longest
  *                   bubble finishes its rise. Used by the bubble-bottle
  *                   click — fires alongside the keep/bin choice modal.
+ *   crash:"<object-id>" — full-viewport "object falls from above and
+ *                   shatters the screen" gag. Builds a fixed overlay
+ *                   above everything (z-index 99999), drops the
+ *                   object's image with a bouncy entrance, overlays
+ *                   an SVG crack pattern emanating from impact, holds
+ *                   for ~3.5s, then fades out. Total lifetime ~5.4s.
+ *                   Used by the giant-duck click.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -603,6 +610,7 @@ window.TCDrawerEngine = ( function () {
             if ( a.stream )     playStream( a.stream );
             if ( a.pacman )     playPacman();
             if ( a.bubbles )    playBubbles( a.bubbles );
+            if ( a.crash )      doCrash( a.crash );
         }
     }
 
@@ -1309,6 +1317,73 @@ window.TCDrawerEngine = ( function () {
         setTimeout( function () {
             if ( container.parentNode ) container.remove();
         }, ( maxDur + maxDelay ) * 1000 + 400 );
+    }
+
+    // -----------------------------------------------------------------
+    // Crash — full-viewport "object falls from above and cracks the
+    // screen" gag. The duck-giant's hero moment lives here. Mounts a
+    // position-fixed overlay ABOVE the whole browser (z-index 99999),
+    // drops the named object with a bouncy fall, overlays an SVG of
+    // radiating cracks, holds, then fades everything out. Total
+    // lifetime ~5.4s. Pointer-events: none on the overlay so the
+    // gag doesn't block anything underneath when it fades.
+    function doCrash( spec ) {
+        var id = ( typeof spec === 'string' ) ? spec : ( spec && spec.id );
+        if ( ! id ) return;
+        var def = P.objects && P.objects[ id ];
+        if ( ! def || ! def.mediaUrl ) return;
+
+        var holder = document.createElement( 'div' );
+        holder.className = 'tc-crash';
+        holder.setAttribute( 'aria-hidden', 'true' );
+
+        var falling = document.createElement( 'img' );
+        falling.className = 'tc-crash__obj';
+        falling.src = def.mediaUrl;
+        falling.alt = def.name || '';
+        falling.draggable = false;
+        holder.appendChild( falling );
+
+        var cracks = document.createElement( 'div' );
+        cracks.className = 'tc-crash__cracks';
+        // Twelve primary cracks radiating from centre + a handful of
+        // branching forks for organic randomness. Drawn in viewBox %
+        // so the SVG fills any viewport without distortion math.
+        cracks.innerHTML =
+            '<svg viewBox="0 0 100 100" preserveAspectRatio="none">' +
+              '<g stroke="rgba(255,255,255,0.95)" stroke-width="0.28" fill="none" stroke-linecap="round">' +
+                '<path d="M50,50 L18,8 L12,2"/>' +
+                '<path d="M50,50 L82,12 L88,4"/>' +
+                '<path d="M50,50 L6,38 L0,34"/>' +
+                '<path d="M50,50 L92,55 L98,58"/>' +
+                '<path d="M50,50 L22,92 L18,98"/>' +
+                '<path d="M50,50 L74,88 L78,96"/>' +
+                '<path d="M50,50 L8,72 L2,76"/>' +
+                '<path d="M50,50 L88,28 L94,22"/>' +
+                '<path d="M50,50 L48,2"/>' +
+                '<path d="M50,50 L52,98"/>' +
+                '<path d="M50,50 L2,52"/>' +
+                '<path d="M50,50 L98,48"/>' +
+                '<path d="M28,18 L20,12 M28,18 L32,8"/>' +
+                '<path d="M72,18 L78,12 M72,18 L70,8"/>' +
+                '<path d="M16,40 L8,38"/>' +
+                '<path d="M84,55 L92,52"/>' +
+                '<path d="M26,82 L22,90"/>' +
+                '<path d="M76,82 L82,90"/>' +
+              '</g>' +
+              '<circle cx="50" cy="50" r="2.6" fill="rgba(255,255,255,0.95)"/>' +
+              '<circle cx="50" cy="50" r="5.2" fill="rgba(255,255,255,0.35)"/>' +
+            '</svg>';
+        holder.appendChild( cracks );
+
+        document.body.appendChild( holder );
+
+        // Lifetime is governed by the CSS animation durations
+        // (tc-crash-bg, tc-crash-fall, tc-crash-cracks all 5.4s).
+        // Add a small buffer before tearing down.
+        setTimeout( function () {
+            if ( holder.parentNode ) holder.remove();
+        }, 5600 );
     }
 
     // -----------------------------------------------------------------

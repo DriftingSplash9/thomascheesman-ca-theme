@@ -160,7 +160,7 @@
     "duck-small": {
       "name": "rubber duck (small)",
       "media": 3671,
-      "x": 69.8, "y": 31.5, "w": 10.5, "rot": 0,
+      "x": 69.8, "y": 31.5, "w": 5.7, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "rubber duck"
@@ -168,7 +168,7 @@
     "duck-mid": {
       "name": "rubber duck (mid)",
       "media": 3672,
-      "x": 57.6, "y": 43.7, "w": 110, "rot": 0,
+      "x": 71.3, "y": 32.6, "w": 23.2, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "bigger"
@@ -176,7 +176,7 @@
     "duck-giant": {
       "name": "rubber duck head",
       "media": 3677,
-      "x": 70.8986, "y": 29.375, "w": 3.8, "rot": 27,
+      "x": 56.4, "y": 41.2, "w": 74.8, "rot": 27,
       "state": "hidden",
       "hint": "click."
     },
@@ -777,9 +777,10 @@
     },
     {
       "id": "duck-crush-browser",
+      "_comment": "Giant duck falls from above and SHATTERS the browser. Uses the `crash:` action — full-viewport drop-and-crack gag, ~5.4s total. Replaces the older `fullscreen:` approach which was just an OS-level fullscreen swap.",
       "on": "click", "object": "duck-giant",
       "do": [
-        { "fullscreen": "duck-giant" },
+        { "crash": "duck-giant" },
         { "flag": "duck-crushed" }
       ]
     },
