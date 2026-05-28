@@ -849,7 +849,7 @@
 
     {
       "id": "hotwheels-race",
-      "_comment": "Two Hot Wheels combined → the race. Stub for now: clue card pointing at the still-to-be-shot race video with Daniel. Once the video lands, swap the clue for a `video:` action.",
+      "_comment": "Two Hot Wheels combined → the race. Stub for now: clue card pointing at the still-to-be-shot race video with Daniel. Once the video lands, swap the clue for a `video:` action. Both cars get a post-race bin/keep choice via the four interactions below.",
       "on": "combine", "a": "hot-wheels-1", "b": "hot-rod",
       "once": true,
       "do": [
@@ -858,16 +858,79 @@
         { "flag": "hotwheels-raced" }
       ]
     },
+
+    {
+      "id": "hot-wheels-1-bin-offer",
+      "_comment": "Post-race click on the Hot Wheels car → choice modal. Ordered above the pre-race hint below so the engine picks it first whenever hotwheels-raced is set.",
+      "on": "click", "object": "hot-wheels-1",
+      "require": { "all": ["hotwheels-raced"], "none": ["hot-wheels-1-decided"] },
+      "do": [
+        { "choice": {
+            "prompt": "The Hot Wheels car, post-race.\n\nKeep it, or to the kids' toy bin?",
+            "options": [
+              { "label": "keep", "do": [
+                { "flag": "hot-wheels-1-decided" },
+                { "flag": "hot-wheels-1-kept" }
+              ]},
+              { "label": "to the toy bin", "do": [
+                { "remove": ["hot-wheels-1"] },
+                { "flag": "hot-wheels-1-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "hot-wheels-1-kept-look",
+      "on": "click", "object": "hot-wheels-1",
+      "require": { "all": ["hot-wheels-1-kept"] },
+      "do": [
+        { "clue": "The race car, still in the drawer." }
+      ]
+    },
     {
       "id": "hot-wheels-1-hint",
+      "_comment": "Pre-race flavour — only shows if hotwheels-raced isn't set yet.",
       "on": "click", "object": "hot-wheels-1",
+      "require": { "none": ["hotwheels-raced"] },
       "do": [
         { "clue": "A race car. Wants another car to race against." }
       ]
     },
+
+    {
+      "id": "hot-rod-bin-offer",
+      "on": "click", "object": "hot-rod",
+      "require": { "all": ["hotwheels-raced"], "none": ["hot-rod-decided"] },
+      "do": [
+        { "choice": {
+            "prompt": "The hot rod, after the race.\n\nKeep it, or to the kids' toy bin?",
+            "options": [
+              { "label": "keep", "do": [
+                { "flag": "hot-rod-decided" },
+                { "flag": "hot-rod-kept" }
+              ]},
+              { "label": "to the toy bin", "do": [
+                { "remove": ["hot-rod"] },
+                { "flag": "hot-rod-decided" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "hot-rod-kept-look",
+      "on": "click", "object": "hot-rod",
+      "require": { "all": ["hot-rod-kept"] },
+      "do": [
+        { "clue": "The hot rod, still here. Daniel's favourite." }
+      ]
+    },
     {
       "id": "hot-rod-flavour",
+      "_comment": "Pre-race flavour — only shows if hotwheels-raced isn't set yet.",
       "on": "click", "object": "hot-rod",
+      "require": { "none": ["hotwheels-raced"] },
       "do": [
         { "clue": "The hot rod — Daniel's favourite. Wants a\nracer of its own to face." }
       ]
