@@ -50,7 +50,7 @@
     "todo-notebook": {
       "name": "You Got This notebook",
       "media": 3632,
-      "x": 73.2, "y": 40.1, "w": 15.9, "rot": -2,
+      "x": 71.2, "y": 55.1, "w": 15.9, "rot": -2,
       "state": "shown",
       "hint": "the to-do list"
     },
@@ -65,7 +65,7 @@
     "screwdriver": {
       "name": "multi-bit screwdriver",
       "media": 3609,
-      "x": 73.2167, "y": 33.3557, "w": 27.2, "rot": 0,
+      "x": 70, "y": 37.6, "w": 27.2, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "for tightening things"
@@ -81,7 +81,7 @@
     "duck-pin": {
       "name": "lemonade duck pin",
       "media": 3654,
-      "x": 59, "y": 57.7, "w": 9, "rot": 0,
+      "x": 51.4, "y": 66.4, "w": 9, "rot": 0,
       "state": "hidden",
       "hint": "got any grapes?"
     },
@@ -105,7 +105,7 @@
     "armed-hulk": {
       "name": "armed Hulk",
       "media": 3657,
-      "x": 51.2, "y": 52.5, "w": 14.6, "rot": 0,
+      "x": 48.6, "y": 63.7, "w": 14.6, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "HULK SMASH"
@@ -137,7 +137,7 @@
     "pez": {
       "name": "PEZ dispenser",
       "media": 3641,
-      "x": 66.1921, "y": 66.8179, "w": 10.5, "rot": 0,
+      "x": 31.0694, "y": 64.952, "w": 10.5, "rot": 0,
       "state": "shown",
       "hint": "PEZ"
     },
@@ -152,7 +152,7 @@
     "mini-pump": {
       "name": "mini air pump",
       "media": 3680,
-      "x": 70.1, "y": 59.4, "w": 13.4, "rot": 0,
+      "x": 70.1259, "y": 65.8228, "w": 19.8, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "for inflating things"
@@ -168,7 +168,7 @@
     "duck-mid": {
       "name": "rubber duck (mid)",
       "media": 3672,
-      "x": 71.3, "y": 32.6, "w": 23.2, "rot": 0,
+      "x": 55.9, "y": 44.9, "w": 29.6, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "bigger"
@@ -176,14 +176,14 @@
     "duck-giant": {
       "name": "rubber duck head",
       "media": 3677,
-      "x": 56.4, "y": 41.2, "w": 74.8, "rot": 27,
+      "x": 58.2, "y": 45.9, "w": 125.5, "rot": 27,
       "state": "hidden",
       "hint": "click."
     },
     "rolled-scroll": {
       "name": "rolled scroll",
       "media": 3637,
-      "x": 49.6142, "y": 75.2768, "w": 19.8, "rot": 0,
+      "x": 48.701, "y": 51.5173, "w": 19.8, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "tied with twine"
@@ -199,7 +199,7 @@
     "jack-o-lantern": {
       "name": "jack-o-lantern",
       "media": 3693,
-      "x": 33.528, "y": 26.2652, "w": 8.5, "rot": 0,
+      "x": 37, "y": 32.6, "w": 8.5, "rot": 0,
       "state": "shown",
       "hint": "an unlit pumpkin",
       "classWhen": { "is-lit": "lantern-lit" }
@@ -208,21 +208,21 @@
     "racing-sticker": {
       "name": "13.5 racing sticker",
       "media": 3665,
-      "x": 50.2464, "y": 32.6093, "w": 9, "rot": -3,
+      "x": 61.6964, "y": 42.6853, "w": 9, "rot": -3,
       "state": "shown",
       "hint": "13.5"
     },
     "hot-wheels-1": {
       "name": "Hot Wheels car",
       "media": 3678,
-      "x": 45.54, "y": 30.1214, "w": 12.8, "rot": 0,
+      "x": 38.5154, "y": 52.2637, "w": 12.8, "rot": 0,
       "state": "shown",
       "hint": "race-ready"
     },
     "hot-rod": {
       "name": "Hot Wheels hot rod",
       "media": 3645,
-      "x": 41, "y": 66.3, "w": 21.8, "rot": 0,
+      "x": 40.3418, "y": 54.876, "w": 21.8, "rot": 0,
       "state": "shown",
       "hint": "Daniel's favourite"
     },
@@ -230,21 +230,21 @@
     "ensure-bottle": {
       "name": "Ensure bottle",
       "media": 3614,
-      "x": 61.4, "y": 49.3, "w": 13.2, "rot": 0,
+      "x": 58, "y": 58.4, "w": 13.2, "rot": 0,
       "state": "shown",
       "hint": "drink up"
     },
     "glasses-case": {
       "name": "eyeglasses case",
       "media": 3621,
-      "x": 77.6, "y": 51, "w": 11, "rot": 0,
+      "x": 64.998, "y": 42.8097, "w": 11, "rot": 0,
       "state": "hidden",
       "hint": "snap it open"
     },
     "eyeglasses": {
       "name": "eyeglasses",
       "media": 3648,
-      "x": 72.4, "y": 72.5, "w": 11, "rot": 0,
+      "x": 61.8369, "y": 51.8905, "w": 11, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "clear lenses"
@@ -260,14 +260,14 @@
     "sunglasses": {
       "name": "sunglasses",
       "media": 3699,
-      "x": 40.2715, "y": 50.6466, "w": 17.1, "rot": 0,
+      "x": 40.0608, "y": 47.4123, "w": 17.1, "rot": 0,
       "state": "hidden",
       "hint": "put them on"
     },
     "doodle-notebook": {
       "name": "Fugglers doodle notebook",
       "media": 3631,
-      "x": 29.524, "y": 53.5077, "w": 12, "rot": 0,
+      "x": 33.7, "y": 37.2, "w": 12, "rot": 0,
       "state": "shown",
       "hint": "monsters"
     },
@@ -283,7 +283,7 @@
     "car-keys": {
       "name": "car keys",
       "media": 3627,
-      "x": 37.3, "y": 60.7, "w": 11.6, "rot": 0,
+      "x": 48.4903, "y": 53.1345, "w": 11.6, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "keychain with a tiny screwdriver"
@@ -291,14 +291,14 @@
     "iphone": {
       "name": "iPhone",
       "media": 3613,
-      "x": 52.2835, "y": 71.0474, "w": 19.2, "rot": 0,
+      "x": 44.1, "y": 72.3, "w": 29.9, "rot": 0,
       "state": "shown",
       "hint": "click"
     },
     "toy-train": {
       "name": "toy train",
       "media": 3691,
-      "x": 53.6, "y": 70.3, "w": 14, "rot": 0,
+      "x": 46.8044, "y": 27.2603, "w": 14, "rot": 0,
       "state": "shown",
       "hint": "needs power"
     },
@@ -306,7 +306,7 @@
     "sticky-notes": {
       "name": "red sticky notes",
       "media": 3623,
-      "x": 77.4, "y": 72.5, "w": 14.8, "rot": 0,
+      "x": 77.8529, "y": 66.5691, "w": 14.8, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "blank pages"
@@ -314,7 +314,7 @@
     "mech-pencil": {
       "name": "mechanical pencil",
       "media": 3620,
-      "x": 34.2, "y": 59.6, "w": 11, "rot": 0,
+      "x": 65.8, "y": 31.4, "w": 11, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "click for lead"
@@ -323,14 +323,14 @@
     "antique-book": {
       "name": "antique leather book",
       "media": 3649,
-      "x": 41.2, "y": 47.4, "w": 13, "rot": 0,
+      "x": 51.0894, "y": 50.0246, "w": 13, "rot": 0,
       "state": "shown",
       "hint": "leather cover, no title"
     },
     "open-bible": {
       "name": "open Bible",
       "media": 3650,
-      "x": 30.2, "y": 60.6, "w": 17.7, "rot": 0,
+      "x": 51.9, "y": 49.3, "w": 22.5, "rot": 0,
       "state": "hidden",
       "hint": "open"
     },
@@ -338,7 +338,7 @@
     "spinning-top": {
       "name": "iridescent spinning top",
       "media": 3655,
-      "x": 41.1847, "y": 33.9777, "w": 6.1, "rot": 0,
+      "x": 37.4617, "y": 35.346, "w": 6.1, "rot": 0,
       "state": "shown",
       "hint": "give it a flick"
     },
@@ -368,14 +368,14 @@
     "astronaut-sticker": {
       "name": "astronaut sticker",
       "media": 3647,
-      "x": 79.9, "y": 53.9, "w": 9, "rot": 0,
+      "x": 64.1, "y": 52.8, "w": 9, "rot": 0,
       "state": "shown",
       "hint": "click"
     },
     "pacman-arcade": {
       "name": "Pac-Man mini arcade",
       "media": 3633,
-      "x": 38.4452, "y": 34.4752, "w": 9.5, "rot": 0,
+      "x": 68.9317, "y": 33.1069, "w": 9.5, "rot": 0,
       "state": "shown",
       "hint": "wakka wakka"
     },
@@ -396,7 +396,7 @@
     "ganesha-sticker": {
       "name": "Ganesha sticker",
       "media": 3608,
-      "x": 32.1933, "y": 67.1911, "w": 8.8, "rot": 0,
+      "x": 30.6479, "y": 63.8325, "w": 8.8, "rot": 0,
       "state": "shown",
       "hint": "remover of obstacles"
     },
@@ -418,7 +418,7 @@
     "bluetooth-speaker": {
       "name": "bluetooth speaker",
       "media": 3695,
-      "x": 29.1025, "y": 68.5595, "w": 15.5, "rot": 0,
+      "x": 61.1, "y": 70.3, "w": 15.5, "rot": 0,
       "state": "shown",
       "hint": "press play"
     },
@@ -446,14 +446,14 @@
     "teaspoon": {
       "name": "teaspoon",
       "media": 3617,
-      "x": 25.2, "y": 58, "w": 12.2, "rot": 0,
+      "x": 25.2, "y": 58, "w": 14.1, "rot": 0,
       "state": "shown",
       "hint": "for stirring"
     },
     "banana-muffin": {
       "name": "banana muffin",
       "media": 3612,
-      "x": 58.9, "y": 65.6, "w": 23.5, "rot": 0,
+      "x": 72.3, "y": 43.2, "w": 27, "rot": 0,
       "state": "shown",
       "hint": "looks moist"
     },
@@ -469,7 +469,7 @@
     "padlock-keys": {
       "name": "padlock keys",
       "media": 3704,
-      "x": 51.8, "y": 71.5, "w": 7.6, "rot": 0,
+      "x": 53.3, "y": 54.1, "w": 7.6, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "kid-charm keychain"
@@ -485,14 +485,14 @@
     "mff": {
       "name": "middle-finger figurine",
       "media": 3635,
-      "x": 63.2, "y": 26.5, "w": 10, "rot": 0,
+      "x": 67.5, "y": 54.3, "w": 8.9, "rot": 0,
       "state": "shown",
       "hint": "flip it"
     },
     "sixty-seven-sticker": {
       "name": "67 sticker",
       "media": 3653,
-      "x": 65.3, "y": 38.7, "w": 7.5, "rot": 0,
+      "x": 51.7216, "y": 27.6335, "w": 7.5, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "67"
@@ -500,14 +500,14 @@
     "wallet": {
       "name": "bifold wallet",
       "media": 3610,
-      "x": 71.6, "y": 50.8, "w": 22.8, "rot": 0,
+      "x": 73.006, "y": 33.1069, "w": 22.8, "rot": 0,
       "state": "shown",
       "hint": "open it up"
     },
     "twenty-bills": {
       "name": "crumpled $20 bills",
       "media": 3708,
-      "x": 66.7, "y": 71.4, "w": 5.7, "rot": 0,
+      "x": 73.8, "y": 56.1, "w": 6.3, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "cash"
@@ -523,7 +523,7 @@
     "coins": {
       "name": "arcade coins",
       "media": 3694,
-      "x": 63.6, "y": 50.9, "w": 6.4, "rot": 0,
+      "x": 63.6, "y": 50.9, "w": 5.8, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "for the arcade"
@@ -532,7 +532,7 @@
     "banana": {
       "name": "banana",
       "media": 3616,
-      "x": 31.1396, "y": 51.2686, "w": 12.8, "rot": 0,
+      "x": 33.5, "y": 52.3, "w": 17.9, "rot": 0,
       "state": "shown",
       "draggable": true,
       "hint": "still good"
@@ -541,7 +541,7 @@
       "_comment": "Gated — drops into play partway through. Hidden until the `reveal-gorilla-tape` auto fires (5 of the 8 real-chain flags set, i.e. 3 things left to do). Existing playthroughs that already had it visible keep it; the auto-reveal is a no-op for them.",
       "name": "gorilla tape",
       "media": 3723,
-      "x": 43.9, "y": 22.2, "w": 9, "rot": 0,
+      "x": 45, "y": 38.1, "w": 12.8, "rot": 0,
       "state": "hidden",
       "draggable": true,
       "hint": "industrial strength"
@@ -549,7 +549,7 @@
     "duct-banana": {
       "name": "duct-taped banana",
       "media": 3726,
-      "x": 88.5, "y": 23.9, "w": 9, "rot": 0,
+      "x": 90.3, "y": 17.9, "w": 21.4, "rot": 0,
       "state": "hidden",
       "hint": "$6.4M, somehow"
     },
@@ -557,14 +557,14 @@
       "_comment": "Never rendered on the drawer — only used as the target of the `video:` action when the player sells the banana. State stays hidden; view set to a non-existent bucket so author mode + render skip it.",
       "name": "Faberge Egg video",
       "media": 3727,
-      "x": 50, "y": 50, "w": 1, "rot": 0,
+      "x": 102.8, "y": 59.6, "w": 39.9, "rot": 0,
       "state": "hidden",
       "view": "_none"
     },
     "ledger": {
       "name": "Ledger hardware wallet",
       "media": 3682,
-      "x": 58.4, "y": 43.7, "w": 13.2, "rot": 0,
+      "x": 58.4, "y": 43.7, "w": 11.2, "rot": 0,
       "state": "hidden",
       "view": "secret",
       "hint": "tap to wake"
