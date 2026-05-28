@@ -239,12 +239,12 @@
             <button type="button"
                     class="tc-secret-drawer__reset"
                     data-tc-secret-reset
-                    aria-label="<?php esc_attr_e( 'Start the puzzle over', 'tc-ventures-child' ); ?>"
-                    title="<?php esc_attr_e( 'Start over', 'tc-ventures-child' ); ?>">
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    aria-label="<?php esc_attr_e( 'Start the puzzle over', 'tc-ventures-child' ); ?>">
+                <svg class="tc-secret-drawer__reset-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path d="M12 5V2L7 7l5 5V8c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8-3.6-8-8-8z"
                           fill="currentColor"/>
                 </svg>
+                <span class="tc-secret-drawer__reset-tip" aria-hidden="true">start over</span>
             </button>
             <button type="button"
                     class="tc-secret-drawer__close"
