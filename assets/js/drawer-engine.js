@@ -35,14 +35,17 @@
  *
  * --- Interaction-level gates ------------------------------------------
  *   once:true        — fire at most one time
- *   require:{ all:[flag,…], none:[flag,…] }
+ *   require:{ all:[flag,…], none:[flag,…], minOf:{flags:[…],count:N} }
  *                    — precondition gate. An interaction is invisible to
  *                      the engine until its flags match. Used for chains
  *                      that depend on earlier progress (the padlock only
  *                      opens with keys + charms, the prize fork branches
- *                      on `dust-cleared`, etc.). `all` and `none` are
- *                      both optional; both default to []. The flag set
- *                      is global to the puzzle.
+ *                      on `dust-cleared`, etc.). `all`, `none`, `minOf`
+ *                      are all optional. `minOf` fires when at least
+ *                      `count` of the listed flags are set (used to drop
+ *                      the gorilla tape into play partway through, when
+ *                      3 of the 8 real-chain flags remain). The flag
+ *                      set is global to the puzzle.
  *
  * --- Action verbs (inside an interaction's "do" list) ----------------
  *   reveal:[ids]  hide:[ids]  remove:[ids]   — state changes
@@ -560,6 +563,13 @@ window.TCDrawerEngine = ( function () {
         }
         if ( req.none ) {
             for ( i = 0; i < req.none.length; i++ ) if ( W.flags[ req.none[ i ] ] ) return false;
+        }
+        if ( req.minOf ) {
+            var pool = req.minOf.flags || [];
+            var need = req.minOf.count || 0;
+            var seen = 0;
+            for ( i = 0; i < pool.length; i++ ) if ( W.flags[ pool[ i ] ] ) seen++;
+            if ( seen < need ) return false;
         }
         return true;
     }

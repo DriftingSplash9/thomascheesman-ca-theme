@@ -18,7 +18,7 @@
     "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). Kids Camera → PhotoSwipe gallery of 14 actual goofy kid-camera shots (ids 3731–3744 incl. an Elf shot) via the engine's `gallery:` action, then keep/bin. The rest are click→clue flavour beats: Pac-Man arcade (coin-insert + game), Yin-Yang, Ganesha, Shark, Speaker, Bubbles (animated bubbles), Cards, Nivea (toss), Teaspoon, Banana Muffin (eat). Handwritten note has moved to chain 8 (lives in the secret drawer alongside the Ledger).",
     "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set. Dust state no longer gates the keys (it's pure flavour now — both Top Prize and Golden Egg paths can be reached on the same playthrough). Combine keys + padlock → flip to secret view, reveal Ledger AND the handwritten note (passcode hint). Chain 14 takes it from there. The Golden Egg fork in chain 14 still requires dust-appeared + !dust-cleared so the two terminals remain distinct.",
     "15-wallet":    "Flip MFF → reveal 67-sticker. Coins live in the drawer; must be inserted into the Pac-Man arcade first, then go in the wallet. Combine each of: 67-sticker, $20 bills, GP card, coins, auction receipt WITH the Bifold Wallet → goes in. Auto-reveal: when wallet has all FIVE, the 67676767 passcode surfaces (the Ledger's gate, used in chain 14).",
-    "14-prizes":    "ENDGAME. Banana + Gorilla Tape → Duct-Taped Banana (the hero shot). Click Ledger (secret view, after padlock) → passcode 67676767 → TOP PRIZE (notify). Click duct-banana when all chain flags set + dust-appeared + !dust-cleared → EAT or SELL choice: EAT = GOLDEN EGG (notify); SELL = $6.4M + Faberge video #3727 + BIGGER REWARD (notify)."
+    "14-prizes":    "ENDGAME. Gorilla Tape is hidden at start — drops in via `reveal-gorilla-tape` auto when 5 of the 8 real-chain flags are set (3 things left). Banana + Gorilla Tape → Duct-Taped Banana. Click Ledger (secret view, after padlock) → passcode 67676767 → TOP PRIZE (notify). Click duct-banana when all chain flags set + dust still on (none: dust-cleared) → EAT (Golden Egg) / SELL ($6.4M Faberge Bigger Reward). Click duct-banana when all chain flags set + dust-cleared → EAT (Golden Egg) / SELL ($0.67 joke clue, no notify — the responsible-cleanup penalty)."
   },
 
   "surfaces": {
@@ -538,10 +538,11 @@
       "hint": "still good"
     },
     "gorilla-tape": {
+      "_comment": "Gated — drops into play partway through. Hidden until the `reveal-gorilla-tape` auto fires (5 of the 8 real-chain flags set, i.e. 3 things left to do). Existing playthroughs that already had it visible keep it; the auto-reveal is a no-op for them.",
       "name": "gorilla tape",
       "media": 3723,
       "x": 43.9, "y": 22.2, "w": 9, "rot": 0,
-      "state": "shown",
+      "state": "hidden",
       "draggable": true,
       "hint": "industrial strength"
     },
@@ -1457,6 +1458,21 @@
     },
 
     {
+      "id": "reveal-gorilla-tape",
+      "_comment": "Drops the gorilla tape into the drawer once the player is 5/8 of the way through the real chains (i.e. 3 things left to do). Keeps the duct-banana fork from being available too early. Silent reveal — no clue/flash — so existing playthroughs (where the tape was already visible) don't get a false-alarm sweep on first load.",
+      "on": "auto",
+      "once": true,
+      "require": {
+        "minOf": {
+          "flags": ["screw-tight", "receipt-dispensed", "duck-stage-2", "whitepaper-read", "lantern-lit", "train-ready", "sunglasses-made", "proverb-read"],
+          "count": 5
+        }
+      },
+      "do": [
+        { "reveal": ["gorilla-tape"] }
+      ]
+    },
+    {
       "id": "reveal-padlock-keys",
       "_comment": "Fires when every real-chain flag is set. Dust is purely flavour now — neither clearing nor leaving it gates the keys. The Golden Egg fork in chain 14 still requires dust-appeared + !dust-cleared so the two terminals stay distinguishable, but both can co-exist on the same playthrough.",
       "on": "auto",
@@ -1606,7 +1622,7 @@
     },
     {
       "id": "duct-banana-prize-fork",
-      "_comment": "The Golden Egg moment. Player has tidied the drawer AND deliberately left the dust AND made the duct-taped banana. Choice: EAT (golden-egg notify) or SELL ($6.4M → Faberge video → bigger-reward notify).",
+      "_comment": "The full-payoff fork. Player has made the duct-banana AND completed every chain AND deliberately LEFT the dust. EAT = Golden Egg (golden-egg notify). SELL = $6.4M Faberge → bigger-reward notify. If the player has dusted (dust-cleared set), the require fails and duct-banana-tidy-fork fires instead.",
       "on": "click", "object": "duct-banana",
       "once": true,
       "require": { "all": ["banana-taped", "screw-tight", "dust-appeared", "receipt-dispensed", "duck-stage-2", "whitepaper-read", "lantern-lit", "train-ready", "sunglasses-made", "proverb-read"], "none": ["dust-cleared"] },
@@ -1627,6 +1643,31 @@
                 { "flag": "banana-sold" },
                 { "flag": "faberge-commissioned" },
                 { "notify": "bigger-reward" }
+              ]}
+            ]
+        }}
+      ]
+    },
+    {
+      "id": "duct-banana-tidy-fork",
+      "_comment": "The dust-was-cleared fork. Same choice prompt — EAT still pays out Golden Egg (the eat path is unconditional flavour) — but SELL only fetches $0.67 instead of $6.4M, with no bigger-reward notify. The 'tidy player' penalty: respect the place a little less, the auction house respects the work a little more. Once: true mirrors the prize-fork.",
+      "on": "click", "object": "duct-banana",
+      "once": true,
+      "require": { "all": ["banana-taped", "screw-tight", "dust-cleared", "receipt-dispensed", "duck-stage-2", "whitepaper-read", "lantern-lit", "train-ready", "sunglasses-made", "proverb-read"] },
+      "do": [
+        { "choice": {
+            "prompt": "The duct-taped banana, in your hand.\n\nYou could eat it. Or you could sell it.",
+            "options": [
+              { "label": "EAT it",  "do": [
+                { "clue": "You peel the tape, peel the banana, take a bite.\n\nDelicious. Quietly perfect.\n\n(The GOLDEN EGG. The drawer remembers.)" },
+                { "remove": ["duct-banana"] },
+                { "flag": "golden-egg-eaten" },
+                { "notify": "golden-egg" }
+              ]},
+              { "label": "SELL it", "do": [
+                { "clue": "You take it to the auction house.\n\nThe gavel falls.\n\n  Sold: $0.67 CAD.\n\n(Not the $6.4M the real one fetched.\nThe drawer was too tidy — the mystique\ndidn't transfer. Should have left the dust.)" },
+                { "remove": ["duct-banana"] },
+                { "flag": "banana-sold-cheap" }
               ]}
             ]
         }}
