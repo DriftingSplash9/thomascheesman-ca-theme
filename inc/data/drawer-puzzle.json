@@ -7,7 +7,7 @@
     "1-start":      "screwdriver + screw → dust appears → duster clears it → reveals duck pin (Top Prize path). Leaving dust = Golden Egg path.",
     "2-hulk":       "Hulk + hammer → armed Hulk → smash silver nugget → Rings (Find Ring ✓). Torch on Rings → 'one PEZ dispenser to rule them all'. Click PEZ → Auction Receipt ($264M Faberge foreshadow).",
     "3-duck":       "Mini Pump + small duck → midway duck → giant duck. Click giant duck → fullscreen browser crush.",
-    "4-scroll":     "BIC Lighter + Rolled Scroll → Bitcoin whitepaper clue. BIC + Jack-o-Lantern → pumpkin lit. The BIC stays in the drawer for both.",
+    "4-scroll":     "BIC Lighter + Rolled Scroll → Bitcoin whitepaper unfurls as an in-puzzle parchment scroll (engine `scroll:` action renders the PDF page-by-page via lazy-loaded PDF.js). BIC + Jack-o-Lantern → pumpkin lit. The BIC stays in the drawer for both.",
     "5-hotwheels":  "STUB until Thomas + Daniel film the bracket. 13.5 sticker (hover hint) + two race cars + Hot Rod collectible. Click any car → 'race video coming soon' clue.",
     "6-glasses":    "Ensure (alertness) → Glasses Case → Eyeglasses → combine with Clip-Ons → Sunglasses → click reveals the Elf prelude ('See you again Dec. 1st 2026...'). Fugglers Notebook is the in-puzzle hint for the clip-on combine.",
     "7-batteries":  "Car Keys → Toy Train (unlocks battery cover) → AAA Batteries → Train ready → click → chugs. iPhone is direct: click → plays the duct-taped-banana YouTube doc (research that quietly seeds the Golden Egg).",
@@ -789,13 +789,13 @@
 
     {
       "id": "burn-scroll",
-      "_comment": "Combine fires the clue AND opens the actual Bitcoin whitepaper PDF in a new tab. The `link:` action runs inside the same user gesture as the combine so the popup blocker should pass.",
+      "_comment": "Combine fires a clue AND unfurls the actual Bitcoin whitepaper as an in-puzzle parchment scroll (engine `scroll:` action, lazy-loaded PDF.js). The recap clue sits behind the scroll at z-80; player closes the scroll, dismisses the clue. Previously this opened the PDF in a new browser tab, which broke the spell and didn't fit on mobile.",
       "on": "combine", "a": "bic-lighter", "b": "rolled-scroll",
       "once": true,
       "do": [
         { "effect": "flash" },
-        { "clue": "THE SCROLL UNROLLS\n\n  Bitcoin: A Peer-to-Peer Electronic\n  Cash System\n\n  — Satoshi Nakamoto, 2008\n\n(You hold the genesis of the thing.\nThe full whitepaper opens in a new tab.)" },
-        { "link": "https://thomascheesman.ca/wp-content/uploads/2026/05/bitcoin.pdf" },
+        { "clue": "THE SCROLL UNROLLS\n\n  Bitcoin: A Peer-to-Peer Electronic\n  Cash System\n\n  — Satoshi Nakamoto, 2008\n\n(You hold the genesis of the thing.)" },
+        { "scroll": "https://thomascheesman.ca/wp-content/uploads/2026/05/bitcoin.pdf" },
         { "remove": ["rolled-scroll"] },
         { "flag": "whitepaper-read" }
       ]

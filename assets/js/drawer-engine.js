@@ -121,6 +121,15 @@
  *                   to follow the gallery with a keep/bin choice).
  *                   PhotoSwipe core is lazy-loaded from jsDelivr on
  *                   first use.
+ *   scroll:"<url>"  — open the supplied PDF in a parchment-scroll
+ *                   modal: two wooden spindle caps top + bottom,
+ *                   scrollable parchment middle that renders the
+ *                   PDF page-by-page (sepia + multiply blend so the
+ *                   stark whitepaper takes on the cream of aged
+ *                   paper). PDF.js is lazy-loaded from jsDelivr on
+ *                   first use. Used by the BIC + rolled-scroll
+ *                   combine (chain 4) to keep the Bitcoin whitepaper
+ *                   in the puzzle world rather than a popup tab.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -628,6 +637,7 @@ window.TCDrawerEngine = ( function () {
             if ( a.crash )      doCrash( a.crash );
             if ( a.link )       openLink( a.link );
             if ( a.gallery )    playGallery( a.gallery, a.after );
+            if ( a.scroll )     showScroll( a.scroll );
         }
     }
 
@@ -688,6 +698,124 @@ window.TCDrawerEngine = ( function () {
             open();
         } ).catch( function ( err ) {
             console.warn( '[drawer-engine] PhotoSwipe failed to load.', err );
+        } );
+    }
+
+    // Open a PDF inside a parchment-scroll modal. The action accepts
+    // either a plain URL string ("scroll": "https://…") or an object
+    // ("scroll": { url, after:[…] }) — the latter mirrors gallery's
+    // after-chain pattern so a future caller can sequence actions
+    // post-close. PDF.js is lazy-loaded from jsDelivr the first time
+    // a scroll opens; the module is memoised so subsequent opens are
+    // a single network round-trip for the PDF itself.
+    var pdfjs = null;
+    function loadPdfJs() {
+        if ( pdfjs ) return Promise.resolve( pdfjs );
+        var base = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/';
+        return import( base + 'pdf.min.mjs' ).then( function ( mod ) {
+            pdfjs = mod;
+            // The worker URL has to be set before getDocument() — once,
+            // module-globally. jsDelivr serves the matching worker mjs
+            // at the same versioned path.
+            pdfjs.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.mjs';
+            return pdfjs;
+        } );
+    }
+    function showScroll( spec ) {
+        if ( ! overlay ) return;
+        var url, afterList;
+        if ( typeof spec === 'string' ) {
+            url = spec;
+        } else if ( spec && typeof spec === 'object' ) {
+            url = spec.url;
+            afterList = spec.after;
+        }
+        if ( ! url ) return;
+
+        var stage = document.createElement( 'div' );
+        stage.className = 'tc-drawer-scroll';
+        stage.setAttribute( 'role', 'dialog' );
+        stage.setAttribute( 'aria-modal', 'true' );
+        stage.innerHTML =
+            '<div class="tc-drawer-scroll__paper">' +
+                '<div class="tc-drawer-scroll__cap tc-drawer-scroll__cap--top" aria-hidden="true"></div>' +
+                '<div class="tc-drawer-scroll__parchment" data-tc-scroll-parchment>' +
+                    '<p class="tc-drawer-scroll__loading">unrolling…</p>' +
+                '</div>' +
+                '<div class="tc-drawer-scroll__cap tc-drawer-scroll__cap--bottom" aria-hidden="true"></div>' +
+            '</div>' +
+            '<button type="button" class="tc-drawer-scroll__exit" aria-label="Close scroll">&times;</button>';
+
+        var closed = false;
+        function close() {
+            if ( closed ) return;
+            closed = true;
+            document.removeEventListener( 'keydown', onKey, true );
+            stage.classList.remove( 'is-in' );
+            setTimeout( function () { if ( stage.parentNode ) stage.remove(); }, 280 );
+            if ( afterList && afterList.length ) {
+                runActions( afterList );
+                save();
+                render();
+                sweepAutoInteractions();
+            }
+        }
+        function onKey( e ) {
+            if ( e.key === 'Escape' || e.key === 'Esc' ) {
+                e.stopImmediatePropagation();
+                close();
+            }
+        }
+        stage.addEventListener( 'click', function ( e ) { if ( e.target === stage ) close(); } );
+        stage.querySelector( '.tc-drawer-scroll__exit' ).addEventListener( 'click', close );
+        document.addEventListener( 'keydown', onKey, true );
+
+        overlay.appendChild( stage );
+        void stage.offsetWidth;
+        stage.classList.add( 'is-in' );
+
+        var parchment = stage.querySelector( '[data-tc-scroll-parchment]' );
+
+        loadPdfJs().then( function ( lib ) {
+            return lib.getDocument( url ).promise;
+        } ).then( function ( pdf ) {
+            if ( closed ) return;
+            parchment.innerHTML = '';
+            // Render pages sequentially so the user can start reading
+            // the top of the scroll while the bottom is still painting,
+            // and so PDF.js doesn't try to render N canvases in
+            // parallel on a low-power device.
+            var chain = Promise.resolve();
+            var _loop = function ( n ) {
+                chain = chain.then( function () {
+                    if ( closed ) return;
+                    return pdf.getPage( n ).then( function ( page ) {
+                        if ( closed ) return;
+                        // Render at 2× the parchment width so the canvas
+                        // stays crisp on HiDPI without ballooning memory.
+                        var parchWidth = parchment.clientWidth - 44; // minus horizontal padding
+                        var baseViewport = page.getViewport( { scale: 1 } );
+                        var scale = ( parchWidth * 2 ) / baseViewport.width;
+                        var viewport = page.getViewport( { scale: scale } );
+                        var canvas = document.createElement( 'canvas' );
+                        canvas.className = 'tc-drawer-scroll__page';
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        parchment.appendChild( canvas );
+                        return page.render( {
+                            canvasContext: canvas.getContext( '2d' ),
+                            viewport: viewport
+                        } ).promise;
+                    } );
+                } );
+            };
+            for ( var i = 1; i <= pdf.numPages; i++ ) _loop( i );
+            return chain;
+        } ).catch( function ( err ) {
+            console.warn( '[drawer-engine] scroll: PDF failed to load.', err );
+            if ( ! closed ) {
+                parchment.innerHTML = '<p class="tc-drawer-scroll__error">The scroll crumbles before you can read it.</p>';
+            }
         } );
     }
 

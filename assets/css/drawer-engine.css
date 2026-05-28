@@ -1006,3 +1006,162 @@
     .tc-pacman { transition: none; }
     .tc-pacman__btn { transition: none; }
 }
+
+/* ----------------------------------------------------------------
+   ANCIENT SCROLL — `scroll:<url>` action. The BIC + rolled-scroll
+   combine (chain 4) burns the wax seal and the Bitcoin whitepaper
+   unfurls in-puzzle as a parchment scroll: two wooden spindle caps
+   top + bottom, a scrollable cream parchment middle that renders
+   the PDF page-by-page via lazy-loaded PDF.js. Replaces the prior
+   `link:` action that opened the PDF in a new browser tab — the
+   tab popup broke the puzzle's spell and was awkward on mobile.
+
+   Visual stack:
+     .tc-drawer-scroll                (full overlay backdrop)
+     └─ .tc-drawer-scroll__paper      (centered scroll container)
+         ├─ .tc-drawer-scroll__cap--top    (wooden dowel + brass bands)
+         ├─ .tc-drawer-scroll__parchment   (scrollable text area)
+         │   └─ canvas.tc-drawer-scroll__page (one per PDF page)
+         └─ .tc-drawer-scroll__cap--bottom (wooden dowel + brass bands)
+   The scroll "unfurls" via a scaleY transition from the centre. */
+.tc-drawer-scroll {
+    position: absolute;
+    inset: 0;
+    z-index: 86;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 16px;
+    background: radial-gradient(ellipse at center,
+        rgba(20, 12, 4, 0.86) 0%,
+        rgba(8, 4, 0, 0.96) 100%);
+    opacity: 0;
+    transition: opacity 0.28s ease;
+}
+.tc-drawer-scroll.is-in { opacity: 1; }
+
+.tc-drawer-scroll__paper {
+    position: relative;
+    width: min(720px, 96%);
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    transform: scaleY(0.08);
+    transform-origin: center;
+    transition: transform 0.55s cubic-bezier(0.32, 1.45, 0.55, 1);
+    filter: drop-shadow(0 24px 36px rgba(0, 0, 0, 0.65));
+}
+.tc-drawer-scroll.is-in .tc-drawer-scroll__paper {
+    transform: scaleY(1);
+}
+
+/* Wooden spindle dowel — a horizontal cylinder. Layered linear
+   gradients give the cylindrical curvature; the inset box-shadows
+   paint the brass end-bands without needing extra elements. The
+   negative horizontal margin lets each cap overhang the parchment
+   so the rod reads as a real wooden dowel, not a rounded edge. */
+.tc-drawer-scroll__cap {
+    flex: 0 0 auto;
+    height: 38px;
+    margin: 0 -22px;
+    border-radius: 19px;
+    background:
+        linear-gradient(180deg,
+            rgba(255, 230, 180, 0.45) 0%,
+            rgba(255, 230, 180, 0.05) 22%,
+            rgba(0, 0, 0, 0)          50%,
+            rgba(0, 0, 0, 0.55)       100%),
+        linear-gradient(180deg,
+            #5a3a1c 0%,
+            #7a4f24 30%,
+            #4a2f15 65%,
+            #2c1a0a 100%);
+    box-shadow:
+        inset 18px 0 0 -3px #6e4a18,
+        inset -18px 0 0 -3px #6e4a18,
+        inset 22px 0 0 -4px #b5933d,
+        inset -22px 0 0 -4px #b5933d,
+        0 4px 6px rgba(0, 0, 0, 0.45);
+    position: relative;
+    z-index: 2;
+}
+.tc-drawer-scroll__cap--top    { border-radius: 19px 19px 6px 6px; }
+.tc-drawer-scroll__cap--bottom { border-radius: 6px 6px 19px 19px; }
+
+/* The parchment — aged cream, vignetted edges via inset shadows.
+   Scrollable on overflow. Rendered PDF pages stack inside. */
+.tc-drawer-scroll__parchment {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 18px 22px;
+    background:
+        repeating-linear-gradient(180deg,
+            rgba(120, 80, 30, 0)    0px,
+            rgba(120, 80, 30, 0)    160px,
+            rgba(120, 80, 30, 0.04) 161px,
+            rgba(120, 80, 30, 0)    162px),
+        radial-gradient(ellipse at center,
+            #f4e3bf 0%,
+            #e8d099 65%,
+            #c9a86a 100%);
+    box-shadow:
+        inset 0 0  60px rgba(80, 50, 10, 0.45),
+        inset 0 8px 24px rgba(60, 35, 0, 0.4),
+        inset 0 -8px 24px rgba(60, 35, 0, 0.4);
+    color: #3a2410;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Each rendered PDF page sits on the parchment. Sepia + multiply
+   blend so the stark whitepaper turns the cream of aged paper
+   rather than punching through as a bright rectangle. */
+.tc-drawer-scroll__page {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 auto 14px;
+    background: transparent;
+    filter: sepia(0.65) contrast(0.95) brightness(0.97);
+    mix-blend-mode: multiply;
+}
+.tc-drawer-scroll__page:last-child { margin-bottom: 0; }
+
+.tc-drawer-scroll__loading,
+.tc-drawer-scroll__error {
+    font-family: 'Caveat', cursive;
+    font-size: 1.6rem;
+    text-align: center;
+    padding: 40px 20px;
+    color: #6a4818;
+}
+
+.tc-drawer-scroll__exit {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(30, 18, 8, 0.7);
+    border: 1px solid rgba(184, 146, 78, 0.5);
+    color: #e8d099;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 3;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+.tc-drawer-scroll__exit:hover,
+.tc-drawer-scroll__exit:focus-visible {
+    background: rgba(184, 146, 78, 0.85);
+    color: #1a0e04;
+    transform: scale(1.08);
+    outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tc-drawer-scroll,
+    .tc-drawer-scroll__paper { transition: none; }
+    .tc-drawer-scroll__paper { transform: scaleY(1); }
+}
