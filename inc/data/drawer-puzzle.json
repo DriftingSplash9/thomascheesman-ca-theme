@@ -1325,10 +1325,10 @@
     },
     {
       "id": "read-handwritten-note",
-      "_comment": "Note lives in the secret drawer (view: secret), revealed alongside the Ledger when the padlock opens. Click = the passcode hint, pointing the player at the wallet.",
+      "_comment": "Note lives in the secret drawer (view: secret), revealed alongside the Ledger when the padlock opens. Click = lightbox the actual handwritten image full-screen (Thomas's real handwriting carries the passcode hint). Reuses the engine's `gallery:` action with a single-image source so the player gets PhotoSwipe's zoom + tap-to-close for free.",
       "on": "click", "object": "handwritten-note",
       "do": [
-        { "clue": "The note unfolds. Familiar handwriting:\n\n  Behind this lock is what you came for.\n  The number you need is written inside\n  the wallet you're carrying.\n\n  Everything you need —\n\n  for you" },
+        { "gallery": [3674] },
         { "flag": "note-read" }
       ]
     },
