@@ -777,10 +777,12 @@
     },
     {
       "id": "duck-crush-browser",
-      "_comment": "Giant duck falls from above and SHATTERS the browser. Uses the `crash:` action — full-viewport drop-and-crack gag, ~5.4s total. Replaces the older `fullscreen:` approach which was just an OS-level fullscreen swap.",
+      "_comment": "Giant duck falls from above and SHATTERS the browser. Crash overlay holds its own copy of the image, so removing the in-drawer duck immediately doesn't kill the animation — the gag plays out cleanly, and when it ends there's no giant duck cluttering the drawer.",
       "on": "click", "object": "duck-giant",
+      "once": true,
       "do": [
         { "crash": "duck-giant" },
+        { "remove": ["duck-giant"] },
         { "flag": "duck-crushed" }
       ]
     },
@@ -1002,26 +1004,20 @@
       ]
     },
     {
-      "id": "train-chugs",
-      "on": "click", "object": "toy-train",
-      "require": { "all": ["train-ready"], "none": ["train-chugged"] },
-      "do": [
-        { "clue": "*chugga chugga chugga*\n\nThe little train rumbles across the desk,\ndoes a tight loop, and stops where it started." },
-        { "flag": "train-chugged" }
-      ]
-    },
-    {
       "id": "train-chug-or-bin",
+      "_comment": "Single post-batteries click interaction. Choice modal offers chug-it OR to-the-toy-bin — bin available from the very first click after train-ready, no need to chug once first. Replaces the older two-stage flow.",
       "on": "click", "object": "toy-train",
-      "require": { "all": ["train-chugged"] },
+      "require": { "all": ["train-ready"] },
       "do": [
         { "choice": {
-            "prompt": "The train sits, ready for another lap.\n\nChug it again, or put it in the kids' toy bin?",
+            "prompt": "The toy train, batteries in.\n\nChug it across the desk, or put it in\nthe kids' toy bin?",
             "options": [
-              { "label": "chug it again", "do": [
-                { "clue": "*chugga chugga chugga*" }
+              { "label": "chug it across", "do": [
+                { "clue": "*chugga chugga chugga*\n\nThe little train rumbles across, does a tight\nloop, and stops where it started." },
+                { "flag": "train-chugged" }
               ]},
               { "label": "to the toy bin", "do": [
+                { "clue": "Off to the kids' room with the rest of\nthe rolling stock." },
                 { "remove": ["toy-train"] },
                 { "flag": "train-binned" }
               ]}
