@@ -16,7 +16,7 @@
     "12-keepsakes": "Spinning Top + Toy Jet. Click each → a sentimental keepsake clue. No interactions between them; just two small artifacts that earn a moment.",
     "13-marbles":   "Two marbles. Click each → flavour clue. The footer-marble swap + pinball ball-colour matching is a separate cross-component refactor.",
     "16-easter":    "Standalone easter eggs + 'this is me' lore. Astronaut sticker → blackhole effect (engine animation). Kids Camera → PhotoSwipe gallery of 14 actual goofy kid-camera shots (ids 3731–3744 incl. an Elf shot) via the engine's `gallery:` action, then keep/bin. The rest are click→clue flavour beats: Pac-Man arcade (coin-insert + game), Yin-Yang, Ganesha, Shark, Speaker, Bubbles (animated bubbles), Cards, Nivea (toss), Teaspoon, Banana Muffin (eat). Handwritten note has moved to chain 8 (lives in the secret drawer alongside the Ledger).",
-    "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set + dust-cleared. Combine keys + padlock → flip to secret view, reveal Ledger AND the handwritten note (passcode hint). Chain 14 takes it from there. The Golden Egg fork bypasses this entirely — it lives in chain 14 with require: { all: ['dust-appeared'], none: ['dust-cleared'] }.",
+    "8-padlock":    "Auto-reveal padlock keys when ALL real chain flags are set. Dust state no longer gates the keys (it's pure flavour now — both Top Prize and Golden Egg paths can be reached on the same playthrough). Combine keys + padlock → flip to secret view, reveal Ledger AND the handwritten note (passcode hint). Chain 14 takes it from there. The Golden Egg fork in chain 14 still requires dust-appeared + !dust-cleared so the two terminals remain distinct.",
     "15-wallet":    "Flip MFF → reveal 67-sticker. Coins live in the drawer; must be inserted into the Pac-Man arcade first, then go in the wallet. Combine each of: 67-sticker, $20 bills, GP card, coins, auction receipt WITH the Bifold Wallet → goes in. Auto-reveal: when wallet has all FIVE, the 67676767 passcode surfaces (the Ledger's gate, used in chain 14).",
     "14-prizes":    "ENDGAME. Banana + Gorilla Tape → Duct-Taped Banana (the hero shot). Click Ledger (secret view, after padlock) → passcode 67676767 → TOP PRIZE (notify). Click duct-banana when all chain flags set + dust-appeared + !dust-cleared → EAT or SELL choice: EAT = GOLDEN EGG (notify); SELL = $6.4M + Faberge video #3727 + BIGGER REWARD (notify)."
   },
@@ -1455,14 +1455,14 @@
 
     {
       "id": "reveal-padlock-keys",
-      "_comment": "Fires when every real-chain flag is set AND the player has cleared the dust (Top Prize path). The Golden Egg fork bypasses this — it has its own auto in chain 14 that gates on dust-appeared + !dust-cleared.",
+      "_comment": "Fires when every real-chain flag is set. Dust is purely flavour now — neither clearing nor leaving it gates the keys. The Golden Egg fork in chain 14 still requires dust-appeared + !dust-cleared so the two terminals stay distinguishable, but both can co-exist on the same playthrough.",
       "on": "auto",
       "once": true,
-      "require": { "all": ["screw-tight", "dust-cleared", "receipt-dispensed", "duck-stage-2", "whitepaper-read", "lantern-lit", "train-ready", "sunglasses-made", "proverb-read"] },
+      "require": { "all": ["screw-tight", "receipt-dispensed", "duck-stage-2", "whitepaper-read", "lantern-lit", "train-ready", "sunglasses-made", "proverb-read"] },
       "do": [
         { "effect": "flash" },
         { "reveal": ["padlock-keys"] },
-        { "clue": "Something glints in the corner of the drawer.\n\nA set of keys, on a kid-charm chain — a tiny\nhandprint and an 'I love you' charm.\n\n(The drawer is finally tidy enough that they\nsurface.)" },
+        { "clue": "Something glints in the corner of the drawer.\n\nA set of keys, on a kid-charm chain — a tiny\nhandprint and an 'I love you' charm.\n\n(They've been here the whole time.)" },
         { "flag": "keys-revealed" }
       ]
     },

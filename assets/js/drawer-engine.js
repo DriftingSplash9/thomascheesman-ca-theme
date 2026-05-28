@@ -181,6 +181,11 @@ window.TCDrawerEngine = ( function () {
         applySurface();
         render();
         if ( AUTHOR ) buildAuthorToolbar();
+        // Pick up any auto-fires whose `require` is already satisfied at
+        // boot — e.g. a saved game whose preconditions were loosened by
+        // a puzzle JSON edit, or a player whose final qualifying flag
+        // got set in a session that closed before the sweep could land.
+        else sweepAutoInteractions();
     }
 
     function freshWorld() {
