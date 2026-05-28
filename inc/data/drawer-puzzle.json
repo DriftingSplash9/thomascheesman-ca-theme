@@ -789,11 +789,13 @@
 
     {
       "id": "burn-scroll",
+      "_comment": "Combine fires the clue AND opens the actual Bitcoin whitepaper PDF in a new tab. The `link:` action runs inside the same user gesture as the combine so the popup blocker should pass.",
       "on": "combine", "a": "bic-lighter", "b": "rolled-scroll",
       "once": true,
       "do": [
         { "effect": "flash" },
-        { "clue": "THE SCROLL UNROLLS\n\n  Bitcoin: A Peer-to-Peer Electronic\n  Cash System\n\n  — Satoshi Nakamoto, 2008\n\n(You hold the genesis of the thing.)" },
+        { "clue": "THE SCROLL UNROLLS\n\n  Bitcoin: A Peer-to-Peer Electronic\n  Cash System\n\n  — Satoshi Nakamoto, 2008\n\n(You hold the genesis of the thing.\nThe full whitepaper opens in a new tab.)" },
+        { "link": "https://thomascheesman.ca/wp-content/uploads/2026/05/bitcoin.pdf" },
         { "remove": ["rolled-scroll"] },
         { "flag": "whitepaper-read" }
       ]

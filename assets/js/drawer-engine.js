@@ -106,6 +106,11 @@
  *                   an SVG crack pattern emanating from impact, holds
  *                   for ~3.5s, then fades out. Total lifetime ~5.4s.
  *                   Used by the giant-duck click.
+ *   link:"<url>"  — open an https:// URL in a new tab via
+ *                   window.open(noopener, noreferrer). Used to send
+ *                   the player to the actual Bitcoin whitepaper PDF
+ *                   when the scroll burns open. Non-https URLs are
+ *                   rejected for safety.
  *
  * --- Persistence ------------------------------------------------------
  * The whole world (surface, per-id states, flags, fired once-ids) is
@@ -611,7 +616,18 @@ window.TCDrawerEngine = ( function () {
             if ( a.pacman )     playPacman();
             if ( a.bubbles )    playBubbles( a.bubbles );
             if ( a.crash )      doCrash( a.crash );
+            if ( a.link )       openLink( a.link );
         }
+    }
+
+    // Open an https URL in a new browser tab. Called inside a user-
+    // gesture stack (combine/click → fire → runActions), so the popup
+    // blocker should pass. Non-https rejected to avoid the engine
+    // being a redirect helper for whatever ends up in the JSON.
+    function openLink( url ) {
+        if ( ! url || typeof url !== 'string' ) return;
+        if ( ! /^https:\/\//i.test( url ) ) return;
+        try { window.open( url, '_blank', 'noopener,noreferrer' ); } catch ( e ) {}
     }
 
     // Fire-and-forget milestone ping → inc/drawer-events.php emails
