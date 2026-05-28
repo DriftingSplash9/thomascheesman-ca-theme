@@ -226,6 +226,24 @@ window.TCDrawerEngine = ( function () {
     }
     function reset() {
         try { localStorage.removeItem( LS_KEY ); } catch ( e ) {}
+        // Tear down any in-flight puzzle modals (clue card, video,
+        // passcode, scroll, etc.) so a mid-modal reset doesn't leave
+        // stray overlays floating above a fresh drawer.
+        if ( overlay ) {
+            var selectors = [
+                '.tc-clue', '.tc-passcode', '.tc-drawer-video', '.tc-drawer-youtube',
+                '.tc-drawer-fullscreen', '.tc-drawer-scroll', '.tc-drawer-stream',
+                '.tc-drawer-bubbles', '.tc-drawer-crash', '.tc-fx-blackhole-overlay',
+                '.tc-pacman', '.tc-hangman', '.tc-drawer-flash'
+            ];
+            var nodes = overlay.querySelectorAll( selectors.join( ',' ) );
+            for ( var i = 0; i < nodes.length; i++ ) nodes[ i ].remove();
+            // A few effects mount outside the overlay (e.g. fullscreen).
+            var bodyNodes = document.querySelectorAll( '.tc-drawer-fullscreen' );
+            for ( var j = 0; j < bodyNodes.length; j++ ) bodyNodes[ j ].remove();
+            var stageEl = overlay.querySelector( '.tc-secret-drawer__stage' );
+            if ( stageEl ) stageEl.classList.remove( 'tc-fx-blackhole' );
+        }
         W = freshWorld();
         applySurface();
         render();

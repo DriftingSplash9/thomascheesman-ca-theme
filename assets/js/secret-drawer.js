@@ -121,6 +121,12 @@
             function ( el ) { el.addEventListener( 'click', function () { self.close(); } ); }
         );
 
+        // Reset ↻ — opens a confirmation card before wiping progress.
+        var resetBtn = this.overlay.querySelector( '[data-tc-secret-reset]' );
+        if ( resetBtn ) {
+            resetBtn.addEventListener( 'click', function () { self.showResetConfirm(); } );
+        }
+
         // Global keys: Escape closes popover/overlay; Tab is trapped while open.
         document.addEventListener( 'keydown', function ( e ) {
             if ( e.key === 'Escape' || e.key === 'Esc' ) {
@@ -223,6 +229,67 @@
             console.warn( 'Drawer engine failed to load.' );
         };
         document.head.appendChild( s );
+    };
+
+    // Reset confirmation: small aged-paper card stating what the
+    // brass ↻ will do. Cancel is focused so a stray Enter won't wipe
+    // a near-finished playthrough by accident. Confirm hands off to
+    // TCDrawerEngine.reset(), which itself tears down any open puzzle
+    // modals so the post-reset state is visually clean.
+    SecretDrawer.prototype.showResetConfirm = function () {
+        var self = this;
+        if ( this.confirmEl ) return;
+
+        var modal = document.createElement( 'div' );
+        modal.className = 'tc-secret-drawer__confirm';
+        modal.innerHTML =
+            '<div class="tc-secret-drawer__confirm-panel" role="alertdialog" aria-modal="true" aria-labelledby="tc-rs-title">' +
+                '<h3 class="tc-secret-drawer__confirm-title" id="tc-rs-title">Start over?</h3>' +
+                '<p class="tc-secret-drawer__confirm-body">' +
+                    'This wipes every flag, clue, and surface you\'ve uncovered. ' +
+                    'Good for a second pass — there are paths and gags you might have missed.' +
+                '</p>' +
+                '<div class="tc-secret-drawer__confirm-buttons">' +
+                    '<button type="button" class="tc-secret-drawer__confirm-btn" data-rs-cancel>cancel</button>' +
+                    '<button type="button" class="tc-secret-drawer__confirm-btn tc-secret-drawer__confirm-btn--primary" data-rs-confirm>start over</button>' +
+                '</div>' +
+            '</div>';
+
+        this.overlay.appendChild( modal );
+        this.confirmEl = modal;
+        void modal.offsetWidth;
+        modal.classList.add( 'is-in' );
+
+        var close = function () {
+            modal.classList.remove( 'is-in' );
+            setTimeout( function () {
+                if ( modal.parentNode ) modal.remove();
+                self.confirmEl = null;
+            }, 260 );
+        };
+        modal.querySelector( '[data-rs-cancel]' ).addEventListener( 'click', close );
+        modal.querySelector( '[data-rs-confirm]' ).addEventListener( 'click', function () {
+            if ( window.TCDrawerEngine && window.TCDrawerEngine.reset ) {
+                window.TCDrawerEngine.reset();
+            }
+            close();
+        } );
+        // Click on the backdrop (outside the panel) dismisses.
+        modal.addEventListener( 'click', function ( e ) { if ( e.target === modal ) close(); } );
+        // Escape dismisses — captured here so it doesn't fall through
+        // to the overlay's close handler.
+        var onKey = function ( e ) {
+            if ( e.key === 'Escape' || e.key === 'Esc' ) {
+                e.stopImmediatePropagation();
+                close();
+                document.removeEventListener( 'keydown', onKey, true );
+            }
+        };
+        document.addEventListener( 'keydown', onKey, true );
+
+        // Safer default focus — Enter on cancel just dismisses.
+        var cancelBtn = modal.querySelector( '[data-rs-cancel]' );
+        if ( cancelBtn ) cancelBtn.focus();
     };
 
     SecretDrawer.prototype.close = function () {
