@@ -1236,9 +1236,12 @@
 
     {
       "id": "astronaut-blackhole",
+      "_comment": "Click the astronaut → six-phase cosmic blackhole event (shake → swirling accretion disk + event horizon → screen-engulfing void → silence → white-flash rebound). The sticker is consumed — the engine's `remove:` action takes it out of the stage immediately, but the effect captures a clone into its own overlay first so the sucked-in visual lands. Once: true (you only get one blackhole per puzzle).",
       "on": "click", "object": "astronaut-sticker",
+      "once": true,
       "do": [
         { "effect": "blackhole" },
+        { "remove": ["astronaut-sticker"] },
         { "flag": "blackhole-seen" }
       ]
     },

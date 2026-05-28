@@ -308,19 +308,184 @@
 }
 
 /* ----------------------------------------------------------------
-   BLACKHOLE — the astronaut sticker's gag. Spirals the stage down
-   to a near-singularity, then springs back. Pure CSS. */
+   BLACKHOLE — the astronaut sticker's gag.
+   Six-phase cosmic event (~2.8s total):
+     0.0 – 0.7s  shake + chromatic aberration tint as the rift opens
+     0.7 – 1.4s  swirling accretion disk + event-horizon ring grow
+     1.4 – 1.9s  stage collapses into the void; everything black
+     1.9 – 2.2s  silent singularity
+     2.2 – 2.4s  blinding white flash + rebound impulse
+     2.4 – 2.8s  fade back to a clean drawer (sans astronaut)
+
+   The stage itself does the shake + implosion (.tc-fx-blackhole
+   class). The cosmic visuals — accretion disk, event horizon, void,
+   flash, the sucked-in astronaut — live in a SEPARATE overlay
+   element (.tc-fx-blackhole-overlay) appended to the drawer overlay
+   so they don't scale to nothing along with the imploding stage. */
+
 .tc-fx-blackhole {
-    animation: tc-blackhole 1.5s cubic-bezier(0.55, 0, 0.5, 1.18) both;
+    animation: tc-blackhole-stage 2.8s cubic-bezier(0.72, 0, 0.85, 0.05) both;
     transform-origin: center;
+    will-change: transform, filter;
 }
-@keyframes tc-blackhole {
-    0%   { transform: scale(1)    rotate(0deg);   filter: blur(0)   brightness(1); }
-    50%  { transform: scale(0.04) rotate(720deg); filter: blur(10px) brightness(0.25); }
-    100% { transform: scale(1)    rotate(0deg);   filter: blur(0)   brightness(1); }
+@keyframes tc-blackhole-stage {
+    /* shake + creeping wrongness */
+    0%   { transform: translate(0, 0) scale(1) rotate(0deg);     filter: none; }
+    4%   { transform: translate(-6px, 3px) scale(1) rotate(-1.2deg); filter: hue-rotate(-20deg) saturate(1.2); }
+    8%   { transform: translate(7px, -4px) scale(1) rotate(1.4deg);  filter: hue-rotate(25deg) saturate(1.3); }
+    14%  { transform: translate(-9px, -5px) scale(1.02) rotate(-2deg); filter: hue-rotate(-45deg) saturate(1.6) brightness(1.05); }
+    20%  { transform: translate(8px, 6px) scale(1.03) rotate(2deg);   filter: hue-rotate(60deg) saturate(2) brightness(1.1) contrast(1.15); }
+    /* getting drawn in — spin + drift toward center, blur ramps */
+    35%  { transform: translate(0, 0) scale(1.05) rotate(180deg); filter: hue-rotate(120deg) saturate(2.4) brightness(0.85) blur(1px) contrast(1.2); }
+    50%  { transform: translate(0, 0) scale(0.85) rotate(540deg); filter: hue-rotate(180deg) saturate(2.6) brightness(0.55) blur(4px) contrast(1.4); }
+    /* violent collapse */
+    65%  { transform: scale(0.18) rotate(1080deg); filter: blur(18px) brightness(0.2) saturate(3); }
+    72%  { transform: scale(0.005) rotate(1440deg); filter: blur(40px) brightness(0); opacity: 0; }
+    /* singularity hold (stage invisible) */
+    80%  { transform: scale(0); opacity: 0; }
+    /* white-out flash + violent rebound */
+    82%  { transform: scale(1.18) rotate(0deg); filter: brightness(2.6) contrast(1.4); opacity: 1; }
+    88%  { transform: scale(0.94) rotate(0deg); filter: brightness(1.4) contrast(1.1); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); filter: none; opacity: 1; }
 }
+
+.tc-fx-blackhole-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 95;
+    pointer-events: none;
+    overflow: hidden;
+    background: transparent;
+}
+
+/* The accretion disk — a conic-gradient ring of hot plasma swirling
+   around the singularity. Masked with a radial gradient so the inner
+   black hole is transparent and the outer edge feathers out. */
+.tc-fx-blackhole__disk {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: min(82vw, 720px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg,
+        rgba(255, 180,  60, 0)    0deg,
+        rgba(255, 200,  80, 0.95) 50deg,
+        rgba(255, 100, 200, 0.95) 110deg,
+        rgba(120,  60, 255, 0.9)  180deg,
+        rgba(255,  60,  90, 0.92) 240deg,
+        rgba(255, 200,  80, 0.95) 310deg,
+        rgba(255, 180,  60, 0)    360deg);
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    mask-image:           radial-gradient(circle, transparent 28%, #000 38%, #000 88%, transparent 100%);
+    -webkit-mask-image:   radial-gradient(circle, transparent 28%, #000 38%, #000 88%, transparent 100%);
+    filter: blur(3px) saturate(1.4);
+    mix-blend-mode: screen;
+    animation: tc-bh-disk 2.8s cubic-bezier(0.55, 0, 0.85, 0.1) forwards;
+}
+@keyframes tc-bh-disk {
+    0%   { transform: translate(-50%, -50%) scale(0)   rotate(0deg);   opacity: 0; }
+    10%  { transform: translate(-50%, -50%) scale(0.15) rotate(120deg); opacity: 0.6; }
+    35%  { transform: translate(-50%, -50%) scale(0.65) rotate(720deg); opacity: 1;   filter: blur(4px) saturate(1.6) brightness(1.4); }
+    60%  { transform: translate(-50%, -50%) scale(1.6)  rotate(1620deg); opacity: 1;  filter: blur(12px) saturate(2) brightness(2); }
+    72%  { transform: translate(-50%, -50%) scale(2.4)  rotate(2160deg); opacity: 0;  filter: blur(28px) brightness(3); }
+    100% { transform: translate(-50%, -50%) scale(2.4)  rotate(2160deg); opacity: 0; }
+}
+
+/* Thin bright event-horizon ring just inside the disk — a hairline
+   of pure white that flares as the disk peaks. */
+.tc-fx-blackhole__ring {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: min(82vw, 720px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    box-shadow:
+        inset 0 0 0 2px rgba(255, 240, 220, 0),
+        0 0 0 0 rgba(255, 200, 120, 0);
+    transform: translate(-50%, -50%) scale(0);
+    animation: tc-bh-ring 2.8s cubic-bezier(0.55, 0, 0.85, 0.1) forwards;
+}
+@keyframes tc-bh-ring {
+    0%, 25% { box-shadow: inset 0 0 0 2px rgba(255, 240, 220, 0), 0 0 0 0 rgba(255, 200, 120, 0); transform: translate(-50%, -50%) scale(0); }
+    40%     { box-shadow: inset 0 0 0 2px rgba(255, 240, 220, 0.9), 0 0 30px 4px rgba(255, 200, 120, 0.7); transform: translate(-50%, -50%) scale(0.35); }
+    60%     { box-shadow: inset 0 0 0 3px rgba(255, 250, 235, 1),    0 0 60px 12px rgba(255, 180,  80, 0.95); transform: translate(-50%, -50%) scale(0.95); }
+    72%     { box-shadow: inset 0 0 0 1px rgba(255, 250, 235, 0),    0 0 120px 40px rgba(255, 220, 160, 0.9); transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+    100%    { opacity: 0; }
+}
+
+/* The void itself — pure black core that grows from a pinprick into
+   a screen-engulfing dark. Also the dark vignette that lingers. */
+.tc-fx-blackhole__void {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        #000 0%,
+        #0a0010 55%,
+        #1a0030 78%,
+        rgba(20, 0, 40, 0) 100%);
+    transform: translate(-50%, -50%);
+    box-shadow:
+        0 0 20px 4px rgba(80, 0, 160, 0.4),
+        0 0 60px 12px rgba(40, 0,  80, 0.55);
+    animation: tc-bh-void 2.8s cubic-bezier(0.55, 0, 0.85, 0.1) forwards;
+}
+@keyframes tc-bh-void {
+    0%   { width: 0;   height: 0;   opacity: 0; }
+    15%  { width: 8px; height: 8px; opacity: 0.7; }
+    45%  { width: 60px; height: 60px; opacity: 1; }
+    65%  { width: 260px; height: 260px; opacity: 1; }
+    74%  { width: 220vmax; height: 220vmax; opacity: 1; background: #000; box-shadow: none; }
+    82%  { width: 220vmax; height: 220vmax; opacity: 1; background: #000; }
+    100% { width: 220vmax; height: 220vmax; opacity: 0; background: #000; }
+}
+
+/* Sharp white-out flash at the moment of rebound. */
+.tc-fx-blackhole__flash {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center,
+        #fff 0%,
+        #fff 40%,
+        rgba(255, 255, 255, 0) 70%);
+    opacity: 0;
+    animation: tc-bh-flash 2.8s linear forwards;
+}
+@keyframes tc-bh-flash {
+    0%, 81% { opacity: 0; }
+    82%     { opacity: 1; }
+    87%     { opacity: 0.6; }
+    100%    { opacity: 0; }
+}
+
+/* The astronaut clone, sucked in. The engine sets --dx / --dy in
+   pixels at runtime (distance from sticker centre to overlay centre)
+   so the slingshot lands precisely on the singularity regardless of
+   where on the drawer the sticker was placed. */
+.tc-fx-blackhole__victim {
+    position: absolute;
+    z-index: 4;
+    transform-origin: center;
+    will-change: transform, opacity, filter;
+    animation: tc-bh-victim 2.1s cubic-bezier(0.55, 0, 0.85, 0.15) forwards;
+}
+@keyframes tc-bh-victim {
+    0%   { transform: translate(0, 0) scale(1) rotate(0deg);                 opacity: 1; filter: none; }
+    25%  { transform: translate(calc(var(--dx, 0px) * 0.15), calc(var(--dy, 0px) * 0.15)) scale(1.08) rotate(-18deg); opacity: 1; filter: brightness(1.1); }
+    55%  { transform: translate(calc(var(--dx, 0px) * 0.6),  calc(var(--dy, 0px) * 0.6))  scale(0.55) rotate(540deg); opacity: 1; filter: brightness(0.85); }
+    78%  { transform: translate(calc(var(--dx, 0px) * 0.92), calc(var(--dy, 0px) * 0.92)) scale(0.15) rotate(1260deg); opacity: 0.65; filter: brightness(0.4) blur(3px); }
+    100% { transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(0) rotate(1980deg); opacity: 0; filter: brightness(0) blur(8px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .tc-fx-blackhole { animation: none; }
+    .tc-fx-blackhole,
+    .tc-fx-blackhole__disk,
+    .tc-fx-blackhole__ring,
+    .tc-fx-blackhole__void,
+    .tc-fx-blackhole__flash,
+    .tc-fx-blackhole__victim { animation: none; }
+    .tc-fx-blackhole-overlay { background: rgba(0, 0, 0, 0.92); }
 }
 
 /* ----------------------------------------------------------------

@@ -855,13 +855,58 @@ window.TCDrawerEngine = ( function () {
             f.addEventListener( 'animationend', function () { f.remove(); }, { once: true } );
             setTimeout( function () { if ( f.parentNode ) f.remove(); }, 900 );
         } else if ( name === 'blackhole' ) {
-            // The astronaut sticker's gag. Spiral the whole stage into
-            // a near-singularity, then settle back. Pure CSS animation;
-            // we just toggle a class and clean up on animationend.
+            // Six-phase cosmic event: shake + chromatic wrongness, then
+            // a swirling accretion disk + event horizon, then the stage
+            // implodes into a screen-engulfing void, brief silence, a
+            // blinding white flash + rebound. The visuals (disk, ring,
+            // void, flash, the sucked-in astronaut clone) live in a
+            // separate overlay element sibling to the stage so they
+            // don't scale to nothing along with the imploding stage.
+            var fx = document.createElement( 'div' );
+            fx.className = 'tc-fx-blackhole-overlay';
+            fx.innerHTML =
+                '<div class="tc-fx-blackhole__disk"  aria-hidden="true"></div>' +
+                '<div class="tc-fx-blackhole__ring"  aria-hidden="true"></div>' +
+                '<div class="tc-fx-blackhole__void"  aria-hidden="true"></div>' +
+                '<div class="tc-fx-blackhole__flash" aria-hidden="true"></div>';
+
+            // If the astronaut is on the stage at fire-time, clone it
+            // into the overlay so it can be animated being slingshotted
+            // into the singularity. The original stays in the stage and
+            // gets removed by the engine's `remove:` action (rendered
+            // out immediately after the effect runs) — but by then the
+            // clone in the overlay is independently animating, so the
+            // sucked-in visual still lands.
+            overlay.appendChild( fx );
+            var astronaut = stage.querySelector( '[data-id="astronaut-sticker"]' );
+            if ( astronaut ) {
+                var aRect    = astronaut.getBoundingClientRect();
+                var fxRect   = fx.getBoundingClientRect();
+                var clone    = astronaut.cloneNode( true );
+                clone.removeAttribute( 'data-id' );
+                clone.className = ( clone.className || '' ).replace( /\bis-draggable\b/g, '' )
+                    + ' tc-fx-blackhole__victim';
+                clone.style.cssText =
+                    'left:'   + ( aRect.left - fxRect.left ) + 'px;' +
+                    'top:'    + ( aRect.top  - fxRect.top  ) + 'px;' +
+                    'width:'  + aRect.width  + 'px;' +
+                    'height:' + aRect.height + 'px;';
+                // Distance from sticker centre to overlay centre — the
+                // CSS keyframes use --dx/--dy to slingshot the clone
+                // toward the singularity regardless of where it was.
+                var dx = ( fxRect.width  / 2 ) - ( aRect.left - fxRect.left + aRect.width  / 2 );
+                var dy = ( fxRect.height / 2 ) - ( aRect.top  - fxRect.top  + aRect.height / 2 );
+                clone.style.setProperty( '--dx', dx + 'px' );
+                clone.style.setProperty( '--dy', dy + 'px' );
+                fx.appendChild( clone );
+            }
+
             stage.classList.add( 'tc-fx-blackhole' );
-            var clear = function () { stage.classList.remove( 'tc-fx-blackhole' ); };
-            stage.addEventListener( 'animationend', clear, { once: true } );
-            setTimeout( clear, 1800 );
+            var clearBh = function () {
+                stage.classList.remove( 'tc-fx-blackhole' );
+                if ( fx.parentNode ) fx.remove();
+            };
+            setTimeout( clearBh, 2900 );
         }
         // Other effect types (smash, others) land as the puzzle asks for them.
     }
