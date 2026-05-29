@@ -13,7 +13,16 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-    initWebGLBackground();
+    // WebGL background is decorative and GPU-heavy on cold start.
+    // Defer it until the browser is idle (or 1.5 s max) so the hero +
+    // first content paint don't compete with three.js for the main
+    // thread. requestIdleCallback isn't in older Safari yet, so fall
+    // back to a 400 ms setTimeout — still post-paint, still works.
+    if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(initWebGLBackground, { timeout: 1500 });
+    } else {
+        setTimeout(initWebGLBackground, 400);
+    }
     initSiteChrome();
     initKineticHero();
     initHeroScrollOut();

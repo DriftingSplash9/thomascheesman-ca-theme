@@ -61,36 +61,32 @@ function tc_ventures_enqueue_scripts() {
         wp_get_theme()->get( 'Version' )
     );
 
-    // Italiana — Didone display serif used for the lightbox counter
-    // ("01 / 06"). Single weight (400) keeps the file small.
+    // Child-theme Google Fonts — Italiana + Fraunces + Caveat.
+    //
+    //   Italiana (400)     — Didone display serif used by the lightbox
+    //                        counter ("01 / 06").
+    //   Fraunces (var)     — variable serif used by the footer marquee.
+    //                        Two axes: wght 300..900 drives the per-
+    //                        character "breathing" at the marquee edges,
+    //                        opsz 9..144 keeps display sizes from looking
+    //                        thin. Google serves a single variable file
+    //                        covering both ranges.
+    //   Caveat (400, 600)  — handwritten font used by the desk-menu hover
+    //                        cards (small attribution slips that fade in
+    //                        on hotspot hover).
+    //
+    // Combined into a single Google Fonts request — Google supports
+    // multiple `family=` params per CSS URL — so the browser opens one
+    // TLS connection to fonts.googleapis.com instead of three. Saves
+    // 2 RTTs on cold cache (was tc-italiana + tc-fraunces + tc-caveat).
+    // The corresponding preconnect hints live in header.php.
     wp_enqueue_style(
-        'tc-italiana',
-        'https://fonts.googleapis.com/css2?family=Italiana&display=swap',
-        array(),
-        null
-    );
-
-    // Fraunces — variable serif used by the footer marquee. Two axes:
-    //   wght 300..900 — drives per-character "breathing" (light at the
-    //                   marquee's edges, heavy through the center) once
-    //                   the breathing JS is wired up. The transition is
-    //                   GPU-cheap because it interpolates a single axis.
-    //   opsz 9..144   — optical size axis lets the glyphs be drawn at
-    //                   display sizes without looking thin/spindly.
-    // Google Fonts serves a single variable file covering both ranges.
-    wp_enqueue_style(
-        'tc-fraunces',
-        'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&display=swap',
-        array(),
-        null
-    );
-
-    // Caveat — handwritten Google Font used by the desk-menu hover cards
-    // (small attribution slips that fade in when an object is hovered).
-    // Loaded site-wide because the desk-menu overlay is the global menu.
-    wp_enqueue_style(
-        'tc-caveat',
-        'https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap',
+        'tc-google-fonts',
+        'https://fonts.googleapis.com/css2'
+            . '?family=Italiana'
+            . '&family=Fraunces:opsz,wght@9..144,300..900'
+            . '&family=Caveat:wght@400;600'
+            . '&display=swap',
         array(),
         null
     );
@@ -216,7 +212,7 @@ function tc_ventures_enqueue_scripts() {
     wp_enqueue_style(
         'tc-desk-drawer',
         get_stylesheet_directory_uri() . '/assets/css/desk-drawer.css',
-        array( 'astra-child-style', 'tc-caveat', 'tc-fraunces' ),
+        array( 'astra-child-style', 'tc-google-fonts' ),
         wp_get_theme()->get( 'Version' )
     );
     wp_enqueue_style(
@@ -396,8 +392,76 @@ function tc_ventures_enqueue_scripts() {
         )
     );
 
+    // --- Asset diet: defer + dequeue ---------------------------------
+    //
+    // Mark heavy third-party JS as defer so they don't block HTML parsing.
+    // GSAP + ScrollTrigger were enqueued in the head (the false fifth arg
+    // a few hundred lines up). With strategy=defer the browser still
+    // fetches them in parallel with the document, but executes them after
+    // the parser is done — which moves them off the critical render path
+    // without breaking dependency order (defer scripts in head still run
+    // before footer scripts, so tc-ventures-main can rely on them).
+    //
+    // Three.js is in the footer already so defer is mostly a no-op for
+    // it, but harmless and consistent.
+    //
+    // wp_script_add_data( $handle, 'strategy', 'defer' ) is the WP 6.3+
+    // official API. Replaces the old script_loader_tag string-replace
+    // hacks.
+    foreach ( array( 'gsap-core', 'gsap-scroll-trigger', 'three-js' ) as $tc_defer_handle ) {
+        wp_script_add_data( $tc_defer_handle, 'strategy', 'defer' );
+    }
+
+    // Drop Astra's Open Sans + Playfair Google Fonts. The child theme
+    // overrides all typography (Fraunces / Italiana / Caveat for display,
+    // Inter system fallback for body), so the Astra-supplied fonts
+    // download on every page and never paint. Saves one render-blocking
+    // <link> + one cross-origin handshake on cold cache.
+    //
+    // If anything in the Astra UI ends up falling back to a system font
+    // that looks wrong, re-enable by removing this dequeue.
+    wp_dequeue_style( 'astra-google-fonts' );
+
 }
 add_action( 'wp_enqueue_scripts', 'tc_ventures_enqueue_scripts' );
+
+
+/**
+ * Asset diet, part 2: lazy-load drawer-puzzle stylesheets.
+ *
+ * `drawer-engine.css` (46 KB) + `desk-pinball.css` (6 KB) ship on every
+ * page because the footer drawer is global, but they only paint when a
+ * visitor interacts with the secret-drawer puzzle or the pinball table.
+ * Eager-loading them blocks render on every page for an interaction the
+ * vast majority of visitors won't trigger.
+ *
+ * The fix: emit them as `<link rel="preload" as="style" onload="...">`
+ * so the browser downloads them at low priority in parallel with the
+ * critical render path, then applies them as a stylesheet once loaded.
+ * No JS gating needed — if a visitor opens the drawer, the CSS is
+ * already present or about to be; if they don't, the bytes are still
+ * downloaded but never block paint.
+ *
+ * The <noscript> fallback restores eager-load for visitors without JS
+ * — they can't open the drawer anyway, but the styling stays consistent
+ * if they ever do.
+ */
+function tc_defer_heavy_stylesheets( $tag, $handle ) {
+    $deferred = array( 'tc-drawer-engine', 'tc-desk-pinball' );
+    if ( ! in_array( $handle, $deferred, true ) ) {
+        return $tag;
+    }
+    // WP emits style tags with single-quoted attributes. Swap rel and add
+    // the preload onload swap dance. Preserve the original tag for the
+    // <noscript> fallback so the same URL + media + version-string apply.
+    $preload = str_replace(
+        array( "rel='stylesheet'", 'rel="stylesheet"' ),
+        "rel='preload' as='style' onload=\"this.onload=null;this.rel='stylesheet'\"",
+        $tag
+    );
+    return $preload . '<noscript>' . $tag . '</noscript>';
+}
+add_filter( 'style_loader_tag', 'tc_defer_heavy_stylesheets', 10, 2 );
 
 /**
  * Bing Webmaster Tools — site verification.
