@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.406
+Version: 1.0.407
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2558,6 +2558,39 @@ body:has(.person-spoke--faith) {
 
 .heritage-line__figure--bw img {
     filter: grayscale(0.2) contrast(1.05);
+}
+
+/* Heritage-line photo grid — used on heritage spoke pages when a set
+   of related figures should sit side-by-side rather than stacked.
+   On the Rycrofts page the 2x2 variant tells the "grandparents with
+   each grandchild" story: one Papa Sam (with Patience, the only one
+   alive when she was born) plus three Nana Bette photos (one per
+   grandchild). Each cell is a real .heritage-line__figure so the
+   sitewide chrome (grain, vignette, hover scale) applies — the grid
+   container only manages layout + collapses the standalone figure's
+   auto-margin so cells sit flush within the gap. Mobile (<640px)
+   stacks back to single column so each photo can breathe. */
+.heritage-line__grid {
+    display: grid;
+    gap: clamp(12px, 2vw, 20px);
+    margin: clamp(28px, 4vw, 40px) auto;
+    max-width: 100%;
+}
+
+.heritage-line__grid--2x2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.heritage-line__grid .heritage-line__figure {
+    /* Override the standalone figure's auto margin; the grid's gap
+       handles spacing between cells now. */
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .heritage-line__grid--2x2 {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ============================================

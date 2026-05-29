@@ -136,7 +136,7 @@ get_header(); ?>
                 <a class="heritage-card" href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">
                     <div class="heritage-card__image">
                         <img
-                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/10/papa-sam-and-p-scaled.jpg' ) ); ?>"
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/Papa-Sam-and-Patience.png' ) ); ?>"
                             alt="<?php esc_attr_e( 'Papa Sam Rycroft holding newborn Patience', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
