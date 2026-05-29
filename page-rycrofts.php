@@ -75,14 +75,14 @@ get_header(); ?>
                         <figure class="heritage-line__figure">
                             <img
                                 src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/Nana-and-Daniel.png' ) ); ?>"
-                                alt="<?php esc_attr_e( 'Nana Bette Rycroft with Daniel as a toddler', 'tc-ventures-child' ); ?>"
+                                alt="<?php esc_attr_e( 'Nana Bette Rycroft with infant Daniel', 'tc-ventures-child' ); ?>"
                                 loading="lazy"
                             />
                         </figure>
                         <figure class="heritage-line__figure">
                             <img
                                 src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/Nana-and-Faith.png' ) ); ?>"
-                                alt="<?php esc_attr_e( 'Nana Bette Rycroft with Faith as a toddler', 'tc-ventures-child' ); ?>"
+                                alt="<?php esc_attr_e( 'Nana Bette Rycroft with infant Faith', 'tc-ventures-child' ); ?>"
                                 loading="lazy"
                             />
                         </figure>
