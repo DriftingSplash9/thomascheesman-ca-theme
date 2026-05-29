@@ -17,6 +17,7 @@ require_once get_stylesheet_directory() . '/inc/agent-password-page.php';
 require_once get_stylesheet_directory() . '/inc/agent-abilities.php';
 require_once get_stylesheet_directory() . '/inc/email-smtp.php';
 require_once get_stylesheet_directory() . '/inc/drawer-events.php';
+require_once get_stylesheet_directory() . '/inc/security-and-seo.php';
 
 /**
  * Enqueue parent and child theme styles and scripts.
