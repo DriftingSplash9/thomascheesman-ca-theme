@@ -25,6 +25,23 @@
  *       ...
  *   );
  *
+ * Captioned item (optional — accessibility + lightbox caption):
+ *   array(
+ *       'url'     => 'https://.../a.jpg',
+ *       'year'    => 2013,
+ *       'caption' => 'Patience asleep on the kitchen counter, two weeks old',
+ *       // Optional: explicit alt overrides everything. Use only when
+ *       // the visible caption differs from what a screen reader should
+ *       // announce — usually leave it off and let `caption` double as
+ *       // alt text.
+ *       'alt'     => 'Two-week-old Patience asleep on a kitchen counter',
+ *   )
+ *
+ * Items, sections, and captions can be mixed freely — uncaptioned
+ * items fall back to a section-aware alt ("Patience, Year One — 2013,
+ * photo 7") so screen-reader output stays meaningful even before any
+ * captions are backfilled.
+ *
  * --- Section formats (auto-detected per-section) --------------------
  *
  * Count-based slice (legacy):
@@ -50,16 +67,25 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
         return;
     }
 
-    // Normalise items → uniform [url, year|null] tuples regardless
-    // of which input format the caller passed.
+    // Normalise items → uniform [url, year, caption, alt] tuples
+    // regardless of which input format the caller passed. caption +
+    // alt are optional — defaults are empty strings; the rendering
+    // loop's alt-precedence chain handles fallbacks.
     $normalised = array();
     foreach ( $items as $item ) {
         if ( is_string( $item ) ) {
-            $normalised[] = array( 'url' => $item, 'year' => null );
+            $normalised[] = array(
+                'url'     => $item,
+                'year'    => null,
+                'caption' => '',
+                'alt'     => '',
+            );
         } elseif ( is_array( $item ) && isset( $item['url'] ) ) {
             $normalised[] = array(
-                'url'  => $item['url'],
-                'year' => isset( $item['year'] ) ? (int) $item['year'] : null,
+                'url'     => $item['url'],
+                'year'    => isset( $item['year'] ) ? (int) $item['year'] : null,
+                'caption' => isset( $item['caption'] ) ? (string) $item['caption'] : '',
+                'alt'     => isset( $item['alt'] ) ? (string) $item['alt'] : '',
             );
         }
     }
@@ -139,8 +165,31 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
             // populated immediately; everything else lazy-loads as the
             // reader scrolls into view.
             $loading = ( $global_idx < 6 ) ? 'eager' : 'lazy';
-            $alt     = sprintf( '%s photo %d', $alt_prefix, $global_idx + 1 );
             $url     = $entry['url'];
+            $caption = $entry['caption'];
+
+            // Alt-text precedence:
+            //   1. Explicit alt — overrides everything (useful when the
+            //      visible caption shouldn't double as screen-reader
+            //      content, e.g. a pull-quote caption).
+            //   2. Caption — when present, doubles as alt text. Means a
+            //      backfilled caption immediately upgrades a11y too.
+            //   3. Section-aware fallback — uses the current section
+            //      label ("Patience, Year One — 2013, photo 7") so even
+            //      uncaptioned photos give screen-reader users some
+            //      context.
+            //   4. Bare prefix fallback — for galleries with no
+            //      sections defined ("Patience photo 7"). Worst-case;
+            //      previous behaviour.
+            if ( $entry['alt'] !== '' ) {
+                $alt = $entry['alt'];
+            } elseif ( $caption !== '' ) {
+                $alt = $caption;
+            } elseif ( ! empty( $slice['label'] ) ) {
+                $alt = sprintf( '%s, %s, photo %d', $alt_prefix, $slice['label'], $global_idx + 1 );
+            } else {
+                $alt = sprintf( '%s photo %d', $alt_prefix, $global_idx + 1 );
+            }
 
             // Detect video URLs by extension. Render with <video> +
             // controls instead of <img>, otherwise the browser shows
@@ -148,17 +197,25 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
             // wraps <img> tags, so videos sit inline as native players
             // without entering the lightbox flow.
             if ( preg_match( '/\.(mp4|webm|mov|m4v|ogg|ogv)(\?|#|$)/i', $url ) ) {
+                $caption_html = $caption !== ''
+                    ? sprintf( '<figcaption>%s</figcaption>', esc_html( $caption ) )
+                    : '';
                 printf(
-                    '<figure class="tc-photo-gallery__item tc-photo-gallery__item--video"><video src="%1$s" controls preload="metadata" playsinline aria-label="%2$s"></video></figure>',
-                    esc_url( $url ),
-                    esc_attr( $alt )
-                );
-            } else {
-                printf(
-                    '<figure class="tc-photo-gallery__item"><img src="%1$s" alt="%2$s" loading="%3$s" /></figure>',
+                    '<figure class="tc-photo-gallery__item tc-photo-gallery__item--video"><video src="%1$s" controls preload="metadata" playsinline aria-label="%2$s"></video>%3$s</figure>',
                     esc_url( $url ),
                     esc_attr( $alt ),
-                    esc_attr( $loading )
+                    $caption_html
+                );
+            } else {
+                $caption_html = $caption !== ''
+                    ? sprintf( '<figcaption>%s</figcaption>', esc_html( $caption ) )
+                    : '';
+                printf(
+                    '<figure class="tc-photo-gallery__item"><img src="%1$s" alt="%2$s" loading="%3$s" />%4$s</figure>',
+                    esc_url( $url ),
+                    esc_attr( $alt ),
+                    esc_attr( $loading ),
+                    $caption_html
                 );
             }
             $global_idx++;

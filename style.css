@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.409
+Version: 1.0.410
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2558,6 +2558,35 @@ body:has(.person-spoke--faith) {
 
 .heritage-line__figure--bw img {
     filter: grayscale(0.2) contrast(1.05);
+}
+
+/* Photo-gallery figcaption — only rendered when the data file supplies
+   a `caption` for the item. Quiet by default so the masonry visual
+   doesn't shift abruptly when a gallery is partially captioned. The
+   caption itself doubles as the alt text via the renderer's precedence
+   chain, so visible + screen-reader content stay in sync. */
+.tc-photo-gallery__item figcaption {
+    margin-top: 6px;
+    padding: 0 4px 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.62);
+    font-style: italic;
+    text-align: left;
+}
+
+/* Sitewide focus-visible default. :where() drops specificity to 0 so
+   any component-specific :focus-visible rule (capsule trigger, weather
+   pill, desk-menu buttons, etc.) wins without !important wars. Catches
+   any focusable element that didn't have a tuned focus style — pillar-
+   card links, footer compartment links, gallery slideshow controls when
+   in fullscreen, the rot13 click-to-copy email card on /contact, and
+   future surfaces. Amber outline matches the brand accent and stays
+   readable against both light and dark backdrops. */
+:where(*:focus-visible) {
+    outline: 2px solid #f4b740;
+    outline-offset: 3px;
+    border-radius: 2px;
 }
 
 /* Heritage-line photo grid — used on heritage spoke pages when a set

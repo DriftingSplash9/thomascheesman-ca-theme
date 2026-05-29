@@ -29,7 +29,7 @@ get_header(); ?>
 
                 <!-- PILLAR 1: FAMILY -->
                 <div class="pillar-card">
-                    <div class="pillar-icon">
+                    <div class="pillar-icon" aria-hidden="true">
                         <span>👨‍👩‍👧‍👦</span>
                     </div>
                     <h3>Family &amp; Stories</h3>
@@ -41,7 +41,7 @@ get_header(); ?>
 
                 <!-- PILLAR 2: RARE DISEASE & BYR -->
                 <div class="pillar-card">
-                    <div class="pillar-icon">
+                    <div class="pillar-icon" aria-hidden="true">
                         <span>🔬</span>
                     </div>
                     <h3>Rare Disease &amp; BYR</h3>
@@ -53,7 +53,7 @@ get_header(); ?>
 
                 <!-- PILLAR 3: COMMUNITY -->
                 <div class="pillar-card">
-                    <div class="pillar-icon">
+                    <div class="pillar-icon" aria-hidden="true">
                         <span>🤝</span>
                     </div>
                     <h3>Community &amp; Service</h3>
