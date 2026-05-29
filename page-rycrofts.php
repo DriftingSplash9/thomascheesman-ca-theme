@@ -101,6 +101,8 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php tc_render_heritage_siblings( 'rycrofts' ); ?>
+
         </div>
     </article>
 

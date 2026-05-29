@@ -59,6 +59,8 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php tc_render_hcs_crosslink(); ?>
+
             <?php
             // 219 year-tagged photos sourced from faiths.XLSX. Section
             // structure mirrors Patience/Daniel (Faith born March 2017).

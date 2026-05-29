@@ -54,6 +54,8 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php tc_render_hcs_crosslink(); ?>
+
             <?php
             // 222 year-tagged photos sourced from daniels.XLSX. Section
             // structure mirrors Patience's (Daniel born 2015, two years

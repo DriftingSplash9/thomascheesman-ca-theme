@@ -51,6 +51,8 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php tc_render_hcs_crosslink(); ?>
+
             <?php
             // Photo wall — Patience.
             //

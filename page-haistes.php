@@ -64,6 +64,8 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php tc_render_heritage_siblings( 'haistes' ); ?>
+
         </div>
     </article>
 

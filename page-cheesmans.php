@@ -139,6 +139,8 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php tc_render_heritage_siblings( 'cheesmans' ); ?>
+
         </div>
     </article>
 
