@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // initBlogReveal();
     initScrollReveals();
     initHeritagePage();
+    initLongreadChapterRail();
     initInkTrail();
     initParticleField();
     initMagneticElements();
@@ -2192,6 +2193,57 @@ function initSiteChrome() {
  * Reduced motion: animations are skipped, but the chrome (TOC, progress
  * bar) still renders so reader orientation isn't lost.
  */
+/**
+ * Long-read chapter rail — a slim sticky nav built from the long-read's
+ * chapter headings (uses each <h2>'s eyebrow as the label and its id as the
+ * anchor). Highlights the current chapter via IntersectionObserver and
+ * smooth-scrolls on click. No-ops on any page that isn't a long-read or that
+ * has fewer than two chapters. Hidden under 1180px by CSS.
+ */
+function initLongreadChapterRail() {
+    const lr = document.querySelector('.heritage-longread');
+    if (!lr) return;
+    const chapters = Array.from(lr.querySelectorAll('.heritage-longread__chapter')).filter(function (h) { return h.id; });
+    if (chapters.length < 2) return;
+
+    const rail = document.createElement('nav');
+    rail.className = 'heritage-longread__rail';
+    rail.setAttribute('aria-label', 'Chapters');
+    const ul = document.createElement('ul');
+    const linkById = {};
+
+    chapters.forEach(function (h) {
+        const eyebrow = h.querySelector('.heritage-longread__eyebrow');
+        const label = (eyebrow ? eyebrow.textContent : h.textContent).trim();
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = label;
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            const t = document.getElementById(h.id);
+            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        li.appendChild(a);
+        ul.appendChild(li);
+        linkById[h.id] = a;
+    });
+    rail.appendChild(ul);
+    lr.appendChild(rail);
+
+    if ('IntersectionObserver' in window) {
+        const obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) {
+                if (!en.isIntersecting) return;
+                Object.keys(linkById).forEach(function (id) { linkById[id].classList.remove('is-active'); });
+                const link = linkById[en.target.id];
+                if (link) link.classList.add('is-active');
+            });
+        }, { rootMargin: '0px 0px -68% 0px', threshold: 0 });
+        chapters.forEach(function (h) { obs.observe(h); });
+    }
+}
+
 function initHeritagePage() {
     const page = document.querySelector('.heritage-page');
     if (!page) return;

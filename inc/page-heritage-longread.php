@@ -35,6 +35,7 @@ $lr_slug     = isset( $lr['slug'] )        ? (string) $lr['slug']        : '';
 $lr_eyebrow  = isset( $lr['eyebrow'] )     ? (string) $lr['eyebrow']     : '';
 $lr_title    = isset( $lr['title'] )       ? (string) $lr['title']       : '';
 $lr_subtitle = isset( $lr['subtitle'] )    ? (string) $lr['subtitle']    : '';
+$lr_kicker   = isset( $lr['kicker'] )      ? (string) $lr['kicker']      : '';
 $lr_spoke    = isset( $lr['spoke_url'] )   ? (string) $lr['spoke_url']   : home_url( '/family/heritage' );
 $lr_splabel  = isset( $lr['spoke_label'] ) ? (string) $lr['spoke_label'] : 'the family';
 $lr_himg     = isset( $lr['hero_image'] )  ? (string) $lr['hero_image']  : '';
@@ -71,6 +72,9 @@ get_header();
             <h1 class="page-hero__title kinetic-text"><?php echo esc_html( $lr_title ); ?></h1>
             <?php if ( $lr_subtitle !== '' ) : ?>
                 <p class="page-hero__subtitle kinetic-fade"><?php echo esc_html( $lr_subtitle ); ?></p>
+            <?php endif; ?>
+            <?php if ( $lr_kicker !== '' ) : ?>
+                <p class="heritage-longread__hero-kicker"><?php echo esc_html( $lr_kicker ); ?></p>
             <?php endif; ?>
         </div>
     </section>

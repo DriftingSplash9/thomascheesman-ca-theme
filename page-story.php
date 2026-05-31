@@ -31,6 +31,7 @@ $tc_longread_registry = array(
         'eyebrow'     => 'The full story · Family line 02 of 05',
         'title'       => 'The Dochertys',
         'subtitle'    => 'A family that came through Ireland and Scotland to the Canadian prairie',
+        'kicker'      => 'Eight generations · Donegal to Alberta · c. 1750 – today',
         'spoke_url'   => home_url( '/family/heritage/dochertys' ),
         'spoke_label' => 'The Dochertys',
         'hero_image'  => home_url( '/wp-content/uploads/2024/09/img_0676-scaled.jpg' ),
