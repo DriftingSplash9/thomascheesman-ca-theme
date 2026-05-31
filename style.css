@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.412
+Version: 1.0.413
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4731,4 +4731,243 @@ body.single {
     .mc-section__title {
         font-size: 1.15rem;
     }
+}
+
+/* ====================================================================
+   HERITAGE LONG-READ  (the full family stories)
+   --------------------------------------------------------------------
+   Rendered by inc/page-heritage-longread.php (dispatched from
+   page-story.php). The prose lives inside .heritage-line__body, so it
+   inherits the spoke body's measure, pull-quotes, and figures. This
+   block adds: per-line accent, chapter headers, an opening drop-cap,
+   the lineage table, the collapsible Notes appendix, and asides.
+   Placed at EOF so the --line-color override beats the position-based
+   `.heritage-line:nth-of-type(n)` rule near line 1523.
+   ==================================================================== */
+
+/* Per-line accent (mirrors the spoke color map). The long-read has a
+   single .heritage-line, which would otherwise be nth-of-type(1) =
+   Cheesman cyan; this restores the right family color. */
+.heritage-longread--cheesmans,
+.heritage-longread--cheesmans .heritage-line { --line-color: #22D3EE; }
+.heritage-longread--dochertys,
+.heritage-longread--dochertys .heritage-line { --line-color: #EC4899; }
+.heritage-longread--lakemans,
+.heritage-longread--lakemans  .heritage-line { --line-color: #10B981; }
+.heritage-longread--rycrofts,
+.heritage-longread--rycrofts  .heritage-line { --line-color: #F59E0B; }
+.heritage-longread--haistes,
+.heritage-longread--haistes   .heritage-line { --line-color: #6366F1; }
+
+/* Suppress the giant ghost numeral on the long-read section (same as
+   the spoke does). */
+.heritage-line--longread::before { display: none; }
+
+/* Optional opening photo above the manuscript. */
+.heritage-longread__hero {
+    margin: 0 0 2.4em 0;
+}
+
+/* DEK — the italic standfirst under the hero. Reset the inherited
+   first-paragraph drop-cap (that belongs to the Prologue, not the dek). */
+.heritage-line__body--longread > p.heritage-longread__dek::first-letter,
+.heritage-line__body--longread > p:first-of-type::first-letter {
+    float: none;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    margin: 0;
+    text-shadow: none;
+}
+.heritage-longread__dek {
+    font-size: clamp(1.12rem, 1.8vw, 1.35rem);
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--text-light);
+    text-align: center;
+    max-width: 40ch;
+    margin: 0 auto 2.4em auto;
+    padding-bottom: 1.6em;
+    border-bottom: 1px solid color-mix(in srgb, var(--line-color) 28%, transparent);
+}
+
+/* CHAPTER HEADER — small uppercase eyebrow ("Chapter One") over the
+   chapter title, with a hairline rule separating chapters. */
+.heritage-longread__chapter {
+    margin: 2.9em 0 0.7em 0;
+    padding-top: 1.7em;
+    border-top: 1px solid color-mix(in srgb, var(--line-color) 22%, transparent);
+    font-size: clamp(1.5rem, 3vw, 2.05rem);
+    font-weight: 800;
+    line-height: 1.16;
+    letter-spacing: -0.02em;
+    color: var(--text-dark);
+}
+.heritage-longread__chapter:first-of-type {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0.4em;
+}
+.heritage-longread__eyebrow {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--line-color);
+    margin-bottom: 0.55em;
+}
+
+/* OPENING DROP-CAP — only the Prologue's first paragraph gets the
+   illuminated initial, for a strong opening without 10 drop-caps. */
+.heritage-longread__chapter:first-of-type + p::first-letter {
+    float: left;
+    font-size: 3.4em;
+    font-weight: 800;
+    line-height: 0.82;
+    color: var(--line-color);
+    margin: 6px 12px 0 0;
+    text-shadow: 0 2px 14px color-mix(in srgb, var(--line-color) 45%, transparent);
+    letter-spacing: -0.02em;
+}
+
+/* ASIDE — italic, muted, rule-set-off paragraphs (side-branch notes,
+   the closing aphorism). The inner text is wrapped in <em>. */
+.heritage-longread__aside {
+    font-size: 0.95em;
+    color: var(--text-light);
+    border-left: 2px solid color-mix(in srgb, var(--line-color) 35%, transparent);
+    padding-left: 18px;
+    margin: 1.8em 0;
+}
+.heritage-longread__aside em {
+    color: inherit;
+    font-style: italic;
+}
+
+/* Section rule (a centred hairline, for any --- not before a heading). */
+.heritage-longread__rule {
+    border: 0;
+    height: 1px;
+    width: 40%;
+    margin: 2.2em auto;
+    background: color-mix(in srgb, var(--line-color) 40%, transparent);
+}
+
+/* LINEAGE / RELATION TABLES — framed, shaded header, light gridlines,
+   horizontally scrollable on small screens. */
+.heritage-longread__table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 1.6em 0 2.2em 0;
+}
+.heritage-longread__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    border: 2px solid color-mix(in srgb, var(--line-color) 45%, transparent);
+}
+.heritage-longread__table th,
+.heritage-longread__table td {
+    border: 1px solid color-mix(in srgb, var(--line-color) 16%, rgba(0, 0, 0, 0.10));
+    padding: 8px 11px;
+    text-align: left;
+    vertical-align: top;
+}
+.heritage-longread__table thead th {
+    background: color-mix(in srgb, var(--line-color) 14%, transparent);
+    font-weight: 700;
+    color: var(--text-dark);
+    white-space: nowrap;
+}
+.heritage-longread__table tbody tr:nth-child(even) td {
+    background: color-mix(in srgb, var(--line-color) 5%, transparent);
+}
+.heritage-longread__table strong {
+    font-weight: 600;
+}
+
+/* NOTES — collapsible appendix so the long tail of sources/caveats
+   doesn't bloat the read. */
+.heritage-longread__notes {
+    margin: 2.6em 0 0 0;
+    border-top: 1px solid color-mix(in srgb, var(--line-color) 22%, transparent);
+    padding-top: 1.3em;
+}
+.heritage-longread__notes > summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: clamp(1.1rem, 2vw, 1.32rem);
+    color: var(--line-color);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+.heritage-longread__notes > summary::-webkit-details-marker { display: none; }
+.heritage-longread__notes > summary::after {
+    content: "\25B8"; /* ▸ */
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+}
+.heritage-longread__notes[open] > summary::after {
+    transform: rotate(90deg);
+}
+.heritage-longread__notes-body {
+    margin-top: 1.1em;
+    font-size: 0.95em;
+}
+.heritage-longread__notes-body h3 {
+    font-size: clamp(1.02rem, 1.6vw, 1.18rem);
+    margin-top: 1.6em;
+}
+.heritage-longread__notes-body ol {
+    padding-left: 1.4em;
+    margin: 0.8em 0 1.2em 0;
+}
+.heritage-longread__notes-body ol li {
+    margin: 0 0 0.5em 0;
+}
+
+/* Footer return link. */
+.heritage-longread__return {
+    margin: 2.8em 0 0 0;
+    text-align: center;
+    font-size: 0.95rem;
+}
+.heritage-longread__return a {
+    color: var(--line-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+.heritage-longread__return a:hover { text-decoration: underline; }
+
+/* "Read the full story" link on the short spoke. */
+.heritage-line__readmore {
+    margin: 2.2em 0 0 0 !important;
+}
+.heritage-line__readmore a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-weight: 600;
+    color: var(--line-color);
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--line-color) 45%, transparent);
+    border-radius: 999px;
+    padding: 0.55em 1.2em;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.heritage-line__readmore a:hover {
+    background: color-mix(in srgb, var(--line-color) 12%, transparent);
+    transform: translateX(2px);
+}
+
+@media (max-width: 600px) {
+    .heritage-longread__chapter { font-size: 1.45rem; }
+    .heritage-longread__table { font-size: 0.8rem; }
+    .heritage-longread__table th,
+    .heritage-longread__table td { padding: 6px 8px; }
 }

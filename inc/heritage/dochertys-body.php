@@ -16,6 +16,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <p>The Dochertys are my mom's side. A smaller crowd than the Cheesmans, but the few there are matter a lot &mdash; and the further back you dig, the more interesting it gets.</p>
 
+<p class="heritage-line__readmore">
+    <a href="<?php echo esc_url( home_url( '/family/heritage/dochertys/story' ) ); ?>">Read the full Docherty story &mdash; eight generations, Donegal to Alberta &rarr;</a>
+</p>
+
 <figure class="heritage-line__figure">
     <img
         src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/09/img_0676-scaled.jpg' ) ); ?>"
