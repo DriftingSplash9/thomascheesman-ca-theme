@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.415
+Version: 1.0.416
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4997,7 +4997,7 @@ body.single {
 }
 
 /* --- Widen the reading column (was the 720px narrow spoke width). */
-.heritage-longread .container--narrow { max-width: 900px; }
+.heritage-longread .container--narrow { max-width: 1200px; }
 
 /* --- Stack content above the fixed atmosphere layer. */
 .heritage-longread .page-hero,
@@ -5025,7 +5025,7 @@ body.single {
     position: absolute;
     width: 62vmin;
     height: 62vmin;
-    filter: blur(72px);
+    filter: blur(46px);
     opacity: 0.58;
     mix-blend-mode: screen;
     border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
@@ -5090,7 +5090,7 @@ body.single {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    padding: 2.5px;
+    padding: 3.75px;
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
             mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
@@ -5102,24 +5102,31 @@ body.single {
     opacity: 0.92;
 }
 .heritage-longread__frame::after {
-    /* A tight, white-cored glint flanked by the palette — sharper than a
-       broad wash. Slow, eased sweep with a long rest between passes. */
+    /* Iridescent chrome sheen — an always-present oil-slick band that drifts
+       slowly along the border while its hue cycles, so the edge reads as
+       polished iridescent metal rather than a glint zipping past. Two coprime
+       durations (drift 11s + hue 7s) make the shimmer feel non-repeating
+       across the 7–12s range without needing JS randomness. */
     background: linear-gradient(115deg,
-        transparent 45%,
-        var(--blob-a) 47.5%,
-        #ffffff 50%,
-        var(--line-color) 52.5%,
-        transparent 55%);
-    background-size: 260% 260%;
+        transparent 10%,
+        rgba(150, 225, 255, 0.55) 28%,
+        rgba(245, 155, 235, 0.55) 46%,
+        rgba(180, 255, 185, 0.50) 62%,
+        rgba(255, 220, 150, 0.50) 80%,
+        transparent 96%);
+    background-size: 230% 230%;
     mix-blend-mode: screen;
-    opacity: 0;
-    animation: tc-lr-reflect 15s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    opacity: 0.45;
+    animation: tc-lr-shimmer 11s ease-in-out infinite alternate,
+               tc-lr-irid 7s linear infinite;
 }
-@keyframes tc-lr-reflect {
-    0%, 60%   { background-position: 8% 0%;     opacity: 0; }
-    66%       { background-position: 22% 14%;   opacity: 1; }
-    87%       { background-position: 84% 90%;   opacity: 1; }
-    93%, 100% { background-position: 100% 100%; opacity: 0; }
+@keyframes tc-lr-shimmer {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+@keyframes tc-lr-irid {
+    0%   { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
 }
 
 /* --- IN-TEXT FLOATED PHOTOS (smaller, alternating sides). */
@@ -5156,11 +5163,13 @@ body.single {
     .heritage-longread__frame::after { animation: none !important; opacity: 0; }
 }
 
-/* Hide the orphan TOC nav on the long-read: initHeritagePage() builds one
-   nav dot per .heritage-line section, and the long-read has a single
-   section, so the lone dot just sits there doing nothing. (The top
-   reading-progress bar is harmless and kept.) */
-.heritage-longread .heritage-toc { display: none; }
+/* Hide the orphan TOC nav on the long-read. initHeritagePage() appends the
+   TOC to <body> (NOT inside the long-read <main>) and builds one dot per
+   .heritage-line, reading .heritage-line__title for the label. The long-read
+   has a single section and no such title, so it leaves one empty-labelled
+   dot floating. Target it from the body via :has(). The top reading-progress
+   bar is kept. */
+body:has(.heritage-longread) .heritage-toc { display: none; }
 
 /* Correct sideways (stored-landscape) document scans by rotating 90°.
    The wrapper adopts the rotated portrait footprint (source ≈ 16:9), so
