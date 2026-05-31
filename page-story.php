@@ -39,6 +39,19 @@ $tc_longread_registry = array(
         'body'        => get_stylesheet_directory() . '/inc/heritage/dochertys-story-body.php',
     ),
 
+    'haistes' => array(
+        'slug'        => 'haistes',
+        'eyebrow'     => 'The full story · Family line 05 of 05',
+        'title'       => 'The Haistes',
+        'subtitle'    => 'A Yorkshire-to-prairie saga, from a tannery yard to the Peace Country',
+        'kicker'      => 'Thirteen generations · Yorkshire to the Peace Country · c. 1610 – today',
+        'spoke_url'   => home_url( '/family/heritage/haistes' ),
+        'spoke_label' => 'The Haistes',
+        'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/haiste/haiste-hero-prairie-barn-sunset.jpg',
+        'hero_alt'    => 'An old barn on the Alberta prairie at winter sunset',
+        'body'        => get_stylesheet_directory() . '/inc/heritage/haistes-story-body.php',
+    ),
+
 );
 
 if ( isset( $tc_longread_registry[ $tc_parent_slug ] ) ) {

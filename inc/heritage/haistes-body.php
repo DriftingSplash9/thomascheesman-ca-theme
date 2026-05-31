@@ -20,6 +20,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     <p>Three generations and an ocean.</p>
 </aside>
 
+<p class="heritage-line__readmore">
+    <a href="<?php echo esc_url( home_url( '/family/heritage/haistes/story' ) ); ?>">Read the full Haiste story &mdash; thirteen generations, Yorkshire to the Peace Country &rarr;</a>
+</p>
+
 <figure class="heritage-line__figure">
     <img
         src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/10/20170330_160029-scaled.jpg' ) ); ?>"

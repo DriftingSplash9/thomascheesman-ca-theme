@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.417
+Version: 1.0.418
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4988,6 +4988,11 @@ body.single {
     --blob-a: #34596b; /* Atlantic slate-blue (the Donegal/Hebridean sea) */
     --blob-b: #6e4a78; /* peat & heather purple */
     --blob-c: #4f6b3e; /* moss green */
+}
+.heritage-longread--haistes {
+    --blob-a: #6b5680; /* moor heather (purple) */
+    --blob-b: #3e4853; /* millstone-grit & coal grey */
+    --blob-c: #9c7f43; /* raw wool & gorse gold */
 }
 /* Sensible default palette for any line not yet themed. */
 .heritage-longread {
