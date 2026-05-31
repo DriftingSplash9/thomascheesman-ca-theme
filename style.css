@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.413
+Version: 1.0.414
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4970,4 +4970,178 @@ body.single {
     .heritage-longread__table { font-size: 0.8rem; }
     .heritage-longread__table th,
     .heritage-longread__table td { padding: 6px 8px; }
+}
+
+/* ====================================================================
+   HERITAGE LONG-READ — SIGNATURE TREATMENT (v2)
+   --------------------------------------------------------------------
+   Per-line atmosphere: three organic blobs in the line's own palette,
+   slowly drifting + morphing + cross-fading (NOT a sticky gooey mass);
+   a widened column; smaller floated in-text photos + an album gallery;
+   and a real glass plate wrapped in a chrome border whose colour
+   reflection sweeps the edge periodically. All motion pauses under
+   prefers-reduced-motion. Appended at EOF so it wins source order.
+   ==================================================================== */
+
+/* --- Per-line background palette (blobs). --line-color stays the accent. */
+.heritage-longread--dochertys {
+    --blob-a: #34596b; /* Atlantic slate-blue (the Donegal/Hebridean sea) */
+    --blob-b: #6e4a78; /* peat & heather purple */
+    --blob-c: #4f6b3e; /* moss green */
+}
+/* Sensible default palette for any line not yet themed. */
+.heritage-longread {
+    --blob-a: #243a6b;
+    --blob-b: #2f5a52;
+    --blob-c: #3b3160;
+}
+
+/* --- Widen the reading column (was the 720px narrow spoke width). */
+.heritage-longread .container--narrow { max-width: 900px; }
+
+/* --- Stack content above the fixed atmosphere layer. */
+.heritage-longread .page-hero,
+.heritage-longread .heritage-lines { position: relative; z-index: 1; }
+
+/* --- ATMOSPHERE: fixed full-viewport layer of morphing blobs, sitting
+   above the global WebGL canvas (z:-1) and below content (z:1), so the
+   frosted plate blurs the line's signature colours through the glass. */
+.heritage-longread__atmos {
+    position: fixed;
+    inset: -12vh -12vw;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.heritage-longread__blob {
+    position: absolute;
+    width: 62vmin;
+    height: 62vmin;
+    filter: blur(72px);
+    opacity: 0.46;
+    mix-blend-mode: screen;
+    border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+    will-change: transform, border-radius, background-color;
+}
+.heritage-longread__blob--a {
+    background: var(--blob-a);
+    top: -8vh; left: -6vw;
+    animation: tc-lr-drift-a 34s ease-in-out infinite, tc-lr-tint-a 51s ease-in-out infinite;
+}
+.heritage-longread__blob--b {
+    background: var(--blob-b);
+    top: 26vh; right: -10vw;
+    animation: tc-lr-drift-b 43s ease-in-out infinite, tc-lr-tint-b 51s ease-in-out infinite;
+    animation-delay: -8s, -17s;
+}
+.heritage-longread__blob--c {
+    background: var(--blob-c);
+    bottom: -12vh; left: 28vw;
+    animation: tc-lr-drift-c 38s ease-in-out infinite, tc-lr-tint-c 51s ease-in-out infinite;
+    animation-delay: -19s, -34s;
+}
+
+/* Drift + organic shape morph (independent timings keep them from merging). */
+@keyframes tc-lr-drift-a {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; }
+    50%      { transform: translate(7vw, 5vh) rotate(16deg) scale(1.14); border-radius: 60% 40% 38% 62% / 55% 62% 38% 45%; }
+}
+@keyframes tc-lr-drift-b {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1.05); border-radius: 55% 45% 48% 52% / 52% 50% 50% 48%; }
+    50%      { transform: translate(-6vw, 6vh) rotate(-20deg) scale(0.92); border-radius: 38% 62% 57% 43% / 47% 38% 62% 53%; }
+}
+@keyframes tc-lr-drift-c {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); border-radius: 48% 52% 40% 60% / 60% 44% 56% 40%; }
+    50%      { transform: translate(5vw, -6vh) rotate(22deg) scale(1.1); border-radius: 62% 38% 60% 40% / 38% 58% 42% 62%; }
+}
+/* Slow colour rotation through the palette (offset per blob). */
+@keyframes tc-lr-tint-a { 0%, 100% { background-color: var(--blob-a); } 33% { background-color: var(--blob-b); } 66% { background-color: var(--blob-c); } }
+@keyframes tc-lr-tint-b { 0%, 100% { background-color: var(--blob-b); } 33% { background-color: var(--blob-c); } 66% { background-color: var(--blob-a); } }
+@keyframes tc-lr-tint-c { 0%, 100% { background-color: var(--blob-c); } 33% { background-color: var(--blob-a); } 66% { background-color: var(--blob-b); } }
+
+/* --- GLASS PLATE (upgraded). Replaces the section's flat frosted fill
+   and drops the legacy ::after glow (the atmosphere replaces it). */
+.heritage-line--longread {
+    background: linear-gradient(180deg, rgba(20, 24, 46, 0.60), rgba(8, 10, 26, 0.56));
+    backdrop-filter: blur(16px) saturate(135%);
+    -webkit-backdrop-filter: blur(16px) saturate(135%);
+    border: none;
+    border-radius: 22px;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+.heritage-line--longread::after { display: none; }
+
+/* --- CHROME FRAME + PERIODIC COLOUR REFLECTION. The frame's ::before is
+   a static brushed-metal ring; ::after is a tinted reflection band that
+   sweeps the edge every 8s and rests, picking up the line's palette. Both
+   use the mask-ring trick so only the border shows and text is untouched. */
+.heritage-longread__frame { position: relative; border-radius: 22px; }
+.heritage-longread__frame::before,
+.heritage-longread__frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2.5px;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+}
+.heritage-longread__frame::before {
+    background: linear-gradient(135deg, #9aa3b1 0%, #ffffff 17%, #828b99 37%, #e9edf3 57%, #767f8d 77%, #c8ced8 100%);
+    opacity: 0.92;
+}
+.heritage-longread__frame::after {
+    background: linear-gradient(115deg,
+        transparent 32%,
+        var(--blob-a) 42%,
+        var(--line-color) 50%,
+        var(--blob-c) 58%,
+        transparent 68%);
+    background-size: 300% 300%;
+    mix-blend-mode: screen;
+    opacity: 0;
+    animation: tc-lr-reflect 8s ease-in-out infinite;
+}
+@keyframes tc-lr-reflect {
+    0%, 56%  { background-position: 0% 0%;     opacity: 0; }
+    62%      {                                  opacity: 0.95; }
+    86%      { background-position: 100% 100%;  opacity: 0.95; }
+    92%, 100%{ background-position: 100% 100%;  opacity: 0; }
+}
+
+/* --- IN-TEXT FLOATED PHOTOS (smaller, alternating sides). */
+.heritage-longread__figure--left,
+.heritage-longread__figure--right { max-width: 46%; margin-top: 0.4em; }
+.heritage-longread__figure--right { float: right; margin-left: 30px; margin-bottom: 16px; }
+.heritage-longread__figure--left  { float: left;  margin-right: 30px; margin-bottom: 16px; }
+.heritage-longread__chapter { clear: both; } /* floats don't bleed into the next chapter */
+
+/* --- ALBUM GALLERY (thumbnails open in the sitewide PhotoSwipe lightbox). */
+.heritage-longread__gallery { clear: both; margin: 2.2em 0; }
+.heritage-longread__gallery-title {
+    font-weight: 700;
+    color: var(--line-color);
+    font-size: clamp(1.02rem, 1.6vw, 1.18rem);
+    margin: 0 0 0.9em 0;
+}
+.heritage-longread__gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+}
+.heritage-longread__gallery-grid .heritage-line__figure { margin: 0; }
+.heritage-longread__gallery-grid img { cursor: zoom-in; }
+
+@media (max-width: 700px) {
+    .heritage-longread__figure--left,
+    .heritage-longread__figure--right { float: none; max-width: 100%; margin: 1.5em 0; }
+}
+
+/* --- Respect reduced-motion: hold everything still. */
+@media (prefers-reduced-motion: reduce) {
+    .heritage-longread__blob { animation: none !important; }
+    .heritage-longread__frame::after { animation: none !important; opacity: 0; }
 }

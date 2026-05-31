@@ -47,6 +47,19 @@ get_header();
 <main id="primary" class="site-main heritage-page heritage-longread heritage-longread--<?php echo esc_attr( $lr_slug ); ?>">
 
     <!-- ==============================================================
+         SIGNATURE ATMOSPHERE — three organic, slowly morphing/drifting
+         blobs in the line's own palette (set via --blob-a/b/c per line in
+         style.css). Fixed behind the content (z:0, above the global WebGL
+         canvas at z:-1) so the frosted glass plates blur them through.
+         Pure CSS; pauses under prefers-reduced-motion. Decorative only.
+         ============================================================== -->
+    <div class="heritage-longread__atmos" aria-hidden="true">
+        <span class="heritage-longread__blob heritage-longread__blob--a"></span>
+        <span class="heritage-longread__blob heritage-longread__blob--b"></span>
+        <span class="heritage-longread__blob heritage-longread__blob--c"></span>
+    </div>
+
+    <!-- ==============================================================
          PAGE HERO — breadcrumb returns to the short spoke, not the hub.
          ============================================================== -->
     <section class="page-hero">
@@ -78,15 +91,21 @@ get_header();
                 </figure>
             <?php endif; ?>
 
-            <section class="heritage-line heritage-line--longread scroll-animate" id="<?php echo esc_attr( $lr_slug ); ?>">
-                <div class="heritage-line__body heritage-line__body--longread">
-                    <?php
-                    if ( $lr_body !== '' && is_readable( $lr_body ) ) {
-                        require $lr_body;
-                    }
-                    ?>
-                </div>
-            </section>
+            <!-- The frame wrapper carries the chrome border + the periodic
+                 colour reflection (its ::before / ::after are free; the
+                 plate's own pseudo-elements are taken by the ghost numeral
+                 and the legacy section glow). -->
+            <div class="heritage-longread__frame">
+                <section class="heritage-line heritage-line--longread scroll-animate" id="<?php echo esc_attr( $lr_slug ); ?>">
+                    <div class="heritage-line__body heritage-line__body--longread">
+                        <?php
+                        if ( $lr_body !== '' && is_readable( $lr_body ) ) {
+                            require $lr_body;
+                        }
+                        ?>
+                    </div>
+                </section>
+            </div>
 
             <p class="heritage-longread__return">
                 <a href="<?php echo esc_url( $lr_spoke ); ?>">&larr; Back to <?php echo esc_html( $lr_splabel ); ?></a>
