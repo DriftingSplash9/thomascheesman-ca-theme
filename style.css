@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.414
+Version: 1.0.415
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5012,13 +5012,21 @@ body.single {
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
+    /* A deep Gaelic base that covers the global navy WebGL wash so the
+       page actually READS slate/peat/moss, with palette radial accents.
+       The drifting blobs above add the motion + colour rotation. */
+    background:
+        radial-gradient(58% 50% at 24% 24%, color-mix(in srgb, var(--blob-a) 52%, transparent), transparent 70%),
+        radial-gradient(55% 50% at 79% 72%, color-mix(in srgb, var(--blob-b) 46%, transparent), transparent 70%),
+        radial-gradient(52% 46% at 55% 96%, color-mix(in srgb, var(--blob-c) 42%, transparent), transparent 70%),
+        linear-gradient(160deg, #15232c 0%, #181527 55%, #14201b 100%);
 }
 .heritage-longread__blob {
     position: absolute;
     width: 62vmin;
     height: 62vmin;
     filter: blur(72px);
-    opacity: 0.46;
+    opacity: 0.58;
     mix-blend-mode: screen;
     border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
     will-change: transform, border-radius, background-color;
@@ -5094,22 +5102,24 @@ body.single {
     opacity: 0.92;
 }
 .heritage-longread__frame::after {
+    /* A tight, white-cored glint flanked by the palette — sharper than a
+       broad wash. Slow, eased sweep with a long rest between passes. */
     background: linear-gradient(115deg,
-        transparent 32%,
-        var(--blob-a) 42%,
-        var(--line-color) 50%,
-        var(--blob-c) 58%,
-        transparent 68%);
-    background-size: 300% 300%;
+        transparent 45%,
+        var(--blob-a) 47.5%,
+        #ffffff 50%,
+        var(--line-color) 52.5%,
+        transparent 55%);
+    background-size: 260% 260%;
     mix-blend-mode: screen;
     opacity: 0;
-    animation: tc-lr-reflect 8s ease-in-out infinite;
+    animation: tc-lr-reflect 15s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 @keyframes tc-lr-reflect {
-    0%, 56%  { background-position: 0% 0%;     opacity: 0; }
-    62%      {                                  opacity: 0.95; }
-    86%      { background-position: 100% 100%;  opacity: 0.95; }
-    92%, 100%{ background-position: 100% 100%;  opacity: 0; }
+    0%, 60%   { background-position: 8% 0%;     opacity: 0; }
+    66%       { background-position: 22% 14%;   opacity: 1; }
+    87%       { background-position: 84% 90%;   opacity: 1; }
+    93%, 100% { background-position: 100% 100%; opacity: 0; }
 }
 
 /* --- IN-TEXT FLOATED PHOTOS (smaller, alternating sides). */
@@ -5145,3 +5155,35 @@ body.single {
     .heritage-longread__blob { animation: none !important; }
     .heritage-longread__frame::after { animation: none !important; opacity: 0; }
 }
+
+/* Hide the orphan TOC nav on the long-read: initHeritagePage() builds one
+   nav dot per .heritage-line section, and the long-read has a single
+   section, so the lone dot just sits there doing nothing. (The top
+   reading-progress bar is harmless and kept.) */
+.heritage-longread .heritage-toc { display: none; }
+
+/* Correct sideways (stored-landscape) document scans by rotating 90°.
+   The wrapper adopts the rotated portrait footprint (source ≈ 16:9), so
+   the figure box and its caption stay tidy. */
+.heritage-longread__rot {
+    display: block;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1238 / 2200;
+    overflow: hidden;
+    border-radius: inherit;
+}
+.heritage-longread__rot img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 177.7%;
+    height: auto;
+    max-width: none;
+}
+.heritage-longread__rot--ccw img { transform: translate(-50%, -50%) rotate(-90deg); }
+.heritage-longread__rot--cw  img { transform: translate(-50%, -50%) rotate(90deg); }
+/* A rotated portrait runs tall — keep floated ones narrower than the wide
+   landscape floats so they don't tower over the column. */
+.heritage-longread__figure--rotated.heritage-longread__figure--left,
+.heritage-longread__figure--rotated.heritage-longread__figure--right { max-width: 32%; }
