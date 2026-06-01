@@ -65,6 +65,19 @@ $tc_longread_registry = array(
         'body'        => get_stylesheet_directory() . '/inc/heritage/haistes-story-body.php',
     ),
 
+    'rycrofts' => array(
+        'slug'        => 'rycrofts',
+        'eyebrow'     => 'The full story · Family line 04 of 05',
+        'title'       => 'The Rycrofts',
+        'subtitle'    => 'From a Leeds back-street to the Kingdom of Hawai&lsquo;i, and home to the Peace Country',
+        'kicker'      => 'Leeds &middot; the Civil War &middot; Hawai&lsquo;i &middot; the Peace Country &middot; 1843 &ndash; today',
+        'spoke_url'   => home_url( '/family/heritage/rycrofts' ),
+        'spoke_label' => 'The Rycrofts',
+        'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/rycroft/rycroft-hero-honolulu-harbor-1900.jpg',
+        'hero_alt'    => 'Tall sailing ships dressed with flags in Honolulu Harbor about 1900',
+        'body'        => get_stylesheet_directory() . '/inc/heritage/rycrofts-story-body.php',
+    ),
+
 );
 
 if ( isset( $tc_longread_registry[ $tc_parent_slug ] ) ) {

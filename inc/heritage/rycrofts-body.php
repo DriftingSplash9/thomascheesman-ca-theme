@@ -6,38 +6,45 @@
  * (inc/page-heritage-line.php). Edit prose here; chrome lives at the
  * template; hero metadata lives at page-rycrofts.php.
  *
- * Centrepiece: Robert Henry Rycroft, after whom the Alberta hamlet of
- * Rycroft is named (1920 hat-draw story). Closes with the 2x2 grand-
- * parents-with-grandchildren grid that V0.16 added.
+ * Melanie's mother's line. The far-flung one: Leeds → the American Civil
+ * War → the Kingdom of Hawai'i → a Peace River homestead that named a town.
+ * Rewritten as a summary of the full long-read at /rycrofts/story.
+ * Keeps the 2x2 grandparents-with-grandchildren grid + the shared headstone.
  */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 
-<p>The Rycroft side carries a piece of Peace Country history that still surprises me when I tell it. The town of Rycroft, Alberta is named after my wife's great-great-grandfather.</p>
+<p>The Rycroft side is my wife Melanie's mother's family, and it carries the most far-flung story in the whole tree. The town of <strong>Rycroft, Alberta</strong> is named after her great-grandfather &mdash; but the family reached that Peace River homestead the long way round: out of industrial <strong>Leeds</strong>, through the <strong>American Civil War</strong>, by way of the <strong>Kingdom of Hawai&lsquo;i</strong>.</p>
 
-<p><strong>Robert Henry Rycroft</strong> was born in 1872 in Honolulu to English parents. He spent years running a sugar and coffee plantation, moving goods between Hawaii, Japan, and the Philippines. In 1906 he met a 21-year-old Norwegian woman, <strong>Helene Lovise Christiane Thommessen</strong>, who was visiting Honolulu. They married five years later, on June 29, 1911, in Honolulu. Their honeymoon took them through British Columbia, where they first heard about the opportunities waiting up in the Peace Country. By 1912 they had registered two parcels of land near Spirit River.</p>
+<aside class="heritage-line__quote" aria-hidden="true">
+    <p>From a Leeds back-street to a Honolulu soda works to a town on the Peace.</p>
+</aside>
 
-<p>In 1920, when the area split off from Spirit River and needed a name, four pioneers &mdash; R.H. Rycroft, W.S.O. &ldquo;Billy&rdquo; English, H.E. &ldquo;Doc&rdquo; Calkin, and George Garnett &mdash; wrote their names on slips of paper, dropped them in a hat, and pulled one out. The slip said Rycroft. (For about fourteen years afterward the local post office got it wrong and called itself &ldquo;Roycroft,&rdquo; until the Board of Trade finally got the spelling fixed in 1934 to match what the railway had used since 1916.)</p>
+<p class="heritage-line__readmore">
+    <a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts/story' ) ); ?>">Read the full Rycroft story &mdash; Leeds to Hawai&lsquo;i to the Peace Country &rarr;</a>
+</p>
+
+<p>It begins with two men named Robert Henry Rycroft, father and son. The father, <strong>Robert Henry Rycroft Sr.</strong> (1843&ndash;1909), left Leeds at sixteen, rode about sixteen months in the U.S. Cavalry during the Civil War, and washed up in Honolulu &mdash; where he worked the Iron Works, pioneered coffee on the Big Island, founded the Fountain Soda Works, and left his name on <strong>Rycroft Street, Honolulu</strong> to this day. He married Elizabeth Campbell, a sister of the Treasurer of Hawai&lsquo;i.</p>
+
+<p>His eldest son, also <strong>Robert Henry Rycroft</strong> (1872&ndash;1944), was born in Honolulu and ran the family soda business &mdash; then did the unlikeliest thing of all. In 1906 he met <strong>Helene Thommessen</strong>, a Norwegian sea-captain's orphaned daughter who had somehow made her way to the islands; they married in 1911 and honeymooned up through British Columbia, where they heard about free homestead land in the Peace Country. By 1912 they had registered two parcels near Spirit River and left the tropics for good.</p>
+
+<p>In 1920, when the new district that split off from Spirit River needed a name, four pioneers &mdash; R.H. Rycroft, W.S.O. &ldquo;Billy&rdquo; English, H.E. &ldquo;Doc&rdquo; Calkin, and George Garnett &mdash; wrote their names on slips of paper, dropped them in a hat, and drew one out.</p>
 
 <aside class="heritage-line__quote" aria-hidden="true">
     <p>The slip said Rycroft.</p>
 </aside>
 
-<p>R.H. and Helene hosted the first meeting of the Spirit River Rural Municipality in their home in January 1917. He served as the municipality's secretary-treasurer, sat on the school board, and was a Justice of the Peace for many years.</p>
+<p>R.H. hosted the first meeting of the Spirit River Rural Municipality in his home in January 1917, served as its secretary-treasurer, sat on the school board, and was a Justice of the Peace for many years. He died at Sexsmith in 1944 and is buried at Teepee Creek.</p>
 
-<p>Their son <strong>Eric Jarmann Rycroft</strong> was born January 30, 1909, in Honolulu and came to Vancouver as a small child in 1912. He married <strong>Laureta Maud Jennie Clark</strong> on November 26, 1933, in Teepee Creek, Alberta. Eric died January 4, 1993, at 83 and is buried in Teepee Creek.</p>
+<p>His son <strong>Eric Jarman Rycroft</strong> (1909&ndash;1993) was the Hawaiian-born one &mdash; a small child when the family came north, who grew up in the snow instead of the surf. He married <strong>Laureta Maude Janette Clark</strong> of Centralia, Washington, in 1933 at Teepee Creek, and farmed there the rest of his life.</p>
 
-<p>Eric and Laureta had a son, <strong>Samuel Eric Rycroft</strong> &mdash; Sam &mdash; born July 14, 1935, in Grande Prairie. Sam married <strong>Bette Steinke</strong> in 1959, and together they had four children: Lana, Lance, Vance, and Clark. They also had Lorne (May 1960), and other Rycroft cousins of that generation include Dennison &ldquo;Dennis&rdquo; (1937), Lona Helen Delores (1938), Thomas Floyd &ldquo;Tommy&rdquo; (1940), and Heather Bernice (1944).</p>
-
-<p>Lana Rycroft is my wife's mother. That's where I come into the picture.</p>
+<p>Eric's son <strong>Sam</strong> &mdash; Samuel Eric John Rycroft (1935&ndash;2015) &mdash; married <strong>Bette Steinke</strong> in 1959. Bette (1942&ndash;2025) was a daughter of Henry and Martha Steinke, a German Lutheran family of the Sexsmith prairie. Sam and Bette raised four children: <strong>Lorne, Lana, Vance,</strong> and <strong>Clark</strong>.</p>
 
 <!-- Grandparents-with-grandchildren grid. Papa Sam died after Patience
      was born but before Daniel and Faith, so there is one Papa Sam photo
      (with Patience) and three with Nana Bette (one per grandchild). The
-     2x2 visual asymmetry carries that story without prose. Each cell
-     reuses .heritage-line__figure so the grain + vignette + hover-scale
-     chrome stays consistent. -->
+     2x2 visual asymmetry carries that story without prose. -->
 <div class="heritage-line__grid heritage-line__grid--2x2">
     <figure class="heritage-line__figure">
         <img
@@ -69,12 +76,14 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     </figure>
 </div>
 
-<p>I'm still digging through the family tree to fill in dates and connections &mdash; Eric Jarmann had eight or so siblings I haven't fully traced, and there are plenty of Rycroft cousins around the Peace Country I'd like to know better. More to add as I learn it.</p>
+<p>Sam and Bette's daughter <strong>Lana Lyn Rycroft</strong> (1961&ndash;2015) is Melanie's mother &mdash; she married Dan Steven Haiste, of the Yorkshire-and-prairie Haistes, and that is where I come into the picture. Lana died too young, the same hard year as her father Sam. Their youngest great-grandchild carries her name forward: <strong>Faith <em>Lana Lyn</em> Cheesman</strong>.</p>
 
 <figure class="heritage-line__figure">
     <img
         src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/sam-and-bette-tombstone.jpg' ) ); ?>"
-        alt="<?php esc_attr_e( 'The shared tombstone of Sam and Bette Rycroft', 'tc-ventures-child' ); ?>"
+        alt="<?php esc_attr_e( 'The shared headstone of Sam and Bette Rycroft', 'tc-ventures-child' ); ?>"
         loading="lazy"
     />
 </figure>
+
+<p>There is far more &mdash; the Leeds parents I am still trying to pin to a record, the Civil War regiment, Helene's road from a Larvik quay to a Honolulu harbour, the German village the Steinkes came from. The <a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts/story' ) ); ?>">full story</a> tells what we have found, and is honest about what is still being chased.</p>
