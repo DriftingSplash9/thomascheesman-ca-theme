@@ -42,6 +42,13 @@ $lr_himg     = isset( $lr['hero_image'] )  ? (string) $lr['hero_image']  : '';
 $lr_halt     = isset( $lr['hero_alt'] )    ? (string) $lr['hero_alt']    : '';
 $lr_body     = isset( $lr['body'] )        ? (string) $lr['body']        : '';
 
+// The top breadcrumb returns "up one level" to the story's own spoke
+// ($lr_spoke). The bottom-of-content return instead sends the finished reader
+// to the heritage hub ("The Families"), which is more useful than bouncing
+// back to the short intro. A line may override via 'return_url'/'return_label'.
+$lr_returl   = isset( $lr['return_url'] )   ? (string) $lr['return_url']   : home_url( '/family/heritage' );
+$lr_retlabel = isset( $lr['return_label'] ) ? (string) $lr['return_label'] : 'the family lines';
+
 get_header();
 ?>
 
@@ -112,7 +119,7 @@ get_header();
             </div>
 
             <p class="heritage-longread__return">
-                <a href="<?php echo esc_url( $lr_spoke ); ?>">&larr; Back to <?php echo esc_html( $lr_splabel ); ?></a>
+                <a href="<?php echo esc_url( $lr_returl ); ?>">&larr; Back to <?php echo esc_html( $lr_retlabel ); ?></a>
             </p>
 
         </div>
