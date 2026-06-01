@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.419
+Version: 1.0.420
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4989,6 +4989,11 @@ body.single {
     --blob-b: #6e4a78; /* peat & heather purple */
     --blob-c: #4f6b3e; /* moss green */
 }
+.heritage-longread--lakemans {
+    --blob-a: #2f6f7a; /* canal & polder water (teal-blue) */
+    --blob-b: #c08a2d; /* tulip / Indies-spice ochre */
+    --blob-c: #3f6b4a; /* reclaimed-polder green */
+}
 .heritage-longread--haistes {
     --blob-a: #6b5680; /* moor heather (purple) */
     --blob-b: #3e4853; /* millstone-grit & coal grey */
@@ -5259,9 +5264,10 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
     margin-block: 1.8em;
 }
 
-/* #4 — Per-line background motif: a faint woven "tweed" on the glass,
-   under the text (repurposes the plate's ::after, which the long-read
-   had blanked). Coarse enough (7px) to read through the frosted blur. */
+/* #4 — Per-line "frosted gradient" sheen on the glass, under the text
+   (repurposes the plate's ::after, which the long-read had blanked). A soft
+   top-left light highlight, like light caught on frosted glass, plus a faint
+   line-colour glow welling up from the lower edge so it stays signature. */
 .heritage-line--longread::after {
     content: "";
     display: block;
@@ -5270,10 +5276,14 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
     border-radius: inherit;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.05;
-    background-image:
-        repeating-linear-gradient(45deg, rgba(228, 220, 230, 0.7) 0 1px, transparent 1px 7px),
-        repeating-linear-gradient(-45deg, rgba(228, 220, 230, 0.5) 0 1px, transparent 1px 7px);
+    background:
+        linear-gradient(155deg,
+            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0.03) 22%,
+            rgba(255, 255, 255, 0) 52%),
+        radial-gradient(130% 80% at 80% 110%,
+            color-mix(in srgb, var(--line-color) 15%, transparent) 0%,
+            transparent 60%);
 }
 
 /* #7 — Duotone cohesion: a gentle warm tone on historic photos, with
