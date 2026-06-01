@@ -39,6 +39,19 @@ $tc_longread_registry = array(
         'body'        => get_stylesheet_directory() . '/inc/heritage/dochertys-story-body.php',
     ),
 
+    'lakemans' => array(
+        'slug'        => 'lakemans',
+        'eyebrow'     => 'The full story · Family line 03 of 05',
+        'title'       => 'The Lakemans',
+        'subtitle'    => 'From a Dutch polder, through the spice islands of the Indies, to a Calgary lake',
+        'kicker'      => 'Eleven generations · the Netherlands to Calgary · c. 1660 – today',
+        'spoke_url'   => home_url( '/family/heritage/lakemans' ),
+        'spoke_label' => 'The Lakemans',
+        'hero_image'  => home_url( '/wp-content/uploads/2026/05/vintage-historic-bw-photos-of-dutch-windmills-in-19th-century-07-1040x440-1.jpg' ),
+        'hero_alt'    => 'A nineteenth-century photograph of Dutch polder windmills',
+        'body'        => get_stylesheet_directory() . '/inc/heritage/lakemans-story-body.php',
+    ),
+
     'haistes' => array(
         'slug'        => 'haistes',
         'eyebrow'     => 'The full story · Family line 05 of 05',

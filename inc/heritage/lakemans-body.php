@@ -17,6 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <p>The Lakemans are my biological father's side, and they carry a story that ranges from the Dutch East Indies through five continents to a Calgary taxi dispatch office. Most of what follows comes straight from a long email my dad Martin wrote me &mdash; it's his story to tell, and he told it well.</p>
 
+<p class="heritage-line__readmore">
+    <a href="<?php echo esc_url( home_url( '/family/heritage/lakemans/story' ) ); ?>">Read the full Lakeman story &mdash; eleven generations, the Netherlands to Calgary &rarr;</a>
+</p>
+
 <aside class="heritage-line__quote" aria-hidden="true">
     <p>The Dutch East Indies through five continents to a Calgary taxi dispatch office.</p>
 </aside>
