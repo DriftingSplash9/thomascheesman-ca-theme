@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.421
+Version: 1.0.422
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4758,6 +4758,8 @@ body.single {
 .heritage-longread--rycrofts  .heritage-line { --line-color: #F59E0B; }
 .heritage-longread--haistes,
 .heritage-longread--haistes   .heritage-line { --line-color: #6366F1; }
+.heritage-longread--verbooms,
+.heritage-longread--verbooms  .heritage-line { --line-color: #0EA5A5; }
 
 /* Suppress the giant ghost numeral on the long-read section (same as
    the spoke does). */
@@ -4993,6 +4995,11 @@ body.single {
     --blob-a: #2f6f7a; /* canal & polder water (teal-blue) */
     --blob-b: #c08a2d; /* tulip / Indies-spice ochre */
     --blob-c: #3f6b4a; /* reclaimed-polder green */
+}
+.heritage-longread--verbooms {
+    --blob-a: #2c6e6a; /* canal-green water (Ter Aar / Sliedrecht riverside) */
+    --blob-b: #7d8a3f; /* polder & island field-green */
+    --blob-c: #436a86; /* North Sea slate-blue */
 }
 .heritage-longread--haistes {
     --blob-a: #6b5680; /* moor heather (purple) */
