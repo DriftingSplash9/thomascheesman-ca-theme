@@ -34,6 +34,14 @@ $tc_longread = array(
     'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/mciver/mciver-hero-lewis-coast.jpg',
     'hero_alt'    => 'A windswept Isle of Lewis coastline, the Hebridean world the McIvers came from',
     'body'        => get_stylesheet_directory() . '/inc/heritage/mcivers-story-body.php',
+    // Orphan line: the trail points up to the PARENT spoke (the Dochertys),
+    // mirroring the URL /family/heritage/dochertys/mcivers.
+    'breadcrumb'  => array(
+        array( 'label' => 'Family',        'url' => home_url( '/family' ) ),
+        array( 'label' => 'Heritage',      'url' => home_url( '/family/heritage' ) ),
+        array( 'label' => 'The Dochertys', 'url' => home_url( '/family/heritage/dochertys' ) ),
+        array( 'label' => 'The McIvers' ),
+    ),
 );
 
 require get_stylesheet_directory() . '/inc/page-heritage-longread.php';

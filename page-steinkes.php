@@ -31,6 +31,14 @@ $tc_longread = array(
     'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/steinke/steinke-hero-sod-house.jpg',
     'hero_alt'    => 'A prairie family standing before their sod house, early 1900s',
     'body'        => get_stylesheet_directory() . '/inc/heritage/steinkes-story-body.php',
+    // Orphan line: the trail points up to the PARENT spoke (the Rycrofts),
+    // mirroring the URL /family/heritage/rycrofts/steinkes.
+    'breadcrumb'  => array(
+        array( 'label' => 'Family',       'url' => home_url( '/family' ) ),
+        array( 'label' => 'Heritage',     'url' => home_url( '/family/heritage' ) ),
+        array( 'label' => 'The Rycrofts', 'url' => home_url( '/family/heritage/rycrofts' ) ),
+        array( 'label' => 'The Steinkes' ),
+    ),
 );
 
 require get_stylesheet_directory() . '/inc/page-heritage-longread.php';

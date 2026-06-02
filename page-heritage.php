@@ -34,7 +34,13 @@ get_header(); ?>
          ============================================================== -->
     <section class="page-hero">
         <div class="container">
-            <a class="heritage-page__back" href="<?php echo esc_url( home_url( '/family' ) ); ?>">&larr; Family</a>
+            <?php
+            $tc_crumbs = array(
+                array( 'label' => 'Family', 'url' => home_url( '/family' ) ),
+                array( 'label' => 'Heritage' ),
+            );
+            require get_stylesheet_directory() . '/inc/heritage-breadcrumb.php';
+            ?>
             <span class="page-hero__eyebrow">Five lines, one household</span>
             <h1 class="page-hero__title kinetic-text">The Families</h1>
             <p class="page-hero__subtitle kinetic-fade">

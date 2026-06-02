@@ -49,6 +49,19 @@ $lr_body     = isset( $lr['body'] )        ? (string) $lr['body']        : '';
 $lr_returl   = isset( $lr['return_url'] )   ? (string) $lr['return_url']   : home_url( '/family/heritage' );
 $lr_retlabel = isset( $lr['return_label'] ) ? (string) $lr['return_label'] : 'the family lines';
 
+// Breadcrumb trail (Family › Heritage › … › this story). A line may pass an
+// explicit 'breadcrumb' array (the orphan lines do, so their trail points up
+// to the PARENT spoke rather than the parent's story). Otherwise we build the
+// default for a hub line: the line's own short spoke, then "The full story".
+$lr_crumbs = ( isset( $lr['breadcrumb'] ) && is_array( $lr['breadcrumb'] ) )
+    ? $lr['breadcrumb']
+    : array(
+        array( 'label' => 'Family',     'url' => home_url( '/family' ) ),
+        array( 'label' => 'Heritage',   'url' => home_url( '/family/heritage' ) ),
+        array( 'label' => $lr_splabel,  'url' => $lr_spoke ),
+        array( 'label' => 'The full story' ),
+    );
+
 get_header();
 ?>
 
@@ -72,7 +85,10 @@ get_header();
          ============================================================== -->
     <section class="page-hero">
         <div class="container">
-            <a class="heritage-page__back" href="<?php echo esc_url( $lr_spoke ); ?>">&larr; <?php echo esc_html( $lr_splabel ); ?></a>
+            <?php
+            $tc_crumbs = $lr_crumbs;
+            require get_stylesheet_directory() . '/inc/heritage-breadcrumb.php';
+            ?>
             <?php if ( $lr_eyebrow !== '' ) : ?>
                 <span class="page-hero__eyebrow"><?php echo esc_html( $lr_eyebrow ); ?></span>
             <?php endif; ?>

@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.427
+Version: 1.0.428
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1447,6 +1447,54 @@ html.tc-menu-open .tc-capsule__trigger {
 .heritage-page__back:hover {
     color: var(--primary-color);
     transform: translateX(-4px);
+}
+
+/* ---- Heritage breadcrumb trail ----
+   Replaces the single "← back" link on the hub, the short spokes, and the
+   long-reads with a full hierarchical trail (Family › Heritage › Line › …).
+   Crumbs are muted small-caps; separators are CSS chevrons; the current page
+   (the last crumb, rendered as a <span>) reads in the body colour. Rendered
+   by inc/heritage-breadcrumb.php. */
+.heritage-breadcrumb {
+    margin-bottom: 32px;
+}
+.heritage-breadcrumb__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1.5;
+}
+.heritage-breadcrumb__item {
+    display: inline-flex;
+    align-items: center;
+}
+.heritage-breadcrumb__item + .heritage-breadcrumb__item::before {
+    content: "\203A"; /* › */
+    margin: 0 0.65em;
+    color: var(--text-light);
+    opacity: 0.55;
+    font-size: 1.15em;
+    font-weight: 400;
+}
+.heritage-breadcrumb__link {
+    color: var(--text-light);
+    text-decoration: none;
+    transition: color 0.25s ease;
+}
+.heritage-breadcrumb__link:hover,
+.heritage-breadcrumb__link:focus-visible {
+    color: var(--line-color, var(--primary-color));
+}
+.heritage-breadcrumb__current {
+    color: var(--text-dark);
+    font-weight: 600;
 }
 
 /* Narrow container variant for long-form reading. 720px is roughly
@@ -4933,6 +4981,33 @@ body.single {
 }
 .heritage-longread__notes-body ol li {
     margin: 0 0 0.5em 0;
+}
+
+/* In-text cross-reference to the Notes appendix. The manuscript prose links
+   the word "Notes" to #lr-notes (auto-linked by _md2heritage.js); main.js
+   opens the <details> when it's followed. Styled as a subtle dotted-underline
+   aside-link in the line colour — a footnote pointer, not a primary CTA. */
+.heritage-line__body--longread a[href="#lr-notes"] {
+    color: var(--line-color);
+    text-decoration: none;
+    border-bottom: 1px dotted color-mix(in srgb, var(--line-color) 55%, transparent);
+    transition: border-color 0.2s ease;
+}
+.heritage-line__body--longread a[href="#lr-notes"]:hover,
+.heritage-line__body--longread a[href="#lr-notes"]:focus-visible {
+    border-bottom-color: var(--line-color);
+}
+/* Deep-linked (or jumped-to) Notes block briefly washes the line colour so
+   the reader's eye lands in the right place. */
+.heritage-longread__notes:target {
+    animation: lr-notes-flash 1.8s ease;
+}
+@keyframes lr-notes-flash {
+    0%, 25% { background: color-mix(in srgb, var(--line-color) 13%, transparent); }
+    100%    { background: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .heritage-longread__notes:target { animation: none; }
 }
 
 /* Footer return link. */

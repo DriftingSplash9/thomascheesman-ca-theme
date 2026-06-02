@@ -32,6 +32,14 @@ $tc_longread = array(
     'hero_image'  => home_url( '/wp-content/uploads/2026/05/Broek-Waterland-canal-view.jpg' ),
     'hero_alt'    => 'A canal and timber houses in a Zuid-Holland village, the kind of country the Verbooms came from',
     'body'        => get_stylesheet_directory() . '/inc/heritage/verbooms-story-body.php',
+    // Orphan line: the trail points up to the PARENT spoke (the Lakemans),
+    // mirroring the URL /family/heritage/lakemans/verbooms.
+    'breadcrumb'  => array(
+        array( 'label' => 'Family',       'url' => home_url( '/family' ) ),
+        array( 'label' => 'Heritage',     'url' => home_url( '/family/heritage' ) ),
+        array( 'label' => 'The Lakemans', 'url' => home_url( '/family/heritage/lakemans' ) ),
+        array( 'label' => 'The Verbooms' ),
+    ),
 );
 
 require get_stylesheet_directory() . '/inc/page-heritage-longread.php';

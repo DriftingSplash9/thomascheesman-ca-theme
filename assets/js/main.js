@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initScrollReveals();
     initHeritagePage();
     initLongreadChapterRail();
+    initHeritageNotes();
     initInkTrail();
     initParticleField();
     initMagneticElements();
@@ -2200,6 +2201,41 @@ function initSiteChrome() {
  * smooth-scrolls on click. No-ops on any page that isn't a long-read or that
  * has fewer than two chapters. Hidden under 1180px by CSS.
  */
+/**
+ * Long-read "Notes" cross-references.
+ *
+ * The manuscript prose links the phrase "Notes" to the collapsible Notes
+ * appendix (#lr-notes) — see _md2heritage.js. Because that appendix is a
+ * <details> that starts collapsed, a raw anchor jump would land on a closed
+ * box. This opens it first, then glides to it; and it honours a #lr-notes
+ * deep-link on arrival. No-ops on every page without the appendix.
+ */
+function initHeritageNotes() {
+    const notes = document.getElementById('lr-notes');
+    if (!notes) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    document.querySelectorAll('a[href$="#lr-notes"]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            notes.open = true;
+            notes.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+            if (history.replaceState) { history.replaceState(null, '', '#lr-notes'); }
+        });
+    });
+
+    // Someone arriving on a …#lr-notes URL: open it and settle the scroll
+    // once layout has resolved (the browser's own jump landed on the closed
+    // summary, so re-scroll after expanding).
+    if (window.location.hash === '#lr-notes') {
+        notes.open = true;
+        requestAnimationFrame(function () {
+            notes.scrollIntoView({ behavior: 'auto', block: 'start' });
+        });
+    }
+}
+
 function initLongreadChapterRail() {
     const lr = document.querySelector('.heritage-longread');
     if (!lr) return;
