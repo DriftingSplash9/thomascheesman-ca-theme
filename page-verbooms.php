@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 $tc_longread = array(
     'slug'        => 'verbooms',
-    'eyebrow'     => 'A maternal line of the Lakemans',
+    'eyebrow'     => 'Family line 05 of 08 · A maternal line of the Lakemans',
     'title'       => 'The Verbooms',
     'subtitle'    => 'Suzanna’s people — a tailor-barber of Ter Aar, and the river-village and island families behind him',
     'kicker'      => 'Ter Aar to Calgary · the riverside, the polders, and the islands · c. 1760 – today',

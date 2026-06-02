@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.430
+Version: 1.0.431
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2914,13 +2914,15 @@ body:has(.person-spoke--faith) {
 .family-tree {
     position: relative;
     width: 100%;
-    max-width: 1100px;
+    max-width: 1400px;
     margin: 0 auto;
-    /* Compact 2:1 aspect ratio (instead of the tree image's natural
-       1051:768) so the whole 8-chip composition fits within a single
-       viewport on a 768-900px-tall window. The tree no longer fills
-       the container — see .family-tree__image below. */
-    aspect-ratio: 2 / 1;
+    /* Taller canopy (≈ a full viewport) so all EIGHT line chips — the five
+       main lines plus the three maternal lines tucked beside their parents
+       — have room to breathe without overlapping. Capped at 92vh so it
+       never forces a scroll on shorter windows; the tree image itself sits
+       centred inside, its chopped-off crown filling the extra height. */
+    aspect-ratio: 7 / 5;
+    max-height: 92vh;
     /* Open-hand cursor while the cursor is over the tree area —
        signals "this is alive, pick something" without a click target.
        Chip <a> elements override with their default pointer cursor. */
@@ -3068,8 +3070,13 @@ body:has(.person-spoke--faith) {
    flag's visibility down to ~30% so it reads as a tint, not a
    billboard. Flag SVGs live in assets/img/flags/. */
 
+/* Eight branch chips across the canopy. The three maternal lines sit just
+   beside + below their parent (McIver→Docherty, Verboom→Lakeman,
+   Steinke→Rycroft). Positions are first-pass — easy to nudge. The Docherty
+   flag is now PURE Irish: the old composite (Irish + Scottish) was split now
+   that McIver carries its own Scottish saltire chip. */
 .tree-chip--cheesmans {
-    left: 16%; top: 34%;
+    left: 8%; top: 44%;
     --chip-color: #22D3EE;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
@@ -3077,33 +3084,55 @@ body:has(.person-spoke--faith) {
 }
 
 .tree-chip--dochertys {
-    left: 28%; top: 16%;
+    left: 22%; top: 26%;
     --chip-color: #EC4899;
-    /* Composite flag: Irish (Docherty / Lanarkshire) + Scottish (McIver
-       maternal line via Granny Elizabeth), split diagonally. */
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
-        url('assets/img/flags/dochertys.svg');
+        url('assets/img/flags/ie.svg');
+}
+
+.tree-chip--mcivers {
+    left: 31%; top: 40%;
+    --chip-color: #5B8FB5;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
+        url('assets/img/flags/scotland.svg');
 }
 
 .tree-chip--lakemans {
-    left: 50%; top: 12%;
+    left: 47%; top: 18%;
     --chip-color: #10B981;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/nl.svg');
 }
 
+.tree-chip--verbooms {
+    left: 56%; top: 32%;
+    --chip-color: #0EA5A5;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
+        url('assets/img/flags/nl.svg');
+}
+
 .tree-chip--rycrofts {
-    left: 72%; top: 16%;
+    left: 70%; top: 26%;
     --chip-color: #F59E0B;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/ca.svg');
 }
 
+.tree-chip--steinkes {
+    left: 79%; top: 40%;
+    --chip-color: #6E8CA0;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
+        url('assets/img/flags/de.svg');
+}
+
 .tree-chip--haistes {
-    left: 84%; top: 34%;
+    left: 92%; top: 44%;
     --chip-color: #6366F1;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
@@ -3142,6 +3171,7 @@ body:has(.person-spoke--faith) {
         flex-direction: column;
         gap: 12px;
         aspect-ratio: auto;
+        max-height: none; /* undo the desktop 92vh cap so the stacked list isn't clipped */
         max-width: 480px;
         padding: 20px 0;
     }
@@ -4806,6 +4836,8 @@ body.single {
 .heritage-longread--rycrofts  .heritage-line { --line-color: #F59E0B; }
 .heritage-longread--haistes,
 .heritage-longread--haistes   .heritage-line { --line-color: #6366F1; }
+.heritage-longread--mcivers,
+.heritage-longread--mcivers   .heritage-line { --line-color: #5B8FB5; }
 .heritage-longread--verbooms,
 .heritage-longread--verbooms  .heritage-line { --line-color: #0EA5A5; }
 .heritage-longread--steinkes,
@@ -5092,6 +5124,11 @@ body.single {
     --blob-a: #6b5680; /* moor heather (purple) */
     --blob-b: #3e4853; /* millstone-grit & coal grey */
     --blob-c: #9c7f43; /* raw wool & gorse gold */
+}
+.heritage-longread--mcivers {
+    --blob-a: #2f5d7a; /* Atlantic / Lewis sea-blue */
+    --blob-b: #4a6b86; /* Hebridean slate */
+    --blob-c: #5a7a5e; /* island moss-green */
 }
 /* Sensible default palette for any line not yet themed. */
 .heritage-longread {

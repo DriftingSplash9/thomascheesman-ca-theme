@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 $tc_heritage = array(
     'slug'     => 'dochertys',
-    'eyebrow'  => 'Family line 02 of 05',
+    'eyebrow'  => 'Family line 02 of 08',
     'title'    => 'The Dochertys',
     'subtitle' => 'Few and far between, deep roots',
     'body'     => get_stylesheet_directory() . '/inc/heritage/dochertys-body.php',

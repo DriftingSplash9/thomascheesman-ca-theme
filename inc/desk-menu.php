@@ -312,10 +312,13 @@ function tc_render_desk_menu() {
                 <ul>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">Heritage</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/cheesmans' ) ); ?>">&#x21B3; Cheesmans</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">&#x21B3; Lakemans</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">&#x21B3; Rycrofts</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">&#x21B3; Haistes</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/dochertys' ) ); ?>">&#x21B3; Dochertys</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/dochertys/mcivers' ) ); ?>">&#x21B3; McIvers</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">&#x21B3; Lakemans</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/lakemans/verbooms' ) ); ?>">&#x21B3; Verbooms</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">&#x21B3; Rycrofts</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts/steinkes' ) ); ?>">&#x21B3; Steinkes</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">&#x21B3; Haistes</a></li>
                 </ul>
             </div>
             <div class="tc-desk__mobile-meta-block">

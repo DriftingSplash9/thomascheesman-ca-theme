@@ -28,7 +28,7 @@ $tc_longread_registry = array(
 
     'dochertys' => array(
         'slug'        => 'dochertys',
-        'eyebrow'     => 'The full story · Family line 02 of 05',
+        'eyebrow'     => 'The full story · Family line 02 of 08',
         'title'       => 'The Dochertys',
         'subtitle'    => 'A family that came through Ireland and Scotland to the Canadian prairie',
         'kicker'      => 'Eight generations · Donegal to Alberta · c. 1750 – today',
@@ -41,7 +41,7 @@ $tc_longread_registry = array(
 
     'lakemans' => array(
         'slug'        => 'lakemans',
-        'eyebrow'     => 'The full story · Family line 03 of 05',
+        'eyebrow'     => 'The full story · Family line 04 of 08',
         'title'       => 'The Lakemans',
         'subtitle'    => 'From a Dutch polder, through the spice islands of the Indies, to a Calgary lake',
         'kicker'      => 'Eleven generations · the Netherlands to Calgary · c. 1660 – today',
@@ -54,7 +54,7 @@ $tc_longread_registry = array(
 
     'haistes' => array(
         'slug'        => 'haistes',
-        'eyebrow'     => 'The full story · Family line 05 of 05',
+        'eyebrow'     => 'The full story · Family line 08 of 08',
         'title'       => 'The Haistes',
         'subtitle'    => 'A Yorkshire-to-prairie saga, from a tannery yard to the Peace Country',
         'kicker'      => 'Thirteen generations · Yorkshire to the Peace Country · c. 1610 – today',
@@ -67,7 +67,7 @@ $tc_longread_registry = array(
 
     'rycrofts' => array(
         'slug'        => 'rycrofts',
-        'eyebrow'     => 'The full story · Family line 04 of 05',
+        'eyebrow'     => 'The full story · Family line 06 of 08',
         'title'       => 'The Rycrofts',
         'subtitle'    => 'From a Leeds back-street to the Kingdom of Hawai&lsquo;i, and home to the Peace Country',
         'kicker'      => 'Leeds &middot; the Civil War &middot; Hawai&lsquo;i &middot; the Peace Country &middot; 1843 &ndash; today',

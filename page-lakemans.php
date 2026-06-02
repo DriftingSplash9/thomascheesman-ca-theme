@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 $tc_heritage = array(
     'slug'     => 'lakemans',
-    'eyebrow'  => 'Family line 03 of 05',
+    'eyebrow'  => 'Family line 04 of 08',
     'title'    => 'The Lakemans',
     'subtitle' => 'Indonesia, Holland, Calgary, and most places in between',
     'body'     => get_stylesheet_directory() . '/inc/heritage/lakemans-body.php',

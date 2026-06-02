@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 $tc_heritage = array(
     'slug'     => 'haistes',
-    'eyebrow'  => 'Family line 05 of 05',
+    'eyebrow'  => 'Family line 08 of 08',
     'title'    => 'The Haistes',
     'subtitle' => 'Yorkshire to the Peace Country',
     'body'     => get_stylesheet_directory() . '/inc/heritage/haistes-body.php',

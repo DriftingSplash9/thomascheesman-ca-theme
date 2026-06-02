@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 $tc_heritage = array(
     'slug'     => 'cheesmans',
-    'eyebrow'  => 'Family line 01 of 05',
+    'eyebrow'  => 'Family line 01 of 08',
     'title'    => 'The Cheesmans',
     'subtitle' => 'The Cheesiest Clan',
     'body'     => get_stylesheet_directory() . '/inc/heritage/cheesmans-body.php',

@@ -8,11 +8,12 @@
  *   1. Page hero (kinetic title + subtitle)
  *   2. Side-by-side hero photos (group + three kids)
  *   3. Page intro lead paragraph
- *   4. The family tree — a single illustrated tree with five family-line
- *      chips along the canopy and three kid chips at the roots. Each
- *      chip links to its spoke (heritage line) or per-person page.
+ *   4. The family tree — a single illustrated tree with eight family-line
+ *      chips along the canopy (five main lines + the three maternal lines
+ *      beside their parents) and three kid chips at the roots. Each chip
+ *      links to its spoke / long-read or per-person page.
  *   5. Heritage banner — a wider call-to-action linking to the
- *      /family/heritage hub for the deeper card-grid view of all 5 lines.
+ *      /family/heritage hub for the deeper card-grid view of all 8 lines.
  *   6. Stories feed (posts categorized "family")
  *   7. Photo credit colophon
  */
@@ -66,7 +67,7 @@ get_header(); ?>
     <section class="page-intro">
         <div class="container">
             <p class="page-intro__lead">
-                This part of the site is about my kids and the families they came from. Patience, Daniel, and Faith are the reason I'm here &mdash; three kids I never thought I'd have, given the Hajdu-Cheney Syndrome that I figured I would never take that risk on. Around the three of them are the rest of it: Cheesmans, Dochertys, McIvers, Rycrofts, Haistes, Lakemans. Five family lines, a handful of stories, and the things I want my kids to be able to find later if they go looking.
+                This part of the site is about my kids and the families they came from. Patience, Daniel, and Faith are the reason I'm here &mdash; three kids I never thought I'd have, given the Hajdu-Cheney Syndrome that I figured I would never take that risk on. Around the three of them are the rest of it: Cheesmans, Dochertys and McIvers, Lakemans and Verbooms, Rycrofts and Steinkes, and Haistes. Eight family lines, a handful of stories, and the things I want my kids to be able to find later if they go looking.
             </p>
         </div>
     </section>
@@ -101,7 +102,10 @@ get_header(); ?>
                     />
                 </div>
 
-                <!-- Branches — five family lines, in numbered order. -->
+                <!-- Branches — eight family lines, numbered 01–08. The three
+                     maternal lines (McIver, Verboom, Steinke) sit beside their
+                     parent line on the canopy and link straight to their full
+                     long-read, so they're reachable in one hop from here. -->
                 <a class="tree-chip tree-chip--branch tree-chip--cheesmans" href="<?php echo esc_url( home_url( '/family/heritage/cheesmans' ) ); ?>">
                     <span class="tree-chip__eyebrow">01</span>
                     <span class="tree-chip__title">The Cheesmans</span>
@@ -112,18 +116,33 @@ get_header(); ?>
                     <span class="tree-chip__title">The Dochertys</span>
                     <span class="tree-chip__cta">Read the line &rarr;</span>
                 </a>
-                <a class="tree-chip tree-chip--branch tree-chip--lakemans" href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">
+                <a class="tree-chip tree-chip--branch tree-chip--mcivers" href="<?php echo esc_url( home_url( '/family/heritage/dochertys/mcivers' ) ); ?>">
                     <span class="tree-chip__eyebrow">03</span>
+                    <span class="tree-chip__title">The McIvers</span>
+                    <span class="tree-chip__cta">Read the line &rarr;</span>
+                </a>
+                <a class="tree-chip tree-chip--branch tree-chip--lakemans" href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">
+                    <span class="tree-chip__eyebrow">04</span>
                     <span class="tree-chip__title">The Lakemans</span>
                     <span class="tree-chip__cta">Read the line &rarr;</span>
                 </a>
+                <a class="tree-chip tree-chip--branch tree-chip--verbooms" href="<?php echo esc_url( home_url( '/family/heritage/lakemans/verbooms' ) ); ?>">
+                    <span class="tree-chip__eyebrow">05</span>
+                    <span class="tree-chip__title">The Verbooms</span>
+                    <span class="tree-chip__cta">Read the line &rarr;</span>
+                </a>
                 <a class="tree-chip tree-chip--branch tree-chip--rycrofts" href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">
-                    <span class="tree-chip__eyebrow">04</span>
+                    <span class="tree-chip__eyebrow">06</span>
                     <span class="tree-chip__title">The Rycrofts</span>
                     <span class="tree-chip__cta">Read the line &rarr;</span>
                 </a>
+                <a class="tree-chip tree-chip--branch tree-chip--steinkes" href="<?php echo esc_url( home_url( '/family/heritage/rycrofts/steinkes' ) ); ?>">
+                    <span class="tree-chip__eyebrow">07</span>
+                    <span class="tree-chip__title">The Steinkes</span>
+                    <span class="tree-chip__cta">Read the line &rarr;</span>
+                </a>
                 <a class="tree-chip tree-chip--branch tree-chip--haistes" href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">
-                    <span class="tree-chip__eyebrow">05</span>
+                    <span class="tree-chip__eyebrow">08</span>
                     <span class="tree-chip__title">The Haistes</span>
                     <span class="tree-chip__cta">Read the line &rarr;</span>
                 </a>
@@ -156,9 +175,9 @@ get_header(); ?>
             <a class="heritage-banner" href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">
                 <div class="heritage-banner__body">
                     <span class="heritage-banner__eyebrow">Heritage</span>
-                    <h3 class="heritage-banner__title">Five lines, one household</h3>
+                    <h3 class="heritage-banner__title">Eight lines, one household</h3>
                     <p class="heritage-banner__copy">
-                        The deeper read on where the kids came from &mdash; Cheesmans, Dochertys, Lakemans, Rycrofts, and Haistes, each with their own page.
+                        The deeper read on where the kids came from &mdash; the Cheesmans, Dochertys, Lakemans, Rycrofts, and Haistes, and the McIver, Verboom, and Steinke lines that married into them, each with their own page.
                     </p>
                 </div>
                 <span class="heritage-banner__cta" aria-hidden="true">Read the lines &rarr;</span>

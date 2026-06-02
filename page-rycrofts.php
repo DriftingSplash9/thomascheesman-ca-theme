@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 $tc_heritage = array(
     'slug'     => 'rycrofts',
-    'eyebrow'  => 'Family line 04 of 05',
+    'eyebrow'  => 'Family line 06 of 08',
     'title'    => 'The Rycrofts',
     'subtitle' => 'Pioneers of the Region',
     'body'     => get_stylesheet_directory() . '/inc/heritage/rycrofts-body.php',

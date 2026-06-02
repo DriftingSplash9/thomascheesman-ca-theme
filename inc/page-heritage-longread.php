@@ -14,7 +14,7 @@
  *
  *   $tc_longread = array(
  *       'slug'        => 'dochertys',
- *       'eyebrow'     => 'The full story · Family line 02 of 05',
+ *       'eyebrow'     => 'The full story · Family line 02 of 08',
  *       'title'       => 'The Dochertys',
  *       'subtitle'    => 'A family that came through Ireland and Scotland...',
  *       'spoke_url'   => home_url( '/family/heritage/dochertys' ),

@@ -14,7 +14,7 @@
  *
  *   $tc_heritage = array(
  *       'slug'     => 'cheesmans',                  // line slug
- *       'eyebrow'  => 'Family line 01 of 05',       // small chip above title
+ *       'eyebrow'  => 'Family line 01 of 08',       // small chip above title
  *       'title'    => 'The Cheesmans',              // page H1
  *       'subtitle' => 'The Cheesiest Clan',         // subtitle under H1
  *       'body'     => '/abs/path/to/body.php',      // resolved body include

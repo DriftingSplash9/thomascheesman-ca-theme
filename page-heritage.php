@@ -41,7 +41,7 @@ get_header(); ?>
             );
             require get_stylesheet_directory() . '/inc/heritage-breadcrumb.php';
             ?>
-            <span class="page-hero__eyebrow">Five lines, one household</span>
+            <span class="page-hero__eyebrow">Eight lines, one household</span>
             <h1 class="page-hero__title kinetic-text">The Families</h1>
             <p class="page-hero__subtitle kinetic-fade">
                 A working map of where my kids come from
@@ -58,7 +58,7 @@ get_header(); ?>
     <section class="heritage-intro">
         <div class="container container--narrow">
             <p class="heritage-intro__lead">
-                Family is its own kind of map. Mine has five lines pulling it in different directions &mdash; Cheesmans, Dochertys/McIvers, Lakemans, Rycrofts, and Haistes. Some I know inside and out. Others are still mostly names on paper and a few photographs I'm trying to put faces to. Each line has its own page; tap a card to follow it down.
+                Family is its own kind of map. Mine has eight lines pulling it in different directions &mdash; the Cheesmans, Dochertys, Lakemans, Rycrofts, and Haistes, plus the three maternal lines that married into them: the McIvers, Verbooms, and Steinkes. Some I know inside and out. Others are still mostly names on paper and a few photographs I'm trying to put faces to. Each line has its own page; tap a card to follow it down.
             </p>
             <p class="heritage-intro__lead heritage-intro__lead--secondary">
                 If you have a story, a photo, or a correction, send it my way. These pages are working drafts for as long as I can keep typing.
@@ -67,11 +67,12 @@ get_header(); ?>
     </section>
 
     <!-- ==============================================================
-         FIVE LINE CARDS
-         Image-led cards in a responsive grid. Order matches the spoke
-         numbering: 01 Cheesmans, 02 Dochertys, 03 Lakemans, 04 Rycrofts,
-         05 Haistes. The whole tile is the link affordance — no separate
-         "read more" needed because the entire card is clickable.
+         EIGHT LINE CARDS
+         Image-led cards in a responsive grid, numbered 01–08. The three
+         maternal lines (McIver, Verboom, Steinke) sit right after their
+         parent and link STRAIGHT to their full long-read, so they're one
+         hop from the hub. The whole tile is the link affordance — no
+         separate "read more" needed because the entire card is clickable.
          ============================================================== -->
     <section class="heritage-cards-section scroll-animate">
         <div class="container">
@@ -118,7 +119,27 @@ get_header(); ?>
                     </div>
                 </a>
 
-                <!-- 03 — Lakemans -->
+                <!-- 03 — McIvers (maternal line of the Dochertys; links straight to the full story) -->
+                <a class="heritage-card" href="<?php echo esc_url( home_url( '/family/heritage/dochertys/mcivers' ) ); ?>">
+                    <div class="heritage-card__image">
+                        <img
+                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/heritage/mciver/mciver-hero-lewis-coast.jpg' ); ?>"
+                            alt="<?php esc_attr_e( 'A windswept Isle of Lewis coastline, the Hebridean world the McIvers came from', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                    </div>
+                    <div class="heritage-card__body">
+                        <span class="heritage-card__number" aria-hidden="true">03</span>
+                        <h2 class="heritage-card__title">The McIvers</h2>
+                        <p class="heritage-card__subtitle">A maternal line of the Dochertys</p>
+                        <p class="heritage-card__blurb">
+                            Granny Docherty's people &mdash; McIver of Lewis, Campbell of South Uist, Cameron of Moray. Three Hebridean streams cleared off the islands that met on the Saskatchewan prairie in the 1880s, and the deepest-documented branch of the whole family.
+                        </p>
+                        <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- 04 — Lakemans -->
                 <a class="heritage-card" href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">
                     <div class="heritage-card__image">
                         <img
@@ -128,7 +149,7 @@ get_header(); ?>
                         />
                     </div>
                     <div class="heritage-card__body">
-                        <span class="heritage-card__number" aria-hidden="true">03</span>
+                        <span class="heritage-card__number" aria-hidden="true">04</span>
                         <h2 class="heritage-card__title">The Lakemans</h2>
                         <p class="heritage-card__subtitle">Indonesia, Holland, Calgary, and most places in between</p>
                         <p class="heritage-card__blurb">
@@ -138,7 +159,27 @@ get_header(); ?>
                     </div>
                 </a>
 
-                <!-- 04 — Rycrofts -->
+                <!-- 05 — Verbooms (maternal line of the Lakemans; links straight to the full story) -->
+                <a class="heritage-card" href="<?php echo esc_url( home_url( '/family/heritage/lakemans/verbooms' ) ); ?>">
+                    <div class="heritage-card__image">
+                        <img
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/Broek-Waterland-canal-view.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'A canal and timber houses in a Zuid-Holland village, the country the Verbooms came from', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                    </div>
+                    <div class="heritage-card__body">
+                        <span class="heritage-card__number" aria-hidden="true">05</span>
+                        <h2 class="heritage-card__title">The Verbooms</h2>
+                        <p class="heritage-card__subtitle">A maternal line of the Lakemans</p>
+                        <p class="heritage-card__blurb">
+                            Suzanna Verboom's people &mdash; a tailor-barber of Ter Aar and the river-village and island families behind him, traced deep into the polders and waterways of Zuid-Holland.
+                        </p>
+                        <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- 06 — Rycrofts -->
                 <a class="heritage-card" href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">
                     <div class="heritage-card__image">
                         <img
@@ -148,7 +189,7 @@ get_header(); ?>
                         />
                     </div>
                     <div class="heritage-card__body">
-                        <span class="heritage-card__number" aria-hidden="true">04</span>
+                        <span class="heritage-card__number" aria-hidden="true">06</span>
                         <h2 class="heritage-card__title">The Rycrofts</h2>
                         <p class="heritage-card__subtitle">Pioneers of the Region</p>
                         <p class="heritage-card__blurb">
@@ -158,7 +199,27 @@ get_header(); ?>
                     </div>
                 </a>
 
-                <!-- 05 — Haistes -->
+                <!-- 07 — Steinkes (maternal line of the Rycrofts; links straight to the full story) -->
+                <a class="heritage-card" href="<?php echo esc_url( home_url( '/family/heritage/rycrofts/steinkes' ) ); ?>">
+                    <div class="heritage-card__image">
+                        <img
+                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/heritage/steinke/steinke-hero-sod-house.jpg' ); ?>"
+                            alt="<?php esc_attr_e( 'A prairie family before their sod house, the world the Steinkes settled', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                    </div>
+                    <div class="heritage-card__body">
+                        <span class="heritage-card__number" aria-hidden="true">07</span>
+                        <h2 class="heritage-card__title">The Steinkes</h2>
+                        <p class="heritage-card__subtitle">A maternal line of the Rycrofts</p>
+                        <p class="heritage-card__blurb">
+                            Bette's people &mdash; German Lutheran settlers who broke ground on the Sexsmith prairie. A line still being traced.
+                        </p>
+                        <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- 08 — Haistes -->
                 <a class="heritage-card" href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">
                     <div class="heritage-card__image">
                         <img
@@ -168,7 +229,7 @@ get_header(); ?>
                         />
                     </div>
                     <div class="heritage-card__body">
-                        <span class="heritage-card__number" aria-hidden="true">05</span>
+                        <span class="heritage-card__number" aria-hidden="true">08</span>
                         <h2 class="heritage-card__title">The Haistes</h2>
                         <p class="heritage-card__subtitle">Yorkshire to the Peace Country</p>
                         <p class="heritage-card__blurb">
@@ -191,7 +252,7 @@ get_header(); ?>
         <div class="container container--narrow">
             <h2 class="heritage-coda__title">A note on names</h2>
             <p>
-                If you're keeping score, my surname history runs Lakeman &rarr; Cheesman, my mom's runs Docherty &rarr; Lakeman &rarr; Cheesman, my wife's runs Rycroft &rarr; Haiste &rarr; Cheesman. Five family lines, one household, three kids who carry pieces of all of it. That's the map I'm trying to draw.
+                If you're keeping score, my surname history runs Lakeman &rarr; Cheesman, my mom's runs Docherty &rarr; Lakeman &rarr; Cheesman, my wife's runs Rycroft &rarr; Haiste &rarr; Cheesman. Eight family lines, one household, three kids who carry pieces of all of it. That's the map I'm trying to draw.
             </p>
         </div>
     </section>

@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 $tc_longread = array(
     'slug'        => 'mcivers',
-    'eyebrow'     => 'A maternal line of the Dochertys',
+    'eyebrow'     => 'Family line 03 of 08 · A maternal line of the Dochertys',
     'title'       => 'The McIvers',
     'subtitle'    => 'Three Hebridean streams — Lewis, South Uist, and Moray — that met on the Saskatchewan prairie',
     'kicker'      => 'Lewis &middot; South Uist &middot; Moray &middot; the Clearances &middot; Saltcoats &middot; c. 1832 &ndash; today',

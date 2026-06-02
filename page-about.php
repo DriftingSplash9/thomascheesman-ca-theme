@@ -119,7 +119,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
                     <figcaption>Mom, Brian, Chris, Jonathan, and me &mdash; about 2001.</figcaption>
                 </figure>
 
-                <p>Melanie and I were apart for a decade before we got back together, and then had three kids in five years. The kids' stories, and the five family lines that meet in them, live at <a href="<?php echo esc_url( home_url( '/family' ) ); ?>">/family</a>.</p>
+                <p>Melanie and I were apart for a decade before we got back together, and then had three kids in five years. The kids' stories, and the eight family lines that meet in them, live at <a href="<?php echo esc_url( home_url( '/family' ) ); ?>">/family</a>.</p>
 
                 <figure class="about-figure about-figure--left">
                     <img

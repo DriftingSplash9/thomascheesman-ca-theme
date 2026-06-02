@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 $tc_longread = array(
     'slug'        => 'steinkes',
-    'eyebrow'     => 'A maternal line of the Rycrofts',
+    'eyebrow'     => 'Family line 07 of 08 · A maternal line of the Rycrofts',
     'title'       => 'The Steinkes',
     'subtitle'    => 'Bette&rsquo;s people &mdash; German Lutheran settlers of the Sexsmith prairie',
     'kicker'      => 'Sexsmith, Alberta &middot; German Lutheran prairie &middot; a line still being traced',
