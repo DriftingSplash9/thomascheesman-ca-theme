@@ -6,7 +6,7 @@
 
 ## What this is
 
-The child theme for **thomascheesman.ca** — a personal site for **Thomas Cheesman**. Pages-only (no blog), built as ~14 bespoke PHP page templates plus a "desk metaphor" navigation overlay, an in-browser pinball game, and a sitemap-style drawer footer.
+The child theme for **thomascheesman.ca** — a personal site for **Thomas Cheesman**. Pages-only (no blog), built as a few dozen bespoke PHP page templates (incl. the heritage spokes + long-reads, below) plus a "desk metaphor" navigation overlay, an in-browser pinball game, and a sitemap-style drawer footer.
 
 The site is **live** at https://thomascheesman.ca (staging hostname previously: `lightgoldenrodyellow-dugong-336485.hostingersite.com`).
 
@@ -23,21 +23,21 @@ The site is **live** at https://thomascheesman.ca (staging hostname previously: 
 
 ## ⭐ Hard rules (memorize)
 
-1. **Never auto-commit-and-push.** Propose the commit + message; wait for the user to say "go." Preauthorization is task-scoped only — a new request needs a new approval.
-2. **Bump `style.css` `Version:`** on every commit that touches theme code. Patch increment. Pure docs / `.gitignore`-only commits don't bump.
+1. **Never auto-commit-and-push.** Propose the commit + message; wait for the user to say "go." Preauthorization is task-scoped only — a new request needs a new approval. **Stage explicit paths — never `git add .`** (the tree often holds unrelated changes and loose `sk_*.html` research scrapes that must not be swept into a commit).
+2. **Bump `style.css` `Version:`** on every commit that touches theme code. Patch increment. Pure docs / `.gitignore`-only commits don't bump. **Bump it with the Edit tool, never `sed`** (`sed -i` rewrites all line endings → a phantom multi-thousand-line CRLF diff).
 3. **Never use `object-fit: cover`** — always `contain`.
 4. **The desk menu (`inc/desk-menu.php` + `assets/js/desk-menu.js`) AND the drawer footer (`footer.php` + `assets/css/desk-drawer.css`) are BHAG-tier surfaces.** Plan + propose before changes; don't freelance.
    - **Bring bold ideas to both.** Thomas explicitly wants features that push what's possible in a browser. He's not afraid of complexity. Don't preemptively scope down; lean toward "let's try it." Many tasks Claude estimates as "15 minutes" ship in a few moments — don't telegraph time anxiety.
    - **For desk-menu OR drawer-footer work, ask Thomas if he wants a ChatGPT brainstorm prompt first** before coding starts. ChatGPT is strong at imagining cool, weird, surprising directions but weaker at implementing them. Claude is the opposite. The division of labor that works: Claude drafts a context-rich prompt for ChatGPT, Thomas pastes it into ChatGPT, brings the ideas back, Claude implements the strongest ones. Offer the prompt; let Thomas decide whether to use it.
 5. **The user is Thomas Cheesman, a programmer-adjacent collaborator who understands some but not everything.** Explain at a medium register: don't over-explain CLI / git / wp-admin basics, but do number multi-step workflows and call out the *why* behind architectural decisions. Skip the very-beginner framing; he'll ask if something's unclear.
-6. **🔒 Privacy: Thomas and Mel are parenting cohabitants and friends.** Their status is private — **do not disclose it on the site**, and **do not write copy that frames them as a current couple**. Don't auto-rewrite existing copy that mentions Mel; don't surface this context unprompted.
+6. **🔒 Privacy: Thomas and Mel are parenting cohabitants and friends.** Their status is private — **do not disclose it on the site**, and **do not write copy that frames them as a current couple**. Don't auto-rewrite existing copy that mentions Mel; don't surface this context unprompted. More broadly, **don't publish names or photos of living relatives unprompted** — surface couple/living-person framing for Thomas's call rather than deciding it (e.g., the heritage pages use period imagery, not photos of living extended family).
 
 ## Conventions
 
 - **Commits**: imperative subject, body explains the *why*. Co-author footer:
-  `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>`
+  `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
 - **Branches**: feature branches optional; main is the deploy branch.
-- **Session handoffs**: at the end of a meaningful session, write a fresh `V0.X.md` at repo root (V0.13 was the last as of CLAUDE.md creation; the next agent writes V0.14, then V0.15, etc.). Use the structure of V0.13.md as a template.
+- **Session handoffs**: at the end of a meaningful session, write the next-numbered `V0.*.md` at repo root (V0.18 is the latest as of this writing). Use the most recent V0.*.md as the template — it carries current state and the open task list.
 - **Deep references**: anything that warrants its own doc lives in `docs/`. CLAUDE.md points to them by filename.
 
 ## Where to find what
@@ -45,7 +45,10 @@ The site is **live** at https://thomascheesman.ca (staging hostname previously: 
 | Thing | Path |
 |---|---|
 | Page templates (prose hardcoded) | `page-{about,hcs,family,heritage,contact,…}.php` |
-| Heritage line pages | `page-{cheesmans,dochertys,haistes,lakemans,rycrofts}.php` |
+| Heritage hub + short spokes | `page-heritage.php` (5-card hub) + `page-{cheesmans,dochertys,haistes,lakemans,rycrofts}.php` → `inc/heritage/{line}-body.php` (prose) |
+| Heritage **long-reads** (book-length stories) | `page-story.php` (dispatcher for hub lines) + `inc/page-heritage-longread.php` (shared chrome) + `inc/heritage/{line}-story-body.php` (**auto-generated — never hand-edit**). Runbook: `V0.17.md` |
+| Heritage **orphan lines** (not on the hub; nest under a parent) | `page-{mcivers,verbooms,steinkes}.php` — McIver→Docherty, Verboom→Lakeman, Steinke→Rycroft |
+| Heritage authoring/research (off-repo) | `C:\Users\thoma\Desktop\Heritage research\` — manuscripts (`{Line}-Story-EDITED.md`), master references, image maps (`{line}-images.json`), converters `_md2heritage.js` / `_md2docx.js` |
 | Case Studies page | `page-case-studies.php` (slug `case-studies`, parent HCS) |
 | Sitemap footer ("The Drawer") | `footer.php` + `assets/css/desk-drawer.css` + `assets/js/desk-drawer.js` |
 | Pinball game | `assets/js/desk-pinball.js` + `assets/css/desk-pinball.css` (lazy-loaded by the marble) |
@@ -65,7 +68,8 @@ The site is **live** at https://thomascheesman.ca (staging hostname previously: 
 3. **Dormant-by-design files**: `single.php`, `single-post-make-canada-great-again.php`, `page-journal.php`, `tc_render_read_next()` in `functions.php`. All inert with no published posts; kept for draft preview. Don't delete.
 4. **Posts are Drafts, not deleted** — fully recoverable from wp-admin.
 5. **Video playback** can't be verified in an automated browser — verify the crest "secret videos" + Daniel's crawl clip in a real browser.
-6. **The cross-site agent diary CSV** is intended to live at `C:\Users\thoma\Documents\Claude-Diary\diary.csv` (V0.13 noted it was unreachable — confirm path on first attempt; possibly OneDrive-redirected).
+6. **The cross-site agent diary CSV** lives at `C:\Users\thoma\Desktop\My Files\Claude-Diary\diary.csv` — read it at session start, append a row at wrap (covers BYR / GPRS / TC).
+7. **WP image URLs:** strip the `-e<digits>` edited-thumbnail suffix (those 404 on Hostinger); `-scaled.jpg` often 404s too while the bare stem is 200 — HEAD-check (`curl -sI`).
 
 ## Opening prompt template for the next agent
 
