@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.428
+Version: 1.0.429
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5116,21 +5116,27 @@ body.single {
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
-    /* A deep Gaelic base that covers the global navy WebGL wash so the
-       page actually READS slate/peat/moss, with palette radial accents.
-       The drifting blobs above add the motion + colour rotation. */
+    /* The base is built FROM the line's own palette (each --blob darkened
+       over near-black), so every line reads in its own colour family rather
+       than a shared dark slate — "the background changes with the blobs."
+       Three value tiers give depth: this dark palette wash (base), stronger
+       saturated radial pools at each blob's home corner (mid), and the
+       brighter drifting blobs above (highlights). */
     background:
-        radial-gradient(58% 50% at 24% 24%, color-mix(in srgb, var(--blob-a) 52%, transparent), transparent 70%),
-        radial-gradient(55% 50% at 79% 72%, color-mix(in srgb, var(--blob-b) 46%, transparent), transparent 70%),
-        radial-gradient(52% 46% at 55% 96%, color-mix(in srgb, var(--blob-c) 42%, transparent), transparent 70%),
-        linear-gradient(160deg, #15232c 0%, #181527 55%, #14201b 100%);
+        radial-gradient(60% 52% at 24% 24%, color-mix(in srgb, var(--blob-a) 62%, transparent), transparent 77%),
+        radial-gradient(57% 52% at 79% 72%, color-mix(in srgb, var(--blob-b) 56%, transparent), transparent 77%),
+        radial-gradient(54% 48% at 55% 96%, color-mix(in srgb, var(--blob-c) 52%, transparent), transparent 77%),
+        linear-gradient(160deg,
+            color-mix(in srgb, var(--blob-a) 28%, #0b1014) 0%,
+            color-mix(in srgb, var(--blob-b) 24%, #090c12) 55%,
+            color-mix(in srgb, var(--blob-c) 26%, #0a120f) 100%);
 }
 .heritage-longread__blob {
     position: absolute;
     width: 62vmin;
     height: 62vmin;
-    filter: blur(46px);
-    opacity: 0.58;
+    filter: blur(46px) brightness(1.12) saturate(1.2);
+    opacity: 0.64;
     mix-blend-mode: screen;
     border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
     will-change: transform, border-radius, background-color;
@@ -5174,9 +5180,17 @@ body.single {
 /* --- GLASS PLATE (upgraded). Replaces the section's flat frosted fill
    and drops the legacy ::after glow (the atmosphere replaces it). */
 .heritage-line--longread {
-    background: linear-gradient(180deg, rgba(20, 24, 46, 0.60), rgba(8, 10, 26, 0.56));
-    backdrop-filter: blur(16px) saturate(135%);
-    -webkit-backdrop-filter: blur(16px) saturate(135%);
+    /* A lit frosted pane: a bright frosted highlight in the top-left fading
+       across to a darker bottom-right, so the glass reads as a real sheet of
+       glass catching light (not a flat dark fill). Higher saturate() lets the
+       coloured atmosphere bloom through. */
+    background: linear-gradient(150deg,
+        rgba(255, 255, 255, 0.10) 0%,
+        rgba(255, 255, 255, 0.02) 22%,
+        rgba(18, 22, 42, 0.50) 52%,
+        rgba(8, 10, 26, 0.64) 100%);
+    backdrop-filter: blur(16px) saturate(155%);
+    -webkit-backdrop-filter: blur(16px) saturate(155%);
     border: none;
     border-radius: 22px;
     box-shadow: 0 18px 60px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.16);
