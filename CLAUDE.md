@@ -60,6 +60,7 @@ The site is **live** at https://thomascheesman.ca (staging hostname previously: 
 | Header capsule (brand · weather · menu trigger) | `header.php` — weather fed by Open-Meteo API, links to The Weather Network |
 | Most recent session handoff | latest `V0.*.md` at repo root |
 | WP 7.0 deprecations + AI notes | `docs/WORDPRESS-7.0.md` |
+| Converging-families map (planned) | `docs/CONVERGING-MAP-SPEC.md` — "Lanterns of Record" build spec (D3-geo; records-as-light; data from per-family xlsx) |
 
 ## Sharp edges (carried from V0.13+)
 
