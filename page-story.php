@@ -34,6 +34,8 @@ $tc_longread_registry = array(
         'kicker'      => 'Turner Valley &middot; the oil patch &middot; the Peace Country farms &middot; c. 1947 &ndash; today',
         'spoke_url'   => home_url( '/family/heritage/cheesmans' ),
         'spoke_label' => 'The Cheesmans',
+        'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/cheesman/family-pic-1999.jpg',
+        'hero_alt'    => 'The family, 1999',
         'body'        => get_stylesheet_directory() . '/inc/heritage/cheesmans-story-body.php',
     ),
 
