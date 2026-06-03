@@ -12,6 +12,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <p>No, I don't know any actual cheese makers. No, you're not original with whatever joke just popped into your head. Yes, I love cheese &mdash; the real stuff, not the processed plastic.</p>
 
+<p class="heritage-line__readmore">
+    <a href="<?php echo esc_url( home_url( '/family/heritage/cheesmans/story' ) ); ?>">Read the full Cheesman story &mdash; the chosen line, Turner Valley to the Peace Country &rarr;</a>
+</p>
+
 <figure class="heritage-line__figure">
     <img
         src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_9372.jpg' ) ); ?>"

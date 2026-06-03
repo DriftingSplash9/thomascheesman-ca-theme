@@ -26,6 +26,17 @@ $tc_parent_slug = $tc_parent_id ? get_post_field( 'post_name', $tc_parent_id ) :
 
 $tc_longread_registry = array(
 
+    'cheesmans' => array(
+        'slug'        => 'cheesmans',
+        'eyebrow'     => 'The full story · Family line 01 of 08',
+        'title'       => 'The Cheesmans',
+        'subtitle'    => 'The line joined not by blood but by choice',
+        'kicker'      => 'Turner Valley &middot; the oil patch &middot; the Peace Country farms &middot; c. 1947 &ndash; today',
+        'spoke_url'   => home_url( '/family/heritage/cheesmans' ),
+        'spoke_label' => 'The Cheesmans',
+        'body'        => get_stylesheet_directory() . '/inc/heritage/cheesmans-story-body.php',
+    ),
+
     'dochertys' => array(
         'slug'        => 'dochertys',
         'eyebrow'     => 'The full story · Family line 02 of 08',
