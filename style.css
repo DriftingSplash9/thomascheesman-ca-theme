@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.439
+Version: 1.0.440
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5628,7 +5628,12 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
    treatment as the heritage-line plates; only the essay column gets it,
    not the hero or the gallery. */
 .thomas-page .about-body > .container--narrow {
-    background: rgba(10, 12, 30, 0.62);
+    /* Darker plate with a vignette gradient — a touch lighter at the centre,
+       deepening toward the outer edges for depth. */
+    background:
+        radial-gradient(ellipse 130% 130% at 50% 42%,
+            rgba(8, 10, 26, 0.72) 0%,
+            rgba(3, 4, 14, 0.93) 100%);
     backdrop-filter: blur(12px) saturate(125%);
     -webkit-backdrop-filter: blur(12px) saturate(125%);
     border: 1px solid rgba(255, 255, 255, 0.08);
