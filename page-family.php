@@ -147,6 +147,12 @@ get_header(); ?>
                     <span class="tree-chip__cta">Read the line &rarr;</span>
                 </a>
 
+                <!-- Trunk — Thomas, the person the eight lines pour into. -->
+                <a class="tree-chip tree-chip--trunk tree-chip--thomas" href="<?php echo esc_url( home_url( '/family/thomas' ) ); ?>">
+                    <span class="tree-chip__title">Thomas</span>
+                    <span class="tree-chip__role">Dad &mdash; my story</span>
+                </a>
+
                 <!-- Roots — the three kids, in chronological order. -->
                 <a class="tree-chip tree-chip--root tree-chip--patience" href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">
                     <span class="tree-chip__title">Patience</span>

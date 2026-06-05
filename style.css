@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.436
+Version: 1.0.437
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3118,9 +3118,11 @@ body:has(.person-spoke--faith) {
 .tree-chip--rycrofts {
     left: 70%; top: 26%;
     --chip-color: #F59E0B;
+    /* Composite: USA (Robert Henry Sr.'s Civil War + Hawai'i chapter) over the
+       Leeds/Yorkshire English root. Canada was the destination, not the origin. */
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
-        url('assets/img/flags/ca.svg');
+        url('assets/img/flags/rycrofts.svg');
 }
 
 .tree-chip--steinkes {
@@ -3163,6 +3165,17 @@ body:has(.person-spoke--faith) {
         url('assets/img/flags/ca.svg');
 }
 
+/* Trunk — Thomas, the person the eight lines pour into (with Melanie, when her
+   page exists). Sits on the trunk, between the canopy branches and the kid
+   roots. Canadian, like the kids. */
+.tree-chip--thomas {
+    left: 50%; top: 61%;
+    --chip-color: #C9A96A;
+    background-image:
+        linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
+        url('assets/img/flags/ca.svg');
+}
+
 /* Mobile fallback: tree disappears, chips stack as a list with a
    visual separator between branches and roots. */
 @media (max-width: 768px) {
@@ -3191,9 +3204,25 @@ body:has(.person-spoke--faith) {
         transform: translateY(-2px);
     }
 
+    .tree-chip--trunk,
     .tree-chip--root:first-of-type {
         margin-top: 24px;
         position: relative;
+    }
+
+    .tree-chip--trunk::before {
+        content: 'Trunk — me';
+        display: block;
+        position: absolute;
+        top: -22px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: var(--text-light);
+        opacity: 0.7;
     }
 
     .tree-chip--root:first-of-type::before {

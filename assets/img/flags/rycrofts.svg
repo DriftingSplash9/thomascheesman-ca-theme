@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice">
+    <defs>
+        <clipPath id="rycrofts-usa">
+            <polygon points="0,0 200,0 0,100"/>
+        </clipPath>
+        <clipPath id="rycrofts-eng">
+            <polygon points="200,0 200,100 0,100"/>
+        </clipPath>
+    </defs>
+
+    <!-- United States (Robert Henry Sr. — U.S. Civil War + Hawai'i) — upper-left
+         triangle. Canton sits in the top-left corner so it stays visible. -->
+    <g clip-path="url(#rycrofts-usa)">
+        <rect x="0" y="0" width="200" height="100" fill="#B22234"/>
+        <rect x="0" y="7.69"  width="200" height="7.69" fill="#FFFFFF"/>
+        <rect x="0" y="23.08" width="200" height="7.69" fill="#FFFFFF"/>
+        <rect x="0" y="38.46" width="200" height="7.69" fill="#FFFFFF"/>
+        <rect x="0" y="53.85" width="200" height="7.69" fill="#FFFFFF"/>
+        <rect x="0" y="69.23" width="200" height="7.69" fill="#FFFFFF"/>
+        <rect x="0" y="84.62" width="200" height="7.69" fill="#FFFFFF"/>
+        <rect x="0" y="0" width="84" height="53.85" fill="#3C3B6E"/>
+        <g fill="#FFFFFF">
+            <circle cx="12" cy="10" r="2.6"/><circle cx="30" cy="10" r="2.6"/><circle cx="48" cy="10" r="2.6"/><circle cx="66" cy="10" r="2.6"/>
+            <circle cx="12" cy="27" r="2.6"/><circle cx="30" cy="27" r="2.6"/><circle cx="48" cy="27" r="2.6"/><circle cx="66" cy="27" r="2.6"/>
+            <circle cx="12" cy="44" r="2.6"/><circle cx="30" cy="44" r="2.6"/><circle cx="48" cy="44" r="2.6"/><circle cx="66" cy="44" r="2.6"/>
+        </g>
+    </g>
+
+    <!-- England (the Leeds / Yorkshire root) — St George's Cross, lower-right
+         triangle. The centred cross reads cleanly under the diagonal cut. -->
+    <g clip-path="url(#rycrofts-eng)">
+        <rect x="0" y="0" width="200" height="100" fill="#FFFFFF"/>
+        <rect x="85" y="0" width="30" height="100" fill="#CE1124"/>
+        <rect x="0" y="35" width="200" height="30" fill="#CE1124"/>
+    </g>
+
+    <!-- Thin dark hairline divider along the diagonal — reads as a deliberate
+         UI split, not competing with the white field / white stripes. -->
+    <line x1="0" y1="100" x2="200" y2="0" stroke="rgba(0,0,0,0.9)" stroke-width="0.6"/>
+</svg>

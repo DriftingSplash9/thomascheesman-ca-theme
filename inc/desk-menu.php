@@ -81,6 +81,10 @@ function tc_render_desk_menu() {
                     <span class="title">Patience, Daniel, and Faith</span>
                     <span class="pageno">63</span>
                 </a></li>
+                <li><a href="<?php echo esc_url( home_url( '/family/thomas' ) ); ?>">
+                    <span class="title">The long way round &mdash; my story</span>
+                    <span class="pageno">97</span>
+                </a></li>
                 <li><a href="https://tc-timeline.vercel.app/">
                     <span class="title">My whole life so far</span>
                     <span class="pageno">129</span>
