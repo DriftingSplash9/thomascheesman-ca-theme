@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.440
+Version: 1.0.441
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5663,6 +5663,16 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
     font-weight: 600;
     color: var(--text-dark);
     font-size: clamp(1.4rem, 2.6vw, 1.8rem);
+}
+
+/* Fire / ember WebGL background on the Thomas page — the oil-and-gas-and-
+   energy motif behind the whole story. Read by initWebGLBackground() in
+   main.js: --webgl-tint warms the drifting noise wash to flame; --webgl-accent
+   recolors the bright blobs + cursor glow to gold ember. Other pages keep the
+   cyan/indigo default. */
+body:has(.thomas-page) {
+    --webgl-tint: #ff5a1f;
+    --webgl-accent: #ffb020;
 }
 
 /* Image credit, appended muted inside a figcaption. */

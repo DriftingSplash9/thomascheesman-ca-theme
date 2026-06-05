@@ -1542,6 +1542,9 @@ function initWebGLBackground() {
         // pages render exactly as before. Kid pages override via the
         // --line-color CSS custom property — see the read below.
         uTint: { value: new THREE.Color(0x120656) },
+        // Accent color for the bright blob regions + cursor glow. Defaults to
+        // the original cyan; the Thomas page overrides via --webgl-accent.
+        uAccent: { value: new THREE.Color(0x22D3EE) },
     };
 
     // Per-page WebGL tint. The .person-spoke--{name} body class on each
@@ -1549,14 +1552,28 @@ function initWebGLBackground() {
     // here and pass it to the shader. Multiplied down to ~0.4 brightness
     // so the saturated kid accents (purple/green/pink) don't blow out
     // the wash — the original indigo had effective brightness ~0.34.
-    const tintFromCss = getComputedStyle(document.body).getPropertyValue('--line-color').trim();
+    // Prefer a dedicated --webgl-tint (Thomas page); fall back to --line-color
+    // (kid pages) so existing behaviour is unchanged.
+    const cs = getComputedStyle(document.body);
+    const tintFromCss = cs.getPropertyValue('--webgl-tint').trim()
+                     || cs.getPropertyValue('--line-color').trim();
     if (tintFromCss) {
         try {
             const c = new THREE.Color(tintFromCss);
             c.multiplyScalar(0.4);
             uniforms.uTint.value = c;
         } catch (err) {
-            console.warn('[TC] --line-color value not parseable as a color:', tintFromCss);
+            console.warn('[TC] tint value not parseable as a color:', tintFromCss);
+        }
+    }
+
+    // Accent override (bright blobs + cursor glow). Used at full saturation.
+    const accentFromCss = cs.getPropertyValue('--webgl-accent').trim();
+    if (accentFromCss) {
+        try {
+            uniforms.uAccent.value = new THREE.Color(accentFromCss);
+        } catch (err) {
+            console.warn('[TC] --webgl-accent value not parseable as a color:', accentFromCss);
         }
     }
 
@@ -1577,6 +1594,7 @@ function initWebGLBackground() {
         uniform vec2 uResolution;
         uniform vec2 uMouse;
         uniform vec3 uTint;
+        uniform vec3 uAccent;
         varying vec2 vUv;
 
         vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -1633,7 +1651,7 @@ function initWebGLBackground() {
             color = mix(color, uTint, smoothstep(-0.2, 0.4, n) * 0.55);
 
             // Cyan accent in the brighter noise regions.
-            vec3 cyan = vec3(0.133, 0.827, 0.933);    // #22D3EE
+            vec3 cyan = uAccent;    // cyan by default; --webgl-accent overrides (Thomas page -> ember)
             color = mix(color, cyan, smoothstep(0.15, 0.5, n) * 0.18);
 
             // Cursor-reactive ambient glow. uMouse is in [0,1] in screen
