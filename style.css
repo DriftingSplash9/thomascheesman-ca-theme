@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.437
+Version: 1.0.438
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5615,9 +5615,39 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
     float: none;
     clear: both;
     width: auto;
-    max-width: 560px;
+    max-width: 680px;
     margin: 1.6rem auto;
     text-align: center;
+}
+
+/* Wider reading column. Applies to both the essay column and the gallery. */
+.thomas-page .container--narrow { max-width: 940px; }
+
+/* Frosted-glass reading plate — lifts the essay off the atmospheric
+   background so headings and body read cleanly. Same backdrop-filter
+   treatment as the heritage-line plates; only the essay column gets it,
+   not the hero or the gallery. */
+.thomas-page .about-body > .container--narrow {
+    background: rgba(10, 12, 30, 0.62);
+    backdrop-filter: blur(12px) saturate(125%);
+    -webkit-backdrop-filter: blur(12px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: clamp(28px, 5vw, 64px) clamp(22px, 4.5vw, 60px);
+    box-shadow: 0 28px 70px -28px rgba(0, 0, 0, 0.6);
+}
+
+/* Bigger inline figures (was 38% / 320px). */
+.thomas-page .about-figure--left,
+.thomas-page .about-figure--right {
+    width: 44%;
+    max-width: 400px;
+}
+
+/* Headings — a touch larger and unmistakably bright on the plate. */
+.thomas-page .about-section__heading {
+    color: var(--text-dark);
+    font-size: clamp(1.7rem, 3.8vw, 2.5rem);
 }
 
 /* Image credit, appended muted inside a figcaption. */
