@@ -95,13 +95,11 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 
 				<?php tc_thomas_fig( 'turner-valley-gas-plant.jpg', 'right', 'The Turner Valley gas plant', 'The old Turner Valley Gas Plant &mdash; the flare I grew up beneath.', 'Photo: jasonwoodhead23, CC BY 2.0, via Wikimedia Commons.' ); ?>
 
-				<?php tc_thomas_fig( 'tv-drilling.jpg', 'left', 'Drilling floor in the Turner Valley oil field', 'On the drilling floor in the Turner Valley field, where the province&rsquo;s oil began.', 'Photo: Provincial Archives of Alberta (no known copyright restrictions), via Wikimedia Commons.' ); ?>
-
 				<p>I was born in Calgary on the fourth of November, 1980, but I don&rsquo;t remember the city. My memory starts a little to the south and four years later, in Turner Valley, the foothills town that the flare belonged to. We landed there when I was four, and it was the right town to be a boy in. I was an outdoor kid through and through. We had the biggest fire pit on the block, which meant half the street drifted through our backyard on summer nights &mdash; I think my family was on a first-name basis with most of it. The days ran together into bikes and sprinklers and somebody&rsquo;s mom handing out something cold, and when the heat got to be too much we&rsquo;d walk down to the outdoor pool and brave the icy water and the rough concrete that scraped your feet raw, and call it a perfect day.</p>
 
-				<?php tc_thomas_fig( 'dad-bike.jpg', 'left', 'Learning to ride a bike with my father', 'Learning to ride, with my dad.' ); ?>
-
 				<h3 class="about-section__subheading">My mother and my father</h3>
+
+				<?php tc_thomas_fig( 'tv-drilling.jpg', 'left', 'Drilling floor in the Turner Valley oil field', 'On the drilling floor in the Turner Valley field, where the province&rsquo;s oil began.', 'Photo: Provincial Archives of Alberta (no known copyright restrictions), via Wikimedia Commons.' ); ?>
 
 				<p>My mother, Maryanne, was a tough woman in the literal sense. She trained hard and competed as a bodybuilder, and she got strong enough to bench-press my father &mdash; who had a foot and a hundred pounds on her &mdash; partly, I came to understand, so that she could defend herself if he ever tried anything. Their fights were made of yelling rather than fists; I came up the stairs one afternoon just in time to watch a jar of mustard fly across the kitchen and shatter, my mother crying behind it. They were opposites in every register. My father had changed after I was born, trading a carefree, rock-and-roll boyhood for a serious adulthood of nothing but the news and classical music, while my mother filled the house with M&ouml;tley Cr&uuml;e and Poison and Chris de Burgh and Meatloaf. I have both of them in me somewhere, and I&rsquo;ve never been able to say which one wins.</p>
 
@@ -375,6 +373,7 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 		array( 'g-mary.jpg',         'Mary.' ),
 		array( 'g-mom-kids.jpg',     'Mom and the kids.' ),
 		array( 'kids-robson.jpg',    'The kids at Mount Robson.' ),
+		array( 'dad-bike.jpg',       'Learning to ride, with my dad.' ),
 		array( 'g-edmonton.jpg',     'Visiting Edmonton.' ),
 		array( 'g-me.jpg',           'Me.' ),
 	);
