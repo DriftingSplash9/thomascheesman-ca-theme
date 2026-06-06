@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.450
+Version: 1.0.451
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5822,9 +5822,24 @@ body:has(.thomas-page) {
     object-fit: contain;
     display: block;
 }
+/* Resting tint — a warm, dark veil over every tile so the wall reads as a
+   muted ember field. Lifts to nothing when the tile expands on hover, so the
+   enlarged image pops bright. pointer-events:none keeps the zoom click live. */
+.thomas-page .thomas-gallery__item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: rgba(14, 6, 2, 0.5);
+    opacity: 1;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+.thomas-page .thomas-gallery__item.is-expanded::after { opacity: 0; }
 .thomas-page .thomas-gallery__item figcaption {
     position: absolute;
     left: 0; right: 0; bottom: 0;
+    z-index: 2;
     padding: 18px 8px 6px;
     font-size: 0.72rem;
     line-height: 1.2;
