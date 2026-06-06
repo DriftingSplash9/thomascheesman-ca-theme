@@ -513,6 +513,9 @@ function initTreeChipFoil() {
 
     chips.forEach((chip) => {
         chip.addEventListener('mousemove', (e) => {
+            // Drop the slow-return mode while actively tracking so the tilt
+            // follows the cursor crisply.
+            chip.classList.remove('is-foil-resetting');
             const rect = chip.getBoundingClientRect();
             // px/py: cursor position within the chip, 0..1.
             const px = (e.clientX - rect.left) / rect.width;
@@ -526,7 +529,9 @@ function initTreeChipFoil() {
             chip.style.setProperty('--my', (py * 100).toFixed(1) + '%');
         });
         chip.addEventListener('mouseleave', () => {
-            // Ease back to flat; the CSS transform transition smooths it.
+            // Switch to the slower transition so the chip eases gently back
+            // to its resting (flat) state instead of snapping.
+            chip.classList.add('is-foil-resetting');
             chip.style.setProperty('--rx', '0deg');
             chip.style.setProperty('--ry', '0deg');
             chip.style.setProperty('--mx', '50%');

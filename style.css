@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.453
+Version: 1.0.455
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3014,6 +3014,31 @@ body:has(.person-spoke--faith) {
                 border-color 0.4s ease;
     z-index: 2;
     --chip-overlay-alpha: 0;
+}
+
+/* On mouse-leave the chip eases gently back to flat instead of snapping —
+   JS adds this class only on the way out, so live tracking stays crisp. */
+.tree-chip.is-foil-resetting {
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.5s ease,
+                border-color 0.5s ease;
+}
+
+/* Legibility nameplate — a feathered dark wash, densest behind the text in
+   the centre and fading to nothing at the edges, so the flag stays vivid
+   around the frame while the labels get a readable backing. Sits above the
+   flag, below the sheen + text (z-index 1; labels are z-index 2). */
+.tree-chip::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: 1;
+    background: radial-gradient(ellipse 78% 72% at 50% 50%,
+        rgba(5, 7, 18, 0.78) 0%,
+        rgba(5, 7, 18, 0.5) 52%,
+        rgba(5, 7, 18, 0) 82%);
+    pointer-events: none;
 }
 
 /* Holographic foil sheen — a moving specular glare + faint rainbow band
