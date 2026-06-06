@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.445
+Version: 1.0.446
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5834,18 +5834,30 @@ body:has(.thomas-page) {
     transition: opacity 0.2s ease;
     pointer-events: none;
 }
-.thomas-page .thomas-gallery__item:hover {
+/* Expansion is gated by a JS hover-intent delay (.is-expanded), so sweeping
+   the cursor across tiles no longer thrashes the grid — it fires only on a
+   deliberate hover. The grid resize itself is a single snap (grid spans can't
+   tween), but the glow + caption ease in and the image grows in smoothly. */
+.thomas-page .thomas-gallery__item.is-expanded {
     grid-column: span 2;
     grid-row: span 2;
     z-index: 3;
-    box-shadow: 0 16px 40px -12px rgba(255, 120, 30, 0.4);
+    box-shadow: 0 16px 40px -12px rgba(255, 120, 30, 0.45);
 }
-.thomas-page .thomas-gallery__item:hover figcaption { opacity: 1; }
+.thomas-page .thomas-gallery__item.is-expanded figcaption { opacity: 1; }
+.thomas-page .thomas-gallery__item.is-expanded img {
+    animation: thomas-tile-grow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes thomas-tile-grow {
+    from { transform: scale(0.88); opacity: 0.85; }
+    to   { transform: scale(1);    opacity: 1; }
+}
 @media (max-width: 600px) {
     .thomas-page .thomas-gallery { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 104px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .thomas-page .thomas-gallery__item:hover { grid-column: auto; grid-row: auto; }
+    .thomas-page .thomas-gallery__item.is-expanded { grid-column: auto; grid-row: auto; }
+    .thomas-page .thomas-gallery__item.is-expanded img { animation: none; }
 }
 
 /* ---- Flame "brows": flicker the subheadings + fold titles like the

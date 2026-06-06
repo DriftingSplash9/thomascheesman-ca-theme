@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initHeritagePage();
     initLongreadChapterRail();
     initThomasTOC();
+    initThomasGalleryHover();
     initHeritageNotes();
     initInkTrail();
     initParticleField();
@@ -2349,6 +2350,36 @@ function initThomasTOC() {
         }, { rootMargin: '0px 0px -68% 0px', threshold: 0 });
         headings.forEach(function (h) { obs.observe(h); });
     }
+}
+
+/**
+ * Hover-intent for the Thomas gallery. Tiles only expand to 2x2 after the
+ * cursor rests on one (~140ms), so sweeping across the grid no longer
+ * thrashes the reflow. The expansion class (.is-expanded) drives the grid
+ * span + the eased glow/caption/grow in CSS.
+ */
+function initThomasGalleryHover() {
+    const page = document.querySelector('.thomas-page');
+    if (!page) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const items = page.querySelectorAll('.thomas-gallery__item');
+    if (!items.length) return;
+    let timer = null, current = null;
+    items.forEach(function (it) {
+        it.addEventListener('mouseenter', function () {
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                if (current && current !== it) current.classList.remove('is-expanded');
+                it.classList.add('is-expanded');
+                current = it;
+            }, 140);
+        });
+        it.addEventListener('mouseleave', function () {
+            clearTimeout(timer);
+            it.classList.remove('is-expanded');
+            if (current === it) current = null;
+        });
+    });
 }
 
 function initHeritagePage() {
