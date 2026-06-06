@@ -2372,7 +2372,7 @@ function initThomasGalleryHover() {
                 if (current && current !== it) current.classList.remove('is-expanded');
                 it.classList.add('is-expanded');
                 current = it;
-            }, 140);
+            }, 70);
         });
         it.addEventListener('mouseleave', function () {
             clearTimeout(timer);
