@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initScrollReveals();
     initHeritagePage();
     initLongreadChapterRail();
+    initThomasTOC();
     initHeritageNotes();
     initInkTrail();
     initParticleField();
@@ -2295,6 +2296,58 @@ function initLongreadChapterRail() {
             });
         }, { rootMargin: '0px 0px -68% 0px', threshold: 0 });
         chapters.forEach(function (h) { obs.observe(h); });
+    }
+}
+
+/**
+ * Left-side chapter TOC for the Thomas long-read (/family/thomas).
+ * Builds a fixed nav from the chapter headings, assigns each an id,
+ * smooth-scrolls on click, and highlights the active chapter on scroll.
+ * Hidden on narrow viewports via CSS (no room beside the reading column).
+ */
+function initThomasTOC() {
+    const page = document.querySelector('.thomas-page');
+    if (!page) return;
+    const headings = Array.from(page.querySelectorAll('.about-section__heading'));
+    if (headings.length < 2) return;
+
+    const toc = document.createElement('nav');
+    toc.className = 'thomas-toc';
+    toc.setAttribute('aria-label', 'Chapters');
+    const ul = document.createElement('ul');
+    const linkById = {};
+
+    headings.forEach(function (h, i) {
+        if (!h.id) {
+            const slug = (h.textContent || ('s' + i)).toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            h.id = 'thomas-ch-' + (slug || i);
+        }
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.trim();
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            const t = document.getElementById(h.id);
+            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        li.appendChild(a);
+        ul.appendChild(li);
+        linkById[h.id] = a;
+    });
+    toc.appendChild(ul);
+    document.body.appendChild(toc);
+
+    if ('IntersectionObserver' in window) {
+        const obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) {
+                if (!en.isIntersecting) return;
+                Object.keys(linkById).forEach(function (id) { linkById[id].classList.remove('is-active'); });
+                if (linkById[en.target.id]) linkById[en.target.id].classList.add('is-active');
+            });
+        }, { rootMargin: '0px 0px -68% 0px', threshold: 0 });
+        headings.forEach(function (h) { obs.observe(h); });
     }
 }
 

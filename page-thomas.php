@@ -218,9 +218,13 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 				<p class="thomas-era">The climb &middot; 2004&ndash;2012</p>
 				<h2 class="about-section__heading">What the kitchen gave me</h2>
 
+				<?php tc_thomas_fig( 'thomas-chef.jpg', 'left', 'Thomas in chef whites', 'In the whites.' ); ?>
+
 				<p>The kitchen, for me, was an escape &mdash; and a strange kind of medicine. My body hurt in a way that made the first movements of the day hard, but once I was moving I felt almost well, because the pain is like rust in the joints that has to be worked loose; the moment I stop, I seize back up. The line kept me moving, eight and ten and twelve hours at a stretch, and it gave me something to point all of it at. The leadership had been built into me young, out on the farms, and the disease had taught me to work smarter rather than harder, which turns out to be exactly the thing a busy kitchen rewards. I came up the Keg line over a couple of years to assistant manager, then ran the kitchen as manager for the better part of a decade, and took the whole thing over the day the head chef had a heart attack.</p>
 
 				<p>By around 2010 I was itching for more and finding every door shut. My kitchen manager was a wall I couldn&rsquo;t get over: I asked to go out on the opening teams the way the other managers did and was left instead to rot in the back of the house, for reasons I&rsquo;ve never understood; I put my name in to corporate for a couple of postings and heard nothing; I was offered Fort McMurray and had no appetite for another desperate oil town paying half what the patch pays. So I hit my own ceiling, and I knew by then that my working years would be short, and I had to ask myself whether I wanted to spend the few I had grinding for the people blocking me &mdash; a brutal thing to weigh, because the crew around me were good friends, and leaving felt like a divorce from a whole life.</p>
+
+				<?php tc_thomas_fig( 'plate-chicken-parm.jpg', 'right', 'A plated chicken parmesan', 'On the plate: chicken parm.' ); ?>
 
 				<p>Becoming a chef on paper turned out to be its own long fight. I wanted the apprenticeship for years and couldn&rsquo;t get it signed; it was like pulling teeth. In the end I took the booklet, filled it out myself, and brought it to be signed only when I was ready to move to the next stage &mdash; which felt a little like cheating, except that it was the only way past that particular wall. In 2011 I went down to SAIT in Calgary for the schooling, and my Grandma Sandy put me up and fed me and gave me the long talks I&rsquo;ll always be grateful for, and I came home with my Red Seal in 2012. And I&rsquo;ll be honest about the rest of it, since this is the whole story: drink ran alongside Keg life, hand in hand. I had my six ounces a day and a good deal more on my days off, in the bars and with the staff. It is part of the true shape of those years, and I won&rsquo;t pretend it away.</p>
 
@@ -242,6 +246,8 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 				<?php tc_thomas_fig( 'gprc.jpg', 'right', 'Grande Prairie Regional College', 'GPRC (now Northwestern Polytechnic) &mdash; where I studied and later taught.', 'Photo: Rr parker, CC BY-SA 3.0, via Wikimedia Commons.' ); ?>
 
 				<p>My daughter Patience was born on the exact day I started as head chef at Ric&rsquo;s Grill &mdash; ten days late, as though she&rsquo;d been waiting for the shift to line up &mdash; and from there the next few years came at a run. I shut Ric&rsquo;s down to renovate it into a fine-dining room called Township 71, and the night before we opened the doors, Melanie and I learned she was carrying the boy who would become Daniel. For a stretch in the middle of all this I was also teaching the cooking half of the Hospitality and Tourism diploma at the college, writing the curriculum and building the lesson plans and standing in front of students who needed me to have the answer by day one. It was the hardest thing I had ever done, and it was the best.</p>
+
+				<?php tc_thomas_fig( 'township-71.jpg', 'right', 'Township 71', 'Township 71 &mdash; fine dining in the Peace Country.' ); ?>
 
 				<p>Township 71 was my swing at keeping real fine dining alive in the Peace Country, and I could not have chosen a worse moment to take it &mdash; November 2014, with oil falling out of the sky, the government turning over, the whole province bracing for the cold. We fought for it and lost money most months before we finally pulled the plug nine months in, and the town has never quite been the same since. The failure itself wasn&rsquo;t the part that hurt; it was saying goodbye to the staff, and the feeling that I had failed them &mdash; above all the foreign workers who had broken their backs and swallowed so much to get here, and who were suddenly turned loose to the wind: Candace, Jada, Daylin, Emma, Ricky, SriJohn, Saurabh, Dibie, and more. A couple of them got their papers right around the closing, which still feels to me like a small miracle. I think about that crew often.</p>
 
@@ -265,9 +271,13 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 				<p class="thomas-era">The hinge &middot; 2018&ndash;2022</p>
 				<h2 class="about-section__heading">The body&rsquo;s turn</h2>
 
+				<?php tc_thomas_fig( 'majors.jpg', 'left', 'Thomas at Majors Homestyle', 'Majors Homestyle &mdash; the last kitchen I ran.' ); ?>
+
 				<p>The kitchen went first, and the kitchen was where I had lived. By 2018 I could no longer hold a twelve-hour line &mdash; not with a thirty-pound stockpot and a fifty-pound box of potatoes and twelve miles of walking under my feet by the end of a shift &mdash; and Majors Homestyle and Tractor Jack&rsquo;s was the last full kitchen I would ever run. I knew before anyone around me that the kitchen was going to win this argument, and I left on my own terms, which I am grateful for and angry about in roughly equal measure, because I have never quite forgiven myself for not leaving years earlier, with more left in the tank for the family that was waiting. Somewhere in there I quit smoking, too &mdash; I&rsquo;d tried so many times I&rsquo;d lost the count, and I honestly can&rsquo;t name the day I finally did it, which tells me my hold on it was never as fierce as some people&rsquo;s. I seem to have an odd ability to simply put a thing down.</p>
 
 				<p>And then came the accident that broke the story in half. We were out sledding, and at the top of the hill, once I&rsquo;d caught my breath, I knew something was wrong &mdash; the fun went straight out of the afternoon, and Melanie and I looked at each other and understood without a word that I needed to be checked. The hospital gave me a couple of cold hours on a hard bed and a dose of tramadol and sent me home. The next morning I lay a little longer than usual, stiff and thinking nothing of it, and when I finally stood up my head hurt in a way I had never felt in my life &mdash; as though it had turned to a bowling ball I could no longer hold upright, a full ton bearing straight down, with relief only when I lay it back down. We called an ambulance, and rather than fight a stretcher down the stairs they propped every door open so I could walk fast and lie down again inside. I spent the next ten days in hospital, on the pediatrics ward, because the new building was only soft-opening and there was nowhere else to put me. A couple of months later I caught COVID from the kids and got off with a one-day cold and a touch of pink eye. I am a forty-five-year-old man living inside an eighty-seven-year-old body, and a neck injury only hurries the whole thing along.</p>
+
+				<?php tc_thomas_fig( 'halo.jpg', 'right', 'Thomas in the halo brace', 'In the halo.' ); ?>
 
 				<p>When I finally read my own history off the X-rays, I could see that my neck had been quietly dislocating for years. In 2018, where the digital records begin, it sat three millimetres out of true. Then four. After the sledding accident, seven. But slowly, that time, it settled, and I came back: I started out eating lying on my side, because that was all I could bear, and then got upright a little longer each day, and then could cook a small meal for myself, and then for the kids, and then do a little around the house, and at last drive again, so that Melanie could go back to work. Being that fragile and that dependent took a real toll on her. She is remarkably strong &mdash; some of that Irish and English iron in her, I think &mdash; and every strong person has a limit.</p>
 
@@ -335,6 +345,8 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 				<h3 class="about-section__subheading">To Patience</h3>
 				<p>You are already such a beautiful, bright young woman &mdash; I can hardly believe how smart you are. Keep at it, and never stop learning, kiddo. The universe is a wondrous and misunderstood place, and it&rsquo;s up to people like you to unlock the secrets it&rsquo;s still keeping. I hope by the time you read this you and Faith can call each other true friends; I know growing up isn&rsquo;t always fair. You sort of turned five and decided that was quite enough of being little &mdash; you were simply going to grow up &mdash; and you did, faster than I was ready for. I hope you&rsquo;ve found the real meaning of life by now and are holding onto it with both hands. My one ambition is to stick around long enough to meet a grandbaby someday, which is absolutely not a hint to hurry &mdash; and yes, I&rsquo;ll still be getting the shotgun if you bring home any bad boys.</p>
 
+				<?php tc_thomas_fig( 'king-daniel.jpg', 'left', 'Daniel', 'King Daniel.' ); ?>
+
 				<h3 class="about-section__subheading">To Daniel</h3>
 				<p>My boy &mdash; you have such wondrous, curious eyes. I always called you my dreamer, and I&rsquo;d bet a good deal that nothing has changed. The three little moles beneath your eye line up like Orion&rsquo;s Belt; coincidence? I don&rsquo;t worry about you. You&rsquo;re strong and you&rsquo;re smart &mdash; smarter than school knows how to measure &mdash; because you&rsquo;ve got this way of working a thing out for yourself, at your own pace, and life will be no different. The middle is a tough place to stand: the youngest gets away with everything and the oldest gets the freedom you envy. But people are the same wherever you go, in work and in life, and I suspect you already know it.</p>
 
@@ -354,37 +366,86 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 
 	<!-- ============================ GALLERY ============================ -->
 	<?php
-	// Photo wall — Thomas. A responsive grid of optimized photos from
-	// /assets/img/thomas/ (g-*.jpg). Sitewide PhotoSwipe (main.js) wires
-	// the lightbox onto figures. Swap captions / reorder freely.
-	$thomas_base    = get_stylesheet_directory_uri() . '/assets/img/thomas/';
-	$thomas_gallery = array(
-		array( 'g-3yo.jpg',          'Three years old, already a kicker.' ),
-		array( 'g-family-1999.jpg',  'The family, 1999.' ),
-		array( 'g-grad.jpg',         'Graduation.' ),
-		array( 'g-little-smokey.jpg','Out at Little Smokey.' ),
-		array( 'g-kittens.jpg',      'Kittens at Little Smokey.' ),
-		array( 'g-kegashuk.jpg',     'The Kegashuk.' ),
-		array( 'g-shushwap.jpg',     'On the Shuswap.' ),
-		array( 'g-cousins.jpg',      'Kristina and Marlee.' ),
-		array( 'g-father.jpg',       'My father at a car show.' ),
-		array( 'g-shadow.jpg',       'Shadow.' ),
-		array( 'g-dusty.jpg',        'Me and Dusty.' ),
-		array( 'g-mary.jpg',         'Mary.' ),
-		array( 'g-mom-kids.jpg',     'Mom and the kids.' ),
-		array( 'kids-robson.jpg',    'The kids at Mount Robson.' ),
-		array( 'dad-bike.jpg',       'Learning to ride, with my dad.' ),
-		array( 'g-edmonton.jpg',     'Visiting Edmonton.' ),
-		array( 'g-me.jpg',           'Me.' ),
+	// Photo wall — Thomas. Auto-includes every optimized g-*.jpg in the folder
+	// (plus a few figure-named extras), so dropping in a new g-*.jpg adds it
+	// here. Captions for the photos I can identify; the rest show without one.
+	// Sitewide PhotoSwipe (main.js) wires the lightbox onto each figure.
+	$thomas_base = get_stylesheet_directory_uri() . '/assets/img/thomas/';
+	$thomas_dir  = get_stylesheet_directory() . '/assets/img/thomas/';
+	$thomas_caps = array(
+		'g-3yo.jpg' => 'Three years old, already a kicker.',
+		'g-family-1999.jpg' => 'The family, 1999.',
+		'g-grad.jpg' => 'Graduation.',
+		'g-little-smokey.jpg' => 'Out at Little Smokey.',
+		'g-kittens.jpg' => 'Kittens at Little Smokey.',
+		'g-kegashuk.jpg' => 'The Kegashuk, on the Shuswap.',
+		'g-cousins.jpg' => 'Kristina and Marlee.',
+		'g-father.jpg' => 'My father at a car show.',
+		'g-shadow.jpg' => 'Shadow.',
+		'g-dusty.jpg' => 'Me and Dusty.',
+		'g-mary.jpg' => 'Mary.',
+		'g-mom-kids.jpg' => 'Mom and the kids.',
+		'g-edmonton.jpg' => 'Visiting Edmonton.',
+		'g-me.jpg' => 'Me.',
+		'kids-robson.jpg' => 'The kids at Mount Robson.',
+		'dad-bike.jpg' => 'Learning to ride, with my dad.',
+		'calgary-baby.jpg' => 'Calgary, the very start.',
+		'keg-hangout.jpg' => 'Hanging at the Keg.',
+		'wedding-aisle.jpg' => 'Waiting at the end of the aisle.',
+		'granny-docherty.jpg' => 'Granny Docherty and me.',
+		'g-a-baby-thomas.jpg' => 'Baby Thomas.',
+		'g-baby-me-and-granny.jpg' => 'Baby me and Granny.',
+		'g-baby-thomas-at-christmas.jpg' => 'Christmas, small.',
+		'g-me-as-a-todler.jpg' => 'Toddler me.',
+		'g-teddy-bottle-fed.jpg' => 'Bottle-feeding Teddy.',
+		'g-faith-favorite.jpg' => 'Faith\'s favourite.',
+		'g-wild-ones.jpg' => 'The wild ones.',
+		'g-keg-golf-tourney.jpg' => 'The Keg golf tournament.',
+		'g-cheese.jpg' => 'Cheese, naturally.',
+		'g-burger-single-wide-2.jpg' => 'On the plate: the burger.',
+		'g-cheesesteak-eggrolls-wide-2.jpg' => 'Cheesesteak eggrolls.',
+		'g-french-onion-2.jpg' => 'French onion soup.',
+		'g-katsu-2.jpg' => 'Katsu.',
+		'g-lasagnia-upright-wide-close.jpg' => 'Lasagna.',
+		'g-lasagnia-upright-wide-close-2.jpg' => 'Lasagna.',
+		'g-tuna-tartar-wide-2.jpg' => 'Tuna tartare.',
+		'g-township-2015-2-prairie-ranger.jpg' => 'Township 71.',
+		'g-township-2015-3-beaver-roo-photography.jpg' => 'Township 71.',
+		'g-township-2015-4-prairie-ranger.jpg' => 'Township 71.',
+		'g-township-2015-6-beaver-roo-photography.jpg' => 'Township 71.',
+		'g-township-2015-6-prairie-ranger.jpg' => 'Township 71.',
+		'g-township-2015-7-prairie-ranger.jpg' => 'Township 71.',
+		'g-mel-s-camera-120510-042-2.jpg' => 'From Mel\'s camera, 2012.',
+		'g-mel-s-camera-120510-188-2.jpg' => 'From Mel\'s camera, 2012.',
+		'g-mel-s-camera-120510-189-2.jpg' => 'From Mel\'s camera, 2012.',
+		'g-mel-s-camera-120510-190-2.jpg' => 'From Mel\'s camera, 2012.',
+		'g-broke-my-neck.jpg' => 'After the neck broke.',
+		'g-brokeneckthomas.jpg' => 'The broken neck.',
+		'g-day-after-surgert.jpg' => 'The day after surgery.',
+		'g-after-surgery.jpg' => 'After surgery.',
+		'g-jarred-my-neck.jpg' => 'Jarred my neck.',
+		'g-walk-after-surgery.jpg' => 'First walks after surgery.',
+		'g-sprained-neck-2.jpg' => 'The neck, again.',
+		'g-footc-3.jpg' => 'The foot.',
+		'g-left-foot-ct-2-showing-hook.jpg' => 'CT: the bone hook under my foot.',
+		'g-osteolysis-of-jaw-bones.jpg' => 'Osteolysis in the jaw.',
 	);
+	$thomas_files = glob( $thomas_dir . 'g-*.jpg' );
+	sort( $thomas_files );
+	foreach ( array( 'kids-robson.jpg', 'dad-bike.jpg', 'calgary-baby.jpg', 'keg-hangout.jpg', 'wedding-aisle.jpg', 'granny-docherty.jpg' ) as $thomas_extra ) {
+		if ( file_exists( $thomas_dir . $thomas_extra ) ) { $thomas_files[] = $thomas_dir . $thomas_extra; }
+	}
 	?>
 	<div class="container container--narrow">
 		<h2 class="about-section__heading">Gallery</h2>
 		<div class="thomas-gallery">
-			<?php foreach ( $thomas_gallery as $g ) : ?>
+			<?php foreach ( $thomas_files as $thomas_gf ) :
+				$thomas_name = basename( $thomas_gf );
+				$thomas_cap  = isset( $thomas_caps[ $thomas_name ] ) ? $thomas_caps[ $thomas_name ] : '';
+			?>
 				<figure class="thomas-gallery__item">
-					<img src="<?php echo esc_url( $thomas_base . $g[0] ); ?>" alt="<?php echo esc_attr( $g[1] ); ?>" loading="lazy" />
-					<figcaption><?php echo esc_html( $g[1] ); ?></figcaption>
+					<img src="<?php echo esc_url( $thomas_base . $thomas_name ); ?>" alt="<?php echo esc_attr( $thomas_cap !== '' ? $thomas_cap : 'A photo from my life' ); ?>" loading="lazy" />
+					<?php if ( $thomas_cap !== '' ) : ?><figcaption><?php echo esc_html( $thomas_cap ); ?></figcaption><?php endif; ?>
 				</figure>
 			<?php endforeach; ?>
 		</div>
