@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.441
+Version: 1.0.442
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5649,14 +5649,61 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
     max-width: 400px;
 }
 
-/* Headings — readable serif (not the thin Italiana display face), bigger
-   and bolder, bright on the plate. */
+/* Headings — readable serif (Fraunces), bigger and bolder. Then dressed as
+   candle-flame letters: a warm gradient that drifts slowly across the text, a
+   soft ember glow, and a gentle float so they have a little life on the page. */
 .thomas-page .about-section__heading {
     font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
     font-weight: 600;
-    color: var(--text-dark);
     font-size: clamp(2.1rem, 4.5vw, 3rem);
     letter-spacing: -0.01em;
+    background: linear-gradient(
+        100deg,
+        #ffe3a3 0%, #ffb020 22%, #ff6a1f 45%, #ff3d00 55%,
+        #ff6a1f 70%, #ffb020 85%, #ffe3a3 100%
+    );
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 1px 10px rgba(255, 120, 30, 0.38));
+    animation:
+        thomas-flame-sweep 9s ease-in-out infinite,
+        thomas-flame-float 7s ease-in-out infinite;
+}
+
+/* Warm the accent stripe above each heading to match the flame. */
+.thomas-page .about-section__heading::before {
+    background: linear-gradient(90deg, #ff6a1f 0%, transparent 100%);
+}
+
+@keyframes thomas-flame-sweep {
+    0%   { background-position:   0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position:   0% 50%; }
+}
+
+@keyframes thomas-flame-float {
+    0%, 100% { transform: translateY(0)     rotate(-0.4deg); }
+    50%      { transform: translateY(-3px)  rotate( 0.4deg); }
+}
+
+/* Stand still for visitors who ask for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+    .thomas-page .about-section__heading {
+        animation: none;
+        background-position: 50% 50%;
+    }
+}
+
+/* Fallback for browsers without background-clip:text — solid warm heading
+   instead of invisible text. */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+    .thomas-page .about-section__heading {
+        color: #ffb020;
+        -webkit-text-fill-color: #ffb020;
+    }
 }
 .thomas-page .about-section__subheading {
     font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
