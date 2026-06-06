@@ -54,7 +54,7 @@ get_header(); ?>
                 </div>
             </section>
 
-            <?php tc_render_hcs_crosslink(); ?>
+            <?php tc_render_family_links( 'daniel' ); ?>
 
             <?php
             // 222 year-tagged photos sourced from daniels.XLSX. Section

@@ -59,7 +59,7 @@ get_header(); ?>
                 </div>
             </section>
 
-            <?php tc_render_hcs_crosslink(); ?>
+            <?php tc_render_family_links( 'faith' ); ?>
 
             <?php
             // 219 year-tagged photos sourced from faiths.XLSX. Section

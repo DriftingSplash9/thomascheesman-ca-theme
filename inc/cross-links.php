@@ -113,3 +113,88 @@ function tc_render_heritage_siblings( $current_slug ) {
     </aside>
     <?php
 }
+
+
+/**
+ * Render the "rest of the family" quick-links for a person-spoke page.
+ *
+ * Replaces the HCS aside on the kid pages with something more apt: a small
+ * card grid jumping to the OTHER members of the immediate family. On a kid's
+ * page that's the siblings + Mom & Dad; on a parent's page it's the children
+ * + the co-parent. Reuses the .heritage-siblings styling.
+ *
+ * Each person is only linked if their WP page actually exists (path
+ * family/<slug>), so the block never 404s — and Melanie's card appears
+ * automatically the moment her page is published.
+ *
+ * @param string $current_slug The person whose page is rendering
+ *                             (patience|daniel|faith|thomas|melanie).
+ */
+function tc_render_family_links( $current_slug ) {
+    // Immediate family. 'kind' groups people; 'gender' drives the relation
+    // word shown on each card.
+    $people = array(
+        'patience' => array( 'title' => 'Patience', 'kind' => 'child',  'gender' => 'f' ),
+        'daniel'   => array( 'title' => 'Daniel',   'kind' => 'child',  'gender' => 'm' ),
+        'faith'    => array( 'title' => 'Faith',    'kind' => 'child',  'gender' => 'f' ),
+        'thomas'   => array( 'title' => 'Thomas',   'kind' => 'parent', 'gender' => 'm' ),
+        'melanie'  => array( 'title' => 'Melanie',  'kind' => 'parent', 'gender' => 'f' ),
+    );
+
+    if ( ! isset( $people[ $current_slug ] ) ) {
+        return;
+    }
+    $current_kind = $people[ $current_slug ]['kind'];
+
+    // Relation of another person TO the person whose page we're on.
+    $relation = function ( $other ) use ( $current_kind ) {
+        if ( 'parent' === $other['kind'] ) {
+            return 'f' === $other['gender'] ? 'Mom' : 'Dad';
+        }
+        if ( 'parent' === $current_kind ) {
+            return 'f' === $other['gender'] ? 'Daughter' : 'Son';
+        }
+        return 'f' === $other['gender'] ? 'Sister' : 'Brother';
+    };
+
+    // Same-generation relatives first (siblings / children), parents last.
+    $items = array();
+    foreach ( array( 'child', 'parent' ) as $kind ) {
+        foreach ( $people as $slug => $p ) {
+            if ( $slug === $current_slug || $p['kind'] !== $kind ) {
+                continue;
+            }
+            // Skip anyone whose page isn't published yet (e.g. Melanie).
+            if ( ! get_page_by_path( 'family/' . $slug ) ) {
+                continue;
+            }
+            $items[] = array(
+                'slug'     => $slug,
+                'title'    => $p['title'],
+                'relation' => $relation( $p ),
+            );
+        }
+    }
+
+    if ( empty( $items ) ) {
+        return;
+    }
+    ?>
+    <aside class="heritage-siblings heritage-siblings--family scroll-animate" aria-labelledby="family-links-heading">
+        <h2 id="family-links-heading" class="heritage-siblings__heading">
+            <?php esc_html_e( 'The rest of the family', 'tc-ventures-child' ); ?>
+        </h2>
+        <ul class="heritage-siblings__list">
+            <?php foreach ( $items as $it ) : ?>
+                <li class="heritage-siblings__item">
+                    <a class="heritage-siblings__link" href="<?php echo esc_url( home_url( '/family/' . $it['slug'] ) ); ?>">
+                        <span class="heritage-siblings__title"><?php echo esc_html( $it['title'] ); ?></span>
+                        <span class="heritage-siblings__subtitle"><?php echo esc_html( $it['relation'] ); ?></span>
+                        <span class="heritage-siblings__cta" aria-hidden="true">&rarr;</span>
+                    </a>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </aside>
+    <?php
+}
