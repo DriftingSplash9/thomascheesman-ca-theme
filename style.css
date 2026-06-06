@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.444
+Version: 1.0.445
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5783,32 +5783,69 @@ body:has(.thomas-page) {
     color: #c9a96a;
 }
 
-/* Closing photo wall. */
+/* Closing photo wall — small tiles in a wide frosted plate (same glass as the
+   reading column). Hovering a tile grows it to a 2x2 cell and the dense grid
+   reflows the rest around it. */
+.thomas-page .container--narrow:has(.thomas-gallery) {
+    max-width: 1350px;
+    background:
+        radial-gradient(ellipse 130% 130% at 50% 42%,
+            rgba(8, 10, 26, 0.72) 0%,
+            rgba(3, 4, 14, 0.93) 100%);
+    backdrop-filter: blur(12px) saturate(125%);
+    -webkit-backdrop-filter: blur(12px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: clamp(24px, 4vw, 56px) clamp(20px, 3vw, 48px);
+    box-shadow: 0 28px 70px -28px rgba(0, 0, 0, 0.6);
+}
 .thomas-page .thomas-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 0.9rem;
-    margin: 1.2rem 0 2.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    grid-auto-rows: 132px;
+    grid-auto-flow: row dense;
+    gap: 0.5rem;
+    margin: 1.2rem 0 1rem;
 }
 .thomas-page .thomas-gallery__item {
+    position: relative;
     margin: 0;
+    overflow: hidden;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    cursor: zoom-in;
+    transition: box-shadow 0.2s ease;
 }
 .thomas-page .thomas-gallery__item img {
     width: 100%;
-    height: 220px;
+    height: 100%;
     object-fit: contain;
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 4px;
-    cursor: zoom-in;
+    display: block;
 }
 .thomas-page .thomas-gallery__item figcaption {
-    margin-top: 0.3rem;
-    font-size: 0.8rem;
-    opacity: 0.65;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 18px 8px 6px;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    color: #fff;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.72));
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
 }
+.thomas-page .thomas-gallery__item:hover {
+    grid-column: span 2;
+    grid-row: span 2;
+    z-index: 3;
+    box-shadow: 0 16px 40px -12px rgba(255, 120, 30, 0.4);
+}
+.thomas-page .thomas-gallery__item:hover figcaption { opacity: 1; }
 @media (max-width: 600px) {
-    .thomas-page .thomas-gallery { grid-template-columns: repeat(2, 1fr); }
-    .thomas-page .thomas-gallery__item img { height: 150px; }
+    .thomas-page .thomas-gallery { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 104px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .thomas-page .thomas-gallery__item:hover { grid-column: auto; grid-row: auto; }
 }
 
 /* ---- Flame "brows": flicker the subheadings + fold titles like the
@@ -5844,15 +5881,9 @@ body:has(.thomas-page) {
 
 /* ---- Clickable images (gallery + inline figures open the lightbox) get a
    warm hover lift so the affordance is obvious. ---- */
-.thomas-page .thomas-gallery__item img,
 .thomas-page .about-figure {
-    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
-}
-.thomas-page .about-figure { cursor: zoom-in; }
-.thomas-page .thomas-gallery__item img:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 14px 32px -10px rgba(255, 120, 30, 0.38);
-    filter: brightness(1.06);
+    cursor: zoom-in;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .thomas-page .about-figure:hover {
     transform: translateY(-2px);
