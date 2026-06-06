@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.452
+Version: 1.0.453
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2975,7 +2975,15 @@ body:has(.person-spoke--faith) {
 
 .tree-chip {
     position: absolute;
-    transform: translate(-50%, -50%);
+    /* --rx / --ry are the live foil-tilt angles (deg), driven by JS from
+       the cursor position; default 0 so the resting chip sits flat. The
+       perspective + rotateX/rotateY compose with the centering translate. */
+    --rx: 0deg;
+    --ry: 0deg;
+    transform: translate(-50%, -50%) perspective(700px)
+               rotateX(var(--rx)) rotateY(var(--ry));
+    transform-style: preserve-3d;
+    will-change: transform;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -2985,9 +2993,10 @@ body:has(.person-spoke--faith) {
     text-align: center;
     text-decoration: none;
     color: var(--text-dark);
-    /* Flag artwork lives in background-image (set per-chip); the dark
-       linear-gradient overlay riding on top in the same property
-       knocks the flag back to ~30% visibility. background-color is the
+    /* Flag artwork lives in background-image (set per-chip). The tint
+       overlay is now OFF by default (--chip-overlay-alpha: 0) so the flags
+       show full and bright; text legibility comes from a text-shadow on
+       the labels instead of a card-wide scrim. background-color is the
        fallback for chips without a flag image set. */
     background-color: rgba(8, 10, 26, 0.82);
     background-size: cover;
@@ -2998,17 +3007,46 @@ body:has(.person-spoke--faith) {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     box-shadow: 0 10px 30px -16px rgba(0, 0, 0, 0.6);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    /* Fast transform transition so the tilt tracks the cursor crisply,
+       while shadow/border ease in more slowly. */
+    transition: transform 0.12s ease-out,
                 box-shadow 0.4s ease,
-                border-color 0.4s ease,
-                --chip-overlay-alpha 0.4s ease;
+                border-color 0.4s ease;
     z-index: 2;
-    --chip-overlay-alpha: 0.9;
+    --chip-overlay-alpha: 0;
+}
+
+/* Holographic foil sheen — a moving specular glare + faint rainbow band
+   that rides over the flag on hover. --mx/--my (set by JS) place the glare
+   under the cursor. Sits above the flag but below the text (z-index 1;
+   labels are z-index 2). overlay blend keeps it glossy, not milky. */
+.tree-chip::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: 1;
+    background:
+        radial-gradient(circle at var(--mx, 50%) var(--my, 50%),
+            rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 42%),
+        linear-gradient(105deg,
+            rgba(255, 0, 128, 0) 30%,
+            rgba(255, 0, 128, 0.18),
+            rgba(120, 80, 255, 0.16),
+            rgba(0, 200, 255, 0.18),
+            rgba(0, 200, 255, 0) 70%);
+    background-blend-mode: screen;
+    mix-blend-mode: overlay;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 .tree-chip:hover {
-    /* Lift higher and scale up slightly for a deliberate hover read. */
-    transform: translate(-50%, -50%) translateY(-6px) scale(1.03);
+    /* Lift + scale, with the live foil tilt still applied. */
+    transform: translate(-50%, -50%) perspective(700px)
+               rotateX(var(--rx)) rotateY(var(--ry))
+               translateZ(24px) scale(1.04);
     border-color: var(--chip-color, var(--primary-color));
     /* Three-layer shadow: drop shadow for the lift, a 1px ring at the
        chip's accent color, and a soft outer glow that bleeds the
@@ -3017,10 +3055,19 @@ body:has(.person-spoke--faith) {
         0 22px 48px -16px color-mix(in srgb, var(--chip-color, var(--primary-color)) 65%, rgba(0, 0, 0, 0.7)),
         0 0 0 1px color-mix(in srgb, var(--chip-color, var(--primary-color)) 40%, transparent),
         0 0 32px -4px color-mix(in srgb, var(--chip-color, var(--primary-color)) 30%, transparent);
-    /* Flag brightens on hover — overlay drops from ~0.9 to ~0.55, so
-       the flag goes from a quiet hint to clearly visible. The
-       @property registration above makes this smooth. */
-    --chip-overlay-alpha: 0.55;
+}
+
+.tree-chip:hover::after { opacity: 1; }
+
+/* Labels ride above the foil sheen (z-index 2) and carry a dark shadow so
+   they stay legible now that the flags show full-brightness with no tint. */
+.tree-chip__eyebrow,
+.tree-chip__title,
+.tree-chip__role,
+.tree-chip__cta {
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.6);
 }
 
 .tree-chip__eyebrow {

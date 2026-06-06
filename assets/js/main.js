@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // initPillarReveal();
     initFamilyTreeReveal();
     initFamilyTreeLeaves();
+    initTreeChipFoil();
     initFigureKenBurns();
     initLightbox();
     initGallerySlideshow();
@@ -480,6 +481,58 @@ function initFamilyTreeReveal() {
             onEnter: () => tl.play(),
         });
     }
+}
+
+/**
+ * Holographic foil-tilt hover for the family-tree flag chips.
+ *
+ * As the cursor moves over a chip, the chip tilts in 3D toward the cursor
+ * (rotateX/rotateY) and a specular glare + faint rainbow sheen tracks the
+ * pointer — like a premium holographic trading card. This is layered ON TOP
+ * of the existing rustle + falling-leaves interactions, not a replacement.
+ *
+ * Implementation:
+ *   - We write only CSS custom properties (--rx/--ry for the tilt angles,
+ *     --mx/--my for the glare position). We never touch the chip's inline
+ *     `transform`, so this composes cleanly with the GSAP entrance reveal
+ *     (which animates and then clears the inline transform) and with the
+ *     CSS hover lift/scale that read the same vars.
+ *   - Sits out for reduced-motion and coarse/no-hover pointers (touch),
+ *     where a cursor-tracked tilt has nothing to track.
+ */
+function initTreeChipFoil() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Needs a fine pointer that can hover (mouse/trackpad). Touch sits out.
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    const chips = document.querySelectorAll('.family-tree-section .tree-chip');
+    if (!chips.length) return;
+
+    // Max tilt in degrees at the chip edges.
+    const MAX_TILT = 14;
+
+    chips.forEach((chip) => {
+        chip.addEventListener('mousemove', (e) => {
+            const rect = chip.getBoundingClientRect();
+            // px/py: cursor position within the chip, 0..1.
+            const px = (e.clientX - rect.left) / rect.width;
+            const py = (e.clientY - rect.top) / rect.height;
+            // Tilt toward the cursor: right edge tips right, top edge tips back.
+            const ry = (px - 0.5) * 2 * MAX_TILT;
+            const rx = (0.5 - py) * 2 * MAX_TILT;
+            chip.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+            chip.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+            chip.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+            chip.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+        });
+        chip.addEventListener('mouseleave', () => {
+            // Ease back to flat; the CSS transform transition smooths it.
+            chip.style.setProperty('--rx', '0deg');
+            chip.style.setProperty('--ry', '0deg');
+            chip.style.setProperty('--mx', '50%');
+            chip.style.setProperty('--my', '50%');
+        });
+    });
 }
 
 /**
