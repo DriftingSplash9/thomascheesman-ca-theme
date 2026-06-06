@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.451
+Version: 1.0.452
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -763,15 +763,18 @@ body {
 }
 
 /* ============================================
-   HIDE OS CURSOR (ink-trail only)
+   CUSTOM CURSOR (pairs with the ink-trail)
    ============================================
    The `cursor-custom` class is toggled on <html> by initInkTrail() once
-   the sit-out checks (reduced-motion, coarse pointer) pass. With no
-   custom-cursor dot, the ink trail is the only on-screen indicator. */
+   the sit-out checks (reduced-motion, coarse pointer) pass. Rather than
+   hiding the cursor entirely, we paint a small marker that matches the
+   trail: a white core dot (= the white trail) inside a warm amber ring
+   (= the amber sparks). Hotspot is centered at 14 14. Safari ignores
+   SVG data-URI cursors and falls back to the native `auto` arrow. */
 
 html.cursor-custom,
 html.cursor-custom * {
-    cursor: none;
+    cursor: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI4IDI4Ij48Y2lyY2xlIGN4PSIxNCIgY3k9IjE0IiByPSI4IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDE3Niw5MiwwLjYpIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjE0IiBjeT0iMTQiIHI9IjIuNiIgZmlsbD0iI2ZmZmZmZiIvPjxjaXJjbGUgY3g9IjE0IiBjeT0iMTQiIHI9IjIuNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwxNzYsOTIsMC45KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+') 14 14, auto;
 }
 
 /* Restore native text cursor on form fields so typing still feels normal. */
