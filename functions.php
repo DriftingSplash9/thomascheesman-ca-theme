@@ -423,6 +423,34 @@ function tc_ventures_enqueue_scripts() {
     // that looks wrong, re-enable by removing this dequeue.
     wp_dequeue_style( 'astra-google-fonts' );
 
+    // Faith's CopyCatCapybara Clicker — only on its own page template, so
+    // the rest of the site pays nothing. REST leaderboard URL passed in;
+    // the four boards (capybara-5/15/30/60) are whitelisted in
+    // inc/games-leaderboard.php.
+    if ( is_page( 'capybara' ) || is_page_template( 'page-capybara.php' ) ) {
+        $tc_ver = wp_get_theme()->get( 'Version' );
+        wp_enqueue_style(
+            'tc-capybara',
+            get_stylesheet_directory_uri() . '/assets/css/capybara.css',
+            array( 'astra-child-style', 'tc-google-fonts' ),
+            $tc_ver
+        );
+        wp_enqueue_script(
+            'tc-capybara',
+            get_stylesheet_directory_uri() . '/assets/js/capybara.js',
+            array(),
+            $tc_ver,
+            true
+        );
+        wp_localize_script(
+            'tc-capybara',
+            'tcCapybara',
+            array(
+                'scoresUrl' => esc_url_raw( rest_url( 'tc-games/v1/scores' ) ),
+            )
+        );
+    }
+
 }
 add_action( 'wp_enqueue_scripts', 'tc_ventures_enqueue_scripts' );
 

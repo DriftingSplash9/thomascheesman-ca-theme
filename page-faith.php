@@ -59,6 +59,14 @@ get_header(); ?>
                 </div>
             </section>
 
+            <p class="faith-game-cta-wrap">
+                <a class="faith-game-cta" href="<?php echo esc_url( home_url( '/capybara' ) ); ?>">
+                    <span aria-hidden="true">🐹</span>
+                    <?php esc_html_e( "Play Faith's CopyCatCapybara Clicker", 'tc-ventures-child' ); ?>
+                    <span aria-hidden="true">&rarr;</span>
+                </a>
+            </p>
+
             <?php tc_render_family_links( 'faith' ); ?>
 
             <?php

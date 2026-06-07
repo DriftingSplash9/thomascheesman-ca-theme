@@ -35,6 +35,11 @@ const TC_GAMES_VALID = array(
     'brickles',
     'solitaire',
     'pinball',
+    // Faith's CopyCatCapybara Clicker — one board per challenge length.
+    'capybara-5',
+    'capybara-15',
+    'capybara-30',
+    'capybara-60',
 );
 const TC_GAMES_MAX_PER_BOARD = 10;
 const TC_GAMES_MAX_NAME_LEN  = 16;

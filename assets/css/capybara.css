@@ -1,0 +1,368 @@
+/* =====================================================================
+   CopyCatCapybara Clicker — Faith's full-screen click game
+   ---------------------------------------------------------------------
+   Go-wild kid theme: a giant frosted candy "button" you tap anywhere in,
+   big emoji creatures bursting across the whole screen, rainbow chaos that
+   escalates with speed. Scoped under .capy so nothing leaks sitewide.
+   ===================================================================== */
+
+.capy {
+    --capy-pink:   #FF5FA2;
+    --capy-grape:  #9B6BFF;
+    --capy-sky:    #46C9FF;
+    --capy-mint:   #43E0B0;
+    --capy-sun:    #FFC83D;
+    --capy-tang:   #FF7A3D;
+    --capy-ink:    #3a2a52;
+    font-family: 'Fraunces', 'Baloo 2', Georgia, sans-serif;
+    text-align: center;
+    padding: 14px clamp(10px, 3vw, 28px) 60px;
+    /* A soft rainbow wash behind everything. */
+    background:
+        radial-gradient(circle at 15% 10%, rgba(255,95,162,0.18), transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(70,201,255,0.18), transparent 45%),
+        radial-gradient(circle at 50% 95%, rgba(67,224,176,0.16), transparent 50%);
+}
+
+/* ---- The arena: a huge frosted, candy-coloured, squishy button ------- */
+.capy-arena {
+    position: relative;
+    width: 100%;
+    /* As much of the screen as we can give her. */
+    height: min(78svh, 900px);
+    min-height: 420px;
+    margin: 0 auto;
+    border-radius: 36px;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    border: 4px solid rgba(255, 255, 255, 0.6);
+    background:
+        linear-gradient(140deg,
+            rgba(255, 95, 162, 0.55) 0%,
+            rgba(155, 107, 255, 0.50) 35%,
+            rgba(70, 201, 255, 0.50) 68%,
+            rgba(67, 224, 176, 0.55) 100%);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    box-shadow:
+        inset 0 4px 0 rgba(255, 255, 255, 0.7),
+        inset 0 -10px 24px rgba(120, 40, 110, 0.25),
+        0 22px 50px -16px rgba(120, 40, 120, 0.55);
+    transition: transform 0.08s ease, box-shadow 0.12s ease, filter 0.2s ease;
+}
+/* Squish on tap — it really feels like a button. */
+.capy-arena.is-press {
+    transform: scale(0.992) translateY(2px);
+    box-shadow:
+        inset 0 4px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -6px 18px rgba(120, 40, 110, 0.3),
+        0 12px 30px -14px rgba(120, 40, 120, 0.5);
+}
+/* Heat up as she speeds up (JS sets data-heat 0..3). */
+.capy-arena[data-heat="1"] { filter: saturate(1.15) brightness(1.03); }
+.capy-arena[data-heat="2"] { filter: saturate(1.3) brightness(1.06); }
+.capy-arena[data-heat="3"] { animation: capy-rave 0.5s linear infinite; }
+@keyframes capy-rave {
+    0%   { filter: hue-rotate(0deg) saturate(1.5) brightness(1.08); }
+    100% { filter: hue-rotate(360deg) saturate(1.5) brightness(1.08); }
+}
+
+.capy-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ---- HUD ------------------------------------------------------------- */
+.capy-hud {
+    position: absolute;
+    top: 14px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    display: flex;
+    gap: 10px;
+    pointer-events: none;
+}
+.capy-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 84px;
+    padding: 8px 14px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 6px 14px -6px rgba(80, 30, 90, 0.5), inset 0 2px 0 rgba(255,255,255,0.9);
+}
+.capy-stat__label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9a6aa0;
+    font-weight: 700;
+}
+.capy-stat__val {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--capy-ink);
+}
+.capy-stat--time .capy-stat__val { color: var(--capy-tang); }
+
+/* ---- Rank badge ----------------------------------------------------- */
+.capy-rank {
+    position: absolute;
+    top: 92px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.18), 0 0 18px currentColor;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.capy-rank.show { opacity: 1; }
+.capy-rank.pop { animation: capy-rankpop 0.4s ease; }
+@keyframes capy-rankpop {
+    0% { transform: translateX(-50%) scale(0.6); }
+    60% { transform: translateX(-50%) scale(1.25); }
+    100% { transform: translateX(-50%) scale(1); }
+}
+
+/* ---- Center screens ------------------------------------------------- */
+.capy-center {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    pointer-events: none; /* children re-enable */
+}
+.capy-screen { width: min(560px, 92%); }
+.capy-screen[hidden] { display: none; }
+
+.capy-title {
+    font-size: clamp(2rem, 7vw, 3.4rem);
+    font-weight: 900;
+    line-height: 0.95;
+    color: #fff;
+    margin: 0 0 0.4rem;
+    text-shadow: 0 3px 0 rgba(120,40,110,0.35), 0 0 26px rgba(255,255,255,0.5);
+}
+.capy-title span { display: inline; color: var(--capy-sun); }
+.capy-sub {
+    font-size: clamp(1rem, 2.6vw, 1.3rem);
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(80,30,90,0.5);
+    margin: 0 0 1.2rem;
+}
+
+.capy-durpick {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 0 1.3rem;
+    pointer-events: auto;
+}
+.capy-dur {
+    font-family: inherit;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--capy-ink);
+    padding: 12px 18px;
+    border: 3px solid rgba(255,255,255,0.85);
+    border-radius: 18px;
+    background: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.capy-dur:hover { transform: translateY(-2px); }
+.capy-dur.is-active {
+    background: #fff;
+    color: var(--capy-pink);
+    box-shadow: 0 8px 18px -8px rgba(255,95,162,0.8), 0 0 0 4px rgba(255,95,162,0.35);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.capy-start {
+    font-family: inherit;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 40px;
+    border: 0;
+    border-radius: 28px;
+    cursor: pointer;
+    pointer-events: auto;
+    color: #fff;
+    background: linear-gradient(135deg, var(--capy-pink), var(--capy-grape));
+    box-shadow: 0 14px 30px -10px rgba(155,60,180,0.8), inset 0 3px 0 rgba(255,255,255,0.5);
+    animation: capy-bob 1.4s ease-in-out infinite;
+}
+.capy-start__face { font-size: 3.4rem; line-height: 1; }
+.capy-start__label { font-size: 1.4rem; font-weight: 900; letter-spacing: 0.02em; }
+.capy-start:active { transform: scale(0.96); }
+@keyframes capy-bob {
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+/* ---- Done screen ---------------------------------------------------- */
+.capy-done__face { font-size: 4.5rem; line-height: 1; animation: capy-spin 1.2s ease; }
+@keyframes capy-spin { 0% { transform: scale(0) rotate(-90deg); } 70% { transform: scale(1.2) rotate(10deg); } 100% { transform: scale(1) rotate(0); } }
+.capy-done__score {
+    font-size: clamp(2.2rem, 8vw, 4rem);
+    font-weight: 900;
+    color: #fff;
+    margin: 0.2rem 0;
+    text-shadow: 0 3px 0 rgba(120,40,110,0.4), 0 0 26px rgba(255,255,255,0.6);
+}
+.capy-done__sub {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(80,30,90,0.5);
+    margin: 0 0 1rem;
+}
+.capy-name { pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 auto 1rem; max-width: 320px; }
+.capy-name[hidden] { display: none; }
+.capy-name p { margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; text-shadow: 0 2px 6px rgba(80,30,90,0.5); }
+.capy-name input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1.2rem;
+    font-family: inherit;
+    text-align: center;
+    border: 3px solid #fff;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.92);
+    color: var(--capy-ink);
+}
+.capy-name input:focus { outline: none; box-shadow: 0 0 0 4px rgba(255,200,61,0.6); }
+.capy-save, .capy-again {
+    font-family: inherit;
+    pointer-events: auto;
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #fff;
+    padding: 12px 26px;
+    border: 0;
+    border-radius: 20px;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--capy-mint), var(--capy-sky));
+    box-shadow: 0 10px 24px -10px rgba(40,150,170,0.8), inset 0 2px 0 rgba(255,255,255,0.5);
+}
+.capy-save { background: linear-gradient(135deg, var(--capy-sun), var(--capy-tang)); }
+.capy-save:active, .capy-again:active { transform: scale(0.96); }
+
+/* ---- Timer bar ------------------------------------------------------ */
+.capy-timerbar {
+    position: absolute;
+    left: 16px; right: 16px; bottom: 12px;
+    height: 14px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.4);
+    overflow: hidden;
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.capy-timerbar.show { opacity: 1; }
+.capy-timerbar i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--capy-mint), var(--capy-sun), var(--capy-tang));
+    transition: width 0.1s linear;
+}
+
+/* ---- Flying emoji creatures (DOM, big) ------------------------------ */
+.capy-critter {
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
+}
+
+/* ---- Leaderboard ---------------------------------------------------- */
+.capy-board {
+    max-width: 560px;
+    margin: 28px auto 0;
+    padding: 20px;
+    border-radius: 26px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 16px 40px -20px rgba(120,40,120,0.6), inset 0 2px 0 rgba(255,255,255,0.9);
+}
+.capy-board__title { font-size: 1.5rem; font-weight: 900; color: var(--capy-pink); margin: 0 0 12px; }
+.capy-board__tabs { display: flex; justify-content: center; gap: 8px; margin: 0 0 14px; }
+.capy-board__tab {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--capy-ink);
+    padding: 8px 16px;
+    border: 2px solid rgba(155,107,255,0.35);
+    border-radius: 14px;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.capy-board__tab.is-active {
+    background: linear-gradient(135deg, var(--capy-grape), var(--capy-pink));
+    color: #fff;
+    border-color: transparent;
+}
+.capy-board__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.capy-board__list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 16px;
+    background: rgba(155, 107, 255, 0.1);
+    font-weight: 700;
+    color: var(--capy-ink);
+}
+.capy-board__list li.is-me { background: rgba(255,95,162,0.18); box-shadow: 0 0 0 2px rgba(255,95,162,0.5); }
+.capy-board__pos { font-size: 1.25rem; min-width: 36px; text-align: center; }
+.capy-board__name { flex: 1; text-align: left; font-size: 1.05rem; }
+.capy-board__score { font-weight: 900; color: var(--capy-grape); }
+.capy-board__empty { padding: 14px; color: #9a6aa0; font-weight: 700; }
+
+.capy-home {
+    display: inline-block;
+    margin: 22px auto 0;
+    font-weight: 800;
+    color: var(--capy-grape);
+    text-decoration: none;
+}
+.capy-home:hover { text-decoration: underline; }
+
+/* ---- Calmer for reduced motion ------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .capy-arena[data-heat="3"] { animation: none; }
+    .capy-start, .capy-done__face { animation: none; }
+}
+
+@media (max-width: 600px) {
+    .capy-arena { height: min(72svh, 720px); border-radius: 26px; }
+    .capy-stat { min-width: 70px; padding: 6px 10px; }
+    .capy-stat__val { font-size: 1.5rem; }
+}
