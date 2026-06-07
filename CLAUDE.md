@@ -23,7 +23,7 @@ The site is **live** at https://thomascheesman.ca (staging hostname previously: 
 
 ## ⭐ Hard rules (memorize)
 
-1. **Never auto-commit-and-push.** Propose the commit + message; wait for the user to say "go." Preauthorization is task-scoped only — a new request needs a new approval. **Stage explicit paths — never `git add .`** (the tree often holds unrelated changes and loose `sk_*.html` research scrapes that must not be swept into a commit).
+1. **Commit-and-push is pre-authorized on THIS project (TC).** Thomas has standing authorization (granted 2026-06-06) to commit + push each finished unit of work without asking first — do it when the work is ready, with a clear message. **This is TC-specific; it does NOT carry to BYR / GPRS**, where the cross-site rule still holds (propose + wait). Even with auto-push on: **stage explicit paths — never `git add .`** (the tree holds unrelated changes + loose `sk_*.html` research scrapes that must never be swept in), and don't push half-finished or unreviewed-risky work — finish the unit first.
 2. **Bump `style.css` `Version:`** on every commit that touches theme code. Patch increment. Pure docs / `.gitignore`-only commits don't bump. **Bump it with the Edit tool, never `sed`** (`sed -i` rewrites all line endings → a phantom multi-thousand-line CRLF diff).
 3. **Never use `object-fit: cover`** — always `contain`.
 4. **The desk menu (`inc/desk-menu.php` + `assets/js/desk-menu.js`) AND the drawer footer (`footer.php` + `assets/css/desk-drawer.css`) are BHAG-tier surfaces.** Plan + propose before changes; don't freelance.
