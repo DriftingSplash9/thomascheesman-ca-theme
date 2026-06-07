@@ -1010,8 +1010,11 @@ html.tc-desk-open .tc-desk__toc{
    .tc-desk__mobile (markup added in inc/desk-menu.php in C4).
    ============================================================ */
 
-/* Desktop: hide the mobile-only nav */
+/* Desktop: hide the mobile-only navs. .tc-desk__mobile is the 4-column
+   plain menu (shown only in desktop plain mode, section 13). .tc-mobile-menu
+   is the dedicated phone/tablet accordion (shown only <=720px). */
 .tc-desk__mobile{ display: none; }
+.tc-mobile-menu{ display: none; }
 
 
 /* Section 11 — the floating "back to the desk" footer pill — was
@@ -1036,17 +1039,86 @@ html.tc-desk-open .tc-desk__toc{
         filter: brightness(.4) blur(2px);
     }
 
-    /* Reveal the vertical fallback nav */
-    .tc-desk__mobile{
+    /* The desktop plain menu does NOT show on mobile anymore — phones get
+       the dedicated .tc-mobile-menu accordion below. */
+    .tc-desk__mobile{ display: none; }
+
+    /* Mobile accordion menu. */
+    .tc-mobile-menu{
         display: block;
         position: absolute;
         inset: 0;
-        z-index: 1;
+        z-index: 2;
         overflow-y: auto;
-        padding: 80px 28px 40px;
+        padding: 84px 20px 48px;
         color: #f6f1e3;
-        font-family: Georgia, serif;
+        font-family: 'Fraunces', Georgia, serif;
+        background: linear-gradient(160deg, rgba(20,16,40,0.94) 0%, rgba(8,7,20,0.97) 100%);
         -webkit-overflow-scrolling: touch;
+    }
+    .tc-mobile-menu__eyebrow{
+        max-width: 480px;
+        margin: 0 auto 14px;
+        font-size: 12px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: #a89d80;
+        text-align: center;
+    }
+    .tc-mobile-menu__list{
+        list-style: none;
+        margin: 0 auto;
+        padding: 0;
+        max-width: 480px;
+    }
+    .tc-mobile-menu__list > li{
+        border-bottom: 1px solid rgba(246,241,227,0.12);
+    }
+    .tc-mobile-menu__list > li > a,
+    .tc-mm__toggle{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 16px 6px;
+        font-family: inherit;
+        font-size: 21px;
+        font-style: italic;
+        color: #f6f1e3;
+        text-decoration: none;
+        background: none;
+        border: 0;
+        text-align: left;
+        cursor: pointer;
+    }
+    .tc-mm__toggle .tc-mm__chev{
+        font-style: normal;
+        color: #a89d80;
+        transition: transform 0.25s ease;
+    }
+    .tc-mm__group.is-open .tc-mm__chev{ transform: rotate(180deg); }
+    .tc-mm__sub{
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.32s ease;
+    }
+    .tc-mm__group.is-open .tc-mm__sub{ max-height: 560px; }
+    .tc-mm__sub li a{
+        display: block;
+        padding: 12px 6px 12px 22px;
+        font-size: 17px;
+        color: #e8dcc2;
+        text-decoration: none;
+    }
+    .tc-mm__sub li a:active{ color: #fff; }
+    @media (prefers-reduced-motion: reduce){
+        .tc-mm__sub{ transition: none; }
+        .tc-mm__chev{ transition: none; }
     }
     .tc-desk__mobile-list{
         list-style: none;
@@ -1197,17 +1269,25 @@ html.tc-desk-open .tc-desk__toc{
         display: none;
     }
     html.tc-desk-plain .tc-desk__mobile{
-        display: block;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         position: absolute;
-        /* Kept to 90vh × 100vw — a 5vh letterbox top and bottom shows the
-           dark desk wash around the plain list, so it reads as a contained
-           panel rather than filling the whole screen. */
-        inset: 5vh 0;
+        inset: 0;                 /* true full-screen */
         z-index: 1;
         overflow-y: auto;
-        padding: 56px 28px 40px;
+        padding: clamp(40px, 7vh, 90px) clamp(24px, 5vw, 80px);
         color: #f6f1e3;
-        font-family: Georgia, serif;
+        font-family: 'Fraunces', Georgia, serif;
+    }
+    html.tc-desk-plain .tc-desk__plain-eyebrow{
+        font-size: 13px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: #a89d80;
+        text-align: center;
+        margin: 0 0 clamp(20px, 4vh, 44px);
     }
     html.tc-desk-plain .tc-desk__mobile-list{
         list-style: none;
@@ -1231,11 +1311,13 @@ html.tc-desk-open .tc-desk__toc{
         color: #00e5ff;
     }
     html.tc-desk-plain .tc-desk__mobile-meta{
-        max-width: 760px;
+        width: 100%;
+        max-width: 1120px;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 28px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(18px, 3vw, 48px);
+        align-items: start;
     }
     html.tc-desk-plain .tc-desk__mobile-meta-block{
         border-top: 1px solid rgba(246,241,227,0.14);
@@ -1264,6 +1346,58 @@ html.tc-desk-open .tc-desk__toc{
     html.tc-desk-plain .tc-desk__mobile-meta-block a:hover{
         color: #00e5ff;
     }
+    html.tc-desk-plain .tc-desk__mode-toggle--desk{
+        margin: clamp(28px, 5vh, 56px) auto 0;
+    }
+}
+
+/* Mid widths — four columns get cramped between 721 and 1024px; drop to two. */
+@media (min-width: 721px) and (max-width: 1024px){
+    html.tc-desk-plain .tc-desk__mobile-meta{
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 640px;
+    }
+}
+
+/* Plain-menu eyebrow (base; the desktop rule above tightens the spacing) and
+   the kids' shimmering labels — same aurora / blossom / dapple motifs as their
+   story pages. The keyframes (kid-label-sweep / aurora-wave / blossom-glow /
+   dapple-flicker) are defined in style.css and are global to the document. */
+.tc-desk__plain-eyebrow{
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #a89d80;
+    text-align: center;
+    margin: 0 0 22px;
+}
+.tc-plain-kid{
+    font-weight: 700;
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* !important so the more-specific menu link-colour rules don't hide the
+       gradient in Firefox (which paints `color`, not -webkit-text-fill-color). */
+    color: transparent !important;
+}
+.tc-plain-kid--patience{
+    background-image: linear-gradient(100deg,#C4B5FD,#A78BFA,#818CF8,#E879F9,#A78BFA,#C4B5FD);
+    filter: drop-shadow(0 1px 8px rgba(167,139,250,0.4));
+    animation: kid-label-sweep 9s ease-in-out infinite, aurora-wave 7s ease-in-out infinite;
+}
+.tc-plain-kid--faith{
+    background-image: linear-gradient(100deg,#FBCFE8,#F9A8D4,#F472B6,#FB7185,#F472B6,#FBCFE8);
+    animation: kid-label-sweep 10s ease-in-out infinite, blossom-glow 4.5s ease-in-out infinite;
+}
+.tc-plain-kid--daniel{
+    background-image: linear-gradient(100deg,#86EFAC,#4ADE80,#22C55E,#16A34A,#4ADE80,#86EFAC);
+    filter: drop-shadow(0 1px 8px rgba(34,197,94,0.4));
+    animation: kid-label-sweep 8s ease-in-out infinite, dapple-flicker 5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce){
+    .tc-plain-kid{ animation: none !important; background-position: 50% 50%; }
 }
 
 

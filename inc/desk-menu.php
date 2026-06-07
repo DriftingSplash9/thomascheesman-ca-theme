@@ -81,6 +81,10 @@ function tc_render_desk_menu() {
                     <span class="title">Patience, Daniel, and Faith</span>
                     <span class="pageno">63</span>
                 </a></li>
+                <li><a href="<?php echo esc_url( home_url( '/capybara' ) ); ?>">
+                    <span class="title">Faith's Capybara Clicker</span>
+                    <span class="pageno">67</span>
+                </a></li>
                 <li><a href="<?php echo esc_url( home_url( '/family/thomas' ) ); ?>">
                     <span class="title">The long way round &mdash; my story</span>
                     <span class="pageno">97</span>
@@ -302,15 +306,32 @@ function tc_render_desk_menu() {
          touch). The desk hero stays as a dark blurred backdrop.
          ============================================================ -->
     <nav class="tc-desk__mobile" aria-label="<?php esc_attr_e( 'Site navigation', 'tc-ventures-child' ); ?>">
-        <ul class="tc-desk__mobile-list">
-            <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a></li>
-            <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
-            <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">HCS</a></li>
-            <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
-            <li><a href="https://tc-timeline.vercel.app/">Timeline</a></li>
-            <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a></li>
-        </ul>
+        <p class="tc-desk__plain-eyebrow">Where to?</p>
         <div class="tc-desk__mobile-meta">
+
+            <div class="tc-desk__mobile-meta-block">
+                <span class="tc-desk__mobile-meta-label">Me</span>
+                <ul>
+                    <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About me</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">The body I got</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/thomas' ) ); ?>">The long way round</a></li>
+                    <li><a href="https://tc-timeline.vercel.app/">My whole life <span aria-hidden="true">&#x2197;</span></a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Send me a letter</a></li>
+                </ul>
+            </div>
+
+            <div class="tc-desk__mobile-meta-block">
+                <span class="tc-desk__mobile-meta-label">The kids</span>
+                <ul>
+                    <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">The family tree</a></li>
+                    <li><a class="tc-plain-kid tc-plain-kid--patience" href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
+                    <li><a class="tc-plain-kid tc-plain-kid--daniel" href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Daniel</a></li>
+                    <li><a class="tc-plain-kid tc-plain-kid--faith" href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Faith</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/capybara' ) ); ?>">Faith's Capybara Clicker</a></li>
+                </ul>
+            </div>
+
             <div class="tc-desk__mobile-meta-block">
                 <span class="tc-desk__mobile-meta-label">Heritage</span>
                 <ul>
@@ -325,14 +346,7 @@ function tc_render_desk_menu() {
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">&#x21B3; Haistes</a></li>
                 </ul>
             </div>
-            <div class="tc-desk__mobile-meta-block">
-                <span class="tc-desk__mobile-meta-label">Kids</span>
-                <ul>
-                    <li><a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Daniel</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Faith</a></li>
-                </ul>
-            </div>
+
             <div class="tc-desk__mobile-meta-block">
                 <span class="tc-desk__mobile-meta-label">Elsewhere</span>
                 <ul>
@@ -340,10 +354,70 @@ function tc_render_desk_menu() {
                     <li><a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">GPRS <span aria-hidden="true">&#x2197;</span></a></li>
                 </ul>
             </div>
+
         </div>
         <button type="button" class="tc-desk__mode-toggle tc-desk__mode-toggle--desk" data-tc-menu-mode="desk">
             &larr; Back to the desk
         </button>
+    </nav>
+
+    <!-- ============================================================
+         MOBILE MENU — a dedicated, straightforward accordion nav for
+         phones/tablets (shown only <=720px). Parent items (Family,
+         Heritage, Elsewhere) expand to reveal their children. Separate
+         from the desk + plain menus, which are desktop-only.
+         ============================================================ -->
+    <nav class="tc-mobile-menu" aria-label="<?php esc_attr_e( 'Mobile site navigation', 'tc-ventures-child' ); ?>">
+        <p class="tc-mobile-menu__eyebrow">Where to?</p>
+        <ul class="tc-mobile-menu__list">
+            <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a></li>
+            <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About me</a></li>
+            <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">The body I got</a></li>
+
+            <li class="tc-mm__group">
+                <button type="button" class="tc-mm__toggle" aria-expanded="false">
+                    Family <span class="tc-mm__chev" aria-hidden="true">&#x25BE;</span>
+                </button>
+                <ul class="tc-mm__sub">
+                    <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">The family tree</a></li>
+                    <li><a class="tc-plain-kid tc-plain-kid--patience" href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
+                    <li><a class="tc-plain-kid tc-plain-kid--daniel" href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Daniel</a></li>
+                    <li><a class="tc-plain-kid tc-plain-kid--faith" href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Faith</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/thomas' ) ); ?>">My story</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/capybara' ) ); ?>">Faith's Capybara Clicker</a></li>
+                </ul>
+            </li>
+
+            <li class="tc-mm__group">
+                <button type="button" class="tc-mm__toggle" aria-expanded="false">
+                    Heritage <span class="tc-mm__chev" aria-hidden="true">&#x25BE;</span>
+                </button>
+                <ul class="tc-mm__sub">
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">Heritage hub</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/cheesmans' ) ); ?>">Cheesmans</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/dochertys' ) ); ?>">Dochertys</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/dochertys/mcivers' ) ); ?>">McIvers</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">Lakemans</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/lakemans/verbooms' ) ); ?>">Verbooms</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">Rycrofts</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts/steinkes' ) ); ?>">Steinkes</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">Haistes</a></li>
+                </ul>
+            </li>
+
+            <li><a href="https://tc-timeline.vercel.app/">My whole life <span aria-hidden="true">&#x2197;</span></a></li>
+            <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Send me a letter</a></li>
+
+            <li class="tc-mm__group">
+                <button type="button" class="tc-mm__toggle" aria-expanded="false">
+                    Elsewhere <span class="tc-mm__chev" aria-hidden="true">&#x25BE;</span>
+                </button>
+                <ul class="tc-mm__sub">
+                    <li><a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare <span aria-hidden="true">&#x2197;</span></a></li>
+                    <li><a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">GPRS <span aria-hidden="true">&#x2197;</span></a></li>
+                </ul>
+            </li>
+        </ul>
     </nav>
 
     <!-- ============================================================

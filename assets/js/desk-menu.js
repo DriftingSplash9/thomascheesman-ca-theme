@@ -40,6 +40,22 @@
         wireScreensaver();
         wireCursorTrail();
         wireHotspotTilt();
+        wireMobileAccordion();
+    }
+
+    /* Mobile menu accordion — tapping a parent (Family / Heritage /
+       Elsewhere) toggles its child list open/closed. Pure class toggle;
+       the slide is a CSS max-height transition. */
+    function wireMobileAccordion() {
+        var toggles = doc.querySelectorAll( '.tc-mobile-menu .tc-mm__toggle' );
+        for ( var i = 0; i < toggles.length; i++ ) {
+            toggles[ i ].addEventListener( 'click', function () {
+                var group = this.closest( '.tc-mm__group' );
+                if ( ! group ) { return; }
+                var open = group.classList.toggle( 'is-open' );
+                this.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+            } );
+        }
     }
 
     /* Menu mode — the desk (default) vs. a plain vertical list. The
