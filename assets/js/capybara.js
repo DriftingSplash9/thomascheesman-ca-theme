@@ -332,6 +332,30 @@
 
     window.addEventListener('resize', function () { if (canvas) fit(); });
 
+    // ---- Cursor-tilt on the start button (same feel as the family-tree
+    //      flag chips). Writes --rx/--ry/--mx/--my; CSS does the rest.
+    //      Sits out for touch + reduced motion. ----
+    if (!REDUCED && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        var TILT = 12;
+        startBtn.addEventListener('mousemove', function (e) {
+            startBtn.classList.remove('is-tilt-resetting');
+            var r = startBtn.getBoundingClientRect();
+            var px = (e.clientX - r.left) / r.width;
+            var py = (e.clientY - r.top) / r.height;
+            startBtn.style.setProperty('--ry', ((px - 0.5) * 2 * TILT).toFixed(2) + 'deg');
+            startBtn.style.setProperty('--rx', ((0.5 - py) * 2 * TILT).toFixed(2) + 'deg');
+            startBtn.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+            startBtn.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+        });
+        startBtn.addEventListener('mouseleave', function () {
+            startBtn.classList.add('is-tilt-resetting');
+            startBtn.style.setProperty('--rx', '0deg');
+            startBtn.style.setProperty('--ry', '0deg');
+            startBtn.style.setProperty('--mx', '50%');
+            startBtn.style.setProperty('--my', '50%');
+        });
+    }
+
     // initial board
     fit();
     loadBoard(15);

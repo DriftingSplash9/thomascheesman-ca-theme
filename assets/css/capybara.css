@@ -197,6 +197,7 @@
 
 .capy-start {
     font-family: inherit;
+    position: relative;
     display: inline-flex;
     flex-direction: column;
     align-items: center;
@@ -209,11 +210,42 @@
     color: #fff;
     background: linear-gradient(135deg, var(--capy-pink), var(--capy-grape));
     box-shadow: 0 14px 30px -10px rgba(155,60,180,0.8), inset 0 3px 0 rgba(255,255,255,0.5);
+    /* Tilt toward the cursor, exactly like the family-tree flag chips.
+       --rx/--ry are written by JS from the pointer position; the idle bob
+       now lives on the capybara face so both effects coexist. */
+    --rx: 0deg;
+    --ry: 0deg;
+    transform: perspective(600px) rotateX(var(--rx)) rotateY(var(--ry));
+    transform-style: preserve-3d;
+    transition: transform 0.12s ease-out, box-shadow 0.2s ease;
+}
+/* Slower glide back to flat when the cursor leaves (class added by JS). */
+.capy-start.is-tilt-resetting {
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
+}
+/* Cursor-tracked specular glare (the chips' sheen, white). */
+.capy-start::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%),
+        rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 46%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+.capy-start:hover::after { opacity: 1; }
+.capy-start__face {
+    font-size: 3.4rem;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
     animation: capy-bob 1.4s ease-in-out infinite;
 }
-.capy-start__face { font-size: 3.4rem; line-height: 1; }
-.capy-start__label { font-size: 1.4rem; font-weight: 900; letter-spacing: 0.02em; }
-.capy-start:active { transform: scale(0.96); }
+.capy-start__label { font-size: 1.4rem; font-weight: 900; letter-spacing: 0.02em; position: relative; z-index: 1; }
+.capy-start:active { transform: perspective(600px) rotateX(var(--rx)) rotateY(var(--ry)) scale(0.96); }
 @keyframes capy-bob {
     0%, 100% { transform: translateY(0) rotate(-1deg); }
     50% { transform: translateY(-8px) rotate(1deg); }
@@ -358,7 +390,7 @@
 /* ---- Calmer for reduced motion ------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
     .capy-arena[data-heat="3"] { animation: none; }
-    .capy-start, .capy-done__face { animation: none; }
+    .capy-start__face, .capy-done__face { animation: none; }
 }
 
 @media (max-width: 600px) {
