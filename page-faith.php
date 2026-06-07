@@ -38,12 +38,16 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Close-up of Faith as a baby with big, two-toned blue eyes', 'tc-ventures-child' ); ?>"
                             loading="eager"
                         />
-                        <figcaption>Those eyes. Two-toned &mdash; and on a sunny day the blue really shows. I could stare into them all afternoon.</figcaption>
+                        <figcaption>Those eyes. Two-toned &mdash; and on a bright afternoon the blue really comes up.</figcaption>
                     </figure>
 
-                    <p>Faith was born on March 29, 2017 &mdash; eight pounds, twenty inches &mdash; and finished off our family. We'd been turning names over for months and I couldn't land on one to save my life; Melanie had all the ideas. Then &ldquo;Faith&rdquo; arrived in a dream. I woke up at 3 a.m., shook Melanie half-awake, and asked if she liked it. She mumbled &ldquo;I like it&rdquo; and passed straight back out. We'd very nearly called her Charlotte.</p>
+                    <p>Everybody starts with the eyes. You can't help it. They're two different colours, and on a bright day the blue comes up like something switched on from the inside &mdash; I've lost whole minutes to those eyes, and I'd lose them again. But I'm getting ahead of myself. The eyes came later. First there was a name, and before the name there was a dream.</p>
 
-                    <p>It turned out to be the only name that fit. In her first days there was a scare &mdash; she went blue and was rushed up to the NICU, and for a few endless minutes we didn't know which way it would go. Melanie and I looked at each other across that room and didn't need to say it out loud: she had to be Faith, because all we could do was <em>have faith</em> that she'd be okay. She came through &mdash; breathing, and already a little furious &mdash; and she's been going at full tilt ever since.</p>
+                    <p>Faith arrived on the 29th of March, 2017 &mdash; eight pounds, twenty inches, and the last full stop on our family. We'd chewed over names for months and I had nothing; Melanie had all the ideas and I had a blank page. Then the name turned up in a dream, of all places. I woke at three in the morning, shook Melanie half-awake, and asked her what she thought of &ldquo;Faith.&rdquo; She mumbled &ldquo;I like it&rdquo; and was gone again before I'd finished the sentence. We came within an inch of calling her Charlotte. I'm glad we didn't, and here's why.</p>
+
+                    <p>It was the day after she was born, an ordinary errand &mdash; the nurse and I carrying her down the hall for a change and a bath, an incubator waiting to warm her after. She gave a little cough. Then, in the nurse's arms, she started to go blue. The nurse had her down and was doing CPR and calling for help before my brain had caught up to my eyes, and then they were running, and there was no room for me in the elevator, so I took the stairs two at a time.</p>
+
+                    <p>At the top there was a knot of people around a newborn &mdash; six nurses, two doctors, all of them moving fast &mdash; and my heart went straight through the floor, because I was certain that baby was mine. Then the elevator opened and Melanie came out of it in a wheelchair, upright on sheer will a day after major surgery, scanning the room like a hawk. She saw it before I did: a second, smaller, calmer cluster off to the side. <em>That</em> one was Faith. We looked at each other and didn't say a word, because there was nothing to do and nothing to say &mdash; only to have faith that she'd be alright. She was. She came back to us breathing and already a little furious about the whole business, and she has been going at full tilt ever since.</p>
 
                     <h3>A carefree wandering fireball</h3>
 
@@ -56,7 +60,9 @@ get_header(); ?>
                         <figcaption>Six months old, and already particular about the outfit.</figcaption>
                     </figure>
 
-                    <p>If you asked me to sum Faith up in three words, that's it: a carefree wandering fireball. I've never met anyone with her energy &mdash; she runs at a million miles an hour and I do my honest best to keep up. She's whip-smart, too. She raced ahead in math during the lockdown years, fell head over heels for Numberblocks (we ended up with several sets, and Melanie even sewed the numbers one through ten out of felt), and these days she's doing grade-five math in grade three.</p>
+                    <p>Three words, if you held me to it. I have never in my life met anyone with her engine. She runs flat out from the moment her feet hit the floor, and I keep up the way you keep up with weather &mdash; mostly by watching where it's headed.</p>
+
+                    <p>Here's the kind of thing I mean. One afternoon we decided we were above following a recipe and would write our own, and out came a batch of chocolate-chip macchiato protein cookies &mdash; her idea, more or less. The dough came out thin, so we put more flour in. Still thin, so a little more. We added a bit of this and a bit of that with no theory behind any of it, ate a frankly unsafe amount of the batter, and they turned out&hellip; good, actually. That batch is nearly gone now. The next one will be better. It is always going to be better &mdash; that's the part I want to keep.</p>
 
                     <figure class="heritage-line__figure">
                         <img
@@ -67,7 +73,13 @@ get_header(); ?>
                         <figcaption>Our first birthday. The tutu made the day &mdash; and I think she agreed.</figcaption>
                     </figure>
 
-                    <p>She loves the way only Faith can love a thing: completely, and for a season. There was the Paw Patrol era (we watched every episode, on a loop). The Kirby era &mdash; the games, and of course the stuffies. A waffle phase that ran the better part of a year. Then Nutella. Then cinnamon toast. Sugar would launch her clean off the planet if we let it, so the food-colouring kind gets rationed &mdash; a birthday's worth is plenty.</p>
+                    <p>People will tell you she's bright and leave it at that, as if that settles it. It doesn't. She got out ahead in math in the lockdown years &mdash; fell hard for Numberblocks, hard enough that we ended up with several sets and Melanie sewing the numbers one to ten out of felt &mdash; and she's doing grade-five math in grade three without much fuss. But the math is only the doorway. What she's really after is bigness. Scale. She'll rattle off the planets in order and most of their moons, the belts, a handful of stars, the black holes; she wants to know how many Earths you could pour into the sun, how one galaxy stacks against another, what the biggest thing is and then what's bigger than that. A small girl with an enormous appetite for the size of the universe &mdash; and if she keeps her eyes up there and off the tablet, I have not one doubt she could help build the thing that flies into it. Her name is Faith and she is mad for the cosmos, and I don't think those two facts are unrelated.</p>
+
+                    <h3>Fridays, ducks, and the rules of the front seat</h3>
+
+                    <p>Every Friday after school we go to the Circle-K for a slushy, and I do mean every Friday &mdash; minus forty doesn't get you out of it. She'd mix all the flavours into one cup if she could, and she more or less does, within the law: the food-colouring ones are out, because Allura Red and the blue turn her dial all the way up, so it's Coke and Pepsi and Dr Pepper and root beer, caramel colour being a friend of ours. These are the things you end up an expert in.</p>
+
+                    <p>There's a front-seat system in the truck now, too, and it runs itself &mdash; the kids take turns, no refereeing required, and when all three are aboard Faith rides in the back where she's safest. I marvel at this. My brothers and I damn near came to blows over shotgun, and my poor mother spent half her driving years as a judge. Riding shotgun on the dash, skating clean across it on every corner, is the duck collection &mdash; small ones, a couple of big ones, gathered over the past year &mdash; which has done more for my driving than any instructor ever managed. Take a corner too sharp and they slide to the far end; touch the gas and they come back into my lap. The kids get carsick from my driving, so the ducks and I are working on it together.</p>
 
                     <h3>Soft in the middle</h3>
 
@@ -77,10 +89,12 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Faith napping curled up with a cat', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Naptime with Bubbalou. I'll never figure it out &mdash; she'll pester an animal all afternoon, and the second she drifts off they curl up with her like she's the gentlest soul alive.</figcaption>
+                        <figcaption>Naptime with Bubbalou. She'll torment a cat all afternoon &mdash; then the second she's asleep, the same cat folds against her like she's the gentlest soul alive.</figcaption>
                     </figure>
 
-                    <p>For all that motor, there's a tender girl underneath who feels far more than she lets on &mdash; and the animals seem to know it before the rest of us do. When she finally winds down (Faith is a world-class night owl; falling asleep is her Everest, and she'll fire off ten thousand questions in the dark before she goes &mdash; the CIA could learn a thing or two from her), she snuggles right in, and it warms my whole soul.</p>
+                    <p>For all that motor, there's a tender thing underneath that feels more than she'll ever tell you, and the animals seem to clock it before the rest of us do. I can't explain it. Maybe they're onto something.</p>
+
+                    <p>You can watch the weather change in her. The meltdowns don't come from nowhere; they come when the day tips pessimistic on her &mdash; when something isn't fair, when the answer is no, when the cost or the timing or the sheer energy of a thing lands the wrong way. Catch her early and turn her back toward the bright side, and the storm just&hellip; doesn't arrive. It's a knack I'm still learning.</p>
 
                     <figure class="heritage-line__figure">
                         <img
@@ -91,9 +105,17 @@ get_header(); ?>
                         <figcaption>Cuddles with my cutie.</figcaption>
                     </figure>
 
-                    <h3>Our little rituals</h3>
+                    <p>And she'll flip in a heartbeat. She used to climb out along the ropes at the playground and get further than her nerve could carry her, and freeze, and I'd go up and bring her down &mdash; and before her feet had properly found the ground she was off sprinting for the next thing to climb. That's the whole of her, really. She'd have thrown herself off the high board into the deep end the first chance she got, and would have been fine; the lifeguards disagreed, and we'll wait until she's bigger. Some days a crowd terrifies her. Some days she <em>is</em> the crowd. Either way she's got me.</p>
 
-                    <p>Faith and I get a lot of time together &mdash; her brother and sister are often too busy, or too &ldquo;mature,&rdquo; to play with their little sister. So we bake: pancakes, cupcakes, whole cakes. We paint, we mix colours, we glue things, and we make a magnificent mess of the kitchen table. We haunt the pet stores to visit every critter we're allowed to touch. And every Friday after school we hit the Circle-K for a slushy and a pop &mdash; minus forty be damned, the Friday slushy is sacred.</p>
+                    <p>The laugh deserves a mention, though I'll have to dig up a video to do it justice. There was a version of it when she was small that undid all of us &mdash; and being Faith, she noticed it undid us, and started deploying it on purpose, and ran it clean into the ground until the magic wore off. That's her in miniature: hand her your delight and she'll spend it all at once. I wouldn't change it. When she finally runs down at night &mdash; falling asleep is her Everest, and she'll fire ten thousand questions into the dark before she goes; the CIA could take notes &mdash; she burrows in for warmth, and it settles something in me I didn't know was unsettled.</p>
+
+                    <h3>What she's taught me</h3>
+
+                    <p>More than she knows. Faith took my own lifelong project &mdash; keeping myself level &mdash; and turned it up to eleven, because she is a mirror. If I flare, she flares, over nothing at all. So she has quietly made me learn to be the calm I'd like her to copy, which is the hardest and most worthwhile homework I've ever been handed. (For the record: tacos. Tacos are the meal that works, four or five nights out of the rotation, and a far more complete dinner than they have any right to be. You take the wins.)</p>
+
+                    <p>She's the spitting image of her mum &mdash; lay their baby photos side by side and you'd swear they were the same child. She's got her own arts, mind you. She'll chant &ldquo;six-seven&rdquo; around the house purely because she knows it needles her big sister &mdash; sixty-seven has been Faith's number for as long as I can remember, and there's a 67 sticker on my desk I'm keeping for her. She and Daniel tear around together like a pair of weather systems, and she and Patience are still negotiating the ancient treaty of sharing a kitchen before school. I hope they find their way to being friends. I think, given time, they will.</p>
+
+                    <h3>A letter for later</h3>
 
                     <figure class="heritage-line__figure">
                         <img
@@ -104,9 +126,9 @@ get_header(); ?>
                         <figcaption>Geoffry.</figcaption>
                     </figure>
 
-                    <p>She's the spitting image of her mum &mdash; set their baby photos side by side and you'd swear they were the same kid. She and Daniel will tear around the place together, and she and her big sister are still negotiating the ancient treaty of sharing a kitchen before school. I hope they grow into close friends; I think, in time, they will.</p>
+                    <p>Hi Faith. I want you to know how much I love you, and I can't &mdash; I genuinely can't put a number to it, and you of all people should appreciate that there simply isn't one big enough. You'll have to take my word for it.</p>
 
-                    <p>Faith, if you're reading this one day: you have my love &mdash; all of it, no conditions. You move through the world so fast that the rest of us can barely catch you, so every now and then, slow down. Look around. See who's there. Stop and smell the roses &mdash; they're for you.</p>
+                    <p>By the time you read this you're grown, off figuring out the world, and I'd put money on you being at a university or already out the far side of one, doing something that scares me a little &mdash; building a rocket, maybe, or standing somewhere up past the moons you could always name. A lot can happen in sixteen years. Have you still got the blue eyes and the blonde hair? You certainly didn't get those from me. I'll bet there are a couple of cats. I hope you and your sister are close, or close enough &mdash; family is a lot, and you won't fully understand that until you've made one of your own, but when you do you'll find yourself wanting them near. Marry whoever makes you laugh the way you laughed when you were small. And promise me one thing, just the one: not a chef. Don't be one, and don't date one. Love always, Dad.</p>
 
                 </div>
             </section>
