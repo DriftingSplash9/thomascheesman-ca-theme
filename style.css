@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.466
+Version: 1.0.467
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2326,40 +2326,65 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     box-shadow: 0 28px 70px -28px rgba(0, 0, 0, 0.6);
 }
 
-/* 2b. Story figures float at ~1/3 the column so the prose wraps around them,
-   alternating sides down the page. The FIRST figure (the hero portrait) stays
-   full width. Subheads clear the floats so each section starts clean. */
+/* 2b. Story figures — an EDITORIAL MIX of sizes and placements so the page
+   reads like a scrapbook, not a column of identical thumbnails. Apply a
+   modifier per figure; the prose wraps around the floated ones. Subheads +
+   the clearfix keep sections tidy. (1350px column = lots of room to play.) */
 .person-spoke .heritage-line__body::after { content: ""; display: block; clear: both; }
 .person-spoke .heritage-line__body h3 { clear: both; }
-.person-spoke .heritage-line__body .heritage-line__figure {
-    width: 33%;
-    max-width: 440px;
-    float: right;
-    clear: right;
-    margin: 0.4rem 0 1.2rem 1.8rem;
-}
-.person-spoke .heritage-line__body .heritage-line__figure:nth-of-type(odd) {
-    float: left;
-    clear: left;
-    margin: 0.4rem 1.8rem 1.2rem 0;
-}
-/* Hero portrait (first figure) — full width, no wrap. */
-.person-spoke .heritage-line__body .heritage-line__figure:first-of-type {
-    float: none;
+
+/* Default (no modifier): a centred medium block. */
+.person-spoke .heritage-line__figure {
+    width: 60%;
+    max-width: 760px;
+    margin: 1.3rem auto 1.7rem;
     clear: both;
-    width: 100%;
-    max-width: none;
-    margin: 0 0 1.6rem;
+    float: none;
 }
+/* Full-bleed hero. */
+.person-spoke .heritage-line__figure--full {
+    width: 100%; max-width: none; margin: 0 0 1.7rem; clear: both; float: none;
+}
+/* Centred, a little narrower than default — good for a feature shot. */
+.person-spoke .heritage-line__figure--center {
+    width: 48%; max-width: 620px; margin: 1.3rem auto 1.7rem; clear: both; float: none;
+}
+/* Floats — prose wraps. Three weights: small / third / big, each side. */
+.person-spoke .heritage-line__figure--small-left,
+.person-spoke .heritage-line__figure--left,
+.person-spoke .heritage-line__figure--big-left   { float: left;  clear: left; }
+.person-spoke .heritage-line__figure--small-right,
+.person-spoke .heritage-line__figure--right,
+.person-spoke .heritage-line__figure--big-right  { float: right; clear: right; }
+
+.person-spoke .heritage-line__figure--small-left  { width: 23%; max-width: 300px; margin: 0.3rem 1.7rem 1rem 0; }
+.person-spoke .heritage-line__figure--small-right { width: 23%; max-width: 300px; margin: 0.3rem 0 1rem 1.7rem; }
+.person-spoke .heritage-line__figure--left        { width: 33%; max-width: 440px; margin: 0.3rem 1.8rem 1.1rem 0; }
+.person-spoke .heritage-line__figure--right       { width: 33%; max-width: 440px; margin: 0.3rem 0 1.1rem 1.8rem; }
+.person-spoke .heritage-line__figure--big-left    { width: 46%; max-width: 620px; margin: 0.3rem 2rem 1.2rem 0; }
+.person-spoke .heritage-line__figure--big-right   { width: 46%; max-width: 620px; margin: 0.3rem 0 1.2rem 2rem; }
+
+/* Side-by-side pair (diptych) — two images in one row, shared caption below. */
+.person-spoke .heritage-line__figure--pair {
+    width: 100%; max-width: none; clear: both; float: none;
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    align-items: flex-start; margin: 1.3rem 0 1.7rem;
+}
+.person-spoke .heritage-line__figure--pair > img { flex: 1 1 0; min-width: 0; width: auto; }
+.person-spoke .heritage-line__figure--pair > figcaption { flex: 1 1 100%; }
+
 @media (max-width: 768px) {
-    .person-spoke .heritage-line__body .heritage-line__figure,
-    .person-spoke .heritage-line__body .heritage-line__figure:nth-of-type(odd) {
-        float: none;
-        clear: both;
-        width: 100%;
-        max-width: none;
-        margin: 0 0 1.4rem;
+    .person-spoke .heritage-line__figure,
+    .person-spoke .heritage-line__figure--center,
+    .person-spoke .heritage-line__figure--small-left,
+    .person-spoke .heritage-line__figure--small-right,
+    .person-spoke .heritage-line__figure--left,
+    .person-spoke .heritage-line__figure--right,
+    .person-spoke .heritage-line__figure--big-left,
+    .person-spoke .heritage-line__figure--big-right {
+        float: none; width: 100%; max-width: none; margin: 0 0 1.4rem; clear: both;
     }
+    .person-spoke .heritage-line__figure--pair { flex-direction: column; }
 }
 
 /* 3. Animated gallery section labels (the "subheadings"). Shared base:
