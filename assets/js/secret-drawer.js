@@ -32,6 +32,17 @@
     var LS_KEY = 'tc_handle_tightened';
     var prefersReduced = !! ( window.matchMedia &&
         window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches );
+
+    // The drawer puzzle is a precise point-and-click/drag experience that
+    // needs a real pointer and screen space. Phones + tablets are too
+    // small, so on those we don't open it — we show a friendly note asking
+    // the visitor to come back on a computer. Treat "too small" as: a
+    // narrow viewport OR a device with no fine pointer (touch).
+    function isTooSmallForDrawer() {
+        if ( ! window.matchMedia ) return false;
+        return window.matchMedia( '(max-width: 1024px)' ).matches ||
+               ! window.matchMedia( '(pointer: fine)' ).matches;
+    }
     var FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
     document.addEventListener( 'DOMContentLoaded', function () {
@@ -78,6 +89,9 @@
     // Resolve + assign the junk-drawer background once. Called on first
     // hover so the image is decoded and ready by the time it's opened.
     SecretDrawer.prototype.preloadBg = function () {
+        // Don't download the big junk-drawer artwork on phones/tablets —
+        // the drawer won't open there anyway.
+        if ( isTooSmallForDrawer() ) return;
         if ( this.bgRequested || ! this.bgImg ) return;
         var assets = ( window.tcSecretDrawer && window.tcSecretDrawer.assets ) || {};
         var url = assets.junkClean;
@@ -184,6 +198,10 @@
     // ---- open / close the junk-drawer overlay -------------------------
     SecretDrawer.prototype.open = function () {
         if ( this.isOpen ) return;
+        // Phones/tablets: don't open — show the "use a computer" note. This
+        // catches both the tighten→open flow and a returning visitor whose
+        // handle is already tight clicking to open directly.
+        if ( isTooSmallForDrawer() ) { this.showDesktopOnlyNote(); return; }
         this.preloadBg();
         this.isOpen = true;
         this.lastFocus = document.activeElement;
@@ -199,6 +217,30 @@
 
         var closeBtn = this.overlay.querySelector( '[data-tc-secret-close]' );
         if ( closeBtn ) closeBtn.focus();
+    };
+
+    // ---- friendly "open this on a computer" note (phones/tablets) -----
+    SecretDrawer.prototype.showDesktopOnlyNote = function () {
+        var note = document.getElementById( 'tc-drawer-desktop-note' );
+        if ( ! note ) {
+            note = document.createElement( 'div' );
+            note.id = 'tc-drawer-desktop-note';
+            note.className = 'tc-drawer__desktop-note';
+            note.setAttribute( 'role', 'status' );
+            note.innerHTML =
+                '<span class="tc-drawer__desktop-note-emoji" aria-hidden="true">&#x1F5C4;&#xFE0F;</span>' +
+                '<span>Nice &mdash; the handle’s tight now! But this drawer is crammed with tiny, ' +
+                'fiddly bits. Come open it on a <strong>computer (PC or laptop)</strong>, where there’s ' +
+                'room to play. <em>Tap to dismiss.</em></span>';
+            document.body.appendChild( note );
+            note.addEventListener( 'click', function () { note.classList.remove( 'is-show' ); } );
+        }
+        // Restart the show + auto-hide timer.
+        note.classList.remove( 'is-show' );
+        void note.offsetWidth;
+        note.classList.add( 'is-show' );
+        clearTimeout( this._noteTimer );
+        this._noteTimer = setTimeout( function () { note.classList.remove( 'is-show' ); }, 7000 );
     };
 
     // Lazy-load the Phase 2 interaction engine the first time the
