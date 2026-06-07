@@ -25,6 +25,9 @@
  *   tc-portfolio/update-page-content — replace a page's post_content
  *   tc-portfolio/append-quote        — add a new entry to the
  *                                      quotes.json pool
+ *   tc-portfolio/create-page         — create a new page (title, slug,
+ *                                      parent, status) via wp_insert_post;
+ *                                      bypasses the block editor
  *
  * Every Ability:
  *   - Has input_schema + output_schema (validated on every call)
@@ -309,6 +312,43 @@ function tc_register_agent_abilities() {
             'idempotent'  => false,
         ),
     ) );
+
+    wp_register_ability( 'tc-portfolio/create-page', array(
+        'label'         => 'Create a new page',
+        'description'   => 'Create a new WordPress page (post_type=page) with a title, optional slug, optional parent (slug or numeric id), status, and optional HTML content. Runs server-side via wp_insert_post(), so it bypasses the block editor entirely. Most TC pages render from a slug-matched PHP template, so content can be left empty. Returns the new page id, slug, status, and URL.',
+        'category'      => 'tc-content',
+        'input_schema'  => array(
+            'type'       => 'object',
+            'properties' => array(
+                'title'   => array( 'type' => 'string', 'description' => 'Page title (required).' ),
+                'slug'    => array( 'type' => 'string', 'description' => 'Optional slug; derived from the title if omitted.' ),
+                'parent'  => array( 'type' => 'string', 'description' => 'Optional parent page slug or numeric id (nests the page, e.g. under "family").' ),
+                'status'  => array(
+                    'type'    => 'string',
+                    'enum'    => array( 'publish', 'draft', 'pending', 'private' ),
+                    'default' => 'publish',
+                ),
+                'content' => array( 'type' => 'string', 'description' => 'Optional HTML body. Sanitised by wp_kses_post(). Leave empty for template-rendered pages.' ),
+            ),
+            'required' => array( 'title' ),
+        ),
+        'output_schema' => array(
+            'type'       => 'object',
+            'properties' => array(
+                'id'     => array( 'type' => 'integer' ),
+                'slug'   => array( 'type' => 'string' ),
+                'status' => array( 'type' => 'string' ),
+                'url'    => array( 'type' => 'string' ),
+            ),
+        ),
+        'execute_callback'    => 'tc_ability_create_page',
+        'permission_callback' => 'tc_ability_can_edit_pages',
+        'meta' => array(
+            'mcp'         => array( 'public' => true ),
+            'destructive' => false,
+            'idempotent'  => false,
+        ),
+    ) );
 }
 
 /*
@@ -398,6 +438,55 @@ function tc_ability_update_page_content( $input ) {
     return array(
         'id'      => $id,
         'success' => $result === $id,
+    );
+}
+
+function tc_ability_create_page( $input ) {
+    $title = isset( $input['title'] ) ? trim( (string) $input['title'] ) : '';
+    if ( $title === '' ) {
+        return new WP_Error( 'bad_input', 'A title is required.' );
+    }
+
+    $status = isset( $input['status'] ) ? (string) $input['status'] : 'publish';
+    if ( ! in_array( $status, array( 'publish', 'draft', 'pending', 'private' ), true ) ) {
+        $status = 'publish';
+    }
+
+    // Resolve an optional parent by numeric id or slug.
+    $parent_id = 0;
+    if ( ! empty( $input['parent'] ) ) {
+        if ( is_numeric( $input['parent'] ) ) {
+            $parent_id = intval( $input['parent'] );
+        } else {
+            $parent = get_page_by_path( (string) $input['parent'], OBJECT, 'page' );
+            if ( $parent ) {
+                $parent_id = (int) $parent->ID;
+            }
+        }
+    }
+
+    $postarr = array(
+        'post_type'    => 'page',
+        'post_title'   => $title,
+        'post_status'  => $status,
+        'post_content' => isset( $input['content'] ) ? (string) $input['content'] : '',
+        'post_parent'  => $parent_id,
+    );
+    if ( ! empty( $input['slug'] ) ) {
+        $postarr['post_name'] = sanitize_title( (string) $input['slug'] );
+    }
+
+    $id = wp_insert_post( $postarr, true ); // true = WP_Error on failure
+    if ( is_wp_error( $id ) ) {
+        return $id;
+    }
+
+    $post = get_post( $id );
+    return array(
+        'id'     => (int) $id,
+        'slug'   => (string) $post->post_name,
+        'status' => (string) $post->post_status,
+        'url'    => (string) get_permalink( $id ),
     );
 }
 
