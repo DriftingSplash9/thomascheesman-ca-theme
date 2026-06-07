@@ -35,26 +35,78 @@ get_header(); ?>
                     <figure class="heritage-line__figure">
                         <img
                             src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/10/20180524_163145-scaled.jpg' ) ); ?>"
-                            alt="<?php esc_attr_e( 'Faith at about 14 months, May 2018', 'tc-ventures-child' ); ?>"
+                            alt="<?php esc_attr_e( 'Close-up of Faith as a baby with big, two-toned blue eyes', 'tc-ventures-child' ); ?>"
                             loading="eager"
                         />
+                        <figcaption>Those eyes. Two-toned &mdash; and on a sunny day the blue really shows. I could stare into them all afternoon.</figcaption>
                     </figure>
 
-                    <p>Faith was born on March 29, 2017 &mdash; 8 pounds, 20 inches &mdash; and finished off our family. We'd been turning over names for months and I couldn't think of one to save my life &ndash; Melanie was coming up with all the ideas. &ldquo;Faith&rdquo; came to me in a dream, I think I was getting heck in my dream and it just came to me and I woke up. Melanie was bugging me now and then for not having ideas and I guess the name just popped in. I woke her up at 3 a.m. and asked if she liked it. She mumbled &ldquo;I like it&rdquo; and passed back out.</p>
+                    <p>Faith was born on March 29, 2017 &mdash; eight pounds, twenty inches &mdash; and finished off our family. We'd been turning names over for months and I couldn't land on one to save my life; Melanie had all the ideas. Then &ldquo;Faith&rdquo; arrived in a dream. I woke up at 3 a.m., shook Melanie half-awake, and asked if she liked it. She mumbled &ldquo;I like it&rdquo; and passed straight back out. We'd very nearly called her Charlotte.</p>
 
-                    <p>We weren't sure. We almost called her Charlotte. Everything was going as expected after Melanie's 3rd Cesarian until Faith turned blue after a bath and change&mdash; choking, she was rushed to the NICU &mdash; Melanie was not sitting downstairs waiting and got herself up and into a wheelchair and up to Nicu. We looked at each other and knew it had to be Faith, we knew we needed to have Faith.</p>
+                    <p>It turned out to be the only name that fit. In her first days there was a scare &mdash; she went blue and was rushed up to the NICU, and for a few endless minutes we didn't know which way it would go. Melanie and I looked at each other across that room and didn't need to say it out loud: she had to be Faith, because all we could do was <em>have faith</em> that she'd be okay. She came through &mdash; breathing, and already a little furious &mdash; and she's been going at full tilt ever since.</p>
 
-                    <p>She's stubborn, independent, and particular about her things. She snuggles on her own terms. She had a hamster named Jeffery James. Now she has Mataeo. The youngest gets away with more, I know that. She has a wild and free spirit and I'm loving it.</p>
-
-                    <p>Faith and I get to spend a lot of time together as her brother and sister are often too busy or too &ldquo;mature&rdquo; to play with their little sister. We love to do chemistry, mix colors, paint, do dollar store crafts, glue stuff, and generally make a mess of the kitchen table one way or another. We also love to visit the pet stores and see all the critters (especially ones we can touch!).</p>
+                    <h3>A carefree wandering fireball</h3>
 
                     <figure class="heritage-line__figure">
                         <img
-                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_0360-scaled.jpg' ) ); ?>"
-                            alt="<?php esc_attr_e( 'Faith with a bird that hopped onto her hand', 'tc-ventures-child' ); ?>"
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20171025_093702.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'Faith at six months old, dressed up for a photoshoot', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
+                        <figcaption>Six months old, and already particular about the outfit.</figcaption>
                     </figure>
+
+                    <p>If you asked me to sum Faith up in three words, that's it: a carefree wandering fireball. I've never met anyone with her energy &mdash; she runs at a million miles an hour and I do my honest best to keep up. She's whip-smart, too. She raced ahead in math during the lockdown years, fell head over heels for Numberblocks (we ended up with several sets, and Melanie even sewed the numbers one through ten out of felt), and these days she's doing grade-five math in grade three.</p>
+
+                    <figure class="heritage-line__figure">
+                        <img
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20180319_075032.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( "Faith on her first birthday in a tutu", 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                        <figcaption>Our first birthday. The tutu made the day &mdash; and I think she agreed.</figcaption>
+                    </figure>
+
+                    <p>She loves the way only Faith can love a thing: completely, and for a season. There was the Paw Patrol era (we watched every episode, on a loop). The Kirby era &mdash; the games, and of course the stuffies. A waffle phase that ran the better part of a year. Then Nutella. Then cinnamon toast. Sugar would launch her clean off the planet if we let it, so the food-colouring kind gets rationed &mdash; a birthday's worth is plenty.</p>
+
+                    <h3>Soft in the middle</h3>
+
+                    <figure class="heritage-line__figure">
+                        <img
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20190504_133340.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'Faith napping curled up with a cat', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                        <figcaption>Naptime with Bubbalou. I'll never figure it out &mdash; she'll pester an animal all afternoon, and the second she drifts off they curl up with her like she's the gentlest soul alive.</figcaption>
+                    </figure>
+
+                    <p>For all that motor, there's a tender girl underneath who feels far more than she lets on &mdash; and the animals seem to know it before the rest of us do. When she finally winds down (Faith is a world-class night owl; falling asleep is her Everest, and she'll fire off ten thousand questions in the dark before she goes &mdash; the CIA could learn a thing or two from her), she snuggles right in, and it warms my whole soul.</p>
+
+                    <figure class="heritage-line__figure">
+                        <img
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/10159239966543708.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'Faith cuddled up with her dad', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                        <figcaption>Cuddles with my cutie.</figcaption>
+                    </figure>
+
+                    <h3>Our little rituals</h3>
+
+                    <p>Faith and I get a lot of time together &mdash; her brother and sister are often too busy, or too &ldquo;mature,&rdquo; to play with their little sister. So we bake: pancakes, cupcakes, whole cakes. We paint, we mix colours, we glue things, and we make a magnificent mess of the kitchen table. We haunt the pet stores to visit every critter we're allowed to touch. And every Friday after school we hit the Circle-K for a slushy and a pop &mdash; minus forty be damned, the Friday slushy is sacred.</p>
+
+                    <figure class="heritage-line__figure">
+                        <img
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/IMG_1199.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'Faith with her pet', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                        />
+                        <figcaption>Geoffry.</figcaption>
+                    </figure>
+
+                    <p>She's the spitting image of her mum &mdash; set their baby photos side by side and you'd swear they were the same kid. She and Daniel will tear around the place together, and she and her big sister are still negotiating the ancient treaty of sharing a kitchen before school. I hope they grow into close friends; I think, in time, they will.</p>
+
+                    <p>Faith, if you're reading this one day: you have my love &mdash; all of it, no conditions. You move through the world so fast that the rest of us can barely catch you, so every now and then, slow down. Look around. See who's there. Stop and smell the roses &mdash; they're for you.</p>
 
                 </div>
             </section>
