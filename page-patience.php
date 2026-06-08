@@ -200,18 +200,18 @@ get_header(); ?>
                         <img class="flip flip--1"
                             src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-1.jpg' ); ?>"
                             alt="<?php esc_attr_e( 'Patience setting off down the sled hill', 'tc-ventures-child' ); ?>"
-                            loading="lazy"
+                            loading="eager"
                         />
                         <img class="flip flip--2"
                             src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-2.jpg' ); ?>"
                             alt="<?php esc_attr_e( 'Patience mid-wipeout on the sled', 'tc-ventures-child' ); ?>"
-                            loading="lazy"
+                            loading="eager"
                             aria-hidden="true"
                         />
                         <img class="flip flip--3"
                             src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-3.jpg' ); ?>"
                             alt=""
-                            loading="lazy"
+                            loading="eager"
                             aria-hidden="true"
                         />
                         <figcaption>Patience versus the toboggan &mdash; the goofy little loop we always meant to make. Three frames was all it took. Spoiler: the toboggan wins, forever.</figcaption>
