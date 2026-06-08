@@ -198,18 +198,18 @@ get_header(); ?>
 
                     <figure class="heritage-line__figure heritage-line__figure--gif heritage-line__figure--flip">
                         <img class="flip flip--1"
-                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20191231_101535-scaled.jpg' ) ); ?>"
+                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-1.jpg' ); ?>"
                             alt="<?php esc_attr_e( 'Patience setting off down the sled hill', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
                         <img class="flip flip--2"
-                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20191231_101538-scaled.jpg' ) ); ?>"
+                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-2.jpg' ); ?>"
                             alt="<?php esc_attr_e( 'Patience mid-wipeout on the sled', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                             aria-hidden="true"
                         />
                         <img class="flip flip--3"
-                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20191231_101540-scaled.jpg' ) ); ?>"
+                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-3.jpg' ); ?>"
                             alt=""
                             loading="lazy"
                             aria-hidden="true"
