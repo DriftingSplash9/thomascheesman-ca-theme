@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.475
+Version: 1.0.476
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2368,14 +2368,65 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
    modifier per figure; the prose wraps around the floated ones. Subheads +
    the clearfix keep sections tidy. (1350px column = lots of room to play.) */
 .person-spoke .heritage-line__body::after { content: ""; display: block; clear: both; }
-/* Bigger, more present section headings on the kid pages. */
+/* Bigger section headings on the kid pages, dressed up: a slowly ROTATING
+   gradient in the kid's own colour (--line-color), with a small warm "brow"
+   above each one that flickers gently like a candle flame. */
+@property --p-grad-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
 .person-spoke .heritage-line__body h3 {
     clear: both;
+    position: relative;
+    padding-top: 0.5em;
     font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
     font-size: clamp(1.7rem, 3.4vw, 2.5rem);
     font-weight: 600;
     line-height: 1.1;
     margin: 1.6em 0 0.55em;
+    background: conic-gradient(from var(--p-grad-angle),
+        color-mix(in srgb, var(--line-color) 34%, #ffffff),
+        var(--line-color),
+        color-mix(in srgb, var(--line-color) 72%, #ffffff),
+        var(--line-color),
+        color-mix(in srgb, var(--line-color) 34%, #ffffff));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: person-grad-rotate 9s linear infinite;
+}
+.person-spoke .heritage-line__body h3::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 52px;
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #ffe08a, #ff9d3c 60%, #ff6a1f);
+    filter: drop-shadow(0 0 6px rgba(255, 150, 50, 0.6));
+    transform-origin: left center;
+    animation: candle-brow 3.4s ease-in-out infinite;
+}
+@keyframes person-grad-rotate { to { --p-grad-angle: 360deg; } }
+@keyframes candle-brow {
+    0%, 100% { opacity: 0.85; transform: scaleX(1) scaleY(1);     filter: drop-shadow(0 0 5px rgba(255, 150, 50, 0.5)); }
+    18%      { opacity: 1;    transform: scaleX(1.07) scaleY(1.2); filter: drop-shadow(0 0 10px rgba(255, 175, 70, 0.85)); }
+    37%      { opacity: 0.72; transform: scaleX(0.98) scaleY(0.9); }
+    61%      { opacity: 0.96; transform: scaleX(1.03) scaleY(1.1); filter: drop-shadow(0 0 8px rgba(255, 160, 55, 0.7)); }
+    80%      { opacity: 0.8;  transform: scaleX(1) scaleY(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .person-spoke .heritage-line__body h3,
+    .person-spoke .heritage-line__body h3::before { animation: none; }
+}
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+    .person-spoke .heritage-line__body h3 {
+        color: var(--line-color);
+        -webkit-text-fill-color: var(--line-color);
+    }
 }
 
 /* Default (no modifier): a centred medium block. */
@@ -2386,9 +2437,17 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     clear: both;
     float: none;
 }
-/* Hero / lead portrait — large but not overwhelming; centred, capped. */
+/* Hero / lead portrait — big, but bounded by BOTH width and viewport height
+   so landscape and portrait shots alike fit on screen (no cropping). */
 .person-spoke .heritage-line__figure--full {
-    width: 100%; max-width: 680px; margin: 0 auto 2rem; clear: both; float: none;
+    width: 100%; max-width: 860px; margin: 0 auto 2rem; clear: both; float: none; text-align: center;
+}
+.person-spoke .heritage-line__figure--full img {
+    width: auto;
+    max-width: 100%;
+    max-height: 78vh;
+    margin: 0 auto;
+    display: block;
 }
 /* Centred, a little narrower than default — good for a feature shot. */
 .person-spoke .heritage-line__figure--center {
