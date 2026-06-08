@@ -196,13 +196,25 @@ get_header(); ?>
                         <figcaption>With her great-grandma, Sandy Cheesman.</figcaption>
                     </figure>
 
-                    <figure class="heritage-line__figure heritage-line__figure--gif">
-                        <img
-                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/patience-sled-wipeout-v2.gif' ); ?>"
-                            alt="<?php esc_attr_e( 'Looping GIF of Patience wiping out on the toboggan', 'tc-ventures-child' ); ?>"
+                    <figure class="heritage-line__figure heritage-line__figure--gif heritage-line__figure--flip">
+                        <img class="flip flip--1"
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20191231_101535-scaled.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'Patience setting off down the sled hill', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Patience versus the toboggan &mdash; the goofy little GIF we always meant to make. Three frames was all it took. Spoiler: the toboggan wins, on a loop, forever.</figcaption>
+                        <img class="flip flip--2"
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20191231_101538-scaled.jpg' ) ); ?>"
+                            alt="<?php esc_attr_e( 'Patience mid-wipeout on the sled', 'tc-ventures-child' ); ?>"
+                            loading="lazy"
+                            aria-hidden="true"
+                        />
+                        <img class="flip flip--3"
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20191231_101540-scaled.jpg' ) ); ?>"
+                            alt=""
+                            loading="lazy"
+                            aria-hidden="true"
+                        />
+                        <figcaption>Patience versus the toboggan &mdash; the goofy little loop we always meant to make. Three frames was all it took. Spoiler: the toboggan wins, forever.</figcaption>
                     </figure>
 
                     <h3>The big sister</h3>

@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.479
+Version: 1.0.480
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2404,20 +2404,20 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     left: 0;
     width: 208px;
     max-width: 80%;
-    height: 3px;
-    border-radius: 3px;
-    background: linear-gradient(90deg, #ffe08a, #ff9d3c 60%, #ff6a1f);
-    filter: drop-shadow(0 0 6px rgba(255, 150, 50, 0.6));
+    height: 5px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #ffffff 0%, #12224f 100%);
+    border-bottom: 2px solid #c8ccd4; /* silver edge */
+    filter: drop-shadow(0 0 4px rgba(200, 214, 255, 0.5)); /* small glow */
     transform-origin: left center;
     animation: candle-brow 6.5s ease-in-out infinite;
 }
 @keyframes person-grad-rotate { to { --p-grad-angle: 360deg; } }
 @keyframes candle-brow {
-    0%, 100% { opacity: 0.85; transform: scaleX(1) scaleY(1);     filter: drop-shadow(0 0 5px rgba(255, 150, 50, 0.5)); }
-    18%      { opacity: 1;    transform: scaleX(1.07) scaleY(1.2); filter: drop-shadow(0 0 10px rgba(255, 175, 70, 0.85)); }
-    37%      { opacity: 0.72; transform: scaleX(0.98) scaleY(0.9); }
-    61%      { opacity: 0.96; transform: scaleX(1.03) scaleY(1.1); filter: drop-shadow(0 0 8px rgba(255, 160, 55, 0.7)); }
-    80%      { opacity: 0.8;  transform: scaleX(1) scaleY(1); }
+    0%, 100% { opacity: 0.82; transform: scaleX(1); }
+    25%      { opacity: 1;    transform: scaleX(1.015); }
+    50%      { opacity: 0.72; transform: scaleX(0.995); }
+    75%      { opacity: 0.93; transform: scaleX(1.008); }
 }
 @media (prefers-reduced-motion: reduce) {
     .person-spoke .heritage-line__body h3,
@@ -2544,6 +2544,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     position: absolute;
     top: 10px;
     right: 10px;
+    z-index: 2;
     font: 700 0.6rem/1 system-ui, sans-serif;
     letter-spacing: 0.12em;
     color: #fff;
@@ -2551,6 +2552,25 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     padding: 3px 6px;
     border-radius: 5px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+/* Flipbook — cycle 3 real <img> stills like a GIF (nothing in transit can
+   mangle a plain JPG). Frames stacked; opacity steps show one at a time:
+   set-off (hold) -> mid-air (quick) -> faceplant (long comedic hold). */
+.person-spoke .heritage-line__figure--flip { position: relative; }
+.person-spoke .heritage-line__figure--flip .flip { display: block; width: 100%; }
+.person-spoke .heritage-line__figure--flip .flip--1 { position: relative; animation: flip-a 1.9s steps(1) infinite; }
+.person-spoke .heritage-line__figure--flip .flip--2,
+.person-spoke .heritage-line__figure--flip .flip--3 { position: absolute; top: 0; left: 0; opacity: 0; }
+.person-spoke .heritage-line__figure--flip .flip--2 { animation: flip-b 1.9s steps(1) infinite; }
+.person-spoke .heritage-line__figure--flip .flip--3 { animation: flip-c 1.9s steps(1) infinite; }
+@keyframes flip-a { 0%, 29% { opacity: 1; } 30%, 100% { opacity: 0; } }
+@keyframes flip-b { 0%, 29% { opacity: 0; } 30%, 37% { opacity: 1; } 38%, 100% { opacity: 0; } }
+@keyframes flip-c { 0%, 37% { opacity: 0; } 38%, 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+    .person-spoke .heritage-line__figure--flip .flip { animation: none; }
+    .person-spoke .heritage-line__figure--flip .flip--2,
+    .person-spoke .heritage-line__figure--flip .flip--3 { opacity: 0; }
 }
 
 /* Home-videos section — watch-sized native players at the end of a kid's
