@@ -2139,6 +2139,39 @@ function initSiteChrome() {
         setInterval(fetchWeather, 30 * 60 * 1000);
     }
 
+    // ---- Bitcoin ticker ----
+    // Sits beside the weather widget in the capsule. Pulls the live USD
+    // spot price from CoinGecko's free/no-key endpoint and refreshes
+    // every 60 seconds (well within their rate limit per visitor). The
+    // 24h change tints the price green/red via is-up / is-down on the
+    // link; the ₿ glyph stays bitcoin-orange (CSS).
+    const btcPrice = document.querySelector('[data-tc-btc-price]');
+    if (btcPrice) {
+        const btcLink = btcPrice.closest('[data-tc-btc]');
+        const BTC_URL = 'https://api.coingecko.com/api/v3/simple/price'
+            + '?ids=bitcoin&vs_currencies=usd&include_24hr_change=true';
+
+        function fetchBTC() {
+            fetch(BTC_URL)
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    if (!data || !data.bitcoin) return;
+                    const p = Math.round(data.bitcoin.usd);
+                    btcPrice.textContent = '$' + p.toLocaleString('en-US');
+                    if (btcLink) {
+                        const ch = data.bitcoin.usd_24h_change;
+                        if (typeof ch === 'number') {
+                            btcLink.classList.toggle('is-up', ch >= 0);
+                            btcLink.classList.toggle('is-down', ch < 0);
+                        }
+                    }
+                })
+                .catch(function () { /* keep the $-- placeholder. */ });
+        }
+        fetchBTC();
+        setInterval(fetchBTC, 60 * 1000);
+    }
+
     // If the menu DOM isn't on this page, bail after starting the clock.
     if (!trigger || !menu) return;
 

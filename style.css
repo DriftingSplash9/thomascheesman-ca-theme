@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.467
+Version: 1.0.468
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1125,6 +1125,43 @@ body.admin-bar .tc-capsule {
 }
 .tc-capsule__weather:hover .tc-capsule__weather-temp,
 .tc-capsule__weather:focus-visible .tc-capsule__weather-temp {
+    color: var(--primary-color);
+}
+
+/* Bitcoin ticker — sits beside the weather widget. Live USD spot price
+   from CoinGecko (free, no API key), refreshed every 60s by main.js's
+   fetchBTC(). The ₿ glyph stays bitcoin-orange; the price tints
+   green/red on the 24h direction (is-up / is-down toggled by the fetch). */
+.tc-capsule__btc {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-light);
+    transition: color 0.2s ease;
+}
+.tc-capsule__btc:hover,
+.tc-capsule__btc:focus-visible {
+    color: var(--primary-color);
+    outline: none;
+}
+.tc-capsule__btc-icon {
+    font-size: 15px;
+    line-height: 1;
+    font-weight: 700;
+    color: #f7931a; /* bitcoin orange */
+}
+.tc-capsule__btc-price {
+    font-weight: 600;
+    color: var(--text-dark);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.2s ease;
+}
+.tc-capsule__btc.is-up .tc-capsule__btc-price   { color: #3fb950; }
+.tc-capsule__btc.is-down .tc-capsule__btc-price { color: #e5534b; }
+.tc-capsule__btc:hover .tc-capsule__btc-price,
+.tc-capsule__btc:focus-visible .tc-capsule__btc-price {
     color: var(--primary-color);
 }
 

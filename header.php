@@ -74,6 +74,18 @@
         <span class="tc-capsule__weather-temp" data-tc-weather-temp>--°</span>
     </a>
 
+    <span class="tc-capsule__divider" aria-hidden="true"></span>
+
+    <a class="tc-capsule__btc"
+       href="https://www.coingecko.com/en/coins/bitcoin"
+       target="_blank"
+       rel="noopener noreferrer"
+       data-tc-btc
+       aria-label="<?php esc_attr_e( 'Current Bitcoin price in USD — opens CoinGecko', 'tc-ventures-child' ); ?>">
+        <span class="tc-capsule__btc-icon" aria-hidden="true">&#8383;</span>
+        <span class="tc-capsule__btc-price" data-tc-btc-price>$--</span>
+    </a>
+
     <button
         type="button"
         class="tc-capsule__trigger"
