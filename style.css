@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.474
+Version: 1.0.475
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2596,11 +2596,13 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
    up to 1350px in the viewport (margin-left 50% + translateX(-50%) trick). */
 .person-spoke .tc-photo-gallery {
     /* Sits inside the 1200px content column (no break-out), so it never
-       collides with the fixed chapter rail on the left. */
+       collides with the fixed chapter rail on the left. The base
+       .tc-photo-gallery uses calc(50% - 50vw) margins to go full-bleed;
+       cancel those here so it stays in the column. */
+    box-sizing: border-box;
     width: 100%;
-    max-width: none;
-    margin-top: 4rem;
-    margin-bottom: 5rem;
+    max-width: 100%;
+    margin: 4rem auto 5rem;
     padding: clamp(24px, 4vw, 56px) clamp(20px, 3vw, 48px);
     background:
         radial-gradient(ellipse 130% 130% at 50% 42%,
@@ -6519,4 +6521,4 @@ body:has(.thomas-page) {
     background: color-mix(in srgb, var(--line-color, #8895b3) 13%, transparent);
 }
 /* Needs room in the left gutter beside the 1200px column. */
-@media (max-width: 1500px) { .person-toc { display: none; } }
+@media (max-width: 1600px) { .person-toc { display: none; } }
