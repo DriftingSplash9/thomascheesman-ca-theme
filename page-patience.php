@@ -197,19 +197,20 @@ get_header(); ?>
                     </figure>
 
                     <figure class="heritage-line__figure heritage-line__figure--gif heritage-line__figure--flip">
+                        <?php $tc_flip_v = '?v=' . rawurlencode( wp_get_theme()->get( 'Version' ) ); ?>
                         <img class="flip flip--1"
-                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-1.jpg' ); ?>"
+                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-1.jpg' . $tc_flip_v ); ?>"
                             alt="<?php esc_attr_e( 'Patience setting off down the sled hill', 'tc-ventures-child' ); ?>"
                             loading="eager"
                         />
                         <img class="flip flip--2"
-                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-2.jpg' ); ?>"
+                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-2.jpg' . $tc_flip_v ); ?>"
                             alt="<?php esc_attr_e( 'Patience mid-wipeout on the sled', 'tc-ventures-child' ); ?>"
                             loading="eager"
                             aria-hidden="true"
                         />
                         <img class="flip flip--3"
-                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-3.jpg' ); ?>"
+                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/sled-3.jpg' . $tc_flip_v ); ?>"
                             alt=""
                             loading="eager"
                             aria-hidden="true"
