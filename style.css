@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.468
+Version: 1.0.469
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2409,6 +2409,19 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 }
 .person-spoke .heritage-line__figure--pair > img { flex: 1 1 0; min-width: 0; width: auto; }
 .person-spoke .heritage-line__figure--pair > figcaption { flex: 1 1 100%; }
+
+/* Three-frame sequence strip (e.g. a before/during/after). Same idea as the
+   pair, but three across; shared caption below. */
+.person-spoke .heritage-line__figure--strip {
+    width: 100%; max-width: none; clear: both; float: none;
+    display: flex; flex-wrap: wrap; gap: 0.75rem;
+    align-items: flex-start; margin: 1.3rem 0 1.7rem;
+}
+.person-spoke .heritage-line__figure--strip > img { flex: 1 1 0; min-width: 0; width: auto; }
+.person-spoke .heritage-line__figure--strip > figcaption { flex: 1 1 100%; }
+@media (max-width: 768px) {
+    .person-spoke .heritage-line__figure--strip { flex-direction: column; }
+}
 
 @media (max-width: 768px) {
     .person-spoke .heritage-line__figure,
