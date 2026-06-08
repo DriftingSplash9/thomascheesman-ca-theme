@@ -43,7 +43,7 @@ get_header(); ?>
                         <figcaption>Caught mid-yawn. Something in those eyes looked infinite to me &mdash; like the whole universe was hers if she wanted it. There's an 11&times;18 print of this one somewhere in the house.</figcaption>
                     </figure>
 
-                    <p>Patience is my first miracle. I never thought I'd have kids &mdash; part of me thought I shouldn't; Hajdu-Cheney made the whole question feel risky enough that I figured most people wouldn't take it on. Melanie did. And until she arrived I had no idea there was that much love in the world &mdash; that this must be how every ancestor down the line felt, generation after generation. Life is a miracle, and we're all lucky to be here at all.</p>
+                    <p>Patience is my first miracle, and I don't reach for that word lightly. I never thought I'd have kids &mdash; part of me thought I shouldn't; Hajdu-Cheney made the whole question feel like a gamble I had no business making. Melanie made it anyway. And the moment they set her in my arms, the floor dropped out of everything I thought I understood about love: there was so much more of it in the world than anyone had told me, and I knew all at once how every ancestor down the long line of us must have felt holding their own. Life is a fluke and a miracle in the same breath, and we are all of us unspeakably lucky to be here.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-right">
                         <img
@@ -54,9 +54,9 @@ get_header(); ?>
                         <figcaption>Holding her, flat-out disbelieving I was somebody's father.</figcaption>
                     </figure>
 
-                    <p>The name was Melanie's idea and I loved it on the spot. Her middle name is Kristi-Ann &mdash; Kristi-Ann for a dear friend of Melanie's who was lost in a motorcycle accident, and Ann for my mom, Maryann. A name with two people already living inside it.</p>
+                    <p>We called her Patience &mdash; Melanie's idea, and I loved it the second I heard it. Her middle name is Kristi-Ann: Kristi-Ann for a dear friend of Melanie's who was lost to a motorcycle, and Ann for my mom, Maryann. A name with two people already living inside it before she'd taken a breath &mdash; and she's been growing to fill all three ever since.</p>
 
-                    <p>She was due on the 14th of September, and then the days just went by &mdash; one, then another, the grandparents arriving and leaving again, the doctor starting to talk about inducing. The 23rd finally brought us to the hospital; they sent us home to wait. We came back on the 24th and were admitted, and when she wasn't dilating and Patience's heart rate began to drop, the call was made for an emergency caesarean. The 24th, of all days, was also the morning I was due to start a new job as head chef at Ric's Grill. I'd dragged the orientation binders all the way to the hospital, figuring I'd read a little while I sat with my girls. I never turned a single page. Priorities.</p>
+                    <p>She was due on the fourteenth of September, and then she simply&hellip; wasn't. The days went by one at a time &mdash; grandparents arriving and leaving again, the doctor beginning to murmur about inducing. The twenty-third finally sent us to the hospital, and the hospital sent us straight back home to wait some more. We returned on the twenty-fourth, were admitted, and when she wouldn't dilate and her heart rate started to slip, the call came for an emergency caesarean. The twenty-fourth, naturally, was also the morning I was due to start a new job as head chef at Ric's Grill. I'd hauled the orientation binders all the way to the maternity ward, figuring I'd get a little reading done between visits. I never turned a page. Some priorities sort themselves out for you.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-left">
                         <img
@@ -67,7 +67,7 @@ get_header(); ?>
                         <figcaption>Asleep over Mom's shoulder &mdash; the spit of the slumped angel in her tattoo.</figcaption>
                     </figure>
 
-                    <p>That first night I sat up late by the big hospital windows, holding her while Melanie slept, both of us running on about two days without it. We'd just come back from her bath, and she was wrapped up tight the way only a pediatric nurse can manage. I looked out at the dark and felt the whole thing land at once: I was a father, this was a healthy baby, and we were going to be alright. Time to breathe in, and out. (The feeding took us a while to sort &mdash; a tongue tie and an upper lip tie, a couple of tries that didn't take, and in the end she settled happily on formula. You learn fast that the plan is whatever works.)</p>
+                    <p>That first night I sat up by the big windows with her while Melanie slept, the two of us a couple of days past the last real rest either of us had had. We'd just come back from her bath, and she was wrapped tight the way only a pediatric nurse can manage &mdash; a neat little parcel of a person. I looked out at the dark and felt the whole thing land at once: I was a father, she was healthy, we were going to be alright. Breathe in. Breathe out. (The feeding took us a while to crack &mdash; a tongue tie, an upper lip tie, a couple of snips that didn't take, and in the end she settled happily on formula. First lesson of fatherhood: the plan is whatever works.)</p>
 
                     <h3>Determined, self-driven, sensitive</h3>
 
@@ -80,7 +80,7 @@ get_header(); ?>
                         <figcaption>First smiles.</figcaption>
                     </figure>
 
-                    <p>Three words, if you held me to it. She is shy &mdash; properly shy, the kind that turns her pink and brings the dimples out at the smallest thing. Turn the radio up, say hello to one of her friends, recognize her in public, and there they are. She'd rather they stayed hidden, which of course only makes me want to coax them out.</p>
+                    <p>If you made me sum her up in three words, those are the ones &mdash; and the sensitive one shows first. She is shy, properly shy, the kind that floods her cheeks pink and tugs the dimples out at the smallest provocation. Turn the radio up, say hello to one of her friends, call her name across a parking lot, and there they are, those dimples, betraying her in front of everyone. She would much prefer they stayed hidden &mdash; which is, of course, the entire reason I can never quite stop trying to coax them out.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-right">
                         <img
@@ -91,7 +91,7 @@ get_header(); ?>
                         <figcaption>Where's my coffee?</figcaption>
                     </figure>
 
-                    <p>She's twelve going on sixteen now, which means I mostly see the back of a closing door. She lives online &mdash; gaming and chatting and watching shows with her friends three rooms and one screen away &mdash; and I text her to come and eat in her own house. Weekends are for sleepovers at her best friend's, the all-night kind that no one admits are all-nighters. Every single morning I drop her off, she reaches over and turns the radio down so her friends won't hear what her dad listens to. I make a game of cranking it back up. She's too quick for me; the door's already shut.</p>
+                    <p>She's twelve going on sixteen now, which mostly means I see the back of a closing door. She lives online &mdash; gaming, chatting, watching shows with friends who are three rooms and one screen away &mdash; and I have taken to texting my own daughter to come and eat in my own kitchen. Weekends belong to sleepovers at her best friend's, the all-night kind nobody will admit are all-nighters. And every single morning when I drop her off, she reaches over and turns the radio down so her friends won't hear what her dad listens to. I crank it back up. I'm never fast enough; the door's already shut.</p>
 
                     <h3>The one who runs the show</h3>
 
@@ -104,7 +104,7 @@ get_header(); ?>
                         <figcaption>First day of kindergarten, 2018.</figcaption>
                     </figure>
 
-                    <p>At 7:55 on the dot, every school morning, Patience takes command. She chases the other two to gather their things and get to the truck, and she's not above pushing her old man along when he's dragging his feet. Half the time I just lean into it and let her run the operation &mdash; there's no point fighting it, and honestly I'd rather watch her become whoever she's becoming. It's the same when we're out: me in the wheelchair, cruising the mall, and Patience herding her brother and sister around me &mdash; <em>stay in line, quit dawdling, stop touching everything</em>, all the things a parent says. By the time she's got her own she'll be a professional.</p>
+                    <p>For all that vanishing-teenager act, hand her a job and she is suddenly, magnificently in charge. At 7:55 every school morning, on the dot, Patience takes command of the house &mdash; chasing the other two to find their things and make the truck, and not above shoving her dawdling old man along with them. Most mornings I just lean into it and let her run the operation; there's no arguing with weather, and anyway I'd rather watch her become whoever it is she's becoming. It's the same out in the world: me in the wheelchair, cruising the mall, Patience herding her brother and sister around me &mdash; <em>stay in line, quit dawdling, stop touching everything</em> &mdash; every word a parent has ever said, handed down a generation early. She'll be a pro by the time she has her own.</p>
 
                     <h3>The weight she carries</h3>
 
@@ -117,7 +117,7 @@ get_header(); ?>
                         <figcaption>Cuddles with Mary, late in her life. The most carefree dog &mdash; a truly kind soul who never minded the kids.</figcaption>
                     </figure>
 
-                    <p>For all the take-charge, she is the most sensitive of my three, and she carries more than a kid her age should have to. Some of that is just being the eldest. Some of it, I think, is me. When I had my sledding accident, and then the spinal fusion, the hardest part came after the surgery &mdash; I couldn't talk, couldn't do much of anything &mdash; and Patience was a rock. She got me through the hospital stay and a good deal of what came after, a little girl doing a grown woman's worry.</p>
+                    <p>But there's a cost to being the one who holds it all together, and she's the one who pays it. For all the take-charge, she is the most sensitive of my three, and she carries more than a girl her age ever should. Some of that is simply the lot of the eldest. Some of it, if I'm honest, is me. When I had my sledding accident, and then the spinal fusion, the worst of it came after the surgery &mdash; when I couldn't talk, couldn't do much of anything at all &mdash; and Patience was a rock. She got me through the hospital stay and a long stretch of what came after: a little girl doing a grown woman's worrying.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--right">
                         <img
@@ -128,7 +128,7 @@ get_header(); ?>
                         <figcaption>Meeting her baby brother. She's been a great big sister to Daniel ever since.</figcaption>
                     </figure>
 
-                    <p>I think she lost a little of her youthful innocence early because of it, and I couldn't stop the caution that grew in its place. To this day, if she hears a loud bang or a stumble on the stairs, the first thing she's afraid of is that it's me. If there's one thing I'd lift off her shoulders, it's that &mdash; I wish she'd be a touch gentler with herself, and let the parents do the worrying. The hardest thing in this life is learning when to let a thing go, and I'm still trying to teach her by example, with mixed results.</p>
+                    <p>I think she lost a little of her childhood early to that, and I couldn't stop the caution that grew up in its place. To this day, if she hears a loud bang somewhere in the house, or a stumble on the stairs, her very first fear is that it's me. If I could lift one thing off her shoulders, it would be exactly that. I wish she'd be gentler with herself and let the parents do the parenting &mdash; but the hardest trick in this whole life is learning when to set a thing down, and I'm trying to teach it to her the only way I know how, which is by example. Mixed results so far, I'll admit.</p>
 
                     <h3>The little things</h3>
 
@@ -141,7 +141,7 @@ get_header(); ?>
                         <figcaption>Daddy's helper. They don't make chef whites much smaller than that.</figcaption>
                     </figure>
 
-                    <p>She's a late-night snacker &mdash; ten o'clock rolls around and it's ice cream, or a muffin, or a cookie, or, failing all else, raw cookie dough. She's a devoted fan of Sam and Colby, has a soft spot for Young Sheldon, and once loved Stranger Things with her whole heart. And she is careful with a dollar in a way I never was &mdash; "cheeping out," she'd call it &mdash; careful enough that I've half a mind to put her in charge of the family finances and retire early.</p>
+                    <p>She is, it has to be said, a creature of small and very particular appetites. Ten o'clock at night is when she comes alive in the kitchen &mdash; ice cream, a muffin, a cookie, and when the cupboards let her down, raw cookie dough eaten with no shame whatsoever. She'll watch Sam and Colby like it's coursework, keeps a quiet soft spot for Young Sheldon, and once handed her whole heart to Stranger Things. And she is careful with a dollar in a way I have never once managed to be &mdash; <em>cheeping out</em>, she calls it &mdash; careful enough that I've half a mind to sign over the family books and take an early retirement.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--big-right">
                         <img
@@ -152,7 +152,7 @@ get_header(); ?>
                         <figcaption>Buried to the chin after an afternoon of sandcastles.</figcaption>
                     </figure>
 
-                    <p>The two of us have always been good in a kitchen, if you measure good by the mess. There was the legendary snickerdoodle afternoon when I mixed up pounds and cups and we ended up doubling a batch that was already doubled &mdash; we ate snickerdoodles for weeks, gave them away by the bag, froze some, and mailed a box to my mom and dad. Kitchen nothing, Thomas-and-Patience one. And long before any of that, in her very first spring, she learned to stand right around the time I did the single dumbest thing a new dad can do: pinched a blade of grass between my thumbs and blew, just to see, and she screamed bloody murder. I felt like such an ass. I still do it now and again; these days she just rolls her eyes and goes pink.</p>
+                    <p>The two of us have always been good in a kitchen, if you grade on mess. There was the legendary snickerdoodle afternoon when I mixed up pounds and cups and wound up doubling a batch that was already doubled &mdash; we ate snickerdoodles for a fortnight, gave them away by the bagful, froze a stash, and mailed a box clear across the country to my mom and dad. Kitchen nil; Thomas and Patience, one. And long before any of that, in her very first spring, she pulled herself up to standing right about the time I committed the single dumbest act available to a new father: I pinched a blade of grass between my thumbs and blew, just to see what would happen, and she screamed like the world was ending. I felt like an ass for a week. I still do it now and then, God help me &mdash; except now she just rolls her eyes and goes pink.</p>
 
                     <h3>On the road</h3>
 
@@ -165,7 +165,7 @@ get_header(); ?>
                         <figcaption>Road tripping.</figcaption>
                     </figure>
 
-                    <p>Some of the moments I turn over most are the small ones &mdash; driving through the tunnels with all their hair flying and the kids screaming for joy as we whooshed through. We've logged a lot of road, this family. One trip out to friends in Chase, B.C. stands out: they set us up in a camper, and our buddy Dan, itching to get the boat out, took us cruising the lake one afternoon. I've been on every kind of boat the Shuswap has &mdash; canoe to houseboat to jet ski &mdash; and that lazy afternoon cruise beat the lot.</p>
+                    <p>Some of the moments I turn over most are the smallest ones &mdash; all three kids' hair flying as we punched through the highway tunnels, shrieking with joy in the back seat for no reason except the dark and the speed of it. We've logged a lot of road, this family, and most of it blurs together kindly. One stretch won't, though: a trip out to friends in Chase, B.C., where they parked us in a camper and our buddy Dan, restless to get the boat wet, took us out for a slow cruise one afternoon. I've been on every kind of vessel the Shuswap floats &mdash; canoe, houseboat, jet ski, the lot &mdash; and that aimless, sun-warmed hour beat every one of them, for no reason I can name except the company.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-right">
                         <img
@@ -185,7 +185,7 @@ get_header(); ?>
                         <figcaption>One day we'll catch a fish. Right?</figcaption>
                     </figure>
 
-                    <p>There's been the Stampede, and the fishing trips that have yet to produce an actual fish, and the long loop down to B.C. and back through Calgary when she was tiny &mdash; that last one to introduce her to her great-grandmother, Sandy Cheesman. I hadn't seen Gramma hold a baby since my sister Amber was small.</p>
+                    <p>Not every outing earns a postcard. There's the Stampede most summers, and the fishing trips that have yet, against all available odds, to produce a single fish. And there was the long loop down to B.C. and back through Calgary when she was tiny &mdash; that one to lay her in her great-grandmother's arms. I hadn't watched Gramma Sandy hold a baby since my sister Amber was small, and there aren't many photographs I'd run back into a fire for the way I would that one.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-right">
                         <img
@@ -226,7 +226,7 @@ get_header(); ?>
                         <figcaption>A rare, tender moment with Faith &mdash; kidding; they have more of these than either of them would ever admit, and I've got the proof.</figcaption>
                     </figure>
 
-                    <p>With Daniel it's easy &mdash; she keeps him on track and they trade the ordinary brother-sister banter I treasure, precisely because it's so ordinary. With Faith it's stormier, and I won't pretend otherwise, but every so often I'll come round a corner and find the two of them doing makeup, or playing, or Patience rounding everyone up for a game online &mdash; and it catches me sideways, in the best way. I didn't get on with my own brothers until our twenties; we get on great now. So I take the long view, and I hope one day the girls understand each other the way only sisters can.</p>
+                    <p>She is, above all, a big sister &mdash; and she wears it differently with each of them. With Daniel it comes easy: she keeps him pointed in the right direction, and the two of them trade the kind of ordinary brother-sister needling I treasure precisely because it's so ordinary. With Faith it's stormier, and I won't pretend otherwise. But every so often I round a corner and find them doing makeup together, or playing, or Patience quietly rallying everyone into a game online &mdash; and it knocks me sideways, in the best possible way. I didn't make my peace with my own brothers until our twenties; we're thick as thieves now. So I take the long view. One day, I have to believe, the girls will understand each other the way only sisters can.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--left">
                         <img
@@ -253,7 +253,7 @@ get_header(); ?>
                         <figcaption>The Award of Excellence &mdash; twice. Once in grade four, and again in grade six.</figcaption>
                     </figure>
 
-                    <p>Top marks across the board, for years, to the point where I genuinely don't know how she'd improve &mdash; though her teacher tells me she's only now starting to blossom, which is a thrilling and slightly terrifying thing to hear about a kid who's already running the table. The funny part is she has no idea what to do with praise. Tell her she's done something remarkable and she'll go pink and look at her shoes. Modest to the bone &mdash; which is its own kind of remarkable.</p>
+                    <p>Then there's the matter of the report cards. Top marks across the board, year after year, to the point where I honestly couldn't tell you how she'd improve &mdash; though her teacher swears she's only just beginning to blossom, which is a thrilling and faintly terrifying thing to hear about a kid already running the table. The Award of Excellence twice over: grade four, and again in grade six. And the funniest part is she has no idea what to do with a compliment &mdash; tell her she's done something extraordinary and she'll go pink and study her shoes. Modest right down to the bone, which is, of course, its own kind of extraordinary.</p>
 
                     <h3>Now &amp; next</h3>
 
@@ -266,7 +266,7 @@ get_header(); ?>
                         <figcaption>Besties.</figcaption>
                     </figure>
 
-                    <p>When I picture her grown, the trait I most hope is still burning bright is her kindness. She's deeply empathetic and very good at not letting it show &mdash; that tough exterior &mdash; but it weighs heaviest on her when she's home, and it can colour a whole day. The stress of school and friends is no small thing to carry. So my one real worry is the obvious one: that she'll keep loading the pack heavier than she needs to. And my comfort is the same fact from the other side &mdash; a girl that determined, that self-driven, that kind, is going to be just fine. She always has been.</p>
+                    <p>When I let myself picture her grown, the thing I hope above all is still burning is her kindness. She feels everything, and she's gotten very good at not showing it &mdash; that tough exterior &mdash; but it lands hardest at home, where it can colour a whole day grey. School and friends and the sheer weight of being twelve are no small things to carry. So my one real worry is the plain one: that she'll keep packing the load heavier than she needs to. And my comfort is that very same sentence read from the other end &mdash; a girl this determined, this self-driven, this kind, is going to be just fine. She always has been. I just get the privilege of watching.</p>
 
                     <!-- A LETTER FOR LATER — Patience's open letter to be slotted here when
                          Thomas writes it (cluster 11). Render as: <h3>A letter for later</h3>
