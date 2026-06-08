@@ -304,6 +304,30 @@ get_header(); ?>
                 ),
                 'Patience'
             );
+
+            // More from the album — extra photos Thomas added, optimized into
+            // the theme (assets/img/patience-extra/). One un-year-sectioned
+            // block at the end; caption + weave the best into the prose later.
+            $pe = get_stylesheet_directory_uri() . '/assets/img/patience-extra/';
+            $patience_extra = array(
+                array( 'url' => $pe . 'patience-embracing-me.jpg' ),
+                array( 'url' => $pe . 'patience-k-grad.jpg' ),
+                array( 'url' => $pe . 'patience-canada-day.jpg' ),
+                array( 'url' => $pe . 'west-ed-mall-with-patience.jpg' ),
+                array( 'url' => $pe . 'windy-afternoon-at-school.jpg' ),
+                array( 'url' => $pe . 'aunty-bonnie-and-patience.jpg' ),
+                array( 'url' => $pe . 'boxing-patience-and-daniel.jpg' ),
+                array( 'url' => $pe . 'family-boat-ride.jpg' ),
+                array( 'url' => $pe . 'sleeping-on-boat-cruise.jpg' ),
+                array( 'url' => $pe . 'nice-family-at-river.jpg' ),
+                array( 'url' => $pe . 'selfie-with-kids.jpg' ),
+                array( 'url' => $pe . 'visit-with-papa-jim.jpg' ),
+            );
+            tc_render_photo_gallery(
+                $patience_extra,
+                array( array( 'label' => 'More from the album', 'count' => count( $patience_extra ) ) ),
+                'Patience'
+            );
             ?>
 
         </div>
