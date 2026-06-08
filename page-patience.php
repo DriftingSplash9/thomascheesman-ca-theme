@@ -196,7 +196,7 @@ get_header(); ?>
                         <figcaption>With her great-grandma, Sandy Cheesman.</figcaption>
                     </figure>
 
-                    <figure class="heritage-line__figure heritage-line__figure--strip">
+                    <figure class="heritage-line__figure heritage-line__figure--stairs">
                         <img
                             src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20191231_101535-scaled.jpg' ) ); ?>"
                             alt="<?php esc_attr_e( 'Patience setting off down the sled hill', 'tc-ventures-child' ); ?>"

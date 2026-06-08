@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.472
+Version: 1.0.473
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2368,7 +2368,15 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
    modifier per figure; the prose wraps around the floated ones. Subheads +
    the clearfix keep sections tidy. (1350px column = lots of room to play.) */
 .person-spoke .heritage-line__body::after { content: ""; display: block; clear: both; }
-.person-spoke .heritage-line__body h3 { clear: both; }
+/* Bigger, more present section headings on the kid pages. */
+.person-spoke .heritage-line__body h3 {
+    clear: both;
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+    font-weight: 600;
+    line-height: 1.1;
+    margin: 1.6em 0 0.55em;
+}
 
 /* Default (no modifier): a centred medium block. */
 .person-spoke .heritage-line__figure {
@@ -2378,9 +2386,9 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     clear: both;
     float: none;
 }
-/* Full-bleed hero. */
+/* Hero / lead portrait — large but not overwhelming; centred, capped. */
 .person-spoke .heritage-line__figure--full {
-    width: 100%; max-width: none; margin: 0 0 1.7rem; clear: both; float: none;
+    width: 100%; max-width: 680px; margin: 0 auto 2rem; clear: both; float: none;
 }
 /* Centred, a little narrower than default — good for a feature shot. */
 .person-spoke .heritage-line__figure--center {
@@ -2421,6 +2429,30 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 .person-spoke .heritage-line__figure--strip > figcaption { flex: 1 1 100%; }
 @media (max-width: 768px) {
     .person-spoke .heritage-line__figure--strip { flex-direction: column; }
+}
+
+/* Diagonal staircase — three (or more) images ~500px wide, each stepping
+   down AND right with a slight tilt, like snapshots tossed across a table.
+   A shared caption sits below. */
+.person-spoke .heritage-line__figure--stairs {
+    width: 100%; max-width: none; clear: both; float: none;
+    margin: 1.8rem 0 2.2rem;
+}
+.person-spoke .heritage-line__figure--stairs > img {
+    display: block;
+    width: clamp(280px, 42%, 500px);
+    border-radius: 8px;
+    margin-bottom: 1.1rem;
+    box-shadow: 0 16px 34px -16px rgba(0, 0, 0, 0.55);
+}
+.person-spoke .heritage-line__figure--stairs > img:nth-of-type(1) { margin-left: 0;   transform: rotate(-2.5deg); }
+.person-spoke .heritage-line__figure--stairs > img:nth-of-type(2) { margin-left: 24%; transform: rotate(1.5deg);  }
+.person-spoke .heritage-line__figure--stairs > img:nth-of-type(3) { margin-left: 48%; transform: rotate(-1.5deg); }
+.person-spoke .heritage-line__figure--stairs > figcaption { margin-top: 0.6rem; }
+@media (max-width: 768px) {
+    .person-spoke .heritage-line__figure--stairs > img {
+        width: 100%; margin-left: 0 !important; transform: none !important;
+    }
 }
 
 /* Home-videos section — watch-sized native players at the end of a kid's
