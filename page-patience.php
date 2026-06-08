@@ -330,6 +330,23 @@ get_header(); ?>
             );
             ?>
 
+            <!-- Home videos — playable .mp4 uploads (WP media, 2026/06). The
+                 .mov uploads (jumping-pool, slo-mo) play on iOS but not desktop
+                 Chrome; add them here once re-encoded to .mp4. -->
+            <section class="kid-videos" aria-label="<?php esc_attr_e( 'Home videos', 'tc-ventures-child' ); ?>">
+                <h2 class="kid-videos__title">Home videos &mdash; watch if you like</h2>
+                <div class="kid-videos__grid">
+                    <figure class="kid-videos__item">
+                        <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/patience-at-the-wedding.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
+                        <figcaption>Patience at the wedding, 2016.</figcaption>
+                    </figure>
+                    <figure class="kid-videos__item">
+                        <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/patience-and-daniel-cuddles-with-kittys.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
+                        <figcaption>Patience and Daniel, cuddling the kittens.</figcaption>
+                    </figure>
+                </div>
+            </section>
+
         </div>
     </article>
 
