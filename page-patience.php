@@ -198,7 +198,7 @@ get_header(); ?>
 
                     <figure class="heritage-line__figure heritage-line__figure--gif">
                         <img
-                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/patience-sled-wipeout.gif' ); ?>"
+                            src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/img/patience-extra/patience-sled-wipeout-v2.gif' ); ?>"
                             alt="<?php esc_attr_e( 'Looping GIF of Patience wiping out on the toboggan', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
