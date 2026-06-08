@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initHeritagePage();
     initLongreadChapterRail();
     initThomasTOC();
+    initPersonSpokeTOC();
     initThomasGalleryHover();
     initHeritageNotes();
     initInkTrail();
@@ -2414,6 +2415,62 @@ function initThomasTOC() {
             const slug = (h.textContent || ('s' + i)).toLowerCase()
                 .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
             h.id = 'thomas-ch-' + (slug || i);
+        }
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.trim();
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            const t = document.getElementById(h.id);
+            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        li.appendChild(a);
+        ul.appendChild(li);
+        linkById[h.id] = a;
+    });
+    toc.appendChild(ul);
+    document.body.appendChild(toc);
+
+    if ('IntersectionObserver' in window) {
+        const obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) {
+                if (!en.isIntersecting) return;
+                Object.keys(linkById).forEach(function (id) { linkById[id].classList.remove('is-active'); });
+                if (linkById[en.target.id]) linkById[en.target.id].classList.add('is-active');
+            });
+        }, { rootMargin: '0px 0px -68% 0px', threshold: 0 });
+        headings.forEach(function (h) { obs.observe(h); });
+    }
+}
+
+/**
+ * Chapter rail (TOC) for the per-kid spoke pages — mirrors the Thomas
+ * page's. Built from the section headings in the prose, with scroll-spy.
+ * Styled in .person-toc (accent = the kid's --line-color); CSS hides it
+ * when there isn't room beside the 1200px column.
+ */
+function initPersonSpokeTOC() {
+    const page = document.querySelector('.person-spoke');
+    if (!page) return;
+    const headings = Array.from(page.querySelectorAll('.heritage-line__body h3'));
+    if (headings.length < 2) return;
+
+    const toc = document.createElement('nav');
+    toc.className = 'person-toc';
+    toc.setAttribute('aria-label', 'Chapters');
+    const title = document.createElement('p');
+    title.className = 'person-toc__title';
+    title.textContent = 'On this page';
+    toc.appendChild(title);
+    const ul = document.createElement('ul');
+    const linkById = {};
+
+    headings.forEach(function (h, i) {
+        if (!h.id) {
+            const slug = (h.textContent || ('s' + i)).toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            h.id = 'ch-' + (slug || i);
         }
         const li = document.createElement('li');
         const a = document.createElement('a');
