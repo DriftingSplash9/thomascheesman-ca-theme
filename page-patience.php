@@ -243,7 +243,7 @@ get_header(); ?>
 
                     <h3>What she's mastered</h3>
 
-                    <figure class="heritage-line__figure heritage-line__figure--pair">
+                    <figure class="heritage-line__figure heritage-line__figure--pair heritage-line__figure--pair-sm">
                         <img
                             src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/IMG_2903-scaled.jpg' ) ); ?>"
                             alt="<?php esc_attr_e( 'Patience receiving her first Award of Excellence', 'tc-ventures-child' ); ?>"
