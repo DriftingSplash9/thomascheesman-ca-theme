@@ -12,12 +12,13 @@
  * a Daniel-only override: bigger headings, a richer rotating green
  * gradient, and a contrasting warm-flame brow (see style.css).
  *
- * Photos are theme-hosted in assets/img/daniel/ (optimized from the two
- * 2026-06 media folders). Home-video .mp4s live in WP Media (2026/06).
+ * Photos and home-video .mp4s both live in WP Media (2026/06), optimized
+ * from the two 2026-06 media folders — same hosting model as the Faith
+ * and Patience pages.
  */
 
 get_header();
-$di = get_stylesheet_directory_uri() . '/assets/img/daniel/'; // Daniel photo base
+$di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media)
 ?>
 
 <main id="primary" class="site-main heritage-page heritage-spoke person-spoke person-spoke--daniel">
