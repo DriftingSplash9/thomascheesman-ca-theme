@@ -258,6 +258,27 @@ get_header(); ?>
             );
             ?>
 
+            <!-- Home videos — playable .mp4 uploads (WP media, 2026/06).
+                 Re-encoded from .mov (HEVC/VP9) to web-optimized H.264 +
+                 faststart so they play in desktop Chrome, not just iOS. -->
+            <section class="kid-videos" aria-label="<?php esc_attr_e( 'Home videos', 'tc-ventures-child' ); ?>">
+                <h2 class="kid-videos__title">Home videos &mdash; watch if you like</h2>
+                <div class="kid-videos__grid">
+                    <figure class="kid-videos__item">
+                        <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/paw-patrol-live.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
+                        <figcaption>You at Paw Patrol Live.</figcaption>
+                    </figure>
+                    <figure class="kid-videos__item">
+                        <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/faith-puddle-jumper.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
+                        <figcaption>Puddle jumper &mdash; you never met a puddle you didn't like.</figcaption>
+                    </figure>
+                    <figure class="kid-videos__item">
+                        <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/workout-with-mom.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
+                        <figcaption>Working out with Mom, showing off those muscles.</figcaption>
+                    </figure>
+                </div>
+            </section>
+
         </div>
     </article>
 
