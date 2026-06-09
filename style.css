@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.485
+Version: 1.0.486
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2596,15 +2596,18 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
         0 5px 12px rgba(0, 0, 0, 0.3),
         inset 0 5px 9px rgba(255, 255, 255, 0.45),
         inset 0 -9px 16px rgba(0, 0, 0, 0.3);
-    margin: 0 0 1.6rem;
+    /* Negative bottom margin pulls each circle up to overlap the one above,
+       so they form a tight DIAGONAL cascade rather than a spaced column. */
+    margin: 0 0 -64px;
+    position: relative;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.person-spoke .heritage-line__figure--rounds img:nth-of-type(1) { margin-left: 2%;  transform: rotate(-5deg); }
-.person-spoke .heritage-line__figure--rounds img:nth-of-type(2) { margin-left: 30%; transform: rotate(4deg); }
-.person-spoke .heritage-line__figure--rounds img:nth-of-type(3) { margin-left: 58%; transform: rotate(-3deg); }
+.person-spoke .heritage-line__figure--rounds img:nth-of-type(1) { margin-left: 0;   transform: rotate(-5deg); z-index: 1; }
+.person-spoke .heritage-line__figure--rounds img:nth-of-type(2) { margin-left: 22%; transform: rotate(4deg);  z-index: 2; }
+.person-spoke .heritage-line__figure--rounds img:nth-of-type(3) { margin-left: 44%; transform: rotate(-3deg); z-index: 3; margin-bottom: 0; }
 .person-spoke .heritage-line__figure--rounds img:hover {
     position: relative;
-    z-index: 2;
+    z-index: 6;
     transform: rotate(0deg) scale(1.06);
     box-shadow:
         0 26px 42px -12px rgba(0, 0, 0, 0.7),
@@ -2615,8 +2618,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 .person-spoke .heritage-line__figure--rounds figcaption { margin-top: 0.4rem; }
 @media (max-width: 768px) {
     .person-spoke .heritage-line__figure--rounds img {
-        margin-left: auto !important;
-        margin-right: auto !important;
+        margin: 0 auto 1.4rem !important;
         transform: none !important;
     }
 }
