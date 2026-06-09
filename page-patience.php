@@ -247,12 +247,12 @@ get_header(); ?>
                         <img
                             src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/IMG_2903-scaled.jpg' ) ); ?>"
                             alt="<?php esc_attr_e( 'Patience receiving her first Award of Excellence', 'tc-ventures-child' ); ?>"
-                            loading="lazy"
+                            loading="eager"
                         />
                         <img
                             src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/IMG_2337-scaled.jpg' ) ); ?>"
                             alt="<?php esc_attr_e( 'Patience receiving her second Award of Excellence', 'tc-ventures-child' ); ?>"
-                            loading="lazy"
+                            loading="eager"
                         />
                         <figcaption>The Award of Excellence &mdash; twice. Once in grade four, and again in grade six.</figcaption>
                     </figure>

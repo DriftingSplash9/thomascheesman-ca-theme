@@ -145,12 +145,12 @@ get_header(); ?>
                         <img
                             src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/IMG_1581.jpg' ) ); ?>"
                             alt="<?php esc_attr_e( 'Faith starting across the rock islands', 'tc-ventures-child' ); ?>"
-                            loading="lazy"
+                            loading="eager"
                         />
                         <img
                             src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/IMG_1575.jpg' ) ); ?>"
                             alt="<?php esc_attr_e( 'Faith reaching the big island rock at the end', 'tc-ventures-child' ); ?>"
-                            loading="lazy"
+                            loading="eager"
                         />
                         <figcaption>Made it! Mom and Patience helped her hop across the rock islands to the big one at the end.</figcaption>
                     </figure>
