@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.487
+Version: 1.0.488
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2583,6 +2583,11 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     margin: 2.4rem auto 2.8rem;
     clear: both;
     float: none;
+    /* Flex column so each circle can be aligned left / centre / right with
+       align-self (margin:auto gets clobbered by a sitewide img margin rule). */
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
 }
 .person-spoke .heritage-line__figure--rounds img {
     display: block;
@@ -2596,15 +2601,15 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
         0 5px 12px rgba(0, 0, 0, 0.3),
         inset 0 5px 9px rgba(255, 255, 255, 0.45),
         inset 0 -9px 16px rgba(0, 0, 0, 0.3);
-    /* Vertical spacing kept; the diagonal comes from horizontal placement:
-       top-LEFT, middle-CENTRE, bottom-RIGHT. */
-    margin: 0 0 1.8rem;
+    /* Vertical spacing comes from the flex gap; the diagonal comes from
+       align-self: top-LEFT, middle-CENTRE, bottom-RIGHT. */
+    margin: 0;
     position: relative;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.person-spoke .heritage-line__figure--rounds img:nth-of-type(1) { margin-left: 0;    margin-right: auto; transform: rotate(-5deg); }
-.person-spoke .heritage-line__figure--rounds img:nth-of-type(2) { margin-left: auto; margin-right: auto; transform: rotate(4deg); }
-.person-spoke .heritage-line__figure--rounds img:nth-of-type(3) { margin-left: auto; margin-right: 0;    transform: rotate(-3deg); }
+.person-spoke .heritage-line__figure--rounds img:nth-of-type(1) { align-self: flex-start; transform: rotate(-5deg); }
+.person-spoke .heritage-line__figure--rounds img:nth-of-type(2) { align-self: center;     transform: rotate(4deg); }
+.person-spoke .heritage-line__figure--rounds img:nth-of-type(3) { align-self: flex-end;   transform: rotate(-3deg); }
 .person-spoke .heritage-line__figure--rounds img:hover {
     position: relative;
     z-index: 6;
@@ -2618,7 +2623,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 .person-spoke .heritage-line__figure--rounds figcaption { margin-top: 0.4rem; }
 @media (max-width: 768px) {
     .person-spoke .heritage-line__figure--rounds img {
-        margin: 0 auto 1.4rem !important;
+        align-self: center !important;
         transform: none !important;
     }
 }
