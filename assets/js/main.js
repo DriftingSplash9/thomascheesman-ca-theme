@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initLongreadChapterRail();
     initThomasTOC();
     initPersonSpokeTOC();
+    initFlipbook();
     initThomasGalleryHover();
     initHeritageNotes();
     initInkTrail();
@@ -2442,6 +2443,33 @@ function initThomasTOC() {
         }, { rootMargin: '0px 0px -68% 0px', threshold: 0 });
         headings.forEach(function (h) { obs.observe(h); });
     }
+}
+
+/**
+ * Bulletproof flipbook: ONE always-visible <img> whose src is swapped
+ * through preloaded frames on a timer. No stacking, no opacity tricks, no
+ * lazy-load — nothing that can render an empty (turquoise) box. Frames +
+ * per-frame durations come from data attributes.
+ */
+function initFlipbook() {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var imgs = document.querySelectorAll('[data-flipbook] img[data-frames]');
+    Array.prototype.forEach.call(imgs, function (img) {
+        var frames, durs;
+        try { frames = JSON.parse(img.getAttribute('data-frames')); } catch (e) { return; }
+        try { durs = JSON.parse(img.getAttribute('data-durations')) || []; } catch (e) { durs = []; }
+        if (!frames || frames.length < 2) return;
+        // Preload every frame so the swaps are instant.
+        frames.forEach(function (u) { var p = new Image(); p.src = u; });
+        if (reduce) return;
+        var i = 0;
+        function step() {
+            i = (i + 1) % frames.length;
+            img.src = frames[i];
+            setTimeout(step, durs[i] || 500);
+        }
+        setTimeout(step, durs[0] || 500);
+    });
 }
 
 /**
