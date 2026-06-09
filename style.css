@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.488
+Version: 1.0.489
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2589,6 +2589,14 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     flex-direction: column;
     gap: 1.8rem;
 }
+/* The flex item is either the <img> OR the lightbox <a> wrapper the sitewide
+   lightbox injects around it — so alignment + tilt go on the direct child,
+   not the img. The circular visual stays on the img. */
+.person-spoke .heritage-line__figure--rounds > * {
+    transition: transform 0.25s ease;
+    position: relative;
+}
+.person-spoke .heritage-line__figure--rounds > a { display: block; line-height: 0; }
 .person-spoke .heritage-line__figure--rounds img {
     display: block;
     width: clamp(150px, 22vw, 200px);
@@ -2601,28 +2609,23 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
         0 5px 12px rgba(0, 0, 0, 0.3),
         inset 0 5px 9px rgba(255, 255, 255, 0.45),
         inset 0 -9px 16px rgba(0, 0, 0, 0.3);
-    /* Vertical spacing comes from the flex gap; the diagonal comes from
-       align-self: top-LEFT, middle-CENTRE, bottom-RIGHT. */
     margin: 0;
-    position: relative;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.person-spoke .heritage-line__figure--rounds img:nth-of-type(1) { align-self: flex-start; transform: rotate(-5deg); }
-.person-spoke .heritage-line__figure--rounds img:nth-of-type(2) { align-self: center;     transform: rotate(4deg); }
-.person-spoke .heritage-line__figure--rounds img:nth-of-type(3) { align-self: flex-end;   transform: rotate(-3deg); }
-.person-spoke .heritage-line__figure--rounds img:hover {
-    position: relative;
-    z-index: 6;
+/* Vertical spacing = flex gap; diagonal = align-self on the children. */
+.person-spoke .heritage-line__figure--rounds > *:nth-child(1) { align-self: flex-start; transform: rotate(-5deg); }
+.person-spoke .heritage-line__figure--rounds > *:nth-child(2) { align-self: center;     transform: rotate(4deg); }
+.person-spoke .heritage-line__figure--rounds > *:nth-child(3) { align-self: flex-end;   transform: rotate(-3deg); }
+.person-spoke .heritage-line__figure--rounds > *:nth-child(1):hover,
+.person-spoke .heritage-line__figure--rounds > *:nth-child(2):hover,
+.person-spoke .heritage-line__figure--rounds > *:nth-child(3):hover {
     transform: rotate(0deg) scale(1.06);
-    box-shadow:
-        0 26px 42px -12px rgba(0, 0, 0, 0.7),
-        0 8px 16px rgba(0, 0, 0, 0.35),
-        inset 0 5px 9px rgba(255, 255, 255, 0.45),
-        inset 0 -9px 16px rgba(0, 0, 0, 0.3);
+    z-index: 6;
 }
-.person-spoke .heritage-line__figure--rounds figcaption { margin-top: 0.4rem; }
+.person-spoke .heritage-line__figure--rounds figcaption { align-self: stretch; text-align: center; margin-top: 0.4rem; }
 @media (max-width: 768px) {
-    .person-spoke .heritage-line__figure--rounds img {
+    .person-spoke .heritage-line__figure--rounds > *:nth-child(1),
+    .person-spoke .heritage-line__figure--rounds > *:nth-child(2),
+    .person-spoke .heritage-line__figure--rounds > *:nth-child(3) {
         align-self: center !important;
         transform: none !important;
     }
