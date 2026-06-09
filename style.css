@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.495
+Version: 1.0.496
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2428,6 +2428,23 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
         color: var(--line-color);
         -webkit-text-fill-color: var(--line-color);
     }
+}
+
+/* Daniel only: bigger chapter headings, a richer rotating GREEN gradient,
+   and a CONTRASTING warm-flame brow (cream -> amber -> red) instead of the
+   default white->navy wick. The rotation + flicker animations are inherited
+   from the shared rules above; we only swap colours and scale. */
+.person-spoke--daniel .heritage-line__body h3 {
+    font-size: clamp(2.1rem, 4.6vw, 3.2rem);
+    background: conic-gradient(from var(--p-grad-angle),
+        #14532d, #22c55e, #86efac, #16a34a, #4ade80, #14532d);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+.person-spoke--daniel .heritage-line__body h3::before {
+    background: linear-gradient(90deg, #fff3c4 0%, #ffae00 42%, #ff5a00 74%, #e11d00 100%);
+    border-bottom-color: #ffd27a; /* warm ember edge (was silver) */
+    filter: drop-shadow(0 0 6px rgba(255, 138, 0, 0.7)); /* warm glow (was blue) */
 }
 
 /* Default (no modifier): a centred medium block. */
