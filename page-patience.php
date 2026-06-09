@@ -197,23 +197,26 @@ get_header(); ?>
                     </figure>
 
                     <?php
-                    $tc_sled_base = get_stylesheet_directory_uri() . '/assets/img/patience-extra/';
-                    $tc_sled_v    = '?v=' . rawurlencode( wp_get_theme()->get( 'Version' ) );
-                    $tc_sled_frames = array(
-                        $tc_sled_base . 'sled-1.jpg' . $tc_sled_v,
-                        $tc_sled_base . 'sled-2.jpg' . $tc_sled_v,
-                        $tc_sled_base . 'sled-3.jpg' . $tc_sled_v,
-                    );
+                    $tc_rb = get_stylesheet_directory_uri() . '/assets/img/patience-extra/';
+                    $tc_rv = '?v=' . rawurlencode( wp_get_theme()->get( 'Version' ) );
                     ?>
-                    <figure class="heritage-line__figure heritage-line__figure--gif" data-flipbook>
-                        <img class="flip-frame"
-                            src="<?php echo esc_url( $tc_sled_frames[0] ); ?>"
-                            data-frames="<?php echo esc_attr( wp_json_encode( $tc_sled_frames ) ); ?>"
-                            data-durations="[550,150,1100]"
-                            alt="<?php esc_attr_e( 'Patience wiping out on the toboggan, looping', 'tc-ventures-child' ); ?>"
+                    <figure class="heritage-line__figure heritage-line__figure--rounds">
+                        <img
+                            src="<?php echo esc_url( $tc_rb . 'round-1.jpg' . $tc_rv ); ?>"
+                            alt="<?php esc_attr_e( 'Patience sitting on the sled, about to set off', 'tc-ventures-child' ); ?>"
                             loading="eager"
                         />
-                        <figcaption>Patience versus the toboggan &mdash; the goofy little loop we always meant to make. Three frames was all it took. Spoiler: the toboggan wins, forever.</figcaption>
+                        <img
+                            src="<?php echo esc_url( $tc_rb . 'round-2.jpg' . $tc_rv ); ?>"
+                            alt="<?php esc_attr_e( 'Patience mid-slide on the sled', 'tc-ventures-child' ); ?>"
+                            loading="eager"
+                        />
+                        <img
+                            src="<?php echo esc_url( $tc_rb . 'round-3.jpg' . $tc_rv ); ?>"
+                            alt="<?php esc_attr_e( 'Patience face-down in the snow', 'tc-ventures-child' ); ?>"
+                            loading="eager"
+                        />
+                        <figcaption>Patience versus the toboggan, in three acts. Spoiler: the toboggan wins.</figcaption>
                     </figure>
 
                     <h3>The big sister</h3>

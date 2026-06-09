@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.484
+Version: 1.0.485
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2571,6 +2571,54 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     .person-spoke .heritage-line__figure--flip .flip { animation: none; }
     .person-spoke .heritage-line__figure--flip .flip--2,
     .person-spoke .heritage-line__figure--flip .flip--3 { opacity: 0; }
+}
+
+/* Round-framed photos hanging staggered down the page — small circular
+   portraits (pre-cropped square, so no object-fit:cover needed), each with a
+   white ring, a drop shadow + inset highlights for a raised 3D look, and a
+   little tilt. They step down-and-right; straighten + lift on hover. */
+.person-spoke .heritage-line__figure--rounds {
+    width: 100%;
+    max-width: 720px;
+    margin: 2.4rem auto 2.8rem;
+    clear: both;
+    float: none;
+}
+.person-spoke .heritage-line__figure--rounds img {
+    display: block;
+    width: clamp(150px, 22vw, 200px);
+    aspect-ratio: 1 / 1;
+    height: auto;
+    border-radius: 50%;
+    border: 6px solid #fff;
+    box-shadow:
+        0 18px 30px -10px rgba(0, 0, 0, 0.6),
+        0 5px 12px rgba(0, 0, 0, 0.3),
+        inset 0 5px 9px rgba(255, 255, 255, 0.45),
+        inset 0 -9px 16px rgba(0, 0, 0, 0.3);
+    margin: 0 0 1.6rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.person-spoke .heritage-line__figure--rounds img:nth-of-type(1) { margin-left: 2%;  transform: rotate(-5deg); }
+.person-spoke .heritage-line__figure--rounds img:nth-of-type(2) { margin-left: 30%; transform: rotate(4deg); }
+.person-spoke .heritage-line__figure--rounds img:nth-of-type(3) { margin-left: 58%; transform: rotate(-3deg); }
+.person-spoke .heritage-line__figure--rounds img:hover {
+    position: relative;
+    z-index: 2;
+    transform: rotate(0deg) scale(1.06);
+    box-shadow:
+        0 26px 42px -12px rgba(0, 0, 0, 0.7),
+        0 8px 16px rgba(0, 0, 0, 0.35),
+        inset 0 5px 9px rgba(255, 255, 255, 0.45),
+        inset 0 -9px 16px rgba(0, 0, 0, 0.3);
+}
+.person-spoke .heritage-line__figure--rounds figcaption { margin-top: 0.4rem; }
+@media (max-width: 768px) {
+    .person-spoke .heritage-line__figure--rounds img {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        transform: none !important;
+    }
 }
 
 /* Home-videos section — watch-sized native players at the end of a kid's
