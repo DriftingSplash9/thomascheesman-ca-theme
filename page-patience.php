@@ -91,7 +91,7 @@ get_header(); ?>
                         <figcaption>Where's my coffee?</figcaption>
                     </figure>
 
-                    <p>She's twelve going on sixteen now, which mostly means I see the back of a closing door. She lives online &mdash; gaming, chatting, watching shows with friends who are three rooms and one screen away &mdash; and I have taken to texting my own daughter to come and eat in my own kitchen. Weekends belong to sleepovers at her best friend's, the all-night kind nobody will admit are all-nighters. And every single morning when I drop her off, she reaches over and turns the radio down so her friends won't hear what her dad listens to. I crank it back up. I'm never fast enough; the door's already shut.</p>
+                    <p>She's twelve going on sixteen now, which mostly means I see the back of a closing door. She lives online &mdash; gaming, chatting, watching shows with friends who are three rooms and one screen away &mdash; and I have taken to texting my own daughter to come and eat in my own kitchen. Weekends belong to sleepovers at her best friend's &mdash; the same one since kindergarten, which is about as far back as a friendship goes &mdash; the all-night kind nobody will admit are all-nighters. And every single morning when I drop her off, she reaches over and turns the radio down so her friends won't hear what her dad listens to. I crank it back up. I'm never fast enough; the door's already shut. What she actually listens to once that door closes is a mystery to me &mdash; whatever's climbing TikTok, I assume, though she's not telling.</p>
 
                     <h3>The one who runs the show</h3>
 
@@ -117,7 +117,7 @@ get_header(); ?>
                         <figcaption>Cuddles with Mary, late in her life. The most carefree dog &mdash; a truly kind soul who never minded the kids.</figcaption>
                     </figure>
 
-                    <p>But there's a cost to being the one who holds it all together, and she's the one who pays it. For all the take-charge, she is the most sensitive of my three, and she carries more than a girl her age ever should. Some of that is simply the lot of the eldest. Some of it, if I'm honest, is me. When I had my sledding accident, and then the spinal fusion, the worst of it came after the surgery &mdash; when I couldn't talk, couldn't do much of anything at all &mdash; and Patience was a rock. She got me through the hospital stay and a long stretch of what came after: a little girl doing a grown woman's worrying.</p>
+                    <p>But there's a cost to being the one who holds it all together, and she's the one who pays it. For all the take-charge, she is the most sensitive of my three, and she carries more than a girl her age ever should. Some of that is simply the lot of the eldest. Some of it, if I'm honest, is me. When I had my sledding accident, and then the spinal fusion, the worst of it came after the surgery &mdash; when I couldn't talk, couldn't do much of anything at all &mdash; and Patience was a rock. She got me through the hospital stay and a long stretch of what came after: a little girl doing a grown woman's worrying. It still shows in small ways &mdash; on a Saturday she'll quietly work down a list of chores so her mum doesn't spend her one day off cleaning. Nobody asks her to.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--right">
                         <img
@@ -141,7 +141,7 @@ get_header(); ?>
                         <figcaption>Daddy's helper. They don't make chef whites much smaller than that.</figcaption>
                     </figure>
 
-                    <p>She is, it has to be said, a creature of small and very particular appetites. Ten o'clock at night is when she comes alive in the kitchen &mdash; ice cream, a muffin, a cookie, and when the cupboards let her down, raw cookie dough eaten with no shame whatsoever. She'll watch Sam and Colby like it's coursework, keeps a quiet soft spot for Young Sheldon, and once handed her whole heart to Stranger Things. And she is careful with a dollar in a way I have never once managed to be &mdash; <em>cheeping out</em>, she calls it &mdash; careful enough that I've half a mind to sign over the family books and take an early retirement.</p>
+                    <p>She is, it has to be said, a creature of small and very particular appetites. Ten o'clock at night is when she comes alive in the kitchen &mdash; ice cream above all (I find the empty tubs in her wake like breadcrumbs), a muffin, a cookie, and when the cupboards let her down, raw cookie dough eaten with no shame whatsoever. Taco Pizza Pops and corn dogs hold the daytime fort. She'll watch Sam and Colby like it's coursework, keeps a quiet soft spot for Young Sheldon, and once handed her whole heart to Stranger Things. And she is careful with a dollar in a way I have never once managed to be &mdash; <em>cheeping out</em>, she calls it &mdash; careful enough that I've half a mind to sign over the family books and take an early retirement.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--big-right">
                         <img
@@ -230,7 +230,7 @@ get_header(); ?>
                         <figcaption>A rare, tender moment with Faith &mdash; kidding; they have more of these than either of them would ever admit, and I've got the proof.</figcaption>
                     </figure>
 
-                    <p>She is, above all, a big sister &mdash; and she wears it differently with each of them. With Daniel it comes easy: she keeps him pointed in the right direction, and the two of them trade the kind of ordinary brother-sister needling I treasure precisely because it's so ordinary. With Faith it's stormier, and I won't pretend otherwise. But every so often I round a corner and find them doing makeup together, or playing, or Patience quietly rallying everyone into a game online &mdash; and it knocks me sideways, in the best possible way. I didn't make my peace with my own brothers until our twenties; we're thick as thieves now. So I take the long view. One day, I have to believe, the girls will understand each other the way only sisters can.</p>
+                    <p>She is, above all, a big sister &mdash; and she wears it differently with each of them. With Daniel it comes easy: she keeps him pointed in the right direction, and the two of them trade the kind of ordinary brother-sister needling I treasure precisely because it's so ordinary. With Faith it's stormier, and I won't pretend otherwise &mdash; Patience is stubborn as the day is long, and admitting she's wrong ranks, in her estimation, somewhere just shy of dying. But every so often I round a corner and find them doing makeup together, or playing, or Patience quietly rallying everyone into a game online &mdash; and it knocks me sideways, in the best possible way. I didn't make my peace with my own brothers until our twenties; we're thick as thieves now. So I take the long view. One day, I have to believe, the girls will understand each other the way only sisters can.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--left">
                         <img
@@ -272,9 +272,13 @@ get_header(); ?>
 
                     <p>When I let myself picture her grown, the thing I hope above all is still burning is her kindness. She feels everything, and she's gotten very good at not showing it &mdash; that tough exterior &mdash; but it lands hardest at home, where it can colour a whole day grey. School and friends and the sheer weight of being twelve are no small things to carry. So my one real worry is the plain one: that she'll keep packing the load heavier than she needs to. And my comfort is that very same sentence read from the other end &mdash; a girl this determined, this self-driven, this kind, is going to be just fine. She always has been. I just get the privilege of watching.</p>
 
-                    <!-- A LETTER FOR LATER — Patience's open letter to be slotted here when
-                         Thomas writes it (cluster 11). Render as: <h3>A letter for later</h3>
-                         followed by the letter paragraphs, like Faith's page. -->
+                    <h3>A letter for later</h3>
+
+                    <p>Hi Patience. So you're twenty-five now, eh? More than anything, I hope you and your mum and your brother and sister are close &mdash; that's the thing I wish hardest for you, because family is the one set of people worth keeping near your whole life long, and it's worth the work.</p>
+
+                    <p>I'd put money on you being at a university, or maybe deep into a trade &mdash; with that head for numbers and the way you've always had things three steps figured out, I can see you in business or finance or economics, or somewhere none of us would have guessed. Whatever it is, I'm certain you chose it because you love it; you were never the type to settle for less. Be careful out there, mind &mdash; there's a lot of garbage to wade through these days, more than there was in mine, and there was plenty then.</p>
+
+                    <p>Mostly I just want to know what these years were like. Do you and your mum still get into it over the silly things? Did you stay out chasing whatever's new, or turn out the quieter one, more taken with history and how the world really works? Tell me everything. And know this, from the version of me writing it down at the kitchen table while you're upstairs behind that door: I am, and I always have been, prouder of you than I have the words for. &mdash; Dad</p>
 
                 </div>
             </section>
