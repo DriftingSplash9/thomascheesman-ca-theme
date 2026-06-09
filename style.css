@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.490
+Version: 1.0.491
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2475,7 +2475,9 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     display: flex; flex-wrap: wrap; gap: 1rem;
     align-items: flex-start; margin: 1.3rem 0 1.7rem;
 }
-.person-spoke .heritage-line__figure--pair > img { flex: 1 1 0; min-width: 0; width: auto; }
+/* Flex children are the imgs OR the lightbox <a> wrappers — size whichever. */
+.person-spoke .heritage-line__figure--pair > * { flex: 1 1 0; min-width: 0; }
+.person-spoke .heritage-line__figure--pair img { display: block; width: 100%; height: auto; }
 .person-spoke .heritage-line__figure--pair > figcaption { flex: 1 1 100%; }
 /* Small variant — caps the diptych to ~40% of the column (60% smaller) and
    centres it. For pairs of tall/portrait shots that dominate at full width. */
