@@ -69,7 +69,7 @@ get_header(); ?>
                         <figcaption>Six months old, and already particular about the outfit.</figcaption>
                     </figure>
 
-                    <p>Three words, if you held me to it. I have never in my life met anyone with her engine. She runs flat out from the moment her feet hit the floor, and I keep up the way you keep up with weather &mdash; mostly by watching where it's headed.</p>
+                    <p>Carefree, wandering, fireball &mdash; three words, if you held me to it. I have never in my life met anyone with her engine. She runs flat out from the moment her feet hit the floor, and I keep up the way you keep up with weather &mdash; mostly by watching where it's headed.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-right">
                         <img
@@ -80,7 +80,7 @@ get_header(); ?>
                         <figcaption>The cake-smash shoot for her first birthday.</figcaption>
                     </figure>
 
-                    <p>Here's the kind of thing I mean. One afternoon we decided we were above following a recipe and would write our own, and out came a batch of chocolate-chip macchiato protein cookies &mdash; her idea, more or less. The dough came out thin, so we put more flour in. Still thin, so a little more. We added a bit of this and a bit of that with no theory behind any of it, ate a frankly unsafe amount of the batter, and they turned out&hellip; good, actually. That batch is nearly gone now. The next one will be better. It is always going to be better &mdash; that's the part I want to keep.</p>
+                    <p>And she runs on the bright side &mdash; here's the kind of thing I mean. One afternoon we decided we were above following a recipe and would write our own, and out came a batch of chocolate-chip macchiato protein cookies &mdash; her idea, more or less. The dough came out thin, so we put more flour in. Still thin, so a little more. We added a bit of this and a bit of that with no theory behind any of it, ate a frankly unsafe amount of the batter, and they turned out&hellip; good, actually. That batch is nearly gone now. The next one will be better. It is always going to be better &mdash; that's the part I want to keep.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--big-left">
                         <img
@@ -91,7 +91,7 @@ get_header(); ?>
                         <figcaption>Our first birthday. The tutu made the day &mdash; and I think she agreed.</figcaption>
                     </figure>
 
-                    <p>People will tell you she's bright and leave it at that, as if that settles it. It doesn't. She got out ahead in math in the lockdown years &mdash; fell hard for Numberblocks, hard enough that we ended up with several sets and Melanie sewing the numbers one to ten out of felt &mdash; and she's doing grade-five math in grade three without much fuss. But the math is only the doorway. What she's really after is bigness. Scale. She'll rattle off the planets in order and most of their moons, the belts, a handful of stars, the black holes; she wants to know how many Earths you could pour into the sun, how one galaxy stacks against another, what the biggest thing is and then what's bigger than that. A small girl with an enormous appetite for the size of the universe &mdash; and if she keeps her eyes up there and off the tablet, I have not one doubt she could help build the thing that flies into it. Her name is Faith and she is mad for the cosmos, and I don't think those two facts are unrelated.</p>
+                    <p>People will tell you she's bright and leave it at that, as if that settles it. It doesn't. She got out ahead in math in the lockdown years &mdash; fell hard for Numberblocks, hard enough that we ended up with several sets and Melanie sewing the numbers one to ten out of felt &mdash; and she's doing grade-five math in grade three without much fuss. But the math is only the doorway. What she's really after is bigness. Scale. She'll rattle off the planets in order and most of their moons, the belts, a handful of stars, the black holes; she wants to know how many Earths you could pour into the sun, how one galaxy stacks against another, what the biggest thing is and then what's bigger than that. A small girl with an enormous appetite for the size of the universe &mdash; and if she keeps her eyes up there, I have not one doubt she could help build the thing that flies into it. Her name is Faith and she is mad for the cosmos, and I don't think those two facts are unrelated.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--center">
                         <img
@@ -124,7 +124,9 @@ get_header(); ?>
                         <figcaption>Vacation siesta on Uncle Buck's boat, out on the Shuswap.</figcaption>
                     </figure>
 
-                    <p>There's a front-seat system in the truck now, too, and it runs itself &mdash; the kids take turns, no refereeing required, and when all three are aboard Faith rides in the back where she's safest. I marvel at this. My brothers and I damn near came to blows over shotgun, and my poor mother spent half her driving years as a judge. Riding shotgun on the dash, skating clean across it on every corner, is the duck collection &mdash; small ones, a couple of big ones, gathered over the past year &mdash; which has done more for my driving than any instructor ever managed. Take a corner too sharp and they slide to the far end; touch the gas and they come back into my lap. The kids get carsick from my driving, so the ducks and I are working on it together.</p>
+                    <p>There's a front-seat system in the truck now, too, and it runs itself &mdash; the kids take turns, no refereeing required, and when all three are aboard Faith rides in the back where she's safest. I marvel at this. My brothers and I damn near came to blows over shotgun, and my poor mother spent half her driving years as a judge.</p>
+
+                    <p>The duck collection rides shotgun on the dash, skating clean across it on every corner &mdash; small ones, a couple of big ones, gathered over the past year &mdash; which has done more for my driving than any instructor ever managed. Take a corner too sharp and they slide to the far end; touch the gas and they come back into my lap. The kids get carsick from my driving, so the ducks and I are working on it together.</p>
 
                     <h3>Soft in the middle</h3>
 
@@ -134,10 +136,10 @@ get_header(); ?>
                             alt="<?php esc_attr_e( 'Faith napping curled up with a cat', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
-                        <figcaption>Naptime with Bubbalou. She'll torment a cat all afternoon &mdash; then the moment she's asleep, the same cat folds against her like she's the gentlest soul alive.</figcaption>
+                        <figcaption>Naptime with Bubbalou.</figcaption>
                     </figure>
 
-                    <p>For all that motor, there's a tender thing underneath that feels more than she'll ever tell you, and the animals seem to clock it before the rest of us do. I can't explain it. Maybe they're onto something.</p>
+                    <p>For all that motor, there's a tender thing underneath that feels more than she'll ever tell you, and the animals seem to clock it before the rest of us do. She'll torment a cat all afternoon &mdash; then the moment she's asleep, the same cat folds against her like she's the gentlest soul alive. I can't explain it. Maybe they're onto something.</p>
 
                     <p>You can watch the weather change in her. The meltdowns don't come from nowhere; they come when the day tips pessimistic on her &mdash; when something isn't fair, when the answer is no, when the cost or the timing or the sheer energy of a thing lands the wrong way. Catch her early and turn her back toward the bright side, and the storm just&hellip; doesn't arrive. It's a knack I'm still learning.</p>
 
@@ -175,7 +177,7 @@ get_header(); ?>
                         <figcaption>GO TO SLEEP! That itty-bitty bed was Patience's first big-girl bed, once upon a time.</figcaption>
                     </figure>
 
-                    <p>The laugh deserves a mention, though I'll have to dig up a video to do it justice. There was a version of it when she was small that undid all of us &mdash; and being Faith, she noticed it undid us, and started deploying it on purpose, and ran it clean into the ground until the magic wore off. That's her in miniature: hand her your delight and she'll spend it all at once. I wouldn't change it. When she finally runs down at night &mdash; falling asleep is her Everest, and she'll fire ten thousand questions into the dark before she goes; the CIA could take notes &mdash; she burrows in for warmth, and it settles something in me I didn't know was unsettled.</p>
+                    <p>The laugh deserves a mention, though I'll have to dig up a video to do it justice. There was a version of it when she was small that undid all of us &mdash; and being Faith, she noticed it undid us, and started deploying it on purpose, and ran it clean into the ground until the magic wore off. That's her in miniature: hand her your delight and she'll spend it all at once. I wouldn't change it. When she finally runs down at night &mdash; she'll fire ten thousand questions into the dark before she goes; the CIA could take notes &mdash; she burrows in for warmth, and it settles something in me I didn't know was unsettled.</p>
 
                     <h3>What she's taught me</h3>
 
@@ -188,7 +190,7 @@ get_header(); ?>
                         <figcaption>Daddy's little helper.</figcaption>
                     </figure>
 
-                    <p>More than she knows. Faith took my own lifelong project &mdash; keeping myself level &mdash; and turned it up to eleven, because she is a mirror. If I flare, she flares, over nothing at all. So she has quietly made me learn to be the calm I'd like her to copy, which is the hardest and most worthwhile homework I've ever been handed. (For the record: tacos. Tacos are the meal that works, four or five nights out of the rotation, and a far more complete dinner than they have any right to be. You take the wins.)</p>
+                    <p>More than she knows. Faith took my own lifelong project &mdash; keeping myself level &mdash; and turned it up to eleven, because she is a mirror. If I flare, she flares, over nothing at all. So she has quietly made me learn to be the calm I'd like her to copy, which is the hardest and most worthwhile homework I've ever been handed.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--center">
                         <img
@@ -223,7 +225,11 @@ get_header(); ?>
                         <figcaption>Seventh-birthday vibes.</figcaption>
                     </figure>
 
-                    <p>By the time you read this you're grown, off figuring out the world, and I'd put money on you being at a university or already out the far side of one, doing something that scares me a little &mdash; building a rocket, maybe, or standing somewhere up past the moons you could always name. A lot can happen in sixteen years. Have you still got the blue eyes and the blonde hair? You certainly didn't get those from me. I'll bet there are a couple of cats. I hope you and your sister are close, or close enough &mdash; family is a lot, and you won't fully understand that until you've made one of your own, but when you do you'll find yourself wanting them near. Marry whoever makes you laugh the way you laughed when you were small. And promise me one thing, just the one: not a chef. Don't be one, and don't date one. Love always, Dad.</p>
+                    <p>By the time you read this you're grown, off figuring out the world, and I'd put money on you being at a university or already out the far side of one, doing something that scares me a little &mdash; building a rocket, maybe, or standing somewhere up past the moons you could always name.</p>
+
+                    <p>A lot can happen in sixteen years. Have you still got the blue eyes and the blonde hair? You certainly didn't get those from me. I'll bet there are a couple of cats. I hope you and your sister are close, or close enough &mdash; family is a lot, and you won't fully understand that until you've made one of your own, but when you do you'll find yourself wanting them near. Marry whoever makes you laugh the way you laughed when you were small.</p>
+
+                    <p>And promise me one thing, just the one: not a chef. Don't be one, and don't date one. Love always, Dad.</p>
 
                 </div>
             </section>
