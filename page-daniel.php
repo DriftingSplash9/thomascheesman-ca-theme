@@ -165,7 +165,7 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
 
                     <figure class="heritage-line__figure heritage-line__figure--pair">
                         <img
-                            src="<?php echo esc_url( $di . 'daniel-and-lucas-fixed.jpg' ); ?>"
+                            src="<?php echo esc_url( $di . 'daniel-lucas-upright.jpg' ); ?>"
                             alt="<?php esc_attr_e( 'Daniel with his dog Lucas', 'tc-ventures-child' ); ?>"
                             loading="eager"
                         />
