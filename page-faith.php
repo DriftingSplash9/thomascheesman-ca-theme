@@ -69,7 +69,7 @@ get_header(); ?>
                         <figcaption>Six months old, and already particular about the outfit.</figcaption>
                     </figure>
 
-                    <p>Carefree, wandering, fireball &mdash; three words, if you held me to it. I have never in my life met anyone with her engine. She runs flat out from the moment her feet hit the floor, and I keep up the way you keep up with weather &mdash; mostly by watching where it's headed.</p>
+                    <p>Carefree, wandering, fireball &mdash; three words, if you held me to it. I have met a lot of people, and not one of them with Faith's engine. She runs flat out from the moment her feet hit the floor, and I keep up the way you keep up with weather &mdash; mostly by watching where it's headed.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-right">
                         <img
@@ -178,6 +178,12 @@ get_header(); ?>
                     </figure>
 
                     <p>The laugh deserves a mention, though I'll have to dig up a video to do it justice. There was a version of it when she was small that undid all of us &mdash; and being Faith, she noticed it undid us, and started deploying it on purpose, and ran it clean into the ground until the magic wore off. That's her in miniature: hand her your delight and she'll spend it all at once. I wouldn't change it. When she finally runs down at night &mdash; she'll fire ten thousand questions into the dark before she goes; the CIA could take notes &mdash; she burrows in for warmth, and it settles something in me I didn't know was unsettled.</p>
+
+                    <h3>School, and the long game</h3>
+
+                    <p>School is where Faith works hardest, and not at the part you'd guess. The rules and the order she can do; it's the social side that asks the most of her. But the tide has been coming in this year &mdash; a few birthday invitations have landed, and most mornings she's out front of the school early, running flat out in a game of tag before the bell. The speed and free will of Faith can be intimidating to the most confident boys in grade three, and I confess I love every bit of that.</p>
+
+                    <p>I don't worry about where she ends up. I imagine Faith growing into someone very successful, and here is why: once she finds the thing that's worth her time &mdash; and she will &mdash; watch out. She will not stop until she gets what she wants.</p>
 
                     <h3>What she's taught me</h3>
 
