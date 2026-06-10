@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.497
+Version: 1.0.498
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2686,6 +2686,32 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     font-size: 0.85rem;
     font-style: italic;
     color: var(--text-light, #94a3b8);
+}
+
+/* Mixed-orientation home videos (Daniel): two portrait clips flank a
+   stacked pair of landscape clips, so the row lines up instead of
+   stair-stepping under the auto-fit grid. */
+.kid-videos__grid--mixed {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1.2rem;
+}
+.kid-videos__grid--mixed > .kid-videos__item,
+.kid-videos__grid--mixed > .kid-videos__stack {
+    flex: 1 1 300px;
+    min-width: 260px;
+    max-width: 340px;
+}
+.kid-videos__stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+@media (max-width: 768px) {
+    .kid-videos__grid--mixed > .kid-videos__item,
+    .kid-videos__grid--mixed > .kid-videos__stack { flex-basis: 100%; max-width: none; }
 }
 
 @media (max-width: 768px) {

@@ -77,7 +77,7 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
                         <figcaption>Happy first birthday, Charlie Brown.</figcaption>
                     </figure>
 
-                    <p>He never crawled, not properly. He butt-scootched &mdash; sat bolt upright and dragged himself across the floor one leg at a time, like a little rook sliding across a chessboard, and he was quick, too, when there was a bottle at the far end of it. Right up to about six he needed that bottle. I have never in my life met such a milk fiend.</p>
+                    <p>He never crawled, not properly. He butt-scootched &mdash; sat bolt upright and dragged himself across the floor one leg at a time, like a little rook sliding across a chessboard, and he was quick, too, when there was a cup of milk at the far end of it. Milk was his fuel right up to about six &mdash; first thing every morning, in cups and sippy cups, never a bottle. I have never in my life met such a milk fiend.</p>
 
                     <figure class="heritage-line__figure">
                         <video
@@ -275,19 +275,23 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
 
             <section class="kid-videos" aria-label="<?php esc_attr_e( 'Home videos', 'tc-ventures-child' ); ?>">
                 <h2 class="kid-videos__title">Home videos &mdash; watch if you like</h2>
-                <div class="kid-videos__grid">
-                    <figure class="kid-videos__item">
-                        <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/boxing-instructors-beatdown.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
-                        <figcaption>The boys laying the beat-down on their boxing instructors.</figcaption>
-                    </figure>
+                <?php /* Mixed layout: two portrait clips flank a stacked pair of
+                         landscape clips, so the row lines up instead of stair-stepping. */ ?>
+                <div class="kid-videos__grid kid-videos__grid--mixed">
                     <figure class="kid-videos__item">
                         <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/boxing-tooth-pick.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
                         <figcaption>Boxing with &ldquo;Tooth Pick.&rdquo;</figcaption>
                     </figure>
-                    <figure class="kid-videos__item">
-                        <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/elmo-video-2.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
-                        <figcaption>Another of Daniel's Elmo productions.</figcaption>
-                    </figure>
+                    <div class="kid-videos__stack">
+                        <figure class="kid-videos__item">
+                            <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/boxing-instructors-beatdown.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
+                            <figcaption>The boys laying the beat-down on their boxing instructors.</figcaption>
+                        </figure>
+                        <figure class="kid-videos__item">
+                            <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/elmo-video-2.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
+                            <figcaption>Another of Daniel's Elmo productions.</figcaption>
+                        </figure>
+                    </div>
                     <figure class="kid-videos__item">
                         <video src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/the-ten-dollar-train.mp4' ) ); ?>" controls preload="metadata" playsinline></video>
                         <figcaption>The ten-dollar marketplace train that comes out every year &mdash; it reminded me of being a kid.</figcaption>
