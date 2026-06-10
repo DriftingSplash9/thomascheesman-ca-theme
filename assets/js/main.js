@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initFigureKenBurns();
     initLightbox();
     initGallerySlideshow();
+    initDeferredGalleries();
     initContactEmail();
     initRot13Email();
     initPostCarousel();
@@ -754,43 +755,62 @@ function initFamilyTreeLeaves() {
  * If it fails to load (network blip, CDN issue), the wrapped anchors
  * fall back to opening the image URL in a new tab.
  */
+// Wraps one <img> in an <a class="lightbox-link"> so PhotoSwipe picks
+// it up. Shared by initLightbox (page load) and initDeferredGalleries
+// (images that go live only when a collapsed photo wall is opened).
+// Returns true if the img was wrapped.
+function tcWrapImgForLightbox(img) {
+    if (img.classList.contains('no-lightbox')) return false;
+    if (img.classList.contains('family-tree__image')) return false;
+    // Skip if the img is anywhere inside an <a> — covers heritage hub
+    // cards (<a><div><img></div></a>) where the immediate parent is
+    // a div, not the anchor itself.
+    if (img.closest('a')) return false;
+
+    const a = document.createElement('a');
+    a.className = 'lightbox-link';
+    a.href = img.currentSrc || img.src;
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+    img.parentNode.insertBefore(a, img);
+    a.appendChild(img);
+
+    const updateDims = () => {
+        if (img.naturalWidth > 0) {
+            a.setAttribute('data-pswp-width', img.naturalWidth);
+            a.setAttribute('data-pswp-height', img.naturalHeight);
+        }
+    };
+    if (img.complete && img.naturalWidth > 0) {
+        updateDims();
+    } else {
+        img.addEventListener('load', updateDims, { once: true });
+    }
+
+    return true;
+}
+
 function initLightbox() {
     const candidates = document.querySelectorAll('main img');
     if (candidates.length === 0) return;
 
     let wrappedCount = 0;
     candidates.forEach((img) => {
-        if (img.classList.contains('no-lightbox')) return;
-        if (img.classList.contains('family-tree__image')) return;
-        // Skip if the img is anywhere inside an <a> — covers heritage hub
-        // cards (<a><div><img></div></a>) where the immediate parent is
-        // a div, not the anchor itself.
-        if (img.closest('a')) return;
-
-        const a = document.createElement('a');
-        a.className = 'lightbox-link';
-        a.href = img.currentSrc || img.src;
-        a.setAttribute('target', '_blank');
-        a.setAttribute('rel', 'noopener noreferrer');
-        img.parentNode.insertBefore(a, img);
-        a.appendChild(img);
-
-        const updateDims = () => {
-            if (img.naturalWidth > 0) {
-                a.setAttribute('data-pswp-width', img.naturalWidth);
-                a.setAttribute('data-pswp-height', img.naturalHeight);
-            }
-        };
-        if (img.complete && img.naturalWidth > 0) {
-            updateDims();
-        } else {
-            img.addEventListener('load', updateDims, { once: true });
-        }
-
-        wrappedCount += 1;
+        if (tcWrapImgForLightbox(img)) wrappedCount += 1;
     });
 
     if (wrappedCount === 0) return;
+
+    tcEnsurePhotoSwipe();
+}
+
+// Idempotent loader for the PhotoSwipe lightbox instance. Called by
+// initLightbox at page load, and again by initDeferredGalleries in
+// the (rare) case a page's only images live inside a collapsed wall.
+let tcPhotoSwipeRequested = false;
+function tcEnsurePhotoSwipe() {
+    if (tcPhotoSwipeRequested) return;
+    tcPhotoSwipeRequested = true;
 
     import('https://unpkg.com/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.js')
         .then(({ default: PhotoSwipeLightbox }) => {
@@ -1096,7 +1116,15 @@ function initGallerySlideshow() {
     const buttons = document.querySelectorAll('.tc-photo-gallery__slideshow-btn');
     if (buttons.length === 0) return;
 
-    buttons.forEach((btn) => {
+    buttons.forEach(tcBindSlideshowBtn);
+}
+
+// Per-button slideshow wiring — split out of initGallerySlideshow so
+// initDeferredGalleries can bind buttons that only enter the DOM when
+// a collapsed photo wall is opened (template content is invisible to
+// the page-load querySelectorAll above).
+function tcBindSlideshowBtn(btn) {
+    {
         btn.addEventListener('click', (event) => {
             event.preventDefault();
             const holdMs = parseInt(btn.dataset.tcAutoplayMs || '4500', 10);
@@ -1134,6 +1162,43 @@ function initGallerySlideshow() {
             // have loaded long before this).
             setTimeout(() => clearInterval(startWhenReady), 6000);
         });
+    }
+}
+
+/* =====================================================================
+   Deferred photo walls — the per-kid galleries render their whole wall
+   inside an inert <template> behind a "click to open" cover button
+   (inc/photo-gallery.php), so the page makes zero image/video requests
+   until the reader opts in. On click we move the template content
+   live, wrap the new imgs for the PhotoSwipe lightbox, and wire the
+   wall's slideshow button.
+   ===================================================================== */
+function initDeferredGalleries() {
+    document.querySelectorAll('.tc-photo-gallery--deferred').forEach((gallery) => {
+        const cover = gallery.querySelector('.tc-photo-gallery__cover');
+        const tpl = gallery.querySelector('template.tc-photo-gallery__tpl');
+        if (!cover || !tpl) return;
+
+        cover.addEventListener('click', () => {
+            cover.setAttribute('aria-expanded', 'true');
+
+            // Going live: appendChild moves (not copies) the template's
+            // content fragment into the section — images start loading
+            // only now, honouring their loading="eager|lazy" attrs.
+            gallery.appendChild(tpl.content);
+            tpl.remove();
+            cover.remove();
+            gallery.classList.add('tc-photo-gallery--open');
+
+            let wrapped = 0;
+            gallery.querySelectorAll('img').forEach((img) => {
+                if (tcWrapImgForLightbox(img)) wrapped += 1;
+            });
+            if (wrapped > 0) tcEnsurePhotoSwipe();
+
+            gallery.querySelectorAll('.tc-photo-gallery__slideshow-btn')
+                .forEach(tcBindSlideshowBtn);
+        }, { once: true });
     });
 }
 

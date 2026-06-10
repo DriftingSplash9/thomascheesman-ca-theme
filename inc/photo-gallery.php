@@ -9,6 +9,12 @@
  * in a PhotoSwipe link, so clicking any thumbnail opens the full-size
  * lightbox with arrow navigation across the entire page.
  *
+ * Galleries of 12+ items render DEFERRED: the whole wall sits inside
+ * an inert <template> behind a "click to open" cover button, so the
+ * page makes zero image/video requests for the wall until a reader
+ * opts in. initDeferredGalleries() in main.js expands it on click and
+ * wires the lightbox + slideshow for the newly-live images.
+ *
  * Per the no-cover rule (memory: feedback_no_object_fit_cover.md),
  * thumbnails preserve their natural aspect ratio. The masonry varies
  * cell heights based on each photo's intrinsic shape — no cropping.
@@ -135,7 +141,52 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
         $slices[] = array( 'label' => '', 'items' => $normalised );
     }
 
-    echo '<section class="tc-photo-gallery" aria-label="' . esc_attr( $alt_prefix . ' photo gallery' ) . '">';
+    // Deferred ("click to open") mode — galleries at or above the
+    // threshold render their entire wall inside an inert <template>
+    // behind a cover button, so a reader who only wants the story pays
+    // zero image/video requests for the wall. initDeferredGalleries()
+    // in main.js moves the template content live on click, wraps the
+    // new imgs for the lightbox, and wires the slideshow button.
+    // Threshold matches the slideshow button's: 12.
+    $deferred = count( $normalised ) >= 12;
+
+    echo '<section class="tc-photo-gallery' . ( $deferred ? ' tc-photo-gallery--deferred' : '' ) . '" aria-label="' . esc_attr( $alt_prefix . ' photo gallery' ) . '">';
+
+    if ( $deferred ) {
+        $photo_count = 0;
+        $video_count = 0;
+        foreach ( $normalised as $entry ) {
+            if ( preg_match( '/\.(mp4|webm|mov|m4v|ogg|ogv)(\?|#|$)/i', $entry['url'] ) ) {
+                $video_count++;
+            } else {
+                $photo_count++;
+            }
+        }
+        $meta = sprintf(
+            /* translators: %d: number of photos. */
+            _n( '%d photo', '%d photos', $photo_count, 'tc-ventures-child' ),
+            $photo_count
+        );
+        if ( $video_count > 0 ) {
+            $meta .= ' &middot; ' . sprintf(
+                /* translators: %d: number of videos. */
+                _n( '%d video', '%d videos', $video_count, 'tc-ventures-child' ),
+                $video_count
+            );
+        }
+        $cover_label = ! empty( $sections[0]['label'] ) && count( $sections ) === 1
+            ? $sections[0]['label']
+            : __( 'The photo wall', 'tc-ventures-child' );
+
+        echo '<button type="button" class="tc-photo-gallery__cover" aria-expanded="false">';
+        echo '<span class="tc-photo-gallery__cover-icon" aria-hidden="true">&#10064;</span>';
+        echo '<span class="tc-photo-gallery__cover-text">';
+        echo '<span class="tc-photo-gallery__cover-title">' . esc_html( $cover_label ) . '</span>';
+        echo '<span class="tc-photo-gallery__cover-meta">' . wp_kses( $meta, array() ) . ' &middot; ' . esc_html__( 'click to open', 'tc-ventures-child' ) . '</span>';
+        echo '</span>';
+        echo '</button>';
+        echo '<template class="tc-photo-gallery__tpl">';
+    }
 
     // Slideshow toolbar — only shown when the gallery is large enough
     // for autoplay to be a meaningful affordance. Threshold of 12 means
@@ -221,6 +272,10 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
             $global_idx++;
         }
         echo '</div>';
+    }
+
+    if ( $deferred ) {
+        echo '</template>';
     }
 
     echo '</section>';

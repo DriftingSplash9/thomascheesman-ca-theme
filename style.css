@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.500
+Version: 1.0.501
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4931,6 +4931,65 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 .tc-photo-gallery__slideshow-icon {
     font-size: 0.9em;
     line-height: 1;
+}
+
+/* Deferred photo walls — the "click to open" cover button that stands
+   in for the whole gallery until the reader opts in (the wall itself
+   waits inside an inert <template>; see inc/photo-gallery.php +
+   initDeferredGalleries() in main.js). Same gold chip language as the
+   slideshow button, scaled up to a full-width invitation. */
+.tc-photo-gallery__cover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    width: min(46rem, 92vw);
+    margin: 1.5rem auto 1rem;
+    padding: 1.35rem 2rem;
+    background: rgba(176, 140, 74, 0.08);
+    border: 1px dashed rgba(176, 140, 74, 0.5);
+    border-radius: 14px;
+    color: var(--accent-color, #b08c4a);
+    font-family: var(--editorial-serif, Georgia, serif);
+    cursor: pointer;
+    transition:
+        background 200ms ease,
+        border-color 200ms ease,
+        transform 200ms ease,
+        box-shadow 200ms ease;
+}
+.tc-photo-gallery__cover:hover,
+.tc-photo-gallery__cover:focus-visible {
+    background: rgba(176, 140, 74, 0.18);
+    border-color: rgba(176, 140, 74, 0.85);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(176, 140, 74, 0.2);
+    outline: none;
+}
+.tc-photo-gallery__cover-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+.tc-photo-gallery__cover-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    text-align: left;
+}
+.tc-photo-gallery__cover-title {
+    font-size: 1.05rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+.tc-photo-gallery__cover-meta {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    opacity: 0.75;
+}
+@media (prefers-reduced-motion: reduce) {
+    .tc-photo-gallery__cover,
+    .tc-photo-gallery__cover:hover { transform: none; }
 }
 
 /* True masonry via CSS Columns. Photos flow top-to-bottom in each
