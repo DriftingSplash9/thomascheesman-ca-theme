@@ -121,7 +121,7 @@ function tc_render_heritage_siblings( $current_slug ) {
  * Replaces the HCS aside on the kid pages with something more apt: a small
  * card grid jumping to the OTHER members of the immediate family. On a kid's
  * page that's the siblings + Mom & Dad; on a parent's page it's the children
- * + the co-parent. Reuses the .heritage-siblings styling.
+ * + the other parent. Reuses the .heritage-siblings styling.
  *
  * Each person is only linked if their WP page actually exists (path
  * family/<slug>), so the block never 404s — and Melanie's card appears
