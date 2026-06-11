@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.518
+Version: 1.0.519
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5942,82 +5942,86 @@ body.single {
    prefers-reduced-motion. Appended at EOF so it wins source order.
    ==================================================================== */
 
-/* --- Per-line background palette (blobs). --line-color stays the accent. */
+/* --- Per-line background palette. Each line gets VIVID derivations of
+   its approved pastel (tint/blobs at full chroma, L≈50–64) because they
+   now glow straight off the near-black WebGL canvas with no colour wash
+   between — the /family/thomas contrast model (#ff5a1f / #ffb020), per
+   line. --line-color stays the soft pastel accent for text/chrome. */
 .heritage-longread--cheesmans {
-    --blob-a: #936D34; /* gas-flare amber — "my fire", banked into hearth gold */
-    --blob-b: #BFA463; /* lamplit kitchen brass */
-    --blob-c: #704D29; /* coal-oil umber — the fire gone low */
+    --blob-a: #E6A219; /* gas-flare gold — "my fire", at full burn */
+    --blob-b: #E9BF35; /* lamplight */
+    --blob-c: #AA6118; /* ember amber */
 }
 body:has(.heritage-longread--cheesmans) {
-    --webgl-tint: #9D7F43;
-    --webgl-accent: #EEE0BA;
+    --webgl-tint: #F5A314;
+    --webgl-accent: #FACA2E;
 }
 .heritage-longread--dochertys {
-    --blob-a: #85426C; /* heather in bloom on the Inishowen moor */
-    --blob-b: #B36F97; /* foxglove & moor-mist rose */
-    --blob-c: #6A2F5B; /* peat-dark plum */
+    --blob-a: #D43595; /* heather in full bloom */
+    --blob-b: #DD4B94; /* foxglove rose */
+    --blob-c: #93257D; /* peat-dark magenta */
 }
 body:has(.heritage-longread--dochertys) {
-    --webgl-tint: #954B79;
-    --webgl-accent: #EABED7;
+    --webgl-tint: #DC38A0;
+    --webgl-accent: #ED5A9C;
 }
 .heritage-longread--lakemans {
-    --blob-a: #497C46; /* polder-field green — the made land */
-    --blob-b: #78AC72; /* willow & meadow light */
-    --blob-c: #2F6534; /* deep dyke-water green */
+    --blob-a: #45BA3B; /* polder-field green — the made land */
+    --blob-b: #72CD51; /* willow light */
+    --blob-c: #268232; /* deep dyke-water green */
 }
 body:has(.heritage-longread--lakemans) {
-    --webgl-tint: #548B50;
-    --webgl-accent: #C6E6C1;
+    --webgl-tint: #45BA3B;
+    --webgl-accent: #85DD5F;
 }
 .heritage-longread--verbooms {
-    --blob-a: #385894; /* Delft glaze blue — the seamstress's Holland */
-    --blob-b: #698BBF; /* porcelain & canal haze */
-    --blob-c: #283D77; /* midnight Delft */
+    --blob-a: #3165DD; /* Delft glaze blue — the seamstress's Holland */
+    --blob-b: #4794E1; /* porcelain sky */
+    --blob-c: #223BA0; /* midnight Delft */
 }
 body:has(.heritage-longread--verbooms) {
-    --webgl-tint: #4366A3;
-    --webgl-accent: #BED2EF;
+    --webgl-tint: #2E62E5;
+    --webgl-accent: #55ABF1;
 }
 .heritage-longread--rycrofts {
-    --blob-a: #994C38; /* Kona-sunset coral over the harbour */
-    --blob-b: #BB7E68; /* plumeria & trade-wind dusk */
-    --blob-c: #703329; /* lava-rock ember */
+    --blob-a: #E8512C; /* Kona-sunset coral over the harbour */
+    --blob-b: #E9743A; /* plumeria dusk */
+    --blob-c: #A5261D; /* lava-rock ember */
 }
 body:has(.heritage-longread--rycrofts) {
-    --webgl-tint: #A35743;
-    --webgl-accent: #EFC6B9;
+    --webgl-tint: #EA5B3E;
+    --webgl-accent: #F88859;
 }
 .heritage-longread--steinkes {
-    --blob-a: #4e6478; /* quarried stone-blue */
-    --blob-b: #7b94a6; /* lichened stone / prairie fog */
-    --blob-c: #36506b; /* cold prairie-sky dusk */
+    --blob-a: #598AB1; /* quarried stone-blue, sunlit */
+    --blob-b: #69A5BF; /* lichened stone / prairie fog */
+    --blob-c: #355782; /* cold prairie-sky dusk */
 }
 /* Per-line WebGL background — same body:has() mechanism as the kid
-   pages: tint = the deep wash, accent = bright blobs + cursor glow.
-   Every line carries a pair drawn from its approved pastel (Steinke
-   piloted it in 1.0.510; the other seven joined in 1.0.512–518). */
+   pages: tint = the drifting noise wash, accent = bright regions +
+   cursor glow. With the atmosphere wash gone, this canvas is the whole
+   background, so every pair runs vivid (the /family/thomas model). */
 body:has(.heritage-longread--steinkes) {
-    --webgl-tint: #5A7186;
-    --webgl-accent: #C5D5E0;
+    --webgl-tint: #5D96B6;
+    --webgl-accent: #7FB6D2;
 }
 .heritage-longread--haistes {
-    --blob-a: #4F3F8D; /* vat indigo — the wool trade's dye */
-    --blob-b: #8271B7; /* washed-wool violet */
-    --blob-c: #342C72; /* deep dye, last rinse */
+    --blob-a: #6645D3; /* vat indigo — the wool trade's dye */
+    --blob-b: #814DDB; /* washed-wool violet */
+    --blob-c: #342999; /* deep dye, last rinse */
 }
 body:has(.heritage-longread--haistes) {
-    --webgl-tint: #5B499C;
-    --webgl-accent: #CCC0ED;
+    --webgl-tint: #785AE2;
+    --webgl-accent: #9C6EED;
 }
 .heritage-longread--mcivers {
-    --blob-a: #437F79; /* tide-pool teal — the Minch at dusk */
-    --blob-b: #6FAEA5; /* sea glass washed up on the machair */
-    --blob-c: #2C6868; /* deep Hebridean water */
+    --blob-a: #31C4B0; /* tide-pool teal in sunlight */
+    --blob-b: #4ED0B2; /* sea glass washed up on the machair */
+    --blob-c: #1D8387; /* deep Hebridean water */
 }
 body:has(.heritage-longread--mcivers) {
-    --webgl-tint: #4E8D87;
-    --webgl-accent: #C0E7E1;
+    --webgl-tint: #2DBEAB;
+    --webgl-accent: #5AE2C0;
 }
 /* Sensible default palette for any line not yet themed. */
 .heritage-longread {
@@ -6042,20 +6046,15 @@ body:has(.heritage-longread--mcivers) {
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
-    /* The base is built FROM the line's own palette (each --blob darkened
-       over near-black), so every line reads in its own colour family rather
-       than a shared dark slate — "the background changes with the blobs."
-       Three value tiers give depth: this dark palette wash (base), stronger
-       saturated radial pools at each blob's home corner (mid), and the
-       brighter drifting blobs above (highlights). */
-    background:
-        radial-gradient(60% 52% at 24% 24%, color-mix(in srgb, var(--blob-a) 62%, transparent), transparent 77%),
-        radial-gradient(57% 52% at 79% 72%, color-mix(in srgb, var(--blob-b) 56%, transparent), transparent 77%),
-        radial-gradient(54% 48% at 55% 96%, color-mix(in srgb, var(--blob-c) 52%, transparent), transparent 77%),
-        linear-gradient(160deg,
-            color-mix(in srgb, var(--blob-a) 28%, #0b1014) 0%,
-            color-mix(in srgb, var(--blob-b) 24%, #090c12) 55%,
-            color-mix(in srgb, var(--blob-c) 26%, #0a120f) 100%);
+    /* No base wash — the layer is transparent so the per-line WebGL
+       canvas underneath (z:-1, tinted by the line's --webgl-tint /
+       --webgl-accent pair) IS the background, exactly the /family/thomas
+       recipe: vivid noise blobs over near-black, nothing tinting the
+       dark above them. The three CSS blobs below ride on top as the
+       brightest highlights. If WebGL is absent (reduced motion, no
+       context), the body's --bg-base (#040619) shows instead — still
+       near-black, so the contrast survives the fallback. */
+    background: none;
 }
 .heritage-longread__blob {
     position: absolute;
@@ -6115,8 +6114,11 @@ body:has(.heritage-longread--mcivers) {
         rgba(255, 255, 255, 0.02) 22%,
         rgba(18, 22, 42, 0.50) 52%,
         rgba(8, 10, 26, 0.64) 100%);
-    backdrop-filter: blur(16px) saturate(155%);
-    -webkit-backdrop-filter: blur(16px) saturate(155%);
+    /* saturate eased 155% -> 118%: tuned for the old muted atmosphere;
+       over the vivid palette it pushed the blurred backdrop toward neon
+       behind the reading column. */
+    backdrop-filter: blur(16px) saturate(118%);
+    -webkit-backdrop-filter: blur(16px) saturate(118%);
     border: none;
     border-radius: 22px;
     box-shadow: 0 18px 60px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.16);
