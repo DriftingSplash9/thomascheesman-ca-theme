@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.505
+Version: 1.0.506
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3867,9 +3867,13 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 .tree-chip--steinkes {
     left: 79%; top: 40%;
     --chip-color: #6E8CA0;
+    /* Composite: Germany (the family's language, church, identity; Augusta
+       born East Prussia) over the Russian Empire (the state Edward was born
+       under in Russian Poland) — the censuses' own "Race: German, Birth:
+       Russia" as a flag. Same diagonal treatment as rycrofts.svg. */
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
-        url('assets/img/flags/de.svg');
+        url('assets/img/flags/steinkes.svg');
 }
 
 .tree-chip--haistes {
@@ -6307,6 +6311,106 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
 .heritage-longread__ribbon-name { font-weight: 700; font-size: 0.78rem; line-height: 1.2; }
 .heritage-longread__ribbon-dates { font-size: 0.68rem; opacity: 0.7; margin-top: 2px; }
 
+/* ============================ HERITAGE TREE ============================
+   The vertical descent diagram (treeHTML in _md2heritage.js, supplied by
+   a "tree" key in a line's images.json). Generation rows of frosted
+   couple chips, joined by a glowing connector in the line's colour; the
+   bloodline-carrier name in each couple picks up --line-color. Piloted
+   on the Steinke long-read; meant to roll out to every line, and one day
+   to merge into the one big converging tree. */
+.heritage-tree {
+    width: min(62rem, 92vw);
+    margin: 2.4em 0 2.4em 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+.heritage-tree__title {
+    font-size: 0.82rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--line-color) 75%, #fff);
+    margin: 0 0 1.6em 0;
+}
+.heritage-tree__gen {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+    position: relative;
+}
+/* Vertical connector dropping into each generation after the first —
+   a thin gradient line that brightens toward the chip it feeds. */
+.heritage-tree__gen + .heritage-tree__gen {
+    margin-top: 2.4rem;
+}
+.heritage-tree__gen + .heritage-tree__gen::before {
+    content: "";
+    position: absolute;
+    top: -2.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 2.4rem;
+    background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--line-color) 20%, transparent),
+        color-mix(in srgb, var(--line-color) 65%, transparent)
+    );
+}
+.heritage-tree__couple {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid color-mix(in srgb, var(--line-color) 38%, transparent);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--line-color) 10%, rgba(255, 255, 255, 0.03));
+    transition:
+        transform 220ms ease,
+        border-color 220ms ease,
+        box-shadow 220ms ease;
+}
+.heritage-tree__couple:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--line-color) 80%, transparent);
+    box-shadow: 0 8px 26px color-mix(in srgb, var(--line-color) 28%, transparent);
+}
+.heritage-tree__names {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+.heritage-tree__name--carrier {
+    color: color-mix(in srgb, var(--line-color) 80%, #fff);
+}
+.heritage-tree__knot {
+    font-size: 0.75em;
+    opacity: 0.55;
+}
+.heritage-tree__note {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.65;
+}
+@media (max-width: 700px) {
+    .heritage-tree__gen { gap: 0.9rem; }
+    .heritage-tree__couple { padding: 0.6rem 0.9rem; }
+    .heritage-tree__names { font-size: 0.84rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .heritage-tree__couple,
+    .heritage-tree__couple:hover { transform: none; }
+}
+
 /* #10 — Richer hero: larger image band with a soft vignette + a kicker. */
 .heritage-longread__hero {
     max-width: 56rem;
@@ -6395,6 +6499,102 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
    These are the Thomas-only pieces: era eyebrows, collapsible folds,
    cross-link CTAs, image credits, the closing kicker, centered figures.
    ========================================================================== */
+
+/* The kitchen-years masonry wall (CH5). CSS-columns masonry; each photo
+   sits in a gilded mat — a thin outer border plus an inner frame that
+   draws itself on hover while a shine sweeps across the image and the
+   duotone lifts to full colour. Natural aspect ratios throughout (the
+   no-cover rule); the sitewide lightbox wraps each <img>, so selectors
+   tolerate the injected <a> (target the img, not a child combinator). */
+.thomas-page .thomas-culinary {
+    column-count: 3;
+    column-gap: 14px;
+    margin: 1.6rem 0 2.2rem;
+}
+.thomas-page .thomas-culinary__item {
+    break-inside: avoid;
+    margin: 0 0 14px;
+    padding: 7px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(201, 169, 106, 0.28);
+    border-radius: 4px;
+    overflow: hidden;
+    transition:
+        transform 260ms ease,
+        border-color 260ms ease,
+        box-shadow 260ms ease;
+}
+/* Inner frame — scales/fades in on hover, like a mat board settling. */
+.thomas-page .thomas-culinary__item::before {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border: 1px solid rgba(212, 174, 106, 0.85);
+    border-radius: 2px;
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity 300ms ease, transform 300ms ease;
+    pointer-events: none;
+    z-index: 2;
+}
+/* Shine sweep — a soft diagonal light that crosses on hover. */
+.thomas-page .thomas-culinary__item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        105deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.16) 50%,
+        transparent 60%
+    );
+    transform: translateX(-130%);
+    transition: transform 700ms ease;
+    pointer-events: none;
+    z-index: 1;
+}
+.thomas-page .thomas-culinary__item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 2px;
+    filter: sepia(0.26) saturate(0.85) contrast(0.98);
+    transition: filter 320ms ease, transform 320ms ease;
+}
+.thomas-page .thomas-culinary__item:hover,
+.thomas-page .thomas-culinary__item:focus-within {
+    transform: translateY(-4px);
+    border-color: rgba(212, 174, 106, 0.75);
+    box-shadow: 0 10px 28px rgba(176, 140, 74, 0.22);
+}
+.thomas-page .thomas-culinary__item:hover::before,
+.thomas-page .thomas-culinary__item:focus-within::before {
+    opacity: 1;
+    transform: scale(1);
+}
+.thomas-page .thomas-culinary__item:hover::after,
+.thomas-page .thomas-culinary__item:focus-within::after {
+    transform: translateX(130%);
+}
+.thomas-page .thomas-culinary__item:hover img,
+.thomas-page .thomas-culinary__item:focus-within img {
+    filter: none;
+    transform: scale(1.02);
+}
+@media (max-width: 900px) {
+    .thomas-page .thomas-culinary { column-count: 2; }
+}
+@media (max-width: 540px) {
+    .thomas-page .thomas-culinary { column-count: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .thomas-page .thomas-culinary__item,
+    .thomas-page .thomas-culinary__item:hover { transform: none; }
+    .thomas-page .thomas-culinary__item::after { display: none; }
+    .thomas-page .thomas-culinary__item img,
+    .thomas-page .thomas-culinary__item:hover img { transform: none; }
+}
 
 /* Era label above each chapter heading (e.g. "THE FARMS · 1991–1999"). */
 .thomas-page .thomas-era {

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice">
+    <defs>
+        <clipPath id="steinkes-de">
+            <polygon points="0,0 200,0 0,100"/>
+        </clipPath>
+        <clipPath id="steinkes-ru">
+            <polygon points="200,0 200,100 0,100"/>
+        </clipPath>
+    </defs>
+
+    <!-- Germany (the family's language, church, and identity; Augusta Woitt
+         born East Prussia) — upper-left triangle. -->
+    <g clip-path="url(#steinkes-de)">
+        <rect x="0" y="0"     width="200" height="100"  fill="#FFCE00"/>
+        <rect x="0" y="0"     width="200" height="66.7" fill="#DD0000"/>
+        <rect x="0" y="0"     width="200" height="33.3" fill="#000000"/>
+    </g>
+
+    <!-- Russian Empire (the state Edward Steinke was born under, in the
+         Lutheran-German villages of Russian Poland; "Race: German, Birth:
+         Russia" in the Canadian censuses) — lower-right triangle. -->
+    <g clip-path="url(#steinkes-ru)">
+        <rect x="0" y="0"     width="200" height="100"  fill="#D52B1E"/>
+        <rect x="0" y="0"     width="200" height="66.7" fill="#0039A6"/>
+        <rect x="0" y="0"     width="200" height="33.3" fill="#FFFFFF"/>
+    </g>
+
+    <!-- Thin dark hairline divider along the diagonal — matches the
+         rycrofts.svg composite treatment. -->
+    <line x1="0" y1="100" x2="200" y2="0" stroke="rgba(0,0,0,0.9)" stroke-width="0.6"/>
+</svg>

@@ -231,6 +231,55 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 					<?php tc_thomas_fig( 'tara-and-i.jpg', 'right', 'On the houseboat', 'Shuswap days.' ); ?>
 				</details>
 
+				<h3 class="about-section__subheading">The kitchen years, in pictures</h3>
+				<div class="thomas-culinary">
+					<?php
+					// The culinary-career wall — 28 photos Thomas gathered from
+					// the Keg/Ric's/Township 71/Majors years (WP Media, 2026/06).
+					// Masonry via CSS columns; framed hover treatment in the
+					// THOMAS CULINARY block of style.css. Plain <img> tags so
+					// initLightbox() wraps them for the sitewide PhotoSwipe.
+					// Captions can be backfilled (filename => alt for now).
+					$tc_culinary = array(
+						array( 'me.jpg', 'Thomas in the kitchen years' ),
+						array( 'iphone-Oct-2012-789.jpg', 'From the kitchen years, 2012' ),
+						array( '10150130534233708.jpg', 'From the kitchen years' ),
+						array( 'Chicken-Parm.jpg', 'Chicken parmesan, plated' ),
+						array( '10150159865463708.jpg', 'From the kitchen years' ),
+						array( '10151234016758708.jpg', 'From the kitchen years' ),
+						array( 'LOBSTER.jpg', 'Lobster' ),
+						array( '10151582343418708.jpg', 'From the kitchen years' ),
+						array( 'Lasagnia-Upright-Wide-Close-2.jpg', 'Lasagna, stood upright' ),
+						array( '10152459275908708.jpg', 'From the kitchen years' ),
+						array( '10152459275998708.jpg', 'From the kitchen years' ),
+						array( 'IMG_1981.jpg', 'From the kitchen years' ),
+						array( '10152459276128708.jpg', 'From the kitchen years' ),
+						array( '10152666381033708.jpg', 'From the kitchen years' ),
+						array( 'iphone-Oct-2012-795.jpg', 'From the kitchen years, 2012' ),
+						array( '10152666385753708.jpg', 'From the kitchen years' ),
+						array( '10152666386738708.jpg', 'From the kitchen years' ),
+						array( 'P1150047.jpg', 'From the kitchen years' ),
+						array( '10152666387033708.jpg', 'From the kitchen years' ),
+						array( 'P1150054.jpg', 'From the kitchen years' ),
+						array( 'IMG_2278-2.jpg', 'From the kitchen years' ),
+						array( '10153782114673708.jpg', 'From the kitchen years' ),
+						array( 'tc-iphone-003-73.jpg', 'From the kitchen years' ),
+						array( 'TOWNSHIP-2015-3-BEAVER-ROO-PHOTOGRAPHY.jpg', 'Township 71, 2015 — photograph by Beaver Roo Photography' ),
+						array( 'tc-iphone-017-17.jpg', 'From the kitchen years' ),
+						array( 'TOWNSHIP-2015-6-BEAVER-ROO-PHOTOGRAPHY.jpg', 'Township 71, 2015 — photograph by Beaver Roo Photography' ),
+						array( '20160214_095609-2.jpg', 'From the kitchen years, 2016' ),
+						array( '2023-07-2720.jpg', 'Cooking for family, 2023' ),
+					);
+					foreach ( $tc_culinary as $tc_cphoto ) {
+						printf(
+							'<figure class="thomas-culinary__item"><img src="%1$s" alt="%2$s" loading="lazy" /></figure>',
+							esc_url( home_url( '/wp-content/uploads/2026/06/' . $tc_cphoto[0] ) ),
+							esc_attr( $tc_cphoto[1] )
+						);
+					}
+					?>
+				</div>
+
 				<p>And somewhere in those years, in 2011, Melanie came back into my life through a computer screen. We&rsquo;d been apart a long time by then &mdash; when we first dated she had needed to get out of the Peace Country and I had needed to stay put and stable, and that was the fault line that split us, though I told myself that if it was meant to be it would find its way back one day. I&rsquo;d visited Edmonton a few times in between and kept her at arm&rsquo;s length the whole while, for reasons I&rsquo;ll come to. It took two tries. But the second time she found me, I think I already knew how it would end.</p>
 			</section>
 

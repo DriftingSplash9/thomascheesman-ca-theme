@@ -2777,7 +2777,13 @@ function initHeritagePage() {
     if (typeof ScrollTrigger !== 'undefined' && !reduceMotion) {
         lines.forEach(function (line) {
             const title = line.querySelector('.heritage-line__title');
-            const quote = line.querySelector('.heritage-line__quote');
+            // ALL quotes in the section — a heritage spoke has at most one
+            // per .heritage-line, but a long-read is a single giant line
+            // holding a pull-quote per chapter plus blockquote asides.
+            // Only animating the first left every later quote stuck at the
+            // CSS pre-animation opacity: 0 (huge invisible voids in the
+            // text column — surfaced by the figure-less Steinke page).
+            const quotes = Array.from(line.querySelectorAll('.heritage-line__quote'));
 
             // Split title into chars (only if not already split — guards
             // against re-runs).
@@ -2788,7 +2794,8 @@ function initHeritagePage() {
             }
 
             // Build a per-section timeline. Title chars first in stagger,
-            // then the pull quote slides + fades in slightly behind.
+            // then the first pull quote slides + fades in slightly behind
+            // (preserves the spoke pages' choreography).
             const tl = gsap.timeline({
                 paused: true,
                 defaults: { ease: 'power3.out' },
@@ -2803,8 +2810,8 @@ function initHeritagePage() {
                 });
             }
 
-            if (quote) {
-                tl.to(quote, {
+            if (quotes.length) {
+                tl.to(quotes[0], {
                     opacity: 1,
                     x: 0,
                     duration: 0.8,
@@ -2818,16 +2825,31 @@ function initHeritagePage() {
                 once: true,
                 onEnter: function () { tl.play(); },
             });
+
+            // Every quote after the first reveals on its own scroll
+            // trigger, as the reader reaches it.
+            quotes.slice(1).forEach(function (q) {
+                gsap.to(q, {
+                    opacity: 1,
+                    x: 0,
+                    duration: 0.8,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: q,
+                        start: 'top 88%',
+                        once: true,
+                    },
+                });
+            });
         });
     } else {
         // Reduced motion (or ScrollTrigger missing) — un-hide the
         // animated elements immediately so nothing stays invisible.
         lines.forEach(function (line) {
-            const quote = line.querySelector('.heritage-line__quote');
-            if (quote) {
+            line.querySelectorAll('.heritage-line__quote').forEach(function (quote) {
                 quote.style.opacity = '1';
                 quote.style.transform = 'none';
-            }
+            });
         });
     }
 }
