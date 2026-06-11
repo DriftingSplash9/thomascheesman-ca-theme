@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.508
+Version: 1.0.509
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6462,6 +6462,67 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
 }
 .heritage-tree__dot {
     opacity: 0.45;
+}
+/* Click-to-expand fact dossiers. The chip carries button semantics; the
+   corner "+" hints there's more, rotating to an × when open; the wrap's
+   0fr -> 1fr grid transition animates the reveal without fixed heights. */
+.heritage-tree__couple--facts {
+    cursor: pointer;
+}
+.heritage-tree__more {
+    position: absolute;
+    top: 0.45rem;
+    right: 0.65rem;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: color-mix(in srgb, var(--line-color) 75%, #fff);
+    opacity: 0.55;
+    transition: transform 260ms ease, opacity 200ms ease;
+}
+.heritage-tree__couple--facts:hover .heritage-tree__more {
+    opacity: 1;
+}
+.heritage-tree__couple.is-open .heritage-tree__more {
+    transform: rotate(45deg);
+    opacity: 1;
+}
+.heritage-tree__factswrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 320ms ease, margin-top 320ms ease;
+    margin-top: 0;
+}
+.heritage-tree__couple.is-open .heritage-tree__factswrap {
+    grid-template-rows: 1fr;
+    margin-top: 0.55rem;
+}
+.heritage-tree__facts {
+    overflow: hidden;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+    font-size: 0.74rem;
+    line-height: 1.55;
+    opacity: 0.92;
+}
+.heritage-tree__facts li {
+    position: relative;
+    padding: 0.22rem 0 0.22rem 1rem;
+}
+.heritage-tree__facts li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.72em;
+    width: 0.5rem;
+    height: 1px;
+    background: color-mix(in srgb, var(--line-color) 70%, transparent);
+}
+.heritage-tree__facts strong {
+    font-weight: 600;
+    color: color-mix(in srgb, var(--line-color) 80%, #fff);
 }
 @media (max-width: 700px) {
     .heritage-tree__gen { gap: 0.9rem; }

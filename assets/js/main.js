@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initHeritagePage();
     initLongreadChapterRail();
     initHeritageTreeTilt();
+    initHeritageTreeFacts();
     initThomasTOC();
     initPersonSpokeTOC();
     initFlipbook();
@@ -2446,6 +2447,33 @@ function initHeritageTreeTilt() {
             chip.style.transform = '';
             chip.style.removeProperty('--tree-mx');
             chip.style.removeProperty('--tree-my');
+        });
+    });
+}
+
+/**
+ * Heritage-tree fact dossiers — chips rendered with a "facts" array
+ * (.heritage-tree__couple--facts) click-open to reveal a quick list of
+ * the branch's important known facts. The 0fr->1fr grid transition in
+ * CSS animates the height; aria-expanded tracks state; Enter/Space
+ * work because the chip carries role="button" + tabindex from the
+ * converter. Multiple chips may be open at once — the reader curates.
+ */
+function initHeritageTreeFacts() {
+    const chips = document.querySelectorAll('.heritage-tree__couple--facts');
+    if (!chips.length) return;
+
+    chips.forEach(function (chip) {
+        function toggle() {
+            const open = chip.classList.toggle('is-open');
+            chip.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        chip.addEventListener('click', toggle);
+        chip.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggle();
+            }
         });
     });
 }
