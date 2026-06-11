@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.507
+Version: 1.0.508
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6364,19 +6364,61 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
     flex-direction: column;
     justify-content: center;
     gap: 0.3rem;
-    padding: 0.75rem 1.25rem;
-    border: 1px solid color-mix(in srgb, var(--line-color) 38%, transparent);
+    max-width: 34rem;
+    padding: 0.8rem 1.35rem;
+    border: 1px solid color-mix(in srgb, var(--line-color) 42%, transparent);
     border-radius: 12px;
-    background: color-mix(in srgb, var(--line-color) 10%, rgba(255, 255, 255, 0.03));
+    /* Lit-from-above surface: brighter top-left falling to a darker
+       lower edge, plus inset highlights top and shade bottom — the chip
+       reads as a raised plate even at rest. */
+    background: linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--line-color) 18%, rgba(255, 255, 255, 0.07)),
+        color-mix(in srgb, var(--line-color) 8%, rgba(0, 0, 0, 0.14))
+    );
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+        0 2px 4px rgba(0, 0, 0, 0.30),
+        0 8px 18px rgba(0, 0, 0, 0.32);
+    position: relative;
+    transform-style: preserve-3d;
+    will-change: transform;
     transition:
-        transform 220ms ease,
+        transform 180ms ease,
         border-color 220ms ease,
-        box-shadow 220ms ease;
+        box-shadow 250ms ease;
+}
+/* Specular sheen that follows the pointer (initHeritageTreeTilt feeds
+   --tree-mx / --tree-my); invisible at rest. */
+.heritage-tree__couple::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+        circle at var(--tree-mx, 50%) var(--tree-my, 35%),
+        rgba(255, 255, 255, 0.16),
+        transparent 55%
+    );
+    opacity: 0;
+    transition: opacity 200ms ease;
+    pointer-events: none;
 }
 .heritage-tree__couple:hover {
-    transform: translateY(-3px);
-    border-color: color-mix(in srgb, var(--line-color) 80%, transparent);
-    box-shadow: 0 8px 26px color-mix(in srgb, var(--line-color) 28%, transparent);
+    /* No-JS fallback tilt; the pointer-tracked transform from
+       initHeritageTreeTilt overrides this inline when active. */
+    transform: perspective(700px) rotateX(5deg) translateY(-4px);
+    border-color: color-mix(in srgb, var(--line-color) 85%, transparent);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+        0 4px 8px rgba(0, 0, 0, 0.32),
+        0 16px 34px rgba(0, 0, 0, 0.40),
+        0 10px 30px color-mix(in srgb, var(--line-color) 30%, transparent);
+}
+.heritage-tree__couple:hover::after {
+    opacity: 1;
 }
 .heritage-tree__names {
     display: inline-flex;
@@ -6401,14 +6443,36 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
     text-transform: uppercase;
     opacity: 0.65;
 }
+/* Known children of the couple — a divider-topped row of small names;
+   the bloodline-carrier child (json **bold**) lights up in line colour. */
+.heritage-tree__children {
+    margin-top: 0.45rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-color) 22%, transparent);
+    font-size: 0.72rem;
+    line-height: 1.7;
+    opacity: 0.85;
+}
+.heritage-tree__children strong {
+    font-weight: 600;
+    color: color-mix(in srgb, var(--line-color) 80%, #fff);
+}
+.heritage-tree__children em {
+    opacity: 0.7;
+}
+.heritage-tree__dot {
+    opacity: 0.45;
+}
 @media (max-width: 700px) {
     .heritage-tree__gen { gap: 0.9rem; }
     .heritage-tree__couple { padding: 0.6rem 0.9rem; }
     .heritage-tree__names { font-size: 0.84rem; }
+    .heritage-tree__children { font-size: 0.68rem; }
 }
 @media (prefers-reduced-motion: reduce) {
     .heritage-tree__couple,
     .heritage-tree__couple:hover { transform: none; }
+    .heritage-tree__couple::after { display: none; }
 }
 
 /* #10 — Richer hero: larger image band with a soft vignette + a kicker. */

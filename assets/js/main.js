@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initScrollReveals();
     initHeritagePage();
     initLongreadChapterRail();
+    initHeritageTreeTilt();
     initThomasTOC();
     initPersonSpokeTOC();
     initFlipbook();
@@ -2412,6 +2413,41 @@ function initHeritageNotes() {
             notes.scrollIntoView({ behavior: 'auto', block: 'start' });
         });
     }
+}
+
+/**
+ * Heritage-tree chip tilt — pointer-tracked 3D rotation + a specular
+ * sheen on the descent-diagram couple chips (.heritage-tree__couple,
+ * rendered by treeHTML in _md2heritage.js). Same family as the
+ * family-tree foil tilt: rotateX/rotateY follow the cursor around the
+ * chip's centre, and --tree-mx/--tree-my drive the radial highlight in
+ * CSS. No-ops on touch devices and under prefers-reduced-motion (the
+ * CSS :hover fallback covers no-JS).
+ */
+function initHeritageTreeTilt() {
+    const chips = document.querySelectorAll('.heritage-tree__couple');
+    if (!chips.length) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+
+    chips.forEach(function (chip) {
+        chip.addEventListener('pointermove', function (e) {
+            const r = chip.getBoundingClientRect();
+            const px = (e.clientX - r.left) / r.width;
+            const py = (e.clientY - r.top) / r.height;
+            const ry = (px - 0.5) * 12;
+            const rx = (0.5 - py) * 9;
+            chip.style.transform =
+                'perspective(700px) rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg) translateY(-4px)';
+            chip.style.setProperty('--tree-mx', (px * 100).toFixed(1) + '%');
+            chip.style.setProperty('--tree-my', (py * 100).toFixed(1) + '%');
+        });
+        chip.addEventListener('pointerleave', function () {
+            chip.style.transform = '';
+            chip.style.removeProperty('--tree-mx');
+            chip.style.removeProperty('--tree-my');
+        });
+    });
 }
 
 function initLongreadChapterRail() {
