@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.517
+Version: 1.0.518
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5993,18 +5993,22 @@ body:has(.heritage-longread--rycrofts) {
     --blob-b: #7b94a6; /* lichened stone / prairie fog */
     --blob-c: #36506b; /* cold prairie-sky dusk */
 }
-/* Steinke pilot of the per-line WebGL background — same body:has()
-   mechanism as the kid pages: tint = the deep wash, accent = bright
-   blobs + cursor glow, both drawn from quarried stone. Roll the same
-   pair out per line as each page gets its full colour treatment. */
+/* Per-line WebGL background — same body:has() mechanism as the kid
+   pages: tint = the deep wash, accent = bright blobs + cursor glow.
+   Every line carries a pair drawn from its approved pastel (Steinke
+   piloted it in 1.0.510; the other seven joined in 1.0.512–518). */
 body:has(.heritage-longread--steinkes) {
     --webgl-tint: #5A7186;
     --webgl-accent: #C5D5E0;
 }
 .heritage-longread--haistes {
-    --blob-a: #6b5680; /* moor heather (purple) */
-    --blob-b: #3e4853; /* millstone-grit & coal grey */
-    --blob-c: #9c7f43; /* raw wool & gorse gold */
+    --blob-a: #4F3F8D; /* vat indigo — the wool trade's dye */
+    --blob-b: #8271B7; /* washed-wool violet */
+    --blob-c: #342C72; /* deep dye, last rinse */
+}
+body:has(.heritage-longread--haistes) {
+    --webgl-tint: #5B499C;
+    --webgl-accent: #CCC0ED;
 }
 .heritage-longread--mcivers {
     --blob-a: #437F79; /* tide-pool teal — the Minch at dusk */
