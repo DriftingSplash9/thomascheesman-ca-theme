@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.509
+Version: 1.0.510
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1608,11 +1608,11 @@ html.tc-menu-open .tc-capsule__trigger {
    (amber), Haistes (indigo). The variable is then pulled by the
    number eyebrow, drop cap, pull-quote border, divider gradient
    accents, and the giant ghost numeral. */
-.heritage-line:nth-of-type(1) { --line-color: #22D3EE; }  /* Cheesmans */
-.heritage-line:nth-of-type(2) { --line-color: #EC4899; }  /* Dochertys */
-.heritage-line:nth-of-type(3) { --line-color: #10B981; }  /* Lakemans */
-.heritage-line:nth-of-type(4) { --line-color: #F59E0B; }  /* Rycrofts */
-.heritage-line:nth-of-type(5) { --line-color: #6366F1; }  /* Haistes */
+.heritage-line:nth-of-type(1) { --line-color: #E9C87E; }  /* Cheesmans — hearth gold */
+.heritage-line:nth-of-type(2) { --line-color: #DFA8C8; }  /* Dochertys — Donegal heather */
+.heritage-line:nth-of-type(3) { --line-color: #A8D5A2; }  /* Lakemans — polder green */
+.heritage-line:nth-of-type(4) { --line-color: #F0A58F; }  /* Rycrofts — Kona sunset */
+.heritage-line:nth-of-type(5) { --line-color: #B7A8E3; }  /* Haistes — indigo wash */
 
 /* GIANT ghost numeral floating behind each section — the watermark.
    Renders the CSS counter as decimal-leading-zero ("01" → "05"), sized
@@ -2276,15 +2276,15 @@ body.admin-bar .heritage-progress {
    color-thread view transition; the one on .heritage-line beats the
    :nth-of-type(1) cyan default on the plate itself. */
 .heritage-spoke--cheesmans,
-.heritage-spoke--cheesmans .heritage-line { --line-color: #22D3EE; }
+.heritage-spoke--cheesmans .heritage-line { --line-color: #E9C87E; }
 .heritage-spoke--dochertys,
-.heritage-spoke--dochertys .heritage-line { --line-color: #EC4899; }
+.heritage-spoke--dochertys .heritage-line { --line-color: #DFA8C8; }
 .heritage-spoke--lakemans,
-.heritage-spoke--lakemans  .heritage-line { --line-color: #10B981; }
+.heritage-spoke--lakemans  .heritage-line { --line-color: #A8D5A2; }
 .heritage-spoke--rycrofts,
-.heritage-spoke--rycrofts  .heritage-line { --line-color: #F59E0B; }
+.heritage-spoke--rycrofts  .heritage-line { --line-color: #F0A58F; }
 .heritage-spoke--haistes,
-.heritage-spoke--haistes   .heritage-line { --line-color: #6366F1; }
+.heritage-spoke--haistes   .heritage-line { --line-color: #B7A8E3; }
 
 /* Per-kid accent colors for the per-person spoke pages
    (page-patience / page-daniel / page-faith). Same mechanism as the
@@ -3816,7 +3816,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
    that McIver carries its own Scottish saltire chip. */
 .tree-chip--cheesmans {
     left: 8%; top: 44%;
-    --chip-color: #22D3EE;
+    --chip-color: #E9C87E;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/gb.svg');
@@ -3824,7 +3824,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 
 .tree-chip--dochertys {
     left: 22%; top: 26%;
-    --chip-color: #EC4899;
+    --chip-color: #DFA8C8;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/ie.svg');
@@ -3832,7 +3832,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 
 .tree-chip--mcivers {
     left: 31%; top: 40%;
-    --chip-color: #5B8FB5;
+    --chip-color: #8FD0C6;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/scotland.svg');
@@ -3840,7 +3840,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 
 .tree-chip--lakemans {
     left: 47%; top: 18%;
-    --chip-color: #10B981;
+    --chip-color: #A8D5A2;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/nl.svg');
@@ -3848,7 +3848,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 
 .tree-chip--verbooms {
     left: 56%; top: 32%;
-    --chip-color: #0EA5A5;
+    --chip-color: #9FBCE8;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/nl.svg');
@@ -3856,7 +3856,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 
 .tree-chip--rycrofts {
     left: 70%; top: 26%;
-    --chip-color: #F59E0B;
+    --chip-color: #F0A58F;
     /* Composite: USA (Robert Henry Sr.'s Civil War + Hawai'i chapter) over the
        Leeds/Yorkshire English root. Canada was the destination, not the origin. */
     background-image:
@@ -3866,7 +3866,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 
 .tree-chip--steinkes {
     left: 79%; top: 40%;
-    --chip-color: #6E8CA0;
+    --chip-color: #A9BFCF;
     /* Composite: Germany (the family's language, church, identity; Augusta
        born East Prussia) over the Russian Empire (the state Edward was born
        under in Russian Poland) — the censuses' own "Race: German, Birth:
@@ -3878,7 +3878,7 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 
 .tree-chip--haistes {
     left: 92%; top: 44%;
-    --chip-color: #6366F1;
+    --chip-color: #B7A8E3;
     background-image:
         linear-gradient(rgba(8, 10, 26, var(--chip-overlay-alpha)), rgba(8, 10, 26, var(--chip-overlay-alpha))),
         url('assets/img/flags/gb.svg');
@@ -5657,22 +5657,33 @@ body.single {
 /* Per-line accent (mirrors the spoke color map). The long-read has a
    single .heritage-line, which would otherwise be nth-of-type(1) =
    Cheesman cyan; this restores the right family color. */
+/* THE EIGHT LINE PASTELS (approved 2026-06-11) — one hue per family,
+   equal lightness and softness so they read as one set; the hue does
+   the distinguishing. Themed to each line's story:
+   Cheesman  hearth gold     #E9C87E  (the chosen line, kitchens, lamplight)
+   Docherty  Donegal heather #DFA8C8  (the moor flower of Inishowen)
+   Lakeman   polder green    #A8D5A2  (fields reclaimed from a lakebed)
+   Rycroft   Kona sunset     #F0A58F  (the line that reached Hawai'i)
+   Haiste    indigo wash     #B7A8E3  (the wool trade's dye)
+   McIver    sea glass       #8FD0C6  (the Hebridean tide)
+   Verboom   Delft blue      #9FBCE8  (the seamstress's Holland)
+   Steinke   quarried stone  #A9BFCF  (Stein = stone; prairie sky)   */
 .heritage-longread--cheesmans,
-.heritage-longread--cheesmans .heritage-line { --line-color: #22D3EE; }
+.heritage-longread--cheesmans .heritage-line { --line-color: #E9C87E; }
 .heritage-longread--dochertys,
-.heritage-longread--dochertys .heritage-line { --line-color: #EC4899; }
+.heritage-longread--dochertys .heritage-line { --line-color: #DFA8C8; }
 .heritage-longread--lakemans,
-.heritage-longread--lakemans  .heritage-line { --line-color: #10B981; }
+.heritage-longread--lakemans  .heritage-line { --line-color: #A8D5A2; }
 .heritage-longread--rycrofts,
-.heritage-longread--rycrofts  .heritage-line { --line-color: #F59E0B; }
+.heritage-longread--rycrofts  .heritage-line { --line-color: #F0A58F; }
 .heritage-longread--haistes,
-.heritage-longread--haistes   .heritage-line { --line-color: #6366F1; }
+.heritage-longread--haistes   .heritage-line { --line-color: #B7A8E3; }
 .heritage-longread--mcivers,
-.heritage-longread--mcivers   .heritage-line { --line-color: #5B8FB5; }
+.heritage-longread--mcivers   .heritage-line { --line-color: #8FD0C6; }
 .heritage-longread--verbooms,
-.heritage-longread--verbooms  .heritage-line { --line-color: #0EA5A5; }
+.heritage-longread--verbooms  .heritage-line { --line-color: #9FBCE8; }
 .heritage-longread--steinkes,
-.heritage-longread--steinkes  .heritage-line { --line-color: #6E8CA0; }
+.heritage-longread--steinkes  .heritage-line { --line-color: #A9BFCF; }
 
 /* Suppress the giant ghost numeral on the long-read section (same as
    the spoke does). */
@@ -5952,9 +5963,17 @@ body.single {
     --blob-c: #9c7d3a; /* Peace Country prairie gold */
 }
 .heritage-longread--steinkes {
-    --blob-a: #b8923a; /* prairie wheat-gold */
-    --blob-b: #4a6076; /* Baltic / Lutheran slate-blue */
-    --blob-c: #5a6e44; /* prairie pine-green */
+    --blob-a: #4e6478; /* quarried stone-blue */
+    --blob-b: #7b94a6; /* lichened stone / prairie fog */
+    --blob-c: #36506b; /* cold prairie-sky dusk */
+}
+/* Steinke pilot of the per-line WebGL background — same body:has()
+   mechanism as the kid pages: tint = the deep wash, accent = bright
+   blobs + cursor glow, both drawn from quarried stone. Roll the same
+   pair out per line as each page gets its full colour treatment. */
+body:has(.heritage-longread--steinkes) {
+    --webgl-tint: #5A7186;
+    --webgl-accent: #C5D5E0;
 }
 .heritage-longread--haistes {
     --blob-a: #6b5680; /* moor heather (purple) */
@@ -6534,6 +6553,20 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
     .heritage-tree__couple,
     .heritage-tree__couple:hover { transform: none; }
     .heritage-tree__couple::after { display: none; }
+}
+
+/* Long-read photo frames in the line's colour — part of the eight-pastel
+   system: a quiet tinted border and under-glow at rest, brightening on
+   hover (the duotone-to-colour lift already lives on the figure img).
+   Targets the img so the lightbox's injected <a> wrapper is harmless. */
+.heritage-line--longread .heritage-line__figure img {
+    border: 1px solid color-mix(in srgb, var(--line-color) 32%, transparent);
+    box-shadow: 0 4px 18px color-mix(in srgb, var(--line-color) 14%, rgba(0, 0, 0, 0.25));
+    transition: border-color 250ms ease, box-shadow 250ms ease, filter 250ms ease;
+}
+.heritage-line--longread .heritage-line__figure:hover img {
+    border-color: color-mix(in srgb, var(--line-color) 70%, transparent);
+    box-shadow: 0 8px 28px color-mix(in srgb, var(--line-color) 30%, rgba(0, 0, 0, 0.25));
 }
 
 /* #10 — Richer hero: larger image band with a soft vignette + a kicker. */
