@@ -190,7 +190,7 @@ The companion **unified essay** (opening on the Napoleon/records spine) can be d
 
 ## 15. Open decisions (need Thomas)
 1. **Page location / slug** — `/family/map`? top-level `/map`? a tab inside `/heritage`? (Affects template + nav.)
-2. **Three orphan-line colours** — the 5 hub lines have palette colours (Cheesmans `#22D3EE`, Dochertys `#EC4899`, Lakemans `#10B981`, Rycrofts `#F59E0B`, Haistes `#6366F1`); McIver/Campbell/Cameron, Verboom, and Steinke need their own (proposals in §16).
+2. **Line colours — SETTLED (2026-06-11):** all eight lines now have approved pastel colours (see §16); no open colour decisions remain.
 3. **Campbell & Cameron** — their own threads, or sub-strands of the McIver line's colour?
 4. **The Lakeman Shell-era globe-hops** (Venezuela, London, Kuwait, Singapore) — include as reach, or exclude as one man's career rather than lineage migration?
 5. **Sound** default (off, with toggle — recommended).
@@ -202,7 +202,7 @@ The companion **unified essay** (opening on the Napoleon/records spine) can be d
 ## 16. Reference
 
 ### Family colours (5 set; 3 proposed)
-`Cheesmans #22D3EE · Dochertys #EC4899 · Lakemans #10B981 · Rycrofts #F59E0B · Haistes #6366F1` · **proposed:** McIver/Campbell/Cameron `#A78BFA` (Hebridean violet) · Verboom `#2DD4BF` (canal teal, near Lakeman) · Steinke `#FB923C` (amber, near Rycroft). *(Final call: §15.2.)*
+**SETTLED (2026-06-11) — the eight line pastels, approved and live in style.css:** Cheesmans `#E9C87E` (hearth gold) · Dochertys `#DFA8C8` (Donegal heather) · McIvers `#8FD0C6` (sea glass) · Lakemans `#A8D5A2` (polder green) · Verbooms `#9FBCE8` (Delft blue) · Rycrofts `#F0A58F` (Kona sunset) · Steinkes `#A9BFCF` (quarried stone) · Haistes `#B7A8E3` (indigo wash). Use these for the map's family paths; the earlier proposals in this doc are superseded.
 
 ### The seven journeys (key geographies for geocoding)
 - **McIver / Campbell / Cameron** — Isle of Lewis (Lochs/Carloway), South Uist, Urquhart-in-Moray (Spey Bay) → Saltcoats & Wapella/Earlswood, SK → Edmonton.

@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.510
+Version: 1.0.511
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1912,11 +1912,14 @@ html.tc-menu-open .tc-capsule__trigger {
        into the fill's width. */
     background: linear-gradient(
         90deg,
-        #22D3EE 0%,
-        #EC4899 25%,
-        #10B981 50%,
-        #F59E0B 75%,
-        #6366F1 100%
+        #E9C87E 0%,
+        #DFA8C8 14%,
+        #8FD0C6 28%,
+        #A8D5A2 43%,
+        #9FBCE8 57%,
+        #F0A58F 72%,
+        #A9BFCF 86%,
+        #B7A8E3 100%
     );
     background-size: 100vw 100%;
     background-attachment: fixed;
@@ -2160,11 +2163,14 @@ body.admin-bar .heritage-progress {
 
 /* Per-card accent color matching the .heritage-line palette so the
    hub and the spoke share visual DNA. */
-.heritage-cards .heritage-card:nth-child(1) { --card-color: #22D3EE; }  /* Cheesmans */
-.heritage-cards .heritage-card:nth-child(2) { --card-color: #EC4899; }  /* Dochertys */
-.heritage-cards .heritage-card:nth-child(3) { --card-color: #10B981; }  /* Lakemans */
-.heritage-cards .heritage-card:nth-child(4) { --card-color: #F59E0B; }  /* Rycrofts */
-.heritage-cards .heritage-card:nth-child(5) { --card-color: #6366F1; }  /* Haistes */
+.heritage-cards .heritage-card:nth-child(1) { --card-color: #E9C87E; }  /* 01 Cheesmans — hearth gold */
+.heritage-cards .heritage-card:nth-child(2) { --card-color: #DFA8C8; }  /* 02 Dochertys — Donegal heather */
+.heritage-cards .heritage-card:nth-child(3) { --card-color: #8FD0C6; }  /* 03 McIvers — sea glass */
+.heritage-cards .heritage-card:nth-child(4) { --card-color: #A8D5A2; }  /* 04 Lakemans — polder green */
+.heritage-cards .heritage-card:nth-child(5) { --card-color: #9FBCE8; }  /* 05 Verbooms — Delft blue */
+.heritage-cards .heritage-card:nth-child(6) { --card-color: #F0A58F; }  /* 06 Rycrofts — Kona sunset */
+.heritage-cards .heritage-card:nth-child(7) { --card-color: #A9BFCF; }  /* 07 Steinkes — quarried stone */
+.heritage-cards .heritage-card:nth-child(8) { --card-color: #B7A8E3; }  /* 08 Haistes — indigo wash */
 
 .heritage-card__image {
     position: relative;
