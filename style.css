@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.519
+Version: 1.0.520
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5942,6 +5942,17 @@ body.single {
    prefers-reduced-motion. Appended at EOF so it wins source order.
    ==================================================================== */
 
+/* Default palette for any line not yet themed. MUST come BEFORE the
+   per-line blocks: the modifier rules (.heritage-longread--{line}) have
+   the same 0,1,0 specificity on the same element, so only source order
+   lets them win. (When this block sat after them, it silently overrode
+   every per-line trio — the same latent-cascade genre as the 1.0.511
+   hub-card fix.) */
+.heritage-longread {
+    --blob-a: #243a6b;
+    --blob-b: #2f5a52;
+    --blob-c: #3b3160;
+}
 /* --- Per-line background palette. Each line gets VIVID derivations of
    its approved pastel (tint/blobs at full chroma, L≈50–64) because they
    now glow straight off the near-black WebGL canvas with no colour wash
@@ -6023,13 +6034,6 @@ body:has(.heritage-longread--mcivers) {
     --webgl-tint: #2DBEAB;
     --webgl-accent: #5AE2C0;
 }
-/* Sensible default palette for any line not yet themed. */
-.heritage-longread {
-    --blob-a: #243a6b;
-    --blob-b: #2f5a52;
-    --blob-c: #3b3160;
-}
-
 /* --- Widen the reading column (was the 720px narrow spoke width). */
 .heritage-longread .container--narrow { max-width: 1200px; }
 
