@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.515
+Version: 1.0.516
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5971,9 +5971,13 @@ body:has(.heritage-longread--lakemans) {
     --webgl-accent: #C6E6C1;
 }
 .heritage-longread--verbooms {
-    --blob-a: #2c6e6a; /* canal-green water (Ter Aar / Sliedrecht riverside) */
-    --blob-b: #7d8a3f; /* polder & island field-green */
-    --blob-c: #436a86; /* North Sea slate-blue */
+    --blob-a: #385894; /* Delft glaze blue — the seamstress's Holland */
+    --blob-b: #698BBF; /* porcelain & canal haze */
+    --blob-c: #283D77; /* midnight Delft */
+}
+body:has(.heritage-longread--verbooms) {
+    --webgl-tint: #4366A3;
+    --webgl-accent: #BED2EF;
 }
 .heritage-longread--rycrofts {
     --blob-a: #2f6d8c; /* Pacific harbour blue (Honolulu) */
