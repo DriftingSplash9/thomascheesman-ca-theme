@@ -704,9 +704,12 @@ function tc_review_social_image() {
 }
 add_action( 'wp_head', function () {
 	$tc_img = esc_url( tc_review_social_image() );
+	// Priority 0: AIOSEO emits its own og:image on the front page (a
+	// legacy setting) — share scrapers take the FIRST og:image, and
+	// Thomas picked the desk photo (Q3), so ours must print first.
 	echo '<meta property="og:image" content="' . $tc_img . '" />' . "\n";
 	echo '<meta name="twitter:image" content="' . $tc_img . '" />' . "\n";
-}, 2 );
+}, 0 );
 
 /**
  * Article JSON-LD for the eight heritage long-reads + the HCS essay.
@@ -805,16 +808,12 @@ add_action( 'init', function () {
 	if ( strpos( $tc_host, 'hostingersite.com' ) === false ) {
 		return;
 	}
-	$tc_req = $_SERVER['REQUEST_URI'] ?? '/';
-	if ( is_admin() || wp_doing_ajax() || wp_doing_cron()
-		|| strpos( $tc_req, '/wp-login' ) !== false
-		|| strpos( $tc_req, '/wp-json' ) !== false ) {
-		header( 'X-Robots-Tag: noindex, nofollow' );
-		return;
-	}
+	// No redirect: Hostinger's temp domain is a rewriting proxy that
+	// rewrites Location headers (and body URLs) back to the temp host,
+	// so an in-app redirect can only loop (verified live 2026-06-12).
+	// The noindex header on every staging response is what actually
+	// kills indexing; the host-side toggle (Thomas's T3) is the kill.
 	header( 'X-Robots-Tag: noindex, nofollow' );
-	wp_redirect( 'https://thomascheesman.ca' . $tc_req, 301 );
-	exit;
 }, 0 );
 
 // Stop advertising the WordPress version in <head> and feeds.
@@ -830,8 +829,12 @@ add_filter( 'the_generator', '__return_empty_string' );
  * llms.txt ever exists in the webroot it wins at the server layer and
  * this route simply never fires.
  */
-add_action( 'parse_request', function ( $wp ) {
-	if ( 'llms.txt' !== $wp->request ) {
+add_action( 'after_setup_theme', function () {
+	// after_setup_theme (not parse_request): the Hostinger Tools plugin
+	// serves its own auto-generated llms.txt from an earlier hook and
+	// exits; this runs before it. Checked live 2026-06-12.
+	$tc_path = wp_parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH );
+	if ( '/llms.txt' !== $tc_path ) {
 		return;
 	}
 	header( 'Content-Type: text/plain; charset=utf-8' );
