@@ -80,11 +80,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function tc_gallery_attachment_id( string $url ) : int {
     static $map   = null;
     static $dirty = false;
-    // _v2: v1 cached a page of misses — the gallery arrays hold
-    // ROOT-RELATIVE paths, and attachment_url_to_postid() only matches
-    // full uploads URLs. Keying the option by version retires the bad
-    // cache without a manual delete.
-    $opt = 'tc_gallery_url_map_v2';
+    // Versioned key: each schema fix retires the previous cache (with
+    // its page of memoised misses) without a manual option delete.
+    // v1 cached misses for root-relative paths; v2 for bare-stem URLs
+    // whose library entry is the -scaled variant.
+    $opt = 'tc_gallery_url_map_v3';
     if ( $map === null ) {
         $map = get_option( $opt, array() );
         if ( ! is_array( $map ) ) {
@@ -104,9 +104,20 @@ function tc_gallery_attachment_id( string $url ) : int {
         $lookup = home_url( $lookup );
     }
     $id = (int) attachment_url_to_postid( $lookup );
-    if ( ! $id && strpos( $lookup, '-scaled.' ) !== false ) {
-        // Attachments whose main file is the un-scaled original.
-        $id = (int) attachment_url_to_postid( str_replace( '-scaled.', '.', $lookup ) );
+    if ( ! $id ) {
+        if ( strpos( $lookup, '-scaled.' ) !== false ) {
+            // Attachments whose main file is the un-scaled original.
+            $id = (int) attachment_url_to_postid( str_replace( '-scaled.', '.', $lookup ) );
+        } else {
+            // The reverse (live-verified on Daniel's wall): big uploads'
+            // library entry IS the -scaled variant, while several gallery
+            // arrays reference the bare original — which also exists on
+            // disk, so the page served the heaviest possible file.
+            $scaled = preg_replace( '/\.(jpe?g|png|webp)$/i', '-scaled.$1', $lookup );
+            if ( $scaled && $scaled !== $lookup ) {
+                $id = (int) attachment_url_to_postid( $scaled );
+            }
+        }
     }
     $map[ $url ] = $id;
     $dirty       = true;
