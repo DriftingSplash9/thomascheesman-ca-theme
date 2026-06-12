@@ -279,11 +279,14 @@ function tc_ventures_enqueue_scripts() {
             '7.8.5',
             true
         );
+        // The full topojson bundle, not topojson-client — cdnjs does not
+        // host the client-only package (404 verified 2026-06-11). Same
+        // `topojson.feature` global either way.
         wp_enqueue_script(
             'topojson-client',
-            'https://cdnjs.cloudflare.com/ajax/libs/topojson-client/3.1.0/topojson-client.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js',
             array(),
-            '3.1.0',
+            '3.0.2',
             true
         );
         wp_enqueue_script(
