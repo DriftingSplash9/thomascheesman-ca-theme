@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.535
+Version: 1.0.536
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1603,10 +1603,15 @@ html.tc-menu-open .tc-capsule__trigger {
        ghost numeral (::before) keeps its negative-offset bleed past
        the corner — that part shows un-blurred particles while the
        rest of the section's interior is the frosted plate. Subtle
-       inner border + outer shadow to anchor the plate against the bg. */
-    background: rgba(8, 10, 26, 0.55);
-    backdrop-filter: blur(10px) saturate(125%);
-    -webkit-backdrop-filter: blur(10px) saturate(125%);
+       inner border + outer shadow to anchor the plate against the bg.
+       SUNGLASSES LENS (2026-06, Thomas's call): brightness(0.5) in the
+       backdrop-filter darkens whatever shows through — the vivid line
+       atmospheres stay vivid in the open gaps, but behind text the
+       lens dims them like tinted glass. The old saturate(125%) was a
+       BRIGHTENER; light text over the hot pastels was unreadable. */
+    background: rgba(5, 7, 18, 0.72);
+    backdrop-filter: blur(12px) brightness(0.5) saturate(108%);
+    -webkit-backdrop-filter: blur(12px) brightness(0.5) saturate(108%);
     border: 1px solid rgba(255, 255, 255, 0.04);
     border-radius: 18px;
     padding: clamp(36px, 5vw, 56px) clamp(28px, 4vw, 48px);
@@ -1877,9 +1882,10 @@ html.tc-menu-open .tc-capsule__trigger {
    (preserves the "stepping-stone plates over a particle field" feel). */
 .heritage-intro .container--narrow,
 .heritage-coda .container--narrow {
-    background: rgba(8, 10, 26, 0.55);
-    backdrop-filter: blur(10px) saturate(125%);
-    -webkit-backdrop-filter: blur(10px) saturate(125%);
+    /* sunglasses lens — see the long-read plate note */
+    background: rgba(5, 7, 18, 0.72);
+    backdrop-filter: blur(12px) brightness(0.5) saturate(108%);
+    -webkit-backdrop-filter: blur(12px) brightness(0.5) saturate(108%);
     border: 1px solid rgba(255, 255, 255, 0.04);
     border-radius: 18px;
     padding: clamp(36px, 5vw, 56px) clamp(28px, 4vw, 48px);
@@ -2158,9 +2164,10 @@ body.admin-bar .heritage-progress {
     flex-direction: column;
     text-decoration: none;
     color: inherit;
-    background: rgba(8, 10, 26, 0.55);
-    backdrop-filter: blur(10px) saturate(125%);
-    -webkit-backdrop-filter: blur(10px) saturate(125%);
+    /* sunglasses lens — see the long-read plate note */
+    background: rgba(5, 7, 18, 0.72);
+    backdrop-filter: blur(12px) brightness(0.5) saturate(108%);
+    -webkit-backdrop-filter: blur(12px) brightness(0.5) saturate(108%);
     border: 1px solid rgba(255, 255, 255, 0.04);
     border-radius: 18px;
     overflow: hidden;
@@ -5751,6 +5758,33 @@ body.single {
     border-bottom: 1px solid color-mix(in srgb, var(--line-color) 28%, transparent);
 }
 
+/* Links inside the long-read prose and dek (the cross-line story links,
+   Notes references, the Verboom dek's companion link): the theme link
+   colour disappeared against the dark lens. Light, line-tinted,
+   honestly underlined. (2026-06 readability pass.) */
+.heritage-longread__dek a,
+.heritage-line__body--longread a {
+    color: color-mix(in srgb, var(--line-color) 55%, #ffffff);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: color-mix(in srgb, var(--line-color) 65%, transparent);
+}
+.heritage-longread__dek a:hover,
+.heritage-line__body--longread a:hover {
+    color: #ffffff;
+}
+
+/* Hero copy sits on the raw atmosphere (no plate) — anchor it with a
+   shadow so breadcrumb, subtitle, and kicker survive the brightest
+   lines (gold, polder green). */
+.heritage-longread .page-hero__eyebrow,
+.heritage-longread .page-hero__subtitle,
+.heritage-longread .heritage-longread__hero-kicker,
+.heritage-longread .heritage-breadcrumb,
+.heritage-longread .heritage-breadcrumb a {
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.65), 0 0 28px rgba(0, 0, 0, 0.45);
+}
+
 /* CHAPTER HEADER — small uppercase eyebrow ("Chapter One") over the
    chapter title, with a hairline rule separating chapters. */
 .heritage-longread__chapter {
@@ -6091,8 +6125,11 @@ body:has(.heritage-longread--mcivers) {
     position: absolute;
     width: 62vmin;
     height: 62vmin;
-    filter: blur(46px) brightness(1.12) saturate(1.2);
-    opacity: 0.64;
+    /* Peaks pulled down from brightness(1.12)/opacity .64 — the gold
+       and green lines were a wall of light behind un-plated text
+       (2026-06 readability pass). Hue identity untouched. */
+    filter: blur(46px) brightness(1.0) saturate(1.15);
+    opacity: 0.48;
     mix-blend-mode: screen;
     border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
     will-change: transform, border-radius, background-color;
@@ -6775,10 +6812,13 @@ body:has(.heritage-longread) .heritage-toc { display: none; }
     letter-spacing: 0.05em;
     text-transform: uppercase;
     text-decoration: none;
-    color: color-mix(in srgb, var(--line-color) 55%, #9a93a0);
+    /* lifted toward white + shadowed: the old 55% line-colour mix at
+       0.6 opacity was unreadable over the vivid atmospheres. */
+    color: color-mix(in srgb, var(--line-color) 38%, #d8d3de);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.75);
     padding: 0.3em 0 0.3em 11px;
     border-left: 2px solid transparent;
-    opacity: 0.6;
+    opacity: 0.8;
     transition: opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     white-space: nowrap;
 }
