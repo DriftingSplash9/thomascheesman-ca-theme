@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.536
+Version: 1.0.537
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6275,19 +6275,24 @@ body:has(.heritage-longread--mcivers) {
        across to a darker bottom-right, so the glass reads as a real sheet of
        glass catching light (not a flat dark fill). Higher saturate() lets the
        coloured atmosphere bloom through. */
+    /* SUNGLASSES LENS (2026-06, round 2 of Thomas's readability call —
+       the first pass darkened the BASE .heritage-line plate, which the
+       spokes use; this --longread override was still the old "lit
+       frosted pane" with a white top highlight, so every full story
+       stayed light). The white bloom is now a whisper (glass, not
+       lamp), the body is genuinely dark, and brightness(0.45) in the
+       backdrop dims the atmosphere behind the reading column the way
+       tinted glass would. */
     background: linear-gradient(150deg,
-        rgba(255, 255, 255, 0.10) 0%,
-        rgba(255, 255, 255, 0.02) 22%,
-        rgba(18, 22, 42, 0.50) 52%,
-        rgba(8, 10, 26, 0.64) 100%);
-    /* saturate eased 155% -> 118%: tuned for the old muted atmosphere;
-       over the vivid palette it pushed the blurred backdrop toward neon
-       behind the reading column. */
-    backdrop-filter: blur(16px) saturate(118%);
-    -webkit-backdrop-filter: blur(16px) saturate(118%);
+        rgba(255, 255, 255, 0.035) 0%,
+        rgba(10, 13, 28, 0.58) 18%,
+        rgba(6, 8, 20, 0.76) 52%,
+        rgba(4, 5, 14, 0.84) 100%);
+    backdrop-filter: blur(14px) brightness(0.45) saturate(105%);
+    -webkit-backdrop-filter: blur(14px) brightness(0.45) saturate(105%);
     border: none;
     border-radius: 22px;
-    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .heritage-line--longread::after { display: none; }
 
