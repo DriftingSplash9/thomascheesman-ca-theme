@@ -69,6 +69,11 @@ get_header(); ?>
 
                     <p>That first night I sat up by the big windows with her while Melanie slept, the two of us a couple of days past the last real rest either of us had had. We'd just come back from her bath, and she was wrapped tight the way only a pediatric nurse can manage &mdash; a neat little parcel of a person. I looked out at the dark and felt the whole thing land at once: I was a father, she was healthy, we were going to be alright. Breathe in. Breathe out. (The feeding took us a while to crack &mdash; a tongue tie, an upper lip tie, a couple of snips that didn't take, and in the end she settled happily on formula. First lesson of fatherhood: the plan is whatever works.)</p>
 
+                    <?php /* Screen-reader-only h2: the chapter heads below are
+                             h3s, and jumping h1 → h3 fails heading-order
+                             (review-2). This groups them without visual change. */ ?>
+                    <h2 class="screen-reader-text"><?php esc_html_e( 'Patience, chapter by chapter', 'tc-ventures-child' ); ?></h2>
+
                     <h3>Determined, self-driven, sensitive</h3>
 
                     <figure class="heritage-line__figure heritage-line__figure--left">

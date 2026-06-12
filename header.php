@@ -57,21 +57,28 @@
      html.tc-menu-open is active — see CSS.
      ============================================================ -->
 <header class="tc-capsule" role="banner">
-    <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tc-capsule__brand" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?> — Home">
+    <?php /* No aria-label here: WCAG 2.5.3 wants the visible text ("TC
+             'ventures") inside the accessible name, so the name is built
+             from the content itself plus a screen-reader-only suffix. */ ?>
+    <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="tc-capsule__brand">
         <span class="tc-capsule__brand-mark">TC</span>
         <span class="tc-capsule__brand-tail">'ventures</span>
+        <span class="screen-reader-text"> &mdash; <?php echo esc_html( get_bloginfo( 'name' ) ); ?>, home</span>
     </a>
 
     <span class="tc-capsule__divider" aria-hidden="true"></span>
 
+    <?php /* The visible text is the live temperature, which a static
+             aria-label can never contain (WCAG 2.5.3) — so the accessible
+             name is the temperature plus this screen-reader-only suffix. */ ?>
     <a class="tc-capsule__weather"
        href="https://www.theweathernetwork.com/ca/weather/alberta/grande-prairie"
        target="_blank"
        rel="noopener noreferrer"
-       data-tc-weather
-       aria-label="<?php esc_attr_e( 'Current weather in Grande Prairie — opens The Weather Network', 'tc-ventures-child' ); ?>">
+       data-tc-weather>
         <span class="tc-capsule__weather-icon" data-tc-weather-icon aria-hidden="true">·</span>
         <span class="tc-capsule__weather-temp" data-tc-weather-temp>--°</span>
+        <span class="screen-reader-text"> <?php esc_html_e( 'in Grande Prairie — opens The Weather Network', 'tc-ventures-child' ); ?></span>
     </a>
 
     <button

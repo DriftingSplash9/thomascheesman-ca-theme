@@ -107,7 +107,11 @@
                             ? esc_attr__( "Today's riddle", 'tc-ventures-child' )
                             : esc_attr__( "Today's quote", 'tc-ventures-child' ); ?>">
                     <span class="tc-drawer__stamp" aria-hidden="true">
-                        <?php echo esc_html( gmdate( 'M j' ) ); ?>
+                        <?php
+                        // wp_date (site timezone), not gmdate — UTC flipped
+                        // the stamp to tomorrow every evening local time.
+                        echo esc_html( wp_date( 'M j' ) );
+                        ?>
                     </span>
 
                     <?php if ( $tc_is_riddle ) : ?>
@@ -136,12 +140,15 @@
 
                 <div class="tc-drawer__compartment tc-drawer__compartment--connect">
                     <p class="tc-drawer__connect-label">Write to me</p>
+                    <?php /* No aria-label: the visible (JS-decoded) address
+                             must be part of the accessible name (WCAG 2.5.3),
+                             so the name is the button's own text — address +
+                             the "click to copy" hint. */ ?>
                     <button class="tc-drawer__email"
                             type="button"
-                            data-tc-email-rot13="<?php echo esc_attr( $tc_footer_email_rot13 ); ?>"
-                            aria-label="<?php esc_attr_e( 'Copy email address to clipboard', 'tc-ventures-child' ); ?>">
+                            data-tc-email-rot13="<?php echo esc_attr( $tc_footer_email_rot13 ); ?>">
                         <span class="tc-drawer__email-text"><?php echo esc_html( $tc_footer_email_rot13 ); ?></span>
-                        <span class="tc-drawer__email-hint" aria-hidden="true">click to copy</span>
+                        <span class="tc-drawer__email-hint">click to copy</span>
                     </button>
                     <ul class="tc-drawer__socials" aria-label="<?php esc_attr_e( 'Find me elsewhere', 'tc-ventures-child' ); ?>">
                         <li><a href="https://x.com/TCheesy_" target="_blank" rel="noopener noreferrer">X</a></li>
@@ -168,7 +175,7 @@
                         <span>Grande Prairie</span>
                     </p>
                     <p class="tc-drawer__plaque-line tc-drawer__plaque-line--copy">
-                        &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
+                        &copy; <?php echo esc_html( wp_date( 'Y' ) ); ?>
                     </p>
                 </div>
             </div>
@@ -185,7 +192,7 @@
                         data-tc-pinball-trigger
                         aria-label="<?php esc_attr_e( 'Play pinball', 'tc-ventures-child' ); ?>">
                     <img class="tc-drawer__marble-img"
-                         src="https://thomascheesman.ca/wp-content/uploads/2026/05/img_4454.png"
+                         src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/img_4454.png' ) ); ?>"
                          alt=""
                          aria-hidden="true"
                          loading="lazy"

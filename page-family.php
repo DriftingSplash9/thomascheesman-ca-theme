@@ -188,6 +188,10 @@ get_header(); ?>
                 </div>
                 <span class="heritage-banner__cta" aria-hidden="true">Read the lines &rarr;</span>
             </a>
+            <p class="heritage-banner__maplink">
+                Or watch all eight converge:
+                <a href="<?php echo esc_url( home_url( '/family/heritage/map' ) ); ?>">the Lanterns of Record &mdash; four centuries of records on one map &rarr;</a>
+            </p>
         </div>
     </section>
 

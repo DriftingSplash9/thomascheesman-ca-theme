@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.540
+Version: 1.0.541
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4104,6 +4104,19 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     transform: translateX(4px);
 }
 
+/* One-line map teaser under the heritage banner (review-2: the map had
+   no in-content link from /family — only the menu + drawer carried it). */
+.heritage-banner__maplink {
+    margin: 14px 4px 0;
+    font-size: 0.95rem;
+    color: var(--text-light);
+}
+.heritage-banner__maplink a {
+    color: var(--primary-color);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
 @media (max-width: 600px) {
     .heritage-banner {
         grid-template-columns: 1fr;
@@ -5763,14 +5776,18 @@ body.single {
    colour disappeared against the dark lens. Light, line-tinted,
    honestly underlined. (2026-06 readability pass.) */
 .heritage-longread__dek a,
-.heritage-line__body--longread a {
+.heritage-line__body--longread a,
+.heritage-longread__next a,
+.heritage-longread__return a {
     color: color-mix(in srgb, var(--line-color) 55%, #ffffff);
     text-decoration: underline;
     text-underline-offset: 2px;
     text-decoration-color: color-mix(in srgb, var(--line-color) 65%, transparent);
 }
 .heritage-longread__dek a:hover,
-.heritage-line__body--longread a:hover {
+.heritage-line__body--longread a:hover,
+.heritage-longread__next a:hover,
+.heritage-longread__return a:hover {
     color: #ffffff;
 }
 

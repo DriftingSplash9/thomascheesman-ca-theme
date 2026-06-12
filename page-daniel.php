@@ -92,6 +92,11 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
 
                     <p>He arrived bald &mdash; gloriously, completely bald, with a head in the ninetieth percentile &mdash; and his uncle took one look and christened him Charlie Brown. The name stuck for a while. The head, he grew into.</p>
 
+                    <?php /* Screen-reader-only h2 — see page-patience.php:
+                             groups the h3 chapters so the outline doesn't
+                             jump h1 → h3 (review-2 heading-order fix). */ ?>
+                    <h2 class="screen-reader-text"><?php esc_html_e( 'Daniel, chapter by chapter', 'tc-ventures-child' ); ?></h2>
+
                     <h3>The quiet observer</h3>
 
                     <figure class="heritage-line__figure heritage-line__figure--left">

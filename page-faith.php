@@ -58,6 +58,11 @@ get_header(); ?>
 
                     <p>At the top there was a knot of people around a newborn &mdash; six nurses, two doctors, all of them moving fast &mdash; and my heart went straight through the floor, because I was certain that baby was mine. Then the elevator opened and Melanie came out of it in a wheelchair, upright on sheer will a day after major surgery, scanning the room like a hawk. She saw it before I did: a second, smaller, calmer cluster off to the side. <em>That</em> one was Faith. We looked at each other and didn't say a word, because there was nothing to do and nothing to say &mdash; only to have faith that she'd be alright. She was. She came back to us breathing and already a little furious about the whole business, and she has been going at full tilt ever since.</p>
 
+                    <?php /* Screen-reader-only h2 — see page-patience.php:
+                             groups the h3 chapters so the outline doesn't
+                             jump h1 → h3 (review-2 heading-order fix). */ ?>
+                    <h2 class="screen-reader-text"><?php esc_html_e( 'Faith, chapter by chapter', 'tc-ventures-child' ); ?></h2>
+
                     <h3>A carefree wandering fireball</h3>
 
                     <figure class="heritage-line__figure heritage-line__figure--left">

@@ -41,6 +41,22 @@
         wireCursorTrail();
         wireHotspotTilt();
         wireMobileAccordion();
+        wireHotspotKeys();
+    }
+
+    /* The clickable hotspots are divs with role="button" (the markup
+       keeps the freeform desk layout); give them the keyboard contract
+       a real button would have — Enter and Space activate. */
+    function wireHotspotKeys() {
+        var spots = doc.querySelectorAll( '.tc-desk__hotspot--clickable' );
+        for ( var i = 0; i < spots.length; i++ ) {
+            spots[ i ].addEventListener( 'keydown', function ( e ) {
+                if ( e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar' ) {
+                    e.preventDefault();
+                    this.click();
+                }
+            } );
+        }
     }
 
     /* Mobile menu accordion — tapping a parent (Family / Heritage /
@@ -110,6 +126,9 @@
             });
             primaryTrigger.setAttribute( 'aria-label', 'Close menu' );
             if ( label ) label.textContent = 'Close';
+            // Move focus INTO the dialog (it claims aria-modal). The
+            // overlay carries tabindex="-1" in the markup for this.
+            overlay.focus( { preventScroll: true } );
         }
         function close() {
             // Close any open drawer first.
@@ -147,6 +166,36 @@
         triggers.forEach( function ( t ) {
             t.addEventListener( 'click', toggle );
         });
+
+        // While the overlay is open it declares aria-modal="true" — back
+        // that claim up by actually trapping Tab inside it. The capsule
+        // trigger sits visually ON TOP of the overlay (it's the Close
+        // control), so it's included in the cycle even though it lives
+        // outside the overlay's DOM.
+        doc.addEventListener( 'keydown', function ( e ) {
+            if ( e.key !== 'Tab' ) { return; }
+            if ( ! doc.documentElement.classList.contains( 'tc-desk-open' ) ) { return; }
+            var nodes = overlay.querySelectorAll(
+                'a[href], button:not([disabled]), input, select, textarea, [role="button"][tabindex="0"]'
+            );
+            var list = [ primaryTrigger ];
+            for ( var i = 0; i < nodes.length; i++ ) {
+                var el = nodes[ i ];
+                if ( el.getClientRects().length && getComputedStyle( el ).visibility !== 'hidden' ) {
+                    list.push( el );
+                }
+            }
+            var first  = list[ 0 ];
+            var last   = list[ list.length - 1 ];
+            var active = doc.activeElement;
+            if ( e.shiftKey && ( active === first || ! ( overlay.contains( active ) || active === primaryTrigger ) ) ) {
+                e.preventDefault();
+                last.focus();
+            } else if ( ! e.shiftKey && ( active === last || ! ( overlay.contains( active ) || active === primaryTrigger ) ) ) {
+                e.preventDefault();
+                first.focus();
+            }
+        } );
 
         // Expose close() so Esc can call it from the global handler.
         overlay.__tcDeskOverlayClose = close;
