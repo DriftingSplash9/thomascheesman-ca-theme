@@ -63,6 +63,12 @@ get_header(); ?>
                 </noscript>
             </div>
 
+            <!-- P3: the ghost family tree — the same data projected
+                 genealogically; brightens in lockstep with the map.
+                 Decorative (the descent trees on the long-reads are the
+                 accessible record); hidden on small screens. -->
+            <div id="tc-map-tree" class="tc-map-tree" aria-hidden="true"></div>
+
             <div id="tc-map-timeline" class="tc-map-timeline" role="img"
                  aria-label="A timeline from 1610 to today showing how many documented family events exist per decade, stacked by family line - nearly silent before 1800, swelling as civil registration arrives, dense in the twentieth century."></div>
 

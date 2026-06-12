@@ -85,9 +85,16 @@
 
             svg.append('path').datum({ type: 'Sphere' })
                 .attr('d', path).attr('class', 'tc-map__sphere');
-            var graticule = svg.append('path').datum(d3.geoGraticule10())
+            // Everything geographic lives in one sphere-clipped group so
+            // the departures zoom (P3) can lean the whole world toward the
+            // place being left without spilling past the map's edge.
+            svg.append('clipPath').attr('id', 'tc-sphere-clip')
+                .append('path').datum({ type: 'Sphere' }).attr('d', path);
+            var world = svg.append('g').attr('class', 'tc-map__world')
+                .attr('clip-path', 'url(#tc-sphere-clip)');
+            var graticule = world.append('path').datum(d3.geoGraticule10())
                 .attr('d', path).attr('class', 'tc-map__graticule');
-            svg.append('path').datum(land)
+            world.append('path').datum(land)
                 .attr('d', path).attr('class', 'tc-map__land');
 
             var defs = svg.append('defs');
@@ -99,7 +106,7 @@
             });
 
             // --- Carried light: trails + their moving heads -----------
-            var trailsG = svg.append('g').attr('class', 'tc-map__trails');
+            var trailsG = world.append('g').attr('class', 'tc-map__trails');
             var trails = (data.paths || []).map(function (p) {
                 var node = trailsG.append('path')
                     .datum({ type: 'LineString', coordinates: p.points.map(function (pt) { return [pt[0], pt[1]]; }) })
@@ -138,8 +145,8 @@
                 e._y = xy[1] + r * Math.sin(a);
             });
 
-            var lanterns = svg.append('g').attr('class', 'tc-map__lanterns');
-            var waveG = svg.append('g').attr('class', 'tc-map__waves');
+            var lanterns = world.append('g').attr('class', 'tc-map__lanterns');
+            var waveG = world.append('g').attr('class', 'tc-map__waves');
             var tooltip = d3.select(mount).append('div').attr('class', 'tc-map-tooltip').attr('hidden', true);
             var lit = [];
 
@@ -163,8 +170,169 @@
                     hit.style('cursor', 'pointer')
                        .on('click', function () { window.location.href = url; });
                 }
-                lit.push({ el: g, year: e.year, isDeath: e.type === 'death', wasOn: true });
+                lit.push({ el: g, year: e.year, isDeath: e.type === 'death', wasOn: true, lastS: 1,
+                           isNG: e.type === 'death' && /villers/i.test(e.place || '') });
             });
+
+            // ================= THE GHOST TREE (P3, s3) =================
+            // The same history projected genealogically: ten branches in
+            // their family colours flowing down into shared warm-white
+            // channels, resolving to three small roots — the children at
+            // the base of the tree it was growing toward (s8.4). Node
+            // years without a printed label are LAYOUT timing only
+            // (undocumented joins are never shown as dates). Decorative;
+            // hidden on small screens (s13).
+            var hud = mount.closest('.tc-map-hud');
+            var treeMount = document.getElementById('tc-map-tree');
+            var tree = null;
+            if (treeMount) tree = buildTree();
+
+            function buildTree() {
+                var TW = 1240, TH = 340;
+                var tsvgT = d3.select(treeMount).append('svg')
+                    .attr('viewBox', '0 0 ' + TW + ' ' + TH)
+                    .attr('preserveAspectRatio', 'xMidYMid meet');
+                var TOPS = { Cameron: 90, Campbell: 190, McIver: 290, Docherty: 390,
+                             Verboom: 520, Lakeman: 620, Cheesman: 730,
+                             Steinke: 880, Rycroft: 980, Haiste: 1080 };
+                var N = {
+                    n1: { x: 140,  y: 100, year: 1866 },
+                    n2: { x: 215,  y: 158, year: 1888, label: '1888' },
+                    n3: { x: 300,  y: 216, year: 1941, label: '1941' },
+                    n4: { x: 570,  y: 130, year: 1948 },
+                    nT: { x: 430,  y: 258, year: 1980 },
+                    nG: { x: 530,  y: 272, year: 1991, label: '1991' },
+                    n7: { x: 930,  y: 150, year: 1959, label: '1959' },
+                    n8: { x: 1005, y: 215, year: 1983 },
+                    nF: { x: 720,  y: 292, year: 2016, label: '2016' }
+                };
+                var ROOTS = [ { x: 660, y: 324, year: 2013 },
+                              { x: 720, y: 328, year: 2015 },
+                              { x: 780, y: 324, year: 2017 } ];
+                var BRANCH_TO = { Cameron: 'n1', Campbell: 'n1', McIver: 'n2', Docherty: 'n3',
+                                  Verboom: 'n4', Lakeman: 'n4', Cheesman: 'nG',
+                                  Steinke: 'n7', Rycroft: 'n7', Haiste: 'n8' };
+                var SEGS = [ ['n1','n2'], ['n2','n3'], ['n3','nT'], ['n4','nT'],
+                             ['nT','nG'], ['nG','nF'], ['n7','n8'], ['n8','nF'] ];
+                function bez(x0, y0, x1, y1) {
+                    var my = (y0 + y1) / 2;
+                    return 'M' + x0 + ',' + y0 + ' C' + x0 + ',' + my + ' ' + x1 + ',' + my + ' ' + x1 + ',' + y1;
+                }
+                var firstYear = {};
+                data.events.forEach(function (e) {
+                    if (e.year && (!firstYear[e.family] || e.year < firstYear[e.family])) firstYear[e.family] = e.year;
+                });
+                var branches = FAMILY_ORDER.map(function (f) {
+                    var n = N[BRANCH_TO[f]];
+                    var p = tsvgT.append('path')
+                        .attr('d', bez(TOPS[f], 40, n.x, n.y))
+                        .attr('class', 'tc-map-tree__branch' + (f === 'Cheesman' ? ' tc-map-tree__branch--graft' : ''))
+                        .attr('stroke', data.families[f]).node();
+                    var L = p.getTotalLength();
+                    p.setAttribute('stroke-dasharray', '0 ' + (L + 2));
+                    var label = tsvgT.append('text').attr('class', 'tc-map-tree__name')
+                        .attr('x', TOPS[f]).attr('y', 28).attr('text-anchor', 'middle')
+                        .attr('fill', data.families[f]).text(f);
+                    return { el: p, len: L, y0: firstYear[f] || 1850, y1: n.year, label: label };
+                });
+                var segs = SEGS.map(function (s) {
+                    var a = N[s[0]], b = N[s[1]];
+                    var p = tsvgT.append('path')
+                        .attr('d', bez(a.x, a.y, b.x, b.y))
+                        .attr('class', 'tc-map-tree__channel').node();
+                    var L = p.getTotalLength();
+                    p.setAttribute('stroke-dasharray', '0 ' + (L + 2));
+                    return { el: p, len: L, y0: a.year, y1: b.year };
+                });
+                var nodes = Object.keys(N).map(function (k) {
+                    var n = N[k];
+                    var dot = tsvgT.append('circle').attr('class', 'tc-map-tree__node')
+                        .attr('cx', n.x).attr('cy', n.y).attr('r', 3.4);
+                    var lab = n.label ? tsvgT.append('text').attr('class', 'tc-map-tree__year')
+                        .attr('x', n.x + 9).attr('y', n.y + 4).text(n.label) : null;
+                    return { dot: dot, lab: lab, year: n.year };
+                });
+                var roots = ROOTS.map(function (r) {
+                    var stem = tsvgT.append('path')
+                        .attr('d', bez(N.nF.x, N.nF.y, r.x, r.y))
+                        .attr('class', 'tc-map-tree__channel').node();
+                    var L = stem.getTotalLength();
+                    stem.setAttribute('stroke-dasharray', '0 ' + (L + 2));
+                    var dot = tsvgT.append('circle').attr('class', 'tc-map-tree__root')
+                        .attr('cx', r.x).attr('cy', r.y).attr('r', 4.2);
+                    return { stem: stem, len: L, dot: dot, year: r.year };
+                });
+                tsvgT.append('text').attr('class', 'tc-map-tree__year')
+                    .attr('x', N.nF.x).attr('y', TH - 1).attr('text-anchor', 'middle')
+                    .text('2013 · 2015 · 2017');
+                return { branches: branches, segs: segs, nodes: nodes, roots: roots };
+            }
+
+            function frac(y, a, b) { return Math.max(0, Math.min(1, (y - a) / Math.max(b - a, 1))); }
+
+            function updateTree(y) {
+                if (!tree) return;
+                tree.branches.forEach(function (b) {
+                    var f = frac(y, b.y0, b.y1);
+                    b.el.setAttribute('stroke-dasharray', (f * b.len) + ' ' + (b.len - f * b.len + 2));
+                    b.label.attr('opacity', 0.25 + 0.75 * f);
+                });
+                tree.segs.forEach(function (s) {
+                    var f = frac(y, s.y0, s.y1);
+                    s.el.setAttribute('stroke-dasharray', (f * s.len) + ' ' + (s.len - f * s.len + 2));
+                });
+                tree.nodes.forEach(function (n) {
+                    var on = y >= n.year;
+                    n.dot.attr('opacity', on ? 1 : 0);
+                    if (n.lab) n.lab.attr('opacity', on ? 0.8 : 0);
+                });
+                tree.roots.forEach(function (r) {
+                    var f = frac(y, 2016, 2017.5);
+                    r.stem.setAttribute('stroke-dasharray', (f * r.len) + ' ' + (r.len - f * r.len + 2));
+                    r.dot.attr('opacity', y >= r.year ? 1 : 0);
+                });
+            }
+
+            // ================= SOUND (P3, s10 — off by default) ========
+            // Tiny synthesized cues, no audio assets: a soft two-note
+            // swell when a great crossing begins, the single low tone
+            // when Norman George's lantern goes out, a warm triad when
+            // the lines reach one household. Off until the visitor asks.
+            var audio = { on: false, ctx: null };
+            function sndTone(f, dur, gain, delay) {
+                if (!audio.on || !audio.ctx) return;
+                var t0 = audio.ctx.currentTime + (delay || 0);
+                var o = audio.ctx.createOscillator();
+                var g = audio.ctx.createGain();
+                o.type = 'sine'; o.frequency.value = f;
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(gain, t0 + 0.12);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+                o.connect(g); g.connect(audio.ctx.destination);
+                o.start(t0); o.stop(t0 + dur + 0.05);
+            }
+            function sndDeparture() { sndTone(330, 1.5, 0.040); sndTone(440, 1.7, 0.030, 0.28); }
+            function sndGutter()    { sndTone(98,  2.6, 0.055); }
+            function sndHome()      { sndTone(261.6, 2.2, 0.035); sndTone(329.6, 2.2, 0.035, 0.30); sndTone(392, 2.6, 0.035, 0.60); }
+
+            // ================= DEPARTURES ZOOM (P3, s15.6) =============
+            // Play-mode only: when a carried light begins a long crossing,
+            // the world leans briefly toward the place being left. Gated
+            // hard — one zoom at a time, a long cooldown, never on scrub,
+            // never under reduced motion, never on small screens.
+            var smallScreen = window.matchMedia('(max-width: 720px)');
+            var zoomBusy = false, lastZoomEnd = 0;
+            function departureZoom(pt) {
+                var now = performance.now();
+                if (zoomBusy || now - lastZoomEnd < 7000) return;
+                zoomBusy = true;
+                if (audio.on) sndDeparture();
+                var k = 1.35, cx = 620, cy = 320;
+                world.node().style.transform =
+                    'translate(' + (cx - k * pt.x) + 'px,' + (cy - k * pt.y) + 'px) scale(' + k + ')';
+                setTimeout(function () { world.node().style.transform = ''; }, 1700);
+                setTimeout(function () { zoomBusy = false; lastZoomEnd = performance.now(); }, 3300);
+            }
 
             // ================= THE TIME ENGINE ========================
             var YEAR = Y1;          // explore state: fully lit on load
@@ -190,21 +358,33 @@
                             setTimeout(function () { el.classed('tc-map__lantern--kindle', false); }, 1300);
                         })(L.el);
                     }
+                    // The single low tone of the piece: Norman George's
+                    // lantern guttering out in France (s5.3 / s10).
+                    if (kindle && L.isNG && L.lastS === 1 && s > 0 && s < 1) sndGutter();
                     L.el.attr('opacity', s);
                     L.wasOn = on;
+                    L.lastS = s;
                 });
                 // Trails: reveal up to the year; the head runs while crossing.
                 trails.forEach(function (T) {
                     var yA = T.years[0], yZ = T.years[T.years.length - 1];
-                    var f;
+                    var f, i = 0;
                     if (YEAR <= yA) f = 0;
-                    else if (YEAR >= yZ) f = 1;
+                    else if (YEAR >= yZ) { f = 1; i = T.years.length - 1; }
                     else {
-                        var i = 1;
+                        i = 1;
                         while (i < T.years.length && T.years[i] < YEAR) i++;
                         var span = Math.max(T.years[i] - T.years[i - 1], 0.0001);
                         f = T.fracs[i - 1] + (T.fracs[i] - T.fracs[i - 1]) * ((YEAR - T.years[i - 1]) / span);
                     }
+                    // A long crossing just began during Play -> lean toward
+                    // the place being left (the departures flourish).
+                    if (kindle && !reduceMotion && !smallScreen.matches &&
+                        T.lastSeg != null && i > T.lastSeg && f > 0 && f < 1) {
+                        var pixLen = (T.fracs[i] - T.fracs[i - 1]) * T.total;
+                        if (pixLen > 150) departureZoom(T.node.getPointAtLength(T.fracs[i - 1] * T.total));
+                    }
+                    T.lastSeg = i;
                     var Lpx = T.total * f;
                     T.node.setAttribute('stroke-dasharray', Lpx + ' ' + (T.total - Lpx + 2));
                     if (f > 0 && f < 1 && !reduceMotion) {
@@ -223,6 +403,11 @@
                 range.value = Math.round(YEAR);
                 cursor.attr('x1', tlX(YEAR)).attr('x2', tlX(YEAR));
                 shade.attr('x', tlX(YEAR)).attr('width', Math.max(TLW - PAD - tlX(YEAR), 0));
+                updateTree(YEAR);
+                // The convergence settle (s8): once the third lantern has
+                // kindled, the whole table warms and holds — a hearth,
+                // not fireworks. Scrubbing back lifts it again.
+                if (hud) hud.classList.toggle('tc-map--home', YEAR >= 2017.5);
             }
 
             function clarityWave(m) {
@@ -245,7 +430,10 @@
                 var before = YEAR;
                 setYear(YEAR + dt * SPEED, true);
                 MILESTONES.forEach(function (m) {
-                    if (m.year > before && m.year <= YEAR) clarityWave(m);
+                    if (m.year > before && m.year <= YEAR) {
+                        clarityWave(m);
+                        if (m.year === 2016) sndHome();
+                    }
                 });
                 if (YEAR >= Y1) { stop(); return; }   // explore is the default after Play (s9)
                 rafId = requestAnimationFrame(tick);
@@ -282,16 +470,31 @@
             endBtn.textContent = 'skip to today';
             var caption = document.createElement('p');
             caption.className = 'tc-map-controls__caption';
+            var sndBtn = document.createElement('button');
+            sndBtn.type = 'button';
+            sndBtn.className = 'tc-map-controls__end tc-map-controls__sound';
+            sndBtn.textContent = '♪ sound: off';
+            sndBtn.setAttribute('aria-pressed', 'false');
             controls.appendChild(playBtn);
             controls.appendChild(yearOut);
             controls.appendChild(range);
             controls.appendChild(endBtn);
+            controls.appendChild(sndBtn);
             mount.parentNode.insertBefore(controls, mount);
             mount.parentNode.insertBefore(caption, mount.nextSibling);
 
             if (reduceMotion) playBtn.style.display = 'none';
             playBtn.addEventListener('click', function () { playing ? stop() : play(); });
             endBtn.addEventListener('click', function () { stop(); setYear(Y1, false); });
+            sndBtn.addEventListener('click', function () {
+                audio.on = !audio.on;
+                if (audio.on && !audio.ctx && (window.AudioContext || window.webkitAudioContext)) {
+                    audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audio.on && audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume();
+                sndBtn.textContent = audio.on ? '♪ sound: on' : '♪ sound: off';
+                sndBtn.setAttribute('aria-pressed', audio.on ? 'true' : 'false');
+            });
             range.addEventListener('input', function () { stop(); setYear(+range.value, false); });
 
             // ================= TIMELINE (now a scrubber) ==============

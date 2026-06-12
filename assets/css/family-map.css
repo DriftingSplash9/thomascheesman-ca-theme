@@ -239,6 +239,64 @@
     filter: drop-shadow(0 0 5px rgba(255, 233, 168, 0.6));
 }
 
+/* --- P3: the departures zoom ----------------------------------------- */
+.tc-map__world {
+    transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+/* --- P3: the ghost tree ----------------------------------------------- */
+.tc-map-tree { margin: 0.4rem 0 0.2rem; }
+.tc-map-tree svg { display: block; width: 100%; height: auto; }
+.tc-map-tree__branch {
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    opacity: 0.55;
+}
+.tc-map-tree__branch--graft { stroke-dasharray: 0 0; opacity: 0.45; }
+.tc-map-tree__channel {
+    fill: none;
+    stroke: rgba(255, 238, 204, 0.42);
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+.tc-map-tree__node {
+    fill: #ffe9a8;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    filter: drop-shadow(0 0 5px rgba(255, 233, 168, 0.6));
+}
+.tc-map-tree__root {
+    fill: #ffd9c2;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    filter: drop-shadow(0 0 7px rgba(255, 217, 194, 0.8));
+}
+.tc-map-tree__name { font-size: 11px; letter-spacing: 0.06em; opacity: 0.5; }
+.tc-map-tree__year { font-size: 10.5px; fill: #b9a87c; opacity: 0; transition: opacity 1.2s ease; }
+
+/* --- P3: the convergence settle — a hearth, not fireworks ------------- */
+.tc-map-hud { transition: box-shadow 3s ease, border-color 3s ease; }
+.tc-map--home {
+    border-color: rgba(233, 200, 126, 0.28);
+    box-shadow:
+        0 0 0 1px rgba(255, 240, 210, 0.05),
+        0 0 90px -20px rgba(233, 200, 126, 0.22),
+        0 30px 80px -30px rgba(0, 0, 0, 0.8);
+}
+.tc-map--home .tc-map__sphere { fill: #0a0c1d; transition: fill 3s ease; }
+@keyframes tc-root-hearth {
+    0%   { r: 4.2; }
+    40%  { r: 6.4; }
+    100% { r: 4.6; }
+}
+.tc-map--home .tc-map-tree__root { animation: tc-root-hearth 3.2s ease-out 1 forwards; }
+@media (prefers-reduced-motion: reduce) {
+    .tc-map--home .tc-map-tree__root { animation: none; }
+    .tc-map__world { transition: none; }
+}
+
 /* --- Small screens --------------------------------------------------- */
 @media (max-width: 720px) {
     .tc-map-section { padding: 0.4rem 0.5rem 3rem; }
@@ -246,4 +304,7 @@
     .tc-map-hud__intro { font-size: 0.92rem; }
     .tc-map-legend { font-size: 0.72rem; gap: 0.3rem 0.7rem; }
     .tc-map-tooltip { width: 220px; }
+    /* The spec's mobile fallback (s13): drop the ghost tree, keep the
+       lantern map + scrub. The departures zoom is gated off in JS. */
+    .tc-map-tree { display: none; }
 }
