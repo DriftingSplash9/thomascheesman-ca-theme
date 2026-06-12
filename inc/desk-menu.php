@@ -63,7 +63,12 @@ function tc_render_desk_menu() {
              hotspot to swap to the search interface.
              ============================================================ -->
         <div class="tc-desk__monitor" role="navigation" aria-label="<?php esc_attr_e( 'Site sections', 'tc-ventures-child' ); ?>">
-            <h1 class="tc-desk__monitor-title">Contents</h1>
+            <?php /* Deliberately NOT a heading element: this overlay renders
+                     before the page's real <h1> in DOM order on every URL,
+                     so an h1/h2 here is what crawlers + screen readers meet
+                     first sitewide (2026-06 review). The nav landmark above
+                     carries the semantics; the class keeps the styling. */ ?>
+            <p class="tc-desk__monitor-title">Contents</p>
             <ul class="tc-desk__toc">
                 <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">
                     <span class="title">Welcome &mdash; a note from me</span>
@@ -93,9 +98,13 @@ function tc_render_desk_menu() {
                     <span class="title">My whole life so far</span>
                     <span class="pageno">129</span>
                 </a></li>
+                <li><a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">
+                    <span class="title">Where we all came from</span>
+                    <span class="pageno">203</span>
+                </a></li>
                 <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">
                     <span class="title">Send me a letter</span>
-                    <span class="pageno">165</span>
+                    <span class="pageno">245</span>
                 </a></li>
             </ul>
 
@@ -273,7 +282,11 @@ function tc_render_desk_menu() {
 
         <!-- Bitcoin Standard + Broken Money -->
         <div class="tc-desk__hotspot" id="tc-desk-bitcoin" style="left:79.81%; top:39.73%; width:19.67%; height:21.82%; --hot-x:79.81; --hot-y:39.73; --hot-w:19.67; --hot-h:21.82; --hot-png: url('/wp-content/uploads/2026/05/bitcoin.png');" aria-label="Bitcoin Standard and Broken Money">
-            <div class="tc-desk__card tc-desk__card--left">Two of the best books ever written about money. Still standing by them.</div>
+            <?php /* The live BTC price lived in the header capsule until the
+                     2026-06 review; Thomas moved it here — an easter egg on
+                     the books that started it, not chrome on every page.
+                     main.js targets [data-tc-btc-price] wherever it lives. */ ?>
+            <div class="tc-desk__card tc-desk__card--left">Two of the best books ever written about money. Still standing by them. <span class="tc-desk__btc-quip" data-tc-btc>&#8383; <span data-tc-btc-price>$--</span> as of right now.</span></div>
         </div>
 
         <!-- LOTR / The Hobbit -->
@@ -435,7 +448,7 @@ function tc_render_desk_menu() {
                  inner ink-settings view below; clicking any other card
                  closes the drawer and applies that variant. -->
             <div data-trail-view="main">
-                <h2>Pick a cursor trail</h2>
+                <p class="tc-desk__drawer-title">Pick a cursor trail</p>
                 <p class="tc-desk__drawer-sub">Mouse magic. Your choice sticks across pages.</p>
                 <div class="tc-desk__drawer-grid">
                     <a href="#" class="tc-desk__drawer-card" data-trail="stars">
@@ -473,7 +486,7 @@ function tc_render_desk_menu() {
                 <button class="tc-desk__trail-back" type="button" data-trail-back>
                     &larr; back
                 </button>
-                <h2>Off</h2>
+                <p class="tc-desk__drawer-title">Off</p>
                 <p class="tc-desk__drawer-sub">Or tune the default trail to taste.</p>
 
                 <p class="tc-desk__trail-label">Trail colour</p>
@@ -519,7 +532,7 @@ function tc_render_desk_menu() {
     <div class="tc-desk__drawer" id="tc-desk-slideshow-drawer" role="dialog" aria-hidden="true">
         <div class="tc-desk__drawer-inner">
             <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
-            <h2>All the slideshows</h2>
+            <p class="tc-desk__drawer-title">All the slideshows</p>
             <p class="tc-desk__drawer-sub">Memory cards. Pick a stack &mdash; every slideshow and video on the site.</p>
             <div class="tc-desk__drawer-grid">
                 <a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>" class="tc-desk__drawer-card">
@@ -563,7 +576,7 @@ function tc_render_desk_menu() {
                  the name of whoever set it — refreshed from the leaderboard
                  REST endpoint each time the drawer opens. -->
             <div data-games-view="picker">
-                <h2>Arcade</h2>
+                <p class="tc-desk__drawer-title">Arcade</p>
                 <p class="tc-desk__drawer-sub">Hidden inside the toad. Pick a game.</p>
                 <div class="tc-desk__drawer-grid">
                     <a href="#" class="tc-desk__drawer-card" data-game="snake">
@@ -598,7 +611,7 @@ function tc_render_desk_menu() {
                 <button class="tc-desk__games-back" type="button" data-games-back>
                     &larr; back
                 </button>
-                <h2 data-games-title>Snake</h2>
+                <p class="tc-desk__drawer-title" data-games-title>Snake</p>
                 <div class="tc-desk__games-stats">
                     <span>Score: <strong data-games-score>0</strong></span>
                     <span>High: <strong data-games-high-current>0</strong></span>
@@ -656,7 +669,7 @@ function tc_render_desk_menu() {
          data-crest-video-b="/wp-content/uploads/2026/05/Faith-boxing-2.mp4">
         <div class="tc-desk__drawer-inner">
             <button class="tc-desk__drawer-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'tc-ventures-child' ); ?>">&times;</button>
-            <h2>From Faith</h2>
+            <p class="tc-desk__drawer-title">From Faith</p>
             <p class="tc-desk__drawer-sub">A little secret behind the crest.</p>
             <video class="tc-desk__crest-video" data-crest-video controls playsinline preload="metadata"></video>
         </div>

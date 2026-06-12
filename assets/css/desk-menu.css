@@ -621,6 +621,17 @@ html.tc-desk-open{ overflow: hidden; }
    small offset on the cross-axis (6px) is the lift-up animation.
    ============================================================ */
 
+/* Live BTC price inside the Bitcoin-books hover card — the easter egg
+   that replaced the header-capsule ticker (2026-06 review, Thomas's
+   call). main.js fills [data-tc-btc-price] on load. */
+.tc-desk__btc-quip{
+    display: block;
+    margin-top: 6px;
+    font-size: 0.85em;
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+}
+
 .tc-desk__card--below{
     left: 50%;
     top: 100%;
@@ -824,7 +835,8 @@ html.tc-desk-open{ overflow: hidden; }
     text-shadow: 0 0 10px #ffd9ec;
 }
 
-.tc-desk__drawer h2{
+.tc-desk__drawer h2,
+.tc-desk__drawer .tc-desk__drawer-title{
     margin: 0 0 4px;
     font-family: Georgia, serif;
     font-size: 26px;

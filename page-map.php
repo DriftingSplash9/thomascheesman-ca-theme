@@ -29,7 +29,7 @@ get_header(); ?>
             <span class="page-hero__eyebrow">The Lanterns of Record</span>
             <h1 class="page-hero__title kinetic-text">The Map</h1>
             <p class="page-hero__subtitle kinetic-fade">
-                Ten family lines, two and a half centuries, one prairie &mdash;
+                Ten family lines, four centuries, one prairie &mdash;
                 drawn as records becoming light
             </p>
         </div>

@@ -11,11 +11,14 @@ get_header(); ?>
     <!-- HERO SECTION -->
     <section class="hero-section">
         <div class="container">
-            <h1 class="hero-title kinetic-text" aria-label="Welcome to TC 'ventures">
-                Welcome to TC 'ventures
+            <h1 class="hero-title kinetic-text" aria-label="I'm Thomas Cheesman">
+                I'm Thomas Cheesman
             </h1>
             <p class="hero-subtitle kinetic-fade">
-                Exploring life, family, and what matters most to me
+                Chef until my hands retired me, dad of three, one of fewer than fifty people alive with Hajdu-Cheney syndrome. This is what I'm leaving behind, written while I can.
+            </p>
+            <p class="hero-subtitle hero-subtitle--thesis kinetic-fade">
+                Eight family lines, a handful of stories, and the things I want my kids to be able to find later if they go looking.
             </p>
         </div>
     </section>

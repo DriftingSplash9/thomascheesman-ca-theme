@@ -60,7 +60,7 @@
 
                 <nav class="tc-drawer__compartment tc-drawer__compartment--nav"
                      aria-label="<?php esc_attr_e( 'Family pages', 'tc-ventures-child' ); ?>">
-                    <h2 class="tc-drawer__heading">Family</h2>
+                    <p class="tc-drawer__heading">Family</p>
                     <ul>
                         <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">Family</a></li>
                         <li><a href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
@@ -72,7 +72,7 @@
 
                 <nav class="tc-drawer__compartment tc-drawer__compartment--nav"
                      aria-label="<?php esc_attr_e( 'Hajdu-Cheney pages', 'tc-ventures-child' ); ?>">
-                    <h2 class="tc-drawer__heading">Hajdu-Cheney</h2>
+                    <p class="tc-drawer__heading">Hajdu-Cheney</p>
                     <ul>
                         <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">HCS</a></li>
                         <li><a href="<?php echo esc_url( home_url( '/hcs/case-studies' ) ); ?>">Case Studies &amp; Research</a></li>
@@ -81,7 +81,7 @@
 
                 <nav class="tc-drawer__compartment tc-drawer__compartment--nav"
                      aria-label="<?php esc_attr_e( 'The site', 'tc-ventures-child' ); ?>">
-                    <h2 class="tc-drawer__heading">The site</h2>
+                    <p class="tc-drawer__heading">The site</p>
                     <ul>
                         <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a></li>
                         <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
@@ -91,7 +91,7 @@
 
                 <nav class="tc-drawer__compartment tc-drawer__compartment--nav"
                      aria-label="<?php esc_attr_e( 'Elsewhere', 'tc-ventures-child' ); ?>">
-                    <h2 class="tc-drawer__heading">Elsewhere</h2>
+                    <p class="tc-drawer__heading">Elsewhere</p>
                     <ul>
                         <li><a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare &#8599;</a></li>
                         <li><a href="https://gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">GP Residential Society &#8599;</a></li>
