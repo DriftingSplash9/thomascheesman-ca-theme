@@ -322,7 +322,7 @@ function tc_render_desk_menu() {
             </div>
 
             <div class="tc-desk__mobile-meta-block">
-                <span class="tc-desk__mobile-meta-label">The kids</span>
+                <span class="tc-desk__mobile-meta-label">The Next Generation</span>
                 <ul>
                     <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">The family tree</a></li>
                     <li><a class="tc-plain-kid tc-plain-kid--patience" href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
@@ -344,6 +344,7 @@ function tc_render_desk_menu() {
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">&#x21B3; Rycrofts</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts/steinkes' ) ); ?>">&#x21B3; Steinkes</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">&#x21B3; Haistes</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/map' ) ); ?>">&#x21B3; The Map</a></li>
                 </ul>
             </div>
 
@@ -402,6 +403,7 @@ function tc_render_desk_menu() {
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>">Rycrofts</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts/steinkes' ) ); ?>">Steinkes</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>">Haistes</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/heritage/map' ) ); ?>">The Map</a></li>
                 </ul>
             </li>
 
