@@ -188,14 +188,16 @@ The companion **unified essay** (opening on the Napoleon/records spine) can be d
 
 ---
 
-## 15. Open decisions (need Thomas)
-1. **Page location / slug** — `/family/map`? top-level `/map`? a tab inside `/heritage`? (Affects template + nav.)
-2. **Line colours — SETTLED (2026-06-11):** all eight lines now have approved pastel colours (see §16); no open colour decisions remain.
-3. **Campbell & Cameron** — their own threads, or sub-strands of the McIver line's colour?
-4. **The Lakeman Shell-era globe-hops** (Venezuela, London, Kuwait, Singapore) — include as reach, or exclude as one man's career rather than lineage migration?
-5. **Sound** default (off, with toggle — recommended).
-6. **"Departures" flourish** (GPT's idea — a brief zoom into the place being *left*, with its ambient sound, on each emigration) — adopt as a P3 grace note, or skip?
-7. **Geocoding** — manual vs a scripted pass.
+## 15. Open decisions — ALL SETTLED (Thomas, 2026-06-11)
+1. **Page location / slug:** top-level **`/map`**.
+2. **Line colours — SETTLED:** the eight approved pastels (§16).
+3. **Campbell & Cameron:** **their own threads** (own light-paths; they may share the McIver sea-glass family or take derived shades — render call at P1).
+4. **The Lakeman Shell-era globe-hops:** **include** (Venezuela, London, Kuwait, Singapore — the line's signature reach).
+5. **Sound:** **off** by default (opt-in toggle per §10).
+6. **"Departures" flourish:** **adopted** — brief zoom into the place being left, as a P3 grace note.
+7. **Geocoding:** scripted/knowledge pass with coordinates written back into the xlsx for Thomas's review; uncertain places stay blank rather than guessed.
+
+**P0 amendment (Thomas, 2026-06-11):** the workbook is pre-seeded BY the agent from the eight manuscripts/lineage tables (confidence tiers + sources carried over); Thomas fills only what the family alone knows — living residences (Dan's life points await the Dan interview; Melanie's Edmonton years + return-to-GP await her answer — blank years with a TBC note are valid rows).
 
 ---
 

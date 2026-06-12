@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initLongreadChapterRail();
     initHeritageTreeTilt();
     initHeritageTreeFacts();
+    initFilmReels();
     initThomasTOC();
     initPersonSpokeTOC();
     initFlipbook();
@@ -2473,6 +2474,40 @@ function initHeritageTreeFacts() {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 toggle();
+            }
+        });
+    });
+}
+
+// Family film reels — lite YouTube embeds on the heritage long-reads.
+// The converter (videoHTML in _md2heritage.js) renders a facade only:
+// the video's thumbnail, a play badge, and a CTA pill. Nothing from
+// YouTube loads until the visitor clicks; then the facade is swapped
+// for the privacy-enhanced youtube-nocookie iframe with autoplay.
+// No-op on pages without a reel.
+function initFilmReels() {
+    const reels = document.querySelectorAll('.heritage-longread__filmreel');
+    if (!reels.length) return;
+
+    reels.forEach(function (reel) {
+        function play() {
+            if (reel.dataset.playing) return;
+            reel.dataset.playing = '1';
+            const frame = document.createElement('iframe');
+            frame.src = 'https://www.youtube-nocookie.com/embed/' + reel.dataset.videoId + '?autoplay=1&rel=0';
+            frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+            frame.allowFullscreen = true;
+            frame.title = reel.getAttribute('aria-label') || 'Family video';
+            reel.replaceChildren(frame);
+            reel.classList.add('heritage-longread__filmreel--playing');
+            reel.removeAttribute('role');
+            reel.removeAttribute('tabindex');
+        }
+        reel.addEventListener('click', play);
+        reel.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                play();
             }
         });
     });

@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.520
+Version: 1.0.521
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6105,6 +6105,104 @@ body:has(.heritage-longread--mcivers) {
 @keyframes tc-lr-tint-a { 0%, 100% { background-color: var(--blob-a); } 33% { background-color: var(--blob-b); } 66% { background-color: var(--blob-c); } }
 @keyframes tc-lr-tint-b { 0%, 100% { background-color: var(--blob-b); } 33% { background-color: var(--blob-c); } 66% { background-color: var(--blob-a); } }
 @keyframes tc-lr-tint-c { 0%, 100% { background-color: var(--blob-c); } 33% { background-color: var(--blob-a); } 66% { background-color: var(--blob-b); } }
+
+/* --- FAMILY FILM REEL: lite YouTube embed (videoHTML in the converter
+   + initFilmReels in main.js). A 16:9 facade — the video's own
+   thumbnail, a play badge, and a CTA pill — framed and glowed in the
+   line colour like the photo frames. The real iframe only exists
+   after a click; until then zero YouTube bytes load. */
+.heritage-longread__filmreel {
+    position: relative;
+    display: block;
+    width: min(860px, 100%);
+    aspect-ratio: 16 / 9;
+    margin: 2.4rem auto 0.8rem;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #000;
+    border: 1px solid color-mix(in srgb, var(--line-color) 45%, transparent);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.04),
+        0 14px 44px -10px color-mix(in srgb, var(--line-color) 45%, transparent);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.heritage-longread__filmreel:hover,
+.heritage-longread__filmreel:focus-visible {
+    transform: translateY(-2px);
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--line-color) 35%, transparent),
+        0 18px 56px -10px color-mix(in srgb, var(--line-color) 65%, transparent);
+}
+.heritage-longread__filmreel-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+.heritage-longread__filmreel-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 84px;
+    height: 84px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--line-color) 26%, rgba(8, 10, 26, 0.62));
+    border: 2px solid color-mix(in srgb, var(--line-color) 80%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 6px 28px color-mix(in srgb, var(--line-color) 40%, transparent);
+    transition: transform 0.25s ease, background 0.25s ease;
+}
+.heritage-longread__filmreel-play::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 54%;
+    transform: translate(-50%, -50%);
+    border-style: solid;
+    border-width: 14px 0 14px 24px;
+    border-color: transparent transparent transparent color-mix(in srgb, var(--line-color) 85%, #fff);
+}
+.heritage-longread__filmreel:hover .heritage-longread__filmreel-play {
+    transform: translate(-50%, -50%) scale(1.08);
+    background: color-mix(in srgb, var(--line-color) 40%, rgba(8, 10, 26, 0.55));
+}
+.heritage-longread__filmreel-cta {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    max-width: calc(100% - 28px);
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: color-mix(in srgb, var(--line-color) 80%, #fff);
+    background: rgba(6, 8, 20, 0.72);
+    border: 1px solid color-mix(in srgb, var(--line-color) 45%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.heritage-longread__filmreel iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+.heritage-longread__filmreel--playing { cursor: default; }
+.heritage-longread__filmreel-caption {
+    max-width: 860px;
+    margin: 0.4rem auto 0;
+    text-align: center;
+    font-size: 0.88rem;
+    color: color-mix(in srgb, var(--line-color) 55%, #9a93a0);
+}
 
 /* --- GLASS PLATE (upgraded). Replaces the section's flat frosted fill
    and drops the legacy ::after glow (the atmosphere replaces it). */
