@@ -137,12 +137,17 @@
 
             // --- Lanterns ---------------------------------------------
             var located = data.events.filter(function (e) { return e.lat != null && e.lng != null; });
-            // A line's first DATED record: undated events kindle with it.
-            // (Without this, year-TBC rows burned from 1610 — Cheesmans
-            // in Calgary beating Columbus. Thomas caught it live.)
-            var famFirst = {};
+            // An undated record can't precede its PERSON's first dated
+            // record — or, if the person has none, the line's. (Without
+            // this, year-TBC rows burned from 1610: Cheesmans in Calgary
+            // beating Columbus, Melanie in Edmonton in 1700. Thomas
+            // caught it live.)
+            var famFirst = {}, personFirst = {};
             data.events.forEach(function (e) {
-                if (e.year && (!famFirst[e.family] || e.year < famFirst[e.family])) famFirst[e.family] = e.year;
+                if (!e.year) return;
+                if (!famFirst[e.family] || e.year < famFirst[e.family]) famFirst[e.family] = e.year;
+                var pk = e.family + '|' + e.person;
+                if (!personFirst[pk] || e.year < personFirst[pk]) personFirst[pk] = e.year;
             });
             var stacks = {};
             located.forEach(function (e) {
@@ -180,7 +185,8 @@
                     hit.style('cursor', 'pointer')
                        .on('click', function () { window.location.href = url; });
                 }
-                lit.push({ el: g, x: e._x, y: e._y, year: e.year, famYear: famFirst[e.family] || 0,
+                lit.push({ el: g, x: e._x, y: e._y, year: e.year,
+                           famYear: personFirst[e.family + '|' + e.person] || famFirst[e.family] || 0,
                            isDeath: e.type === 'death', wasOn: true, lastS: 1,
                            isNG: e.type === 'death' && /villers/i.test(e.place || '') });
             });
