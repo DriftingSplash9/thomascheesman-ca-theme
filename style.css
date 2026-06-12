@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.539
+Version: 1.0.540
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -6289,10 +6289,13 @@ body:has(.heritage-longread--mcivers) {
        — the atmosphere lives AROUND the plate, not behind the words.
        The remaining 5-8% translucency + blur keeps the edges feeling
        like glass without costing a single word of contrast. */
+    /* Round 4: Thomas dialed the plate to the 67-72% band after seeing
+       near-opaque — enough atmosphere through the lens to feel the line's
+       colour, with brightness(0.5) pre-darkening what shows through. */
     background: linear-gradient(150deg,
-        rgba(10, 13, 26, 0.92) 0%,
-        rgba(6, 8, 18, 0.95) 40%,
-        rgba(4, 5, 13, 0.96) 100%);
+        rgba(10, 13, 26, 0.67) 0%,
+        rgba(6, 8, 18, 0.70) 40%,
+        rgba(4, 5, 13, 0.72) 100%);
     backdrop-filter: blur(14px) brightness(0.5);
     -webkit-backdrop-filter: blur(14px) brightness(0.5);
     border: none;
