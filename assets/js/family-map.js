@@ -238,7 +238,9 @@
 
             function tick(ts) {
                 if (!playing) return;
-                var dt = lastTs ? (ts - lastTs) / 1000 : 0;
+                // Clamp the frame delta: rAF pauses in hidden tabs, and an
+                // unclamped dt would teleport decades on return.
+                var dt = Math.min(lastTs ? (ts - lastTs) / 1000 : 0, 0.1);
                 lastTs = ts;
                 var before = YEAR;
                 setYear(YEAR + dt * SPEED, true);

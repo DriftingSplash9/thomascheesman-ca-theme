@@ -165,6 +165,10 @@
     font-size: 0.84rem;
     letter-spacing: 0.05em;
     color: #cfd8f2;
+    /* a sitewide button rule paints button text with a transparent
+       text-fill (for gradient effects); without this the labels here
+       render invisible — text-fill-color beats color. */
+    -webkit-text-fill-color: currentColor;
     padding: 0.45rem 1.05rem;
     border-radius: 999px;
     cursor: pointer;
