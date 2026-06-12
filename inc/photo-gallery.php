@@ -80,23 +80,36 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function tc_gallery_attachment_id( string $url ) : int {
     static $map   = null;
     static $dirty = false;
+    // _v2: v1 cached a page of misses — the gallery arrays hold
+    // ROOT-RELATIVE paths, and attachment_url_to_postid() only matches
+    // full uploads URLs. Keying the option by version retires the bad
+    // cache without a manual delete.
+    $opt = 'tc_gallery_url_map_v2';
     if ( $map === null ) {
-        $map = get_option( 'tc_gallery_url_map', array() );
+        $map = get_option( $opt, array() );
         if ( ! is_array( $map ) ) {
             $map = array();
         }
-        register_shutdown_function( function () use ( &$map, &$dirty ) {
+        register_shutdown_function( function () use ( &$map, &$dirty, $opt ) {
             if ( $dirty ) {
-                update_option( 'tc_gallery_url_map', $map, false );
+                update_option( $opt, $map, false );
             }
         } );
     }
     if ( array_key_exists( $url, $map ) ) {
         return (int) $map[ $url ];
     }
-    $id           = (int) attachment_url_to_postid( $url );
-    $map[ $url ]  = $id;
-    $dirty        = true;
+    $lookup = $url;
+    if ( strpos( $lookup, '//' ) === false ) {
+        $lookup = home_url( $lookup );
+    }
+    $id = (int) attachment_url_to_postid( $lookup );
+    if ( ! $id && strpos( $lookup, '-scaled.' ) !== false ) {
+        // Attachments whose main file is the un-scaled original.
+        $id = (int) attachment_url_to_postid( str_replace( '-scaled.', '.', $lookup ) );
+    }
+    $map[ $url ] = $id;
+    $dirty       = true;
     return $id;
 }
 
