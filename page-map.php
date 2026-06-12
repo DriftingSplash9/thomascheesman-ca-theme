@@ -61,6 +61,9 @@ get_header(); ?>
                     The same history is told in full in
                     <a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">the eight family stories</a>.</p>
                 </noscript>
+                <!-- The right-edge tab that scrolls the ghost tree into
+                     view (hidden on small screens with the tree itself). -->
+                <button type="button" class="tc-map__treejump" id="tc-map-treejump">family tree ↓</button>
             </div>
 
             <!-- P3: the ghost family tree — the same data projected

@@ -47,11 +47,15 @@
 /* --- The world ----------------------------------------------------- */
 .tc-map { position: relative; }
 .tc-map svg { display: block; width: 100%; height: auto; }
-.tc-map__sphere    { fill: #070a1a; }
-/* vector-effect keeps coastlines, graticule, and trails hairline when
-   a region view scales the world group up. */
-.tc-map__graticule { fill: none; stroke: rgba(160, 185, 235, 0.05); stroke-width: 0.5; vector-effect: non-scaling-stroke; }
-.tc-map__land      { fill: #0d1330; stroke: rgba(160, 185, 235, 0.14); stroke-width: 0.5; vector-effect: non-scaling-stroke; }
+/* Darker water, brighter land, livelier coastline — Thomas wanted the
+   two to actually contrast (2026-06-11). */
+.tc-map__sphere    { fill: #02030a; }
+/* vector-effect keeps coastlines, graticule, and trails hairline at
+   any zoom depth. */
+.tc-map__graticule { fill: none; stroke: rgba(160, 185, 235, 0.055); stroke-width: 0.5; vector-effect: non-scaling-stroke; }
+.tc-map__land      { fill: #1a2450; stroke: rgba(178, 200, 245, 0.30); stroke-width: 0.6; vector-effect: non-scaling-stroke; }
+.tc-map svg        { cursor: grab; }
+.tc-map svg:active { cursor: grabbing; }
 .tc-map__noscript  { padding: 3rem 1rem; text-align: center; color: #b9c2dd; }
 
 /* --- Carried light (static in P1) ---------------------------------- */
@@ -233,36 +237,29 @@
     vector-effect: non-scaling-stroke;
 }
 
-/* Lanterns glide between view fits (counter-scale keeps them crisp). */
-.tc-map__lantern { transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
-@media (prefers-reduced-motion: reduce) {
-    .tc-map__lantern { transition: none; }
-}
-
-/* The three-view switch. */
-.tc-map-controls__views {
-    display: inline-flex;
-    border: 1px solid rgba(160, 185, 235, 0.3);
-    border-radius: 999px;
-    overflow: hidden;
-}
-.tc-map-controls__viewbtn {
+/* The right-edge tab that brings the ghost tree into view. */
+.tc-map__treejump {
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(180deg);
+    writing-mode: vertical-rl;
     font: inherit;
-    font-size: 0.76rem;
-    letter-spacing: 0.04em;
-    color: #aab4d4;
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    color: #b9a87c;
     -webkit-text-fill-color: currentColor;
-    background: rgba(10, 14, 34, 0.65);
-    border: 0;
-    padding: 0.42rem 0.9rem;
+    background: rgba(10, 14, 34, 0.7);
+    border: 1px solid rgba(233, 200, 126, 0.3);
+    border-radius: 999px;
+    padding: 0.9rem 0.34rem;
     cursor: pointer;
+    transition: color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
-.tc-map-controls__viewbtn + .tc-map-controls__viewbtn {
-    border-left: 1px solid rgba(160, 185, 235, 0.18);
-}
-.tc-map-controls__viewbtn.is-on {
-    color: #0a0e22;
-    background: #ffe9a8;
+.tc-map__treejump:hover {
+    color: #ffe9a8;
+    border-color: rgba(255, 233, 168, 0.6);
+    box-shadow: 0 0 16px rgba(233, 200, 126, 0.25);
 }
 
 /* Timeline scrubber chrome. */
@@ -343,4 +340,5 @@
     /* The spec's mobile fallback (s13): drop the ghost tree, keep the
        lantern map + scrub. The departures zoom is gated off in JS. */
     .tc-map-tree { display: none; }
+    .tc-map__treejump { display: none; }
 }

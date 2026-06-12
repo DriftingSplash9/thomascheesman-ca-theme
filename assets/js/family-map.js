@@ -88,13 +88,14 @@
 
             svg.append('path').datum({ type: 'Sphere' })
                 .attr('d', path).attr('class', 'tc-map__sphere');
-            // Everything geographic lives in one sphere-clipped group so
-            // the departures zoom (P3) can lean the whole world toward the
-            // place being left without spilling past the map's edge.
+            // The clip lives on an UNSCALED wrapper and the transform on
+            // the inner group — clip-path rides an element's own
+            // transform, so putting both on one group let zoomed trails
+            // spill past the sphere's edge (Thomas caught it live).
             svg.append('clipPath').attr('id', 'tc-sphere-clip')
                 .append('path').datum({ type: 'Sphere' }).attr('d', path);
-            var world = svg.append('g').attr('class', 'tc-map__world')
-                .attr('clip-path', 'url(#tc-sphere-clip)');
+            var clipWrap = svg.append('g').attr('clip-path', 'url(#tc-sphere-clip)');
+            var world = clipWrap.append('g').attr('class', 'tc-map__world');
             var graticule = world.append('path').datum(d3.geoGraticule10())
                 .attr('d', path).attr('class', 'tc-map__graticule');
             world.append('path').datum(land)
@@ -156,8 +157,15 @@
                 var xy = projection([e.lng, e.lat]);
                 var r = i === 0 ? 0 : 3.4 * Math.sqrt(i);
                 var a = i * 2.39996;
-                e._x = xy[0] + r * Math.cos(a);
-                e._y = xy[1] + r * Math.sin(a);
+                // True projected point and the de-stack spiral SEPARATELY:
+                // the offset is applied inside the counter-scaled lantern
+                // group so it stays a few SCREEN px at any zoom — baked-in
+                // offsets scaled with the world and pushed island dots
+                // into the sea (Thomas caught it live).
+                e._bx = xy[0]; e._by = xy[1];
+                e._ox = r * Math.cos(a); e._oy = r * Math.sin(a);
+                e._x = e._bx + e._ox;
+                e._y = e._by + e._oy;
             });
 
             var lanterns = world.append('g').attr('class', 'tc-map__lanterns');
@@ -185,57 +193,37 @@
                     hit.style('cursor', 'pointer')
                        .on('click', function () { window.location.href = url; });
                 }
-                lit.push({ el: g, x: e._x, y: e._y, year: e.year,
+                lit.push({ el: g, bx: e._bx, by: e._by, ox: e._ox, oy: e._oy, year: e.year,
                            famYear: personFirst[e.family + '|' + e.person] || famFirst[e.family] || 0,
                            isDeath: e.type === 'death', wasOn: true, lastS: 1,
                            isNG: e.type === 'death' && /villers/i.test(e.place || '') });
             });
 
-            // ================= THE THREE VIEWS =========================
-            // world / North America / Europe (Thomas, 2026-06-11). The
-            // sphere-clipped world group glides to a region fit; strokes
-            // stay hairline via vector-effect, and every lantern carries a
-            // counter-scale so the dots stay crisp while clusters
-            // naturally de-clump. The departures zoom only runs in the
-            // world view (two transforms would fight).
-            var VIEWS = {
-                world:  { label: 'world',         bounds: null },
-                na:     { label: 'North America', bounds: [[-170, 15], [-52, 72]] },
-                europe: { label: 'Europe',        bounds: [[-12, 36], [24, 62]] }
-            };
-            var curView = 'world', viewK = 1, viewBtns = [];
-            function computeView(b) {
-                if (!b) return { k: 1, tx: 0, ty: 0 };
-                var xs = [], ys = [];
-                for (var s = 0; s <= 8; s++) {
-                    var lng = b[0][0] + (b[1][0] - b[0][0]) * s / 8;
-                    var lat = b[0][1] + (b[1][1] - b[0][1]) * s / 8;
-                    [projection([lng, b[0][1]]), projection([lng, b[1][1]]),
-                     projection([b[0][0], lat]), projection([b[1][0], lat])].forEach(function (p) {
-                        if (p) { xs.push(p[0]); ys.push(p[1]); }
-                    });
-                }
-                var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
-                var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
-                var k = Math.min(W / (x1 - x0), H / (y1 - y0)) * 0.92;
-                return { k: k, tx: W / 2 - k * (x0 + x1) / 2, ty: H / 2 - k * (y0 + y1) / 2 };
-            }
-            function applyView(name) {
-                curView = name;
-                var v = computeView(VIEWS[name].bounds);
-                viewK = v.k;
-                world.node().style.transform = name === 'world' ? '' :
-                    'translate(' + v.tx + 'px,' + v.ty + 'px) scale(' + v.k + ')';
+            // ================= FREE ZOOM ===============================
+            // Wheel-zoom at the cursor + drag pan + pinch (d3.zoom),
+            // replacing the canned region views — go anywhere, any depth
+            // (Thomas, 2026-06-11). Strokes stay hairline via
+            // vector-effect; every lantern carries a 1/k counter-scale so
+            // the dots stay crisp candle-points at any zoom.
+            var currentK = 1;
+            function counterScale(k) {
+                currentK = k;
                 lit.forEach(function (L) {
                     L.el.node().style.transform =
-                        'translate(' + L.x + 'px,' + L.y + 'px) scale(' + (1 / v.k) + ')';
+                        'translate(' + L.bx + 'px,' + L.by + 'px) scale(' + (1 / k) +
+                        ') translate(' + L.ox + 'px,' + L.oy + 'px)';
                 });
-                trails.forEach(function (T) { T.head.attr('r', 2.4 / v.k); });
-                viewBtns.forEach(function (btn) {
-                    btn.classList.toggle('is-on', btn.dataset.view === name);
-                    btn.setAttribute('aria-pressed', btn.dataset.view === name ? 'true' : 'false');
-                });
+                trails.forEach(function (T) { T.head.attr('r', 2.4 / k); });
             }
+            var zoomBehavior = d3.zoom()
+                .scaleExtent([1, 14])
+                .translateExtent([[0, 0], [W, H]])
+                .on('zoom', function (ev) {
+                    world.attr('transform', ev.transform);
+                    if (Math.abs(ev.transform.k - currentK) > 0.001) counterScale(ev.transform.k);
+                });
+            svg.call(zoomBehavior).on('dblclick.zoom', null);
+            counterScale(1);
 
             // ================= THE GHOST TREE (P3, s3) =================
             // The same history projected genealogically: ten branches in
@@ -386,16 +374,21 @@
             var smallScreen = window.matchMedia('(max-width: 720px)');
             var zoomBusy = false, lastZoomEnd = 0;
             function departureZoom(pt) {
-                if (curView !== 'world') return;
+                if (currentK > 1.05) return;   // the visitor holds the camera
                 var now = performance.now();
                 if (zoomBusy || now - lastZoomEnd < 7000) return;
                 zoomBusy = true;
                 if (audio.on) sndDeparture();
-                var k = 1.35, cx = 620, cy = 320;
-                world.node().style.transform =
-                    'translate(' + (cx - k * pt.x) + 'px,' + (cy - k * pt.y) + 'px) scale(' + k + ')';
-                setTimeout(function () { world.node().style.transform = ''; }, 1700);
-                setTimeout(function () { zoomBusy = false; lastZoomEnd = performance.now(); }, 3300);
+                var k = 1.35;
+                var t = d3.zoomIdentity
+                    .translate(W / 2 - k * pt.x, H / 2 - k * pt.y).scale(k);
+                svg.transition().duration(1400).ease(d3.easeCubicInOut)
+                    .call(zoomBehavior.transform, t);
+                setTimeout(function () {
+                    svg.transition().duration(1400).ease(d3.easeCubicInOut)
+                        .call(zoomBehavior.transform, d3.zoomIdentity);
+                }, 1900);
+                setTimeout(function () { zoomBusy = false; lastZoomEnd = performance.now(); }, 3600);
             }
 
             // ================= THE TIME ENGINE ========================
@@ -480,9 +473,9 @@
                 var xy = projection([m.lng, m.lat]);
                 var ring = waveG.append('circle')
                     .attr('class', 'tc-map__wave')
-                    .attr('cx', xy[0]).attr('cy', xy[1]).attr('r', 6 / viewK);
+                    .attr('cx', xy[0]).attr('cy', xy[1]).attr('r', 6 / currentK);
                 ring.transition().duration(2600).ease(d3.easeCubicOut)
-                    .attr('r', 95 / viewK).style('opacity', 0)
+                    .attr('r', 95 / currentK).style('opacity', 0)
                     .remove();
             }
 
@@ -540,25 +533,29 @@
             sndBtn.className = 'tc-map-controls__end tc-map-controls__sound';
             sndBtn.textContent = '♪ sound: off';
             sndBtn.setAttribute('aria-pressed', 'false');
-            var viewWrap = document.createElement('span');
-            viewWrap.className = 'tc-map-controls__views';
-            Object.keys(VIEWS).forEach(function (name) {
-                var b = document.createElement('button');
-                b.type = 'button';
-                b.className = 'tc-map-controls__viewbtn' + (name === 'world' ? ' is-on' : '');
-                b.dataset.view = name;
-                b.textContent = VIEWS[name].label;
-                b.setAttribute('aria-pressed', name === 'world' ? 'true' : 'false');
-                b.addEventListener('click', function () { applyView(name); });
-                viewWrap.appendChild(b);
-                viewBtns.push(b);
+            var resetBtn = document.createElement('button');
+            resetBtn.type = 'button';
+            resetBtn.className = 'tc-map-controls__end';
+            resetBtn.textContent = 'reset view';
+            resetBtn.addEventListener('click', function () {
+                svg.transition().duration(900).ease(d3.easeCubicInOut)
+                    .call(zoomBehavior.transform, d3.zoomIdentity);
             });
             controls.appendChild(playBtn);
             controls.appendChild(yearOut);
             controls.appendChild(range);
             controls.appendChild(endBtn);
             controls.appendChild(sndBtn);
-            controls.appendChild(viewWrap);
+            controls.appendChild(resetBtn);
+            var treeJump = document.getElementById('tc-map-treejump');
+            if (treeJump && treeMount) {
+                treeJump.addEventListener('click', function () {
+                    treeMount.scrollIntoView({
+                        behavior: reduceMotion ? 'auto' : 'smooth',
+                        block: 'center'
+                    });
+                });
+            }
             mount.parentNode.insertBefore(controls, mount);
             mount.parentNode.insertBefore(caption, mount.nextSibling);
 

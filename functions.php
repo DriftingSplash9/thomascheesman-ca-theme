@@ -298,7 +298,9 @@ function tc_ventures_enqueue_scripts() {
         );
         wp_localize_script( 'tc-family-map', 'tcFamilyMap', array(
             'dataUrl'      => get_stylesheet_directory_uri() . '/inc/data/family-map.json?ver=' . rawurlencode( $tc_theme_ver ),
-            'worldUrl'     => get_stylesheet_directory_uri() . '/assets/data/world-110m.json?ver=' . rawurlencode( $tc_theme_ver ),
+            // 50m land (world-atlas) — the 110m topology read too rustic
+            // once the map gained free zoom; lazy-loaded only on /map.
+            'worldUrl'     => get_stylesheet_directory_uri() . '/assets/data/world-50m.json?ver=' . rawurlencode( $tc_theme_ver ),
             'heritageBase' => home_url( '/family/heritage/' ),
         ) );
     }
