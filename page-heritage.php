@@ -61,7 +61,7 @@ get_header(); ?>
                 Family is its own kind of map. Mine has eight lines pulling it in different directions &mdash; the Cheesmans, Dochertys, Lakemans, Rycrofts, and Haistes, plus the three maternal lines that married into them: the McIvers, Verbooms, and Steinkes. Some I know inside and out. Others are still mostly names on paper and a few photographs I'm trying to put faces to. Each line has its own page; tap a card to follow it down.
             </p>
             <p class="heritage-intro__lead heritage-intro__lead--secondary">
-                If you have a story, a photo, or a correction, send it my way. These pages are working drafts for as long as I can keep typing.
+                If you have a story, a photo, or a correction, <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">send it my way</a>. These pages are working drafts for as long as I can keep typing.
             </p>
         </div>
     </section>
@@ -95,6 +95,7 @@ get_header(); ?>
                         <p class="heritage-card__blurb">
                             My stepfather Brian's family. We became Cheesmans on July 20, 1991, in a double wedding with Brian's brother. Now my kids carry the name &mdash; and so do my brother Christopher's two boys.
                         </p>
+                        <p class="heritage-card__kicker">Turner Valley &middot; the oil patch &middot; the Peace Country farms &middot; c. 1947 &ndash; today</p>
                         <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
                     </div>
                 </a>
@@ -115,6 +116,7 @@ get_header(); ?>
                         <p class="heritage-card__blurb">
                             Mom's side. A Golden Gloves boxer for a grandfather, Hebridean Scots through Saskatchewan on Granny's McIver line, and a slice of bare-knuckle boxing folklore tied to John L. Sullivan.
                         </p>
+                        <p class="heritage-card__kicker">Eight generations &middot; Donegal to Alberta &middot; c. 1750 &ndash; today</p>
                         <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
                     </div>
                 </a>
@@ -135,6 +137,7 @@ get_header(); ?>
                         <p class="heritage-card__blurb">
                             Granny Docherty's people &mdash; McIver of Lewis, Campbell of South Uist, Cameron of Moray. Three Hebridean streams cleared off the islands that met on the Saskatchewan prairie in the 1880s, and the deepest-documented branch of the whole family.
                         </p>
+                        <p class="heritage-card__kicker">Lewis &middot; South Uist &middot; Moray &middot; the Clearances &middot; Saltcoats &middot; c. 1832 &ndash; today</p>
                         <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
                     </div>
                 </a>
@@ -155,6 +158,7 @@ get_header(); ?>
                         <p class="heritage-card__blurb">
                             My biological father's side. Dutch East Indies colonial roots, a great-grandfather who patrolled his district on horseback, a grandmother who lived to 100, and a story that rides Royal Dutch Shell across five continents.
                         </p>
+                        <p class="heritage-card__kicker">Eleven generations &middot; the Netherlands to Calgary &middot; c. 1660 &ndash; today</p>
                         <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
                     </div>
                 </a>
@@ -175,6 +179,7 @@ get_header(); ?>
                         <p class="heritage-card__blurb">
                             Suzanna Verboom's people &mdash; a tailor-barber of Ter Aar and the river-village and island families behind him, traced deep into the polders and waterways of Zuid-Holland.
                         </p>
+                        <p class="heritage-card__kicker">Ter Aar to Calgary &middot; the riverside, the polders, and the islands &middot; c. 1760 &ndash; today</p>
                         <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
                     </div>
                 </a>
@@ -195,6 +200,7 @@ get_header(); ?>
                         <p class="heritage-card__blurb">
                             Melanie's mother's side. The Alberta hamlet of Rycroft is named after her great-great-grandfather &mdash; settled in 1920 by four pioneers writing names on slips of paper and pulling one out of a hat.
                         </p>
+                        <p class="heritage-card__kicker">Leeds &middot; the Civil War &middot; Hawai&lsquo;i &middot; the Peace Country &middot; 1843 &ndash; today</p>
                         <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
                     </div>
                 </a>
@@ -213,8 +219,9 @@ get_header(); ?>
                         <h2 class="heritage-card__title">The Steinkes</h2>
                         <p class="heritage-card__subtitle">A maternal line of the Rycrofts</p>
                         <p class="heritage-card__blurb">
-                            Bette's people &mdash; German Lutheran settlers who broke ground on the Sexsmith prairie. A line still being traced.
+                            Origins unknown no more &mdash; one evening of records work dropped the floor three generations: an 1858 parish akte in central Poland, fifteen children, and Nana Bette.
                         </p>
+                        <p class="heritage-card__kicker">Ossowka, central Poland &middot; Winnipeg 1892 &middot; the Sexsmith prairie &middot; c. 1858 &ndash; today</p>
                         <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
                     </div>
                 </a>
@@ -235,6 +242,7 @@ get_header(); ?>
                         <p class="heritage-card__blurb">
                             Melanie's father's side. Yorkshire textile-and-coal stock that emigrated to a Saskatchewan homestead around 1900 and, three generations later, settled across Alberta from Edmonton to Grande Prairie.
                         </p>
+                        <p class="heritage-card__kicker">Thirteen generations &middot; Yorkshire to the Peace Country &middot; c. 1610 &ndash; today</p>
                         <span class="heritage-card__cta" aria-hidden="true">Read the line &rarr;</span>
                     </div>
                 </a>

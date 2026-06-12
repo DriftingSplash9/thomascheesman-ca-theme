@@ -25,11 +25,15 @@ $tc_longread = array(
     'eyebrow'     => 'Family line 07 of 08 · A maternal line of the Rycrofts',
     'title'       => 'The Steinkes',
     'subtitle'    => 'Bette&rsquo;s people &mdash; German Lutheran settlers of the Sexsmith prairie',
-    'kicker'      => 'Sexsmith, Alberta &middot; German Lutheran prairie &middot; a line still being traced',
+    // "a line still being traced" retired 2026-06: the 1858 Ossowka akte
+    // dropped the floor three generations (review triage, Q11/Q13 round).
+    'kicker'      => 'Ossowka, central Poland &middot; Winnipeg 1892 &middot; the Sexsmith prairie &middot; c. 1858 &ndash; today',
     'spoke_url'   => home_url( '/family/heritage/rycrofts/story' ),
     'spoke_label' => 'the Rycroft story',
     'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/steinke/steinke-hero-sod-house.jpg',
     'hero_alt'    => 'A prairie family standing before their sod house, early 1900s',
+    'hero_w'      => 800,
+    'hero_h'      => 565,
     'body'        => get_stylesheet_directory() . '/inc/heritage/steinkes-story-body.php',
     // Orphan line: the trail points up to the PARENT spoke (the Rycrofts),
     // mirroring the URL /family/heritage/rycrofts/steinkes.

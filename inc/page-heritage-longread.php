@@ -40,7 +40,28 @@ $lr_spoke    = isset( $lr['spoke_url'] )   ? (string) $lr['spoke_url']   : home_
 $lr_splabel  = isset( $lr['spoke_label'] ) ? (string) $lr['spoke_label'] : 'the family';
 $lr_himg     = isset( $lr['hero_image'] )  ? (string) $lr['hero_image']  : '';
 $lr_halt     = isset( $lr['hero_alt'] )    ? (string) $lr['hero_alt']    : '';
+$lr_hw       = isset( $lr['hero_w'] )      ? (int) $lr['hero_w']         : 0;
+$lr_hh       = isset( $lr['hero_h'] )      ? (int) $lr['hero_h']         : 0;
 $lr_body     = isset( $lr['body'] )        ? (string) $lr['body']        : '';
+
+// Reading order through the eight lines (hub order 01–08), so every
+// story ends with a door to the next one instead of a dead end. The
+// last line hands the finished reader to the map — the payoff view.
+// A line may override via 'next_url'/'next_label'. (2026-06 review.)
+$lr_next_map = array(
+	'cheesmans' => array( '/family/heritage/dochertys/story',   'The Dochertys &mdash; family line 02 of 08' ),
+	'dochertys' => array( '/family/heritage/dochertys/mcivers', 'The McIvers &mdash; family line 03 of 08' ),
+	'mcivers'   => array( '/family/heritage/lakemans/story',    'The Lakemans &mdash; family line 04 of 08' ),
+	'lakemans'  => array( '/family/heritage/lakemans/verbooms', 'The Verbooms &mdash; family line 05 of 08' ),
+	'verbooms'  => array( '/family/heritage/rycrofts/story',    'The Rycrofts &mdash; family line 06 of 08' ),
+	'rycrofts'  => array( '/family/heritage/rycrofts/steinkes', 'The Steinkes &mdash; family line 07 of 08' ),
+	'steinkes'  => array( '/family/heritage/haistes/story',     'The Haistes &mdash; family line 08 of 08' ),
+	'haistes'   => array( '/family/heritage/map',               'You&rsquo;ve read the last line &mdash; watch all eight converge on the map' ),
+);
+$lr_next_url   = isset( $lr['next_url'] ) ? (string) $lr['next_url']
+	: ( isset( $lr_next_map[ $lr_slug ] ) ? home_url( $lr_next_map[ $lr_slug ][0] ) : '' );
+$lr_next_label = isset( $lr['next_label'] ) ? (string) $lr['next_label']
+	: ( isset( $lr_next_map[ $lr_slug ] ) ? $lr_next_map[ $lr_slug ][1] : '' );
 
 // The top breadcrumb returns "up one level" to the story's own spoke
 // ($lr_spoke). The bottom-of-content return instead sends the finished reader
@@ -99,6 +120,9 @@ get_header();
             <?php if ( $lr_kicker !== '' ) : ?>
                 <p class="heritage-longread__hero-kicker"><?php echo esc_html( $lr_kicker ); ?></p>
             <?php endif; ?>
+            <p class="heritage-longread__hero-kicker heritage-longread__maplink">
+                <a href="<?php echo esc_url( home_url( '/family/heritage/map' ) ); ?>">see this line on the map &rarr;</a>
+            </p>
         </div>
     </section>
 
@@ -114,7 +138,14 @@ get_header();
 
             <?php if ( $lr_himg !== '' ) : ?>
                 <figure class="heritage-line__figure heritage-longread__hero">
-                    <img src="<?php echo esc_url( $lr_himg ); ?>" alt="<?php echo esc_attr( $lr_halt ); ?>" loading="lazy" />
+                    <?php /* eager + fetchpriority, NOT lazy: this image IS the
+                             page's LCP element — lazy-loading it delayed its
+                             own discovery (Docherty story LCP measured 14.5s
+                             in the 2026-06 review). width/height reserve its
+                             box so the frame below stops shifting. */ ?>
+                    <img src="<?php echo esc_url( $lr_himg ); ?>" alt="<?php echo esc_attr( $lr_halt ); ?>"
+                        loading="eager" fetchpriority="high"
+                        <?php if ( $lr_hw && $lr_hh ) : ?>width="<?php echo (int) $lr_hw; ?>" height="<?php echo (int) $lr_hh; ?>"<?php endif; ?> />
                 </figure>
             <?php endif; ?>
 
@@ -133,6 +164,12 @@ get_header();
                     </div>
                 </section>
             </div>
+
+            <?php if ( $lr_next_url !== '' ) : ?>
+                <p class="heritage-line__readmore heritage-longread__next">
+                    <a href="<?php echo esc_url( $lr_next_url ); ?>">Next line &rarr; <?php echo wp_kses_post( $lr_next_label ); ?></a>
+                </p>
+            <?php endif; ?>
 
             <p class="heritage-longread__return">
                 <a href="<?php echo esc_url( $lr_returl ); ?>">&larr; Back to <?php echo esc_html( $lr_retlabel ); ?></a>

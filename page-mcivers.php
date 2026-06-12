@@ -33,6 +33,8 @@ $tc_longread = array(
     'spoke_label' => 'the Docherty story',
     'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/mciver/mciver-hero-lewis-coast.jpg',
     'hero_alt'    => 'A windswept Isle of Lewis coastline, the Hebridean world the McIvers came from',
+    'hero_w'      => 1280,
+    'hero_h'      => 720,
     'body'        => get_stylesheet_directory() . '/inc/heritage/mcivers-story-body.php',
     // Orphan line: the trail points up to the PARENT spoke (the Dochertys),
     // mirroring the URL /family/heritage/dochertys/mcivers.

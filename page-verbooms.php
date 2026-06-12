@@ -31,6 +31,8 @@ $tc_longread = array(
     'spoke_label' => 'the Lakeman story',
     'hero_image'  => home_url( '/wp-content/uploads/2026/05/Broek-Waterland-canal-view.jpg' ),
     'hero_alt'    => 'A canal and timber houses in a Zuid-Holland village, the kind of country the Verbooms came from',
+    'hero_w'      => 1417,
+    'hero_h'      => 945,
     'body'        => get_stylesheet_directory() . '/inc/heritage/verbooms-story-body.php',
     // Orphan line: the trail points up to the PARENT spoke (the Lakemans),
     // mirroring the URL /family/heritage/lakemans/verbooms.

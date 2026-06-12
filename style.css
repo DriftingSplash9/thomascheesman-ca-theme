@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.534
+Version: 1.0.535
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -2248,6 +2248,17 @@ body.admin-bar .heritage-progress {
     color: var(--text-light);
     margin: 0 0 18px 0;
     flex: 1;
+}
+
+/* The scale line under each hub blurb — the story-page kicker, brought
+   forward so a visitor knows "Read the line" opens a book, not a note.
+   (2026-06 review: nothing on the hub communicated scale.) */
+.heritage-card__kicker {
+    margin: 0 0 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
 }
 
 .heritage-card__cta {

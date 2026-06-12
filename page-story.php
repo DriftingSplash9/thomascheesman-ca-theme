@@ -36,6 +36,8 @@ $tc_longread_registry = array(
         'spoke_label' => 'The Cheesmans',
         'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/cheesman/family-pic-1999.jpg',
         'hero_alt'    => 'The family, 1999',
+        'hero_w'      => 1147,
+        'hero_h'      => 1600,
         'body'        => get_stylesheet_directory() . '/inc/heritage/cheesmans-story-body.php',
     ),
 
@@ -47,8 +49,13 @@ $tc_longread_registry = array(
         'kicker'      => 'Eight generations · Donegal to Alberta · c. 1750 – today',
         'spoke_url'   => home_url( '/family/heritage/dochertys' ),
         'spoke_label' => 'The Dochertys',
-        'hero_image'  => home_url( '/wp-content/uploads/2024/09/img_0676-scaled.jpg' ),
+        // The 1536 intermediate, NOT the 2560px -scaled original: this is
+        // the measured LCP element of the site's heaviest page (931 KB →
+        // ~a quarter of that; 2026-06 review).
+        'hero_image'  => home_url( '/wp-content/uploads/2024/09/img_0676-1536x2048.jpg' ),
         'hero_alt'    => 'Maryanne Docherty with her brother David',
+        'hero_w'      => 1536,
+        'hero_h'      => 2048,
         'body'        => get_stylesheet_directory() . '/inc/heritage/dochertys-story-body.php',
     ),
 
@@ -62,6 +69,8 @@ $tc_longread_registry = array(
         'spoke_label' => 'The Lakemans',
         'hero_image'  => home_url( '/wp-content/uploads/2026/05/vintage-historic-bw-photos-of-dutch-windmills-in-19th-century-07-1040x440-1.jpg' ),
         'hero_alt'    => 'A nineteenth-century photograph of Dutch polder windmills',
+        'hero_w'      => 1040,
+        'hero_h'      => 440,
         'body'        => get_stylesheet_directory() . '/inc/heritage/lakemans-story-body.php',
     ),
 
@@ -75,6 +84,8 @@ $tc_longread_registry = array(
         'spoke_label' => 'The Haistes',
         'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/haiste/haiste-hero-prairie-barn-sunset.jpg',
         'hero_alt'    => 'An old barn on the Alberta prairie at winter sunset',
+        'hero_w'      => 1100,
+        'hero_h'      => 732,
         'body'        => get_stylesheet_directory() . '/inc/heritage/haistes-story-body.php',
     ),
 
@@ -88,6 +99,8 @@ $tc_longread_registry = array(
         'spoke_label' => 'The Rycrofts',
         'hero_image'  => get_stylesheet_directory_uri() . '/assets/img/heritage/rycroft/rycroft-hero-honolulu-harbor-1900.jpg',
         'hero_alt'    => 'Tall sailing ships dressed with flags in Honolulu Harbor about 1900',
+        'hero_w'      => 1512,
+        'hero_h'      => 1111,
         'body'        => get_stylesheet_directory() . '/inc/heritage/rycrofts-story-body.php',
     ),
 
