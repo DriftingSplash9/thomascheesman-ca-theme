@@ -45,6 +45,52 @@ const TC_GAMES_MAX_PER_BOARD = 10;
 const TC_GAMES_MAX_NAME_LEN  = 16;
 const TC_GAMES_MAX_SCORE     = 9999999;
 
+/**
+ * Leaderboard name hygiene (2026-06 review, Q18). The boards are
+ * public-write with no auth by design; this is the modest filter that
+ * keeps them family-friendly. Substring matching is deliberate (kids
+ * type creatively); the cost is a rare false positive that becomes
+ * "Anonymous", which is acceptable on an arcade high-score table.
+ */
+function tc_games_name_is_blocked( $name ) {
+    $needle = strtolower( $name );
+    $blocked = array(
+        'fuck', 'shit', 'cunt', 'nigg', 'faggot', 'bitch', 'whore',
+        'slut', 'penis', 'vagina', 'rape', 'hitler', 'nazi',
+    );
+    foreach ( $blocked as $word ) {
+        if ( strpos( $needle, $word ) !== false ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * One-time sweep (2026-06 review, Q18): remove the keyboard-mash
+ * "erftghfh" entry that held the Pac-Man top score. Runs once, flagged
+ * in an option; safe to leave in place afterwards.
+ */
+add_action( 'init', function () {
+    if ( get_option( 'tc_games_junk_swept_2026_06' ) ) {
+        return;
+    }
+    foreach ( TC_GAMES_VALID as $game ) {
+        $key   = 'tc_games_scores_' . $game;
+        $board = get_option( $key );
+        if ( ! is_array( $board ) || ! $board ) {
+            continue;
+        }
+        $clean = array_values( array_filter( $board, function ( $row ) {
+            return ! isset( $row['name'] ) || strtolower( trim( $row['name'] ) ) !== 'erftghfh';
+        } ) );
+        if ( count( $clean ) !== count( $board ) ) {
+            update_option( $key, $clean, false );
+        }
+    }
+    update_option( 'tc_games_junk_swept_2026_06', 1, false );
+} );
+
 add_action( 'rest_api_init', function () {
     register_rest_route(
         'tc-games/v1',
@@ -134,6 +180,9 @@ function tc_games_post_score( $req ) {
         $name = mb_substr( $name, 0, TC_GAMES_MAX_NAME_LEN );
     } else {
         $name = substr( $name, 0, TC_GAMES_MAX_NAME_LEN );
+    }
+    if ( tc_games_name_is_blocked( $name ) ) {
+        $name = 'Anonymous';
     }
 
     $board   = tc_games_read_board( $game );

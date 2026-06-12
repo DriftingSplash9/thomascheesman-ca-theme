@@ -112,7 +112,7 @@ function tc_ventures_enqueue_scripts() {
         'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js',
         array(),
         '3.12.2',
-        false
+        array( 'in_footer' => true, 'strategy' => 'defer' )
     );
 
     // GSAP ScrollTrigger plugin — depends on GSAP core.
@@ -121,7 +121,7 @@ function tc_ventures_enqueue_scripts() {
         'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js',
         array( 'gsap-core' ),
         '3.12.2',
-        false
+        array( 'in_footer' => true, 'strategy' => 'defer' )
     );
 
     // (GSAP MotionPathPlugin enqueue was removed with the jeep timeline.)
@@ -135,7 +135,7 @@ function tc_ventures_enqueue_scripts() {
         'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
         array(),
         'r128',
-        true
+        array( 'in_footer' => true, 'strategy' => 'defer' )
     );
 
     // Custom main JavaScript — depends on GSAP, ScrollTrigger, and Three.js.
@@ -147,7 +147,12 @@ function tc_ventures_enqueue_scripts() {
         get_stylesheet_directory_uri() . '/assets/js/main.js',
         array( 'gsap-core', 'gsap-scroll-trigger', 'three-js' ),
         wp_get_theme()->get( 'Version' ),
-        true
+        // 'defer' on the WHOLE chain, not just the libraries: WordPress
+        // silently downgrades a script's defer strategy when any script
+        // that depends on it is enqueued without one (2026-06 review —
+        // GSAP/three carried data-wp-strategy but no actual defer attr,
+        // and ~5s of mobile render-blocking came from exactly this).
+        array( 'in_footer' => true, 'strategy' => 'defer' )
     );
 
     // Expose a small data object from PHP to main.js as window.tcVentures.
@@ -165,7 +170,7 @@ function tc_ventures_enqueue_scripts() {
         get_stylesheet_directory_uri() . '/assets/js/desk-menu.js',
         array(),
         wp_get_theme()->get( 'Version' ),
-        true
+        array( 'in_footer' => true, 'strategy' => 'defer' )
     );
 
     // Desk-games arcade. The canvas games (Snake / Pong / Pac-Man /
@@ -178,7 +183,7 @@ function tc_ventures_enqueue_scripts() {
         get_stylesheet_directory_uri() . '/assets/js/desk-games.js',
         array( 'tc-desk-menu' ),
         wp_get_theme()->get( 'Version' ),
-        true
+        array( 'in_footer' => true, 'strategy' => 'defer' )
     );
     wp_localize_script(
         'tc-desk-games',
@@ -227,7 +232,7 @@ function tc_ventures_enqueue_scripts() {
         get_stylesheet_directory_uri() . '/assets/js/desk-drawer.js',
         array( 'tc-desk-games' ),
         wp_get_theme()->get( 'Version' ),
-        true
+        array( 'in_footer' => true, 'strategy' => 'defer' )
     );
 
     // The Secret Drawer — the loose-handle easter egg in the footer's
@@ -256,7 +261,7 @@ function tc_ventures_enqueue_scripts() {
         get_stylesheet_directory_uri() . '/assets/js/secret-drawer.js',
         array( 'tc-desk-drawer' ),
         $tc_theme_ver,
-        true
+        array( 'in_footer' => true, 'strategy' => 'defer' )
     );
 
     // The Lanterns of Record — the converging-families map at /map
@@ -277,7 +282,7 @@ function tc_ventures_enqueue_scripts() {
             'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js',
             array(),
             '7.8.5',
-            true
+            array( 'in_footer' => true, 'strategy' => 'defer' )
         );
         // The full topojson bundle, not topojson-client — cdnjs does not
         // host the client-only package (404 verified 2026-06-11). Same
@@ -287,14 +292,14 @@ function tc_ventures_enqueue_scripts() {
             'https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js',
             array(),
             '3.0.2',
-            true
+            array( 'in_footer' => true, 'strategy' => 'defer' )
         );
         wp_enqueue_script(
             'tc-family-map',
             get_stylesheet_directory_uri() . '/assets/js/family-map.js',
             array( 'd3', 'topojson-client' ),
             $tc_theme_ver,
-            true
+            array( 'in_footer' => true, 'strategy' => 'defer' )
         );
         wp_localize_script( 'tc-family-map', 'tcFamilyMap', array(
             'dataUrl'      => get_stylesheet_directory_uri() . '/inc/data/family-map.json?ver=' . rawurlencode( $tc_theme_ver ),
@@ -631,6 +636,230 @@ add_filter( 'aioseo_description', function ( $description ) {
         'family/heritage/map'                     => 'The Lanterns of Record — 400 years of family history as an interactive map where every documented record is a light. Press play; watch ten lines converge on Alberta.',
     );
     return isset( $tc_map[ $tc_uri ] ) ? $tc_map[ $tc_uri ] : $description;
+} );
+
+/* ======================================================================
+ * 2026-06 review triage, round 2 — SEO plumbing.
+ * All approvals recorded in Review-Triage-2026-06.xlsx (Q2/Q3 etc.).
+ * ==================================================================== */
+
+/**
+ * Hand-written page titles (Q2, approved verbatim). Same mechanism as
+ * the descriptions above: AIOSEO's filter, keyed by page URI, versioned
+ * in git. Before this, all five hub long-reads shared the literal title
+ * "Story - thomascheesman.ca" and the homepage led with "Home -".
+ * Pages not in the map keep AIOSEO's default behaviour.
+ */
+function tc_review_titles() {
+	return array(
+		''                                  => "Thomas Cheesman — a life, three kids, eight family lines | thomascheesman.ca",
+		'family/heritage/map'               => "The Lanterns of Record — 400 years of family history, mapped | thomascheesman.ca",
+		'family/heritage/cheesmans/story'   => "The Cheesmans — Turner Valley to Teepee Creek, the chosen name | thomascheesman.ca",
+		'family/heritage/dochertys/story'   => "The Dochertys — Donegal to Alberta, nine generations | thomascheesman.ca",
+		'family/heritage/dochertys/mcivers' => "The McIvers — cleared from the Hebrides to the prairie | thomascheesman.ca",
+		'family/heritage/lakemans/story'    => "The Lakemans — Beemster to Calgary, eleven generations | thomascheesman.ca",
+		'family/heritage/lakemans/verbooms' => "The Verbooms — Suzanna's people of Ter Aar | thomascheesman.ca",
+		'family/heritage/rycrofts/story'    => "The Rycrofts — Leeds, Hawai'i, and the town drawn from a hat | thomascheesman.ca",
+		'family/heritage/rycrofts/steinkes' => "The Steinkes — German Poland to the prairie, fifteen children | thomascheesman.ca",
+		'family/heritage/haistes/story'     => "The Haistes — thirteen generations, Yorkshire to the Peace Country | thomascheesman.ca",
+	);
+}
+add_filter( 'aioseo_title', function ( $title ) {
+	if ( is_front_page() ) {
+		$tc_titles = tc_review_titles();
+		return $tc_titles[''];
+	}
+	if ( ! is_page() ) {
+		return $title;
+	}
+	$tc_titles = tc_review_titles();
+	$tc_uri    = get_page_uri();
+	return isset( $tc_titles[ $tc_uri ] ) ? $tc_titles[ $tc_uri ] : $title;
+} );
+
+/**
+ * Social share images (Q3: desk photo as the sitewide default, each
+ * page's lead image where one exists). AIOSEO emits no og:image at all
+ * on this install, so these tags are emitted directly — no filter-name
+ * roulette, nothing to collide with. Story pages share their line's
+ * image with the spoke page.
+ */
+function tc_review_social_image() {
+	$tc_default = '/wp-content/uploads/2026/05/desk-hero.jpg';
+	$tc_map     = array(
+		'about'                             => '/wp-content/uploads/2024/08/img_2534-2-scaled.jpg',
+		'hcs'                               => '/wp-content/uploads/2026/04/day-after-surgert.jpg',
+		'family'                            => '/wp-content/uploads/2024/08/img_9320.jpg',
+		'family/patience'                   => '/wp-content/uploads/2026/05/IMG_1359-scaled.jpg',
+		'family/faith'                      => '/wp-content/uploads/2024/10/20180524_163145-scaled.jpg',
+		'family/heritage/dochertys'         => '/wp-content/uploads/2026/05/IMG_4532.jpg',
+		'family/heritage/dochertys/story'   => '/wp-content/uploads/2026/05/IMG_4532.jpg',
+		'family/heritage/lakemans'          => '/wp-content/uploads/2026/05/Broek-Waterland-canal-view.jpg',
+		'family/heritage/lakemans/story'    => '/wp-content/uploads/2026/05/Broek-Waterland-canal-view.jpg',
+		'family/heritage/rycrofts/steinkes' => '/wp-content/uploads/2026/06/Edward-and-Augusta-Steinke.jpg',
+	);
+	$tc_uri = is_page() ? get_page_uri() : '';
+	$tc_img = isset( $tc_map[ $tc_uri ] ) ? $tc_map[ $tc_uri ] : $tc_default;
+	return home_url( $tc_img );
+}
+add_action( 'wp_head', function () {
+	$tc_img = esc_url( tc_review_social_image() );
+	echo '<meta property="og:image" content="' . $tc_img . '" />' . "\n";
+	echo '<meta name="twitter:image" content="' . $tc_img . '" />' . "\n";
+}, 2 );
+
+/**
+ * Article JSON-LD for the eight heritage long-reads + the HCS essay.
+ * AIOSEO types everything as a bare WebPage; these are book-length
+ * original works with an author. The Person node is emitted compactly
+ * alongside so the author reference resolves on its own; /hcs adds a
+ * MedicalCondition as the page's `about` entity — identification only
+ * (OMIM / Orphanet / GeneReviews), no clinical claims: this is a
+ * patient-perspective essay, and the schema says exactly that.
+ */
+add_action( 'wp_head', function () {
+	if ( ! is_page() ) {
+		return;
+	}
+	$tc_uri    = get_page_uri();
+	$tc_titles = tc_review_titles();
+	$tc_is_story = isset( $tc_titles[ $tc_uri ] ) && ( strpos( $tc_uri, 'heritage/' ) !== false ) && ( $tc_uri !== 'family/heritage/map' );
+	if ( ! $tc_is_story && 'hcs' !== $tc_uri ) {
+		return;
+	}
+
+	$tc_person = array(
+		'@type' => 'Person',
+		'@id'   => home_url( '/#thomas' ),
+		'name'  => 'Thomas Cheesman',
+		'url'   => home_url( '/' ),
+	);
+	$tc_headline = $tc_is_story
+		? trim( explode( '|', $tc_titles[ $tc_uri ] )[0] )
+		: 'Hajdu-Cheney Syndrome — living with one of the rarest bone disorders on Earth';
+	$tc_article = array(
+		'@type'            => 'Article',
+		'mainEntityOfPage' => get_permalink(),
+		'headline'         => $tc_headline,
+		'author'           => array( '@id' => home_url( '/#thomas' ) ),
+		'datePublished'    => get_the_date( 'c' ),
+		'dateModified'     => get_the_modified_date( 'c' ),
+		'image'            => tc_review_social_image(),
+		'inLanguage'       => 'en-CA',
+	);
+	if ( 'hcs' === $tc_uri ) {
+		$tc_article['about'] = array(
+			'@type'         => 'MedicalCondition',
+			'name'          => 'Hajdu-Cheney Syndrome',
+			'alternateName' => 'Acroosteolysis dominant type',
+			'sameAs'        => array(
+				'https://omim.org/entry/102500',
+				'https://www.orpha.net/en/disease/detail/955',
+				'https://www.ncbi.nlm.nih.gov/books/NBK1311/',
+			),
+		);
+	}
+	$tc_graph = array(
+		'@context' => 'https://schema.org',
+		'@graph'   => array( $tc_person, $tc_article ),
+	);
+	echo '<script type="application/ld+json">' . wp_json_encode( $tc_graph, JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+}, 3 );
+
+/**
+ * Legacy-URL recovery (review finding: Google's index still holds the
+ * OLD site's URLs — all 404 today, including the Rycroft naming post
+ * that ranked #1 for Rycroft pioneer queries). 301 the three known
+ * indexed URLs to their successors so the equity transfers before the
+ * rankings are dropped entirely. Runs only on genuine 404s.
+ */
+add_action( 'template_redirect', function () {
+	if ( ! is_404() ) {
+		return;
+	}
+	$tc_path = strtolower( wp_parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH ) ?: '' );
+	$tc_path = rtrim( $tc_path, '/' ) . '/';
+	$tc_map  = array(
+		'/2024/08/29/how-did-rycroft-get-its-name/' => '/family/heritage/rycrofts/story/',
+		'/hajdu-cheney-syndrome/'                   => '/hcs/',
+		'/2024/09/13/the-cheesmans/'                => '/family/heritage/cheesmans/',
+	);
+	if ( isset( $tc_map[ $tc_path ] ) ) {
+		wp_safe_redirect( home_url( $tc_map[ $tc_path ] ), 301 );
+		exit;
+	}
+} );
+
+/**
+ * Staging-host guard. The Hostinger temporary domain serves a complete
+ * mirror of this site with self-referencing canonicals, and its
+ * robots.txt blocks only Googlebot — Bing and the AI crawlers are
+ * allowed in (review finding, verified 2026-06-12). Bounce every
+ * front-end request on that host to the real domain; the noindex
+ * header covers any crawler that ignores the redirect. wp-admin,
+ * wp-login, REST, and cron are left alone so the staging host stays
+ * usable for emergencies.
+ */
+add_action( 'init', function () {
+	$tc_host = strtolower( $_SERVER['HTTP_HOST'] ?? '' );
+	if ( strpos( $tc_host, 'hostingersite.com' ) === false ) {
+		return;
+	}
+	$tc_req = $_SERVER['REQUEST_URI'] ?? '/';
+	if ( is_admin() || wp_doing_ajax() || wp_doing_cron()
+		|| strpos( $tc_req, '/wp-login' ) !== false
+		|| strpos( $tc_req, '/wp-json' ) !== false ) {
+		header( 'X-Robots-Tag: noindex, nofollow' );
+		return;
+	}
+	header( 'X-Robots-Tag: noindex, nofollow' );
+	wp_redirect( 'https://thomascheesman.ca' . $tc_req, 301 );
+	exit;
+}, 0 );
+
+// Stop advertising the WordPress version in <head> and feeds.
+remove_action( 'wp_head', 'wp_generator' );
+add_filter( 'the_generator', '__return_empty_string' );
+
+/**
+ * Curated /llms.txt — served the same way as the Bing verification
+ * route above. The Hostinger plugin's auto-generated version named all
+ * five long-reads "Story" and listed the /map-2/ stray; this one gives
+ * answer engines real titles, one-line summaries, and the confidence
+ * vocabulary the heritage project actually uses. If a physical
+ * llms.txt ever exists in the webroot it wins at the server layer and
+ * this route simply never fires.
+ */
+add_action( 'parse_request', function ( $wp ) {
+	if ( 'llms.txt' !== $wp->request ) {
+		return;
+	}
+	header( 'Content-Type: text/plain; charset=utf-8' );
+	$tc_home = home_url( '/' );
+	echo "# thomascheesman.ca\n\n";
+	echo "> A personal legacy archive by Thomas Cheesman of Grande Prairie, Alberta, Canada: his life, his three kids, life with ultra-rare Hajdu-Cheney syndrome (fewer than ~50 people alive have it), and an eight-line family-history project of 50,000+ words with genealogical sourcing.\n\n";
+	echo "Genealogy claims on this site are explicitly tiered: VERIFIED (primary record), PROBABLE (strong inference, not yet proven), INHERITED (family-tree assertion), LIVING MEMORY (first-hand). Quote the tier with the claim.\n\n";
+	echo "## The author\n";
+	echo "- [About Thomas]({$tc_home}about/): chef until Hajdu-Cheney retired his hands; built this site as a letter to his kids.\n";
+	echo "- [Living with Hajdu-Cheney syndrome]({$tc_home}hcs/): first-person patient account — diagnosis, fractures, fusions, the genetic question. Links OMIM 102500, Orphanet 955, GeneReviews.\n";
+	echo "- [Thomas's own long-read]({$tc_home}family/thomas/): Turner Valley to Grande Prairie, the kitchen years, the body's turn.\n\n";
+	echo "## The family\n";
+	echo "- [The family tree]({$tc_home}family/): three kids, eight family lines from five countries.\n";
+	echo "- [Patience]({$tc_home}family/patience/) · [Daniel]({$tc_home}family/daniel/) · [Faith]({$tc_home}family/faith/)\n\n";
+	echo "## The heritage project (the deep research)\n";
+	echo "- [Hub — eight lines]({$tc_home}family/heritage/)\n";
+	echo "- [The Cheesmans]({$tc_home}family/heritage/cheesmans/story/): the chosen name — Turner Valley oil patch, Teepee Creek farms.\n";
+	echo "- [The Dochertys]({$tc_home}family/heritage/dochertys/story/): nine generations, Donegal → Lanarkshire pits → Illinois → Alix, Alberta.\n";
+	echo "- [The McIvers]({$tc_home}family/heritage/dochertys/mcivers/): Hebridean crofters (Lewis, South Uist) cleared to the Saskatchewan prairie, 1880s.\n";
+	echo "- [The Lakemans]({$tc_home}family/heritage/lakemans/story/): eleven generations from the drained Beemster polder through the Dutch East Indies and Royal Dutch Shell to Calgary.\n";
+	echo "- [The Verbooms]({$tc_home}family/heritage/lakemans/verbooms/): Dutch civil-record line behind Suzanna of Ter Aar.\n";
+	echo "- [The Rycrofts]({$tc_home}family/heritage/rycrofts/story/): Leeds → US cavalry → Kingdom of Hawai'i coffee pioneer → the Alberta town of Rycroft, named by drawing a slip from a hat in 1920.\n";
+	echo "- [The Steinkes]({$tc_home}family/heritage/rycrofts/steinkes/): German Lutherans of central Poland (1858 Ossowka marriage akte) to Manitoba 1892 and the prairie.\n";
+	echo "- [The Haistes]({$tc_home}family/heritage/haistes/story/): thirteen generations, Yorkshire tannery c. 1610 to the Peace Country.\n";
+	echo "- [The Lanterns of Record]({$tc_home}family/heritage/map/): interactive map — every documented record is a light; 400 years, ten lines, converging on Alberta.\n\n";
+	echo "## Elsewhere\n";
+	echo "- Bare Your Rare (his rare-disease nonprofit): https://bareyourrare.org\n";
+	exit;
 } );
 
 /**

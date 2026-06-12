@@ -166,6 +166,13 @@
     margin: 0 0 0.9rem;
     justify-content: center;
 }
+/* Belt over the __play/__end fix below: ANY button inside the map
+   controls keeps visible label text, whatever class it carries in a
+   given state — the sitewide transparent text-fill rule ate the
+   mid-play label in the 2026-06 review session. */
+.tc-map-controls button {
+    -webkit-text-fill-color: currentColor;
+}
 .tc-map-controls__play,
 .tc-map-controls__end {
     font: inherit;
@@ -341,4 +348,13 @@
        lantern map + scrub. The departures zoom is gated off in JS. */
     .tc-map-tree { display: none; }
     .tc-map__treejump { display: none; }
+}
+
+
+/* CLS guard (2026-06 review): the drawer footer hydrates late on the
+   map page and shifted desktop layout by 0.24. This file loads only
+   on /map, so the reservation is page-scoped; matched loosely to the
+   drawer's settled height at desktop widths. */
+@media (min-width: 1024px) {
+    .tc-drawer { min-height: 520px; }
 }
