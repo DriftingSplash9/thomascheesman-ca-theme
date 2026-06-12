@@ -45,11 +45,14 @@
         });
 
         // Confidence tier -> light. The load-bearing rule (spec s5.1).
+        // Halos run TIGHT (small radius, steep falloff): the brightness
+        // still encodes certainty, but clusters read as candle-points,
+        // not fog (Thomas's call, 2026-06-11).
         var TIER = {
-            verified:  { halo: 10, core: 2.6, glow: 0.85, label: 'verified — a primary record' },
-            living:    { halo: 11, core: 2.6, glow: 0.80, label: 'living memory' },
-            probable:  { halo: 8,  core: 2.1, glow: 0.45, label: 'probable — consistent, no primary record yet' },
-            inherited: { halo: 7,  core: 1.7, glow: 0.26, label: 'inherited — family tradition only' }
+            verified:  { halo: 7,   core: 2.8, glow: 0.9,  label: 'verified — a primary record' },
+            living:    { halo: 7.5, core: 2.8, glow: 0.85, label: 'living memory' },
+            probable:  { halo: 5.5, core: 2.2, glow: 0.5,  label: 'probable — consistent, no primary record yet' },
+            inherited: { halo: 5,   core: 1.8, glow: 0.3,  label: 'inherited — family tradition only' }
         };
         var FAMILY_ORDER = ['Cheesman', 'Docherty', 'McIver', 'Campbell', 'Cameron',
                             'Lakeman', 'Verboom', 'Rycroft', 'Steinke', 'Haiste'];
@@ -101,7 +104,7 @@
             FAMILY_ORDER.forEach(function (f) {
                 var g = defs.append('radialGradient').attr('id', 'tc-glow-' + f);
                 g.append('stop').attr('offset', '0%').attr('stop-color', data.families[f]).attr('stop-opacity', 0.95);
-                g.append('stop').attr('offset', '55%').attr('stop-color', data.families[f]).attr('stop-opacity', 0.38);
+                g.append('stop').attr('offset', '40%').attr('stop-color', data.families[f]).attr('stop-opacity', 0.28);
                 g.append('stop').attr('offset', '100%').attr('stop-color', data.families[f]).attr('stop-opacity', 0);
             });
 
@@ -134,6 +137,13 @@
 
             // --- Lanterns ---------------------------------------------
             var located = data.events.filter(function (e) { return e.lat != null && e.lng != null; });
+            // A line's first DATED record: undated events kindle with it.
+            // (Without this, year-TBC rows burned from 1610 — Cheesmans
+            // in Calgary beating Columbus. Thomas caught it live.)
+            var famFirst = {};
+            data.events.forEach(function (e) {
+                if (e.year && (!famFirst[e.family] || e.year < famFirst[e.family])) famFirst[e.family] = e.year;
+            });
             var stacks = {};
             located.forEach(function (e) {
                 var key = e.lat.toFixed(1) + ',' + e.lng.toFixed(1);
@@ -170,9 +180,56 @@
                     hit.style('cursor', 'pointer')
                        .on('click', function () { window.location.href = url; });
                 }
-                lit.push({ el: g, year: e.year, isDeath: e.type === 'death', wasOn: true, lastS: 1,
+                lit.push({ el: g, x: e._x, y: e._y, year: e.year, famYear: famFirst[e.family] || 0,
+                           isDeath: e.type === 'death', wasOn: true, lastS: 1,
                            isNG: e.type === 'death' && /villers/i.test(e.place || '') });
             });
+
+            // ================= THE THREE VIEWS =========================
+            // world / North America / Europe (Thomas, 2026-06-11). The
+            // sphere-clipped world group glides to a region fit; strokes
+            // stay hairline via vector-effect, and every lantern carries a
+            // counter-scale so the dots stay crisp while clusters
+            // naturally de-clump. The departures zoom only runs in the
+            // world view (two transforms would fight).
+            var VIEWS = {
+                world:  { label: 'world',         bounds: null },
+                na:     { label: 'North America', bounds: [[-170, 15], [-52, 72]] },
+                europe: { label: 'Europe',        bounds: [[-12, 36], [24, 62]] }
+            };
+            var curView = 'world', viewK = 1, viewBtns = [];
+            function computeView(b) {
+                if (!b) return { k: 1, tx: 0, ty: 0 };
+                var xs = [], ys = [];
+                for (var s = 0; s <= 8; s++) {
+                    var lng = b[0][0] + (b[1][0] - b[0][0]) * s / 8;
+                    var lat = b[0][1] + (b[1][1] - b[0][1]) * s / 8;
+                    [projection([lng, b[0][1]]), projection([lng, b[1][1]]),
+                     projection([b[0][0], lat]), projection([b[1][0], lat])].forEach(function (p) {
+                        if (p) { xs.push(p[0]); ys.push(p[1]); }
+                    });
+                }
+                var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+                var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+                var k = Math.min(W / (x1 - x0), H / (y1 - y0)) * 0.92;
+                return { k: k, tx: W / 2 - k * (x0 + x1) / 2, ty: H / 2 - k * (y0 + y1) / 2 };
+            }
+            function applyView(name) {
+                curView = name;
+                var v = computeView(VIEWS[name].bounds);
+                viewK = v.k;
+                world.node().style.transform = name === 'world' ? '' :
+                    'translate(' + v.tx + 'px,' + v.ty + 'px) scale(' + v.k + ')';
+                lit.forEach(function (L) {
+                    L.el.node().style.transform =
+                        'translate(' + L.x + 'px,' + L.y + 'px) scale(' + (1 / v.k) + ')';
+                });
+                trails.forEach(function (T) { T.head.attr('r', 2.4 / v.k); });
+                viewBtns.forEach(function (btn) {
+                    btn.classList.toggle('is-on', btn.dataset.view === name);
+                    btn.setAttribute('aria-pressed', btn.dataset.view === name ? 'true' : 'false');
+                });
+            }
 
             // ================= THE GHOST TREE (P3, s3) =================
             // The same history projected genealogically: ten branches in
@@ -323,6 +380,7 @@
             var smallScreen = window.matchMedia('(max-width: 720px)');
             var zoomBusy = false, lastZoomEnd = 0;
             function departureZoom(pt) {
+                if (curView !== 'world') return;
                 var now = performance.now();
                 if (zoomBusy || now - lastZoomEnd < 7000) return;
                 zoomBusy = true;
@@ -340,9 +398,10 @@
             var SPEED = 6;          // years per second in Play mode
 
             function lanternState(L, y) {
-                if (L.year == null || L.year <= 0) return 1;       // undated: always lit
-                if (y < L.year) return 0;                          // not yet
-                if (L.isDeath && y > L.year + 6) return 0.24;      // guttered to an ember
+                var y0 = L.year || L.famYear;   // undated: kindles with the line's first record
+                if (!y0) return 1;
+                if (y < y0) return 0;                              // not yet
+                if (L.isDeath && L.year && y > L.year + 6) return 0.24; // guttered to an ember
                 return 1;
             }
 
@@ -415,9 +474,9 @@
                 var xy = projection([m.lng, m.lat]);
                 var ring = waveG.append('circle')
                     .attr('class', 'tc-map__wave')
-                    .attr('cx', xy[0]).attr('cy', xy[1]).attr('r', 6);
+                    .attr('cx', xy[0]).attr('cy', xy[1]).attr('r', 6 / viewK);
                 ring.transition().duration(2600).ease(d3.easeCubicOut)
-                    .attr('r', 95).style('opacity', 0)
+                    .attr('r', 95 / viewK).style('opacity', 0)
                     .remove();
             }
 
@@ -475,11 +534,25 @@
             sndBtn.className = 'tc-map-controls__end tc-map-controls__sound';
             sndBtn.textContent = '♪ sound: off';
             sndBtn.setAttribute('aria-pressed', 'false');
+            var viewWrap = document.createElement('span');
+            viewWrap.className = 'tc-map-controls__views';
+            Object.keys(VIEWS).forEach(function (name) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'tc-map-controls__viewbtn' + (name === 'world' ? ' is-on' : '');
+                b.dataset.view = name;
+                b.textContent = VIEWS[name].label;
+                b.setAttribute('aria-pressed', name === 'world' ? 'true' : 'false');
+                b.addEventListener('click', function () { applyView(name); });
+                viewWrap.appendChild(b);
+                viewBtns.push(b);
+            });
             controls.appendChild(playBtn);
             controls.appendChild(yearOut);
             controls.appendChild(range);
             controls.appendChild(endBtn);
             controls.appendChild(sndBtn);
+            controls.appendChild(viewWrap);
             mount.parentNode.insertBefore(controls, mount);
             mount.parentNode.insertBefore(caption, mount.nextSibling);
 
