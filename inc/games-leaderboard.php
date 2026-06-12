@@ -185,6 +185,46 @@ function tc_games_post_score( $req ) {
         $name = 'Anonymous';
     }
 
+    // Review-2 hardening. The endpoint is public by design, but a bare
+    // public write with no throttle meant ten junk POSTs could wipe a
+    // board permanently (the top-10 trim discards real rows). Mirror
+    // the secret-drawer endpoint's defences: reject clearly-foreign
+    // referers, then a short per-IP cooldown + a generous global daily
+    // cap. The JS client treats any non-2xx as "submission didn't
+    // take" and keeps the old board — no UI change needed.
+    $ref = isset( $_SERVER['HTTP_REFERER'] ) ? wp_unslash( $_SERVER['HTTP_REFERER'] ) : '';
+    if ( $ref ) {
+        $ref_host  = wp_parse_url( $ref, PHP_URL_HOST );
+        $site_host = wp_parse_url( home_url(), PHP_URL_HOST );
+        if ( $ref_host && $site_host && strcasecmp( $ref_host, $site_host ) !== 0 ) {
+            return new WP_Error(
+                'tc_games_bad_origin',
+                __( 'Score submissions must come from the site.', 'tc-ventures-child' ),
+                array( 'status' => 403 )
+            );
+        }
+    }
+    $ip     = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+    $cd_key = 'tc_games_cd_' . md5( $ip );
+    if ( get_transient( $cd_key ) ) {
+        return new WP_Error(
+            'tc_games_cooldown',
+            __( 'Too fast — finish a game first.', 'tc-ventures-child' ),
+            array( 'status' => 429 )
+        );
+    }
+    $today = (int) get_transient( 'tc_games_posts_today' );
+    if ( $today >= 400 ) {
+        return new WP_Error(
+            'tc_games_daily_cap',
+            __( 'The boards are resting for today.', 'tc-ventures-child' ),
+            array( 'status' => 429 )
+        );
+    }
+    // 20s: even the shortest real game run takes longer than that.
+    set_transient( $cd_key, 1, 20 );
+    set_transient( 'tc_games_posts_today', $today + 1, DAY_IN_SECONDS );
+
     $board   = tc_games_read_board( $game );
     $board[] = array(
         'name'  => $name,

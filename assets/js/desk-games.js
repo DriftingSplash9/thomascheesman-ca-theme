@@ -369,9 +369,11 @@
         } );
         observer.observe( drawer, { attributes: true, attributeFilter: [ 'class' ] } );
 
-        // Initial fetch on script init so a fast click on the toad
-        // already has data when the drawer pops.
-        fetchBoards().then( paintHighScores );
+        // Boards are fetched on drawer open (the MutationObserver above)
+        // — the old eager fetch here hit the REST endpoint on every page
+        // load sitewide for a drawer most visitors never open (review-2).
+        // Cost: a "—" placeholder for the instant between a fast toad
+        // click and the response.
     }
 
     // ================================================================

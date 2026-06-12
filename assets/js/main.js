@@ -12,6 +12,21 @@
  * wp_enqueue_script('tc-ventures-main', ...).
  */
 
+// Run one init in isolation. Before this guard, the whole chain was a
+// single unguarded sequence — one CDN blip (gsap failing to load) threw
+// inside an early init and killed everything after it: lightbox, the
+// rot13 email reveal, deferred galleries, heritage reveals (review-2
+// fragility F1). A failed toy must never take the utilities down.
+function tcInit(fn) {
+    try {
+        fn();
+    } catch (e) {
+        if (window.console && console.warn) {
+            console.warn('[tc] init failed:', fn && fn.name, e);
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // WebGL background is decorative and GPU-heavy on cold start.
     // Defer it until the browser is idle (or 1.5 s max) so the hero +
@@ -19,44 +34,44 @@ document.addEventListener('DOMContentLoaded', function () {
     // thread. requestIdleCallback isn't in older Safari yet, so fall
     // back to a 400 ms setTimeout — still post-paint, still works.
     if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(initWebGLBackground, { timeout: 1500 });
+        window.requestIdleCallback(function () { tcInit(initWebGLBackground); }, { timeout: 1500 });
     } else {
-        setTimeout(initWebGLBackground, 400);
+        setTimeout(function () { tcInit(initWebGLBackground); }, 400);
     }
-    initSiteChrome();
-    initKineticHero();
-    initHeroScrollOut();
+    tcInit(initSiteChrome);
+    tcInit(initKineticHero);
+    tcInit(initHeroScrollOut);
     // Home-page reveal animations (pillar tumble + blog-card random
     // tumble) intentionally disabled — the user asked for "simple
     // images with none of that". The function bodies remain in this
     // file in case we want to bring them back later.
     // initPillarReveal();
-    initFamilyTreeReveal();
-    initFamilyTreeLeaves();
-    initTreeChipFoil();
-    initFigureKenBurns();
-    initLightbox();
-    initGallerySlideshow();
-    initDeferredGalleries();
-    initContactEmail();
-    initRot13Email();
-    initPostCarousel();
-    initEssaySections();
+    tcInit(initFamilyTreeReveal);
+    tcInit(initFamilyTreeLeaves);
+    tcInit(initTreeChipFoil);
+    tcInit(initFigureKenBurns);
+    tcInit(initLightbox);
+    tcInit(initGallerySlideshow);
+    tcInit(initDeferredGalleries);
+    tcInit(initContactEmail);
+    tcInit(initRot13Email);
+    tcInit(initPostCarousel);
+    tcInit(initEssaySections);
     // initBlogReveal();
-    initScrollReveals();
-    initHeritagePage();
-    initLongreadChapterRail();
-    initHeritageTreeTilt();
-    initHeritageTreeFacts();
-    initFilmReels();
-    initThomasTOC();
-    initPersonSpokeTOC();
-    initFlipbook();
-    initThomasGalleryHover();
-    initHeritageNotes();
-    initInkTrail();
-    initParticleField();
-    initMagneticElements();
+    tcInit(initScrollReveals);
+    tcInit(initHeritagePage);
+    tcInit(initLongreadChapterRail);
+    tcInit(initHeritageTreeTilt);
+    tcInit(initHeritageTreeFacts);
+    tcInit(initFilmReels);
+    tcInit(initThomasTOC);
+    tcInit(initPersonSpokeTOC);
+    tcInit(initFlipbook);
+    tcInit(initThomasGalleryHover);
+    tcInit(initHeritageNotes);
+    tcInit(initInkTrail);
+    tcInit(initParticleField);
+    tcInit(initMagneticElements);
 });
 
 /**
@@ -90,6 +105,11 @@ function initKineticHero() {
         // CSS @media block already revealed the content. Nothing to do.
         return;
     }
+
+    // Bail BEFORE splitting if gsap never arrived (CDN blip, blocked
+    // network): the split hides every char behind opacity:0 waiting for
+    // a timeline that would never run — an invisible H1 (review-2 F1).
+    if (typeof gsap === 'undefined') return;
 
     const chars = splitIntoCharSpans(heroTitle);
 
@@ -772,22 +792,32 @@ function tcWrapImgForLightbox(img) {
 
     const a = document.createElement('a');
     a.className = 'lightbox-link';
-    a.href = img.currentSrc || img.src;
+    // Gallery imgs with srcset carry data-tc-full (the full-size URL):
+    // currentSrc would be whichever SMALL candidate the browser picked
+    // for the grid cell, and the lightbox should open the real photo.
+    a.href = img.dataset.tcFull || img.currentSrc || img.src;
     a.setAttribute('target', '_blank');
     a.setAttribute('rel', 'noopener noreferrer');
     img.parentNode.insertBefore(a, img);
     a.appendChild(img);
 
-    const updateDims = () => {
-        if (img.naturalWidth > 0) {
-            a.setAttribute('data-pswp-width', img.naturalWidth);
-            a.setAttribute('data-pswp-height', img.naturalHeight);
-        }
-    };
-    if (img.complete && img.naturalWidth > 0) {
-        updateDims();
+    if (img.dataset.tcFullw && img.dataset.tcFullh) {
+        // Renderer-supplied true dimensions — with srcset, naturalWidth
+        // reports the loaded candidate's size, which would open soft.
+        a.setAttribute('data-pswp-width', img.dataset.tcFullw);
+        a.setAttribute('data-pswp-height', img.dataset.tcFullh);
     } else {
-        img.addEventListener('load', updateDims, { once: true });
+        const updateDims = () => {
+            if (img.naturalWidth > 0) {
+                a.setAttribute('data-pswp-width', img.naturalWidth);
+                a.setAttribute('data-pswp-height', img.naturalHeight);
+            }
+        };
+        if (img.complete && img.naturalWidth > 0) {
+            updateDims();
+        } else {
+            img.addEventListener('load', updateDims, { once: true });
+        }
     }
 
     return true;
@@ -2238,8 +2268,19 @@ function initSiteChrome() {
                 })
                 .catch(function () { /* keep the $-- placeholder. */ });
         }
-        fetchBTC();
-        setInterval(fetchBTC, 60 * 1000);
+        // Review-2: don't poll CoinGecko sitewide for a price that only
+        // shows inside the desk menu's Bitcoin-books hover card. Start
+        // (and keep) the ticker on the first menu open instead.
+        let btcStarted = false;
+        function startBTC() {
+            if (btcStarted) return;
+            btcStarted = true;
+            fetchBTC();
+            setInterval(fetchBTC, 60 * 1000);
+        }
+        document.querySelectorAll('[data-menu-trigger]').forEach(function (t) {
+            t.addEventListener('click', startBTC, { once: true });
+        });
     }
 
     // If the menu DOM isn't on this page, bail after starting the clock.

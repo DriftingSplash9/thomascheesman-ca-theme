@@ -68,6 +68,38 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
+/**
+ * URL → attachment-ID lookup with a persistent cache.
+ *
+ * attachment_url_to_postid() is a LIKE query — far too heavy to run
+ * ~200× per kid page on every uncached render. Each URL is looked up
+ * once, memoised into a single autoload=false option, and read back on
+ * later renders. Misses (external files, deleted attachments) cache as
+ * 0 so they are never retried.
+ */
+function tc_gallery_attachment_id( string $url ) : int {
+    static $map   = null;
+    static $dirty = false;
+    if ( $map === null ) {
+        $map = get_option( 'tc_gallery_url_map', array() );
+        if ( ! is_array( $map ) ) {
+            $map = array();
+        }
+        register_shutdown_function( function () use ( &$map, &$dirty ) {
+            if ( $dirty ) {
+                update_option( 'tc_gallery_url_map', $map, false );
+            }
+        } );
+    }
+    if ( array_key_exists( $url, $map ) ) {
+        return (int) $map[ $url ];
+    }
+    $id           = (int) attachment_url_to_postid( $url );
+    $map[ $url ]  = $id;
+    $dirty        = true;
+    return $id;
+}
+
 function tc_render_photo_gallery( array $items, array $sections = array(), string $alt_prefix = 'Photo' ) : void {
     if ( empty( $items ) ) {
         return;
@@ -261,12 +293,46 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
                 $caption_html = $caption !== ''
                     ? sprintf( '<figcaption>%s</figcaption>', esc_html( $caption ) )
                     : '';
+
+                // Review-2 perf fix: the wall used to serve every photo at
+                // its full -scaled size (≈5 MB pages, 18 s mobile LCP on
+                // Patience). When the URL maps to a media-library
+                // attachment, emit srcset + sizes so browsers pick a small
+                // candidate for the ~130–200px grid cells, plus intrinsic
+                // width/height. data-tc-full* hands the lightbox the
+                // full-size URL and true dimensions — with srcset, the
+                // thumb's currentSrc/naturalWidth describe the SMALL
+                // candidate, so main.js prefers these attributes.
+                $dims = '';
+                $resp = '';
+                $att  = tc_gallery_attachment_id( $url );
+                if ( $att ) {
+                    $meta = wp_get_attachment_metadata( $att );
+                    if ( is_array( $meta ) && ! empty( $meta['width'] ) && ! empty( $meta['height'] ) ) {
+                        $dims = sprintf(
+                            ' width="%1$d" height="%2$d" data-tc-full="%3$s" data-tc-fullw="%1$d" data-tc-fullh="%2$d"',
+                            (int) $meta['width'],
+                            (int) $meta['height'],
+                            esc_url( $url )
+                        );
+                    }
+                    $srcset = wp_get_attachment_image_srcset( $att, 'full' );
+                    if ( $srcset ) {
+                        $resp = sprintf(
+                            ' srcset="%s" sizes="(max-width: 700px) 33vw, 200px"',
+                            esc_attr( $srcset )
+                        );
+                    }
+                }
+
                 printf(
-                    '<figure class="tc-photo-gallery__item"><img src="%1$s" alt="%2$s" loading="%3$s" />%4$s</figure>',
+                    '<figure class="tc-photo-gallery__item"><img src="%1$s" alt="%2$s" loading="%3$s" decoding="async"%5$s%6$s />%4$s</figure>',
                     esc_url( $url ),
                     esc_attr( $alt ),
                     esc_attr( $loading ),
-                    $caption_html
+                    $caption_html,
+                    $dims,
+                    $resp
                 );
             }
             $global_idx++;
