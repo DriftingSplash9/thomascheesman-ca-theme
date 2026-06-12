@@ -1,0 +1,160 @@
+/**
+ * The Lanterns of Record — /map (P1 static light-table).
+ * The HUD is the site's glassmorphism leaned over a dark archive
+ * light-table; the world stays barely discernible until the lanterns
+ * carry the eye. Loaded only on the map page (functions.php).
+ */
+
+/* --- The HUD plate ----------------------------------------------- */
+.tc-map-section {
+    position: relative;
+    z-index: 1;
+    padding: 1rem 1.2rem 4rem;
+}
+.tc-map-hud {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 1.6rem 1.6rem 1.2rem;
+    border-radius: 18px;
+    background: linear-gradient(150deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.02) 22%,
+        rgba(14, 18, 38, 0.55) 52%,
+        rgba(8, 10, 26, 0.68) 100%);
+    border: 1px solid rgba(150, 180, 225, 0.18);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.03),
+        0 30px 80px -30px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+}
+.tc-map-hud__intro {
+    max-width: 62rem;
+    margin: 0.2rem auto 1.4rem;
+    text-align: center;
+    color: #b9c2dd;
+    font-size: 1.02rem;
+    line-height: 1.65;
+}
+.tc-map-hud__foot {
+    margin: 0.8rem auto 0.2rem;
+    text-align: center;
+    color: #7e88a8;
+    font-size: 0.86rem;
+    font-style: italic;
+}
+
+/* --- The world ----------------------------------------------------- */
+.tc-map { position: relative; }
+.tc-map svg { display: block; width: 100%; height: auto; }
+.tc-map__sphere    { fill: #070a1a; }
+.tc-map__graticule { fill: none; stroke: rgba(160, 185, 235, 0.05); stroke-width: 0.5; }
+.tc-map__land      { fill: #0d1330; stroke: rgba(160, 185, 235, 0.14); stroke-width: 0.5; }
+.tc-map__noscript  { padding: 3rem 1rem; text-align: center; color: #b9c2dd; }
+
+/* --- Carried light (static in P1) ---------------------------------- */
+.tc-map__trail {
+    fill: none;
+    stroke-width: 1.1;
+    stroke-linecap: round;
+    opacity: 0.16;
+}
+
+/* --- Lanterns: tier = brightness ------------------------------------ */
+.tc-map__hit  { fill: transparent; }
+.tc-map__core { stroke: rgba(255, 255, 255, 0.55); stroke-width: 0.4; }
+.tc-map__lantern--verified .tc-map__core { stroke-width: 0.7; }
+
+/* inherited: the faint, uncertain flicker (spec s5.1) */
+@keyframes tc-lantern-flicker {
+    0%, 100% { opacity: 0.26; }
+    38%      { opacity: 0.12; }
+    52%      { opacity: 0.30; }
+    71%      { opacity: 0.16; }
+}
+.tc-map__lantern--inherited .tc-map__halo { animation: tc-lantern-flicker 5.2s ease-in-out infinite; }
+.tc-map__lantern--still .tc-map__halo,
+.tc-map__lantern--still.tc-map__lantern--inherited .tc-map__halo { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+    .tc-map__lantern--inherited .tc-map__halo { animation: none; }
+}
+
+/* --- Tooltip dossier ------------------------------------------------ */
+.tc-map-tooltip {
+    position: absolute;
+    z-index: 5;
+    width: 270px;
+    padding: 0.7rem 0.85rem;
+    border-radius: 10px;
+    pointer-events: none;
+    background: rgba(7, 9, 22, 0.92);
+    border: 1px solid rgba(170, 195, 240, 0.25);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: #d6dcef;
+}
+.tc-map-tooltip[hidden] { display: none; }
+.tc-map-tooltip strong { display: block; font-size: 0.95rem; margin-bottom: 0.15rem; }
+.tc-map-tooltip__meta,
+.tc-map-tooltip__place,
+.tc-map-tooltip__source,
+.tc-map-tooltip__tier,
+.tc-map-tooltip__cta { display: block; }
+.tc-map-tooltip__meta   { color: #9aa6c8; }
+.tc-map-tooltip__source { color: #8b94b4; font-size: 0.78rem; font-style: italic; margin-top: 0.25rem; }
+.tc-map-tooltip__tier {
+    margin-top: 0.35rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.tc-map-tooltip__tier--verified  { color: #ffe9a8; }
+.tc-map-tooltip__tier--living    { color: #ffd9c2; }
+.tc-map-tooltip__tier--probable  { color: #a9c4e8; }
+.tc-map-tooltip__tier--inherited { color: #8a93b0; }
+.tc-map-tooltip__cta { margin-top: 0.3rem; color: #7ad9d0; font-size: 0.76rem; }
+
+/* --- Legend --------------------------------------------------------- */
+.tc-map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.95rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    color: #aeb7d4;
+}
+.tc-map-legend__chip { display: inline-flex; align-items: center; gap: 0.35rem; }
+.tc-map-legend__chip i {
+    width: 10px; height: 10px; border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+}
+.tc-map-legend__tiers { display: inline-flex; gap: 0.7rem; margin-left: 0.6rem; }
+.tc-map-legend__tiers em { font-style: normal; position: relative; padding-left: 0.95rem; }
+.tc-map-legend__tiers em::before {
+    content: ""; position: absolute; left: 0; top: 50%;
+    width: 9px; height: 9px; border-radius: 50%; transform: translateY(-50%);
+    background: #ffe9a8;
+}
+.tc-map-legend__tiers .t-verified::before  { opacity: 1; box-shadow: 0 0 9px #ffe9a8; }
+.tc-map-legend__tiers .t-living::before    { opacity: 0.9; background: #ffd9c2; box-shadow: 0 0 8px #ffd9c2; }
+.tc-map-legend__tiers .t-probable::before  { opacity: 0.5; box-shadow: none; }
+.tc-map-legend__tiers .t-inherited::before { opacity: 0.25; box-shadow: none; }
+
+/* --- Timeline ------------------------------------------------------- */
+.tc-map-timeline { margin-top: 0.6rem; }
+.tc-map-timeline svg { display: block; width: 100%; height: auto; }
+.tc-map-timeline__label { fill: #717b9c; font-size: 11px; }
+.tc-map-timeline__title { fill: #8b94b4; font-size: 12px; font-style: italic; }
+
+/* --- Small screens --------------------------------------------------- */
+@media (max-width: 720px) {
+    .tc-map-section { padding: 0.4rem 0.5rem 3rem; }
+    .tc-map-hud { padding: 1rem 0.7rem 0.9rem; }
+    .tc-map-hud__intro { font-size: 0.92rem; }
+    .tc-map-legend { font-size: 0.72rem; gap: 0.3rem 0.7rem; }
+    .tc-map-tooltip { width: 220px; }
+}

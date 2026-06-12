@@ -259,6 +259,47 @@ function tc_ventures_enqueue_scripts() {
         true
     );
 
+    // The Lanterns of Record — the converging-families map at /map
+    // (page-map.php; spec at docs/CONVERGING-MAP-SPEC.md). D3 + the
+    // topojson client (CDN, pinned) and the map engine load ONLY on
+    // the map page; the merged dataset (inc/data/family-map.json,
+    // generated off-repo by _xlsx2map.py) and the self-hosted world
+    // topology are fetched lazily by the script itself.
+    if ( is_page( 'map' ) ) {
+        wp_enqueue_style(
+            'tc-family-map',
+            get_stylesheet_directory_uri() . '/assets/css/family-map.css',
+            array( 'astra-child-style' ),
+            $tc_theme_ver
+        );
+        wp_enqueue_script(
+            'd3',
+            'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js',
+            array(),
+            '7.8.5',
+            true
+        );
+        wp_enqueue_script(
+            'topojson-client',
+            'https://cdnjs.cloudflare.com/ajax/libs/topojson-client/3.1.0/topojson-client.min.js',
+            array(),
+            '3.1.0',
+            true
+        );
+        wp_enqueue_script(
+            'tc-family-map',
+            get_stylesheet_directory_uri() . '/assets/js/family-map.js',
+            array( 'd3', 'topojson-client' ),
+            $tc_theme_ver,
+            true
+        );
+        wp_localize_script( 'tc-family-map', 'tcFamilyMap', array(
+            'dataUrl'      => get_stylesheet_directory_uri() . '/inc/data/family-map.json?ver=' . rawurlencode( $tc_theme_ver ),
+            'worldUrl'     => get_stylesheet_directory_uri() . '/assets/data/world-110m.json?ver=' . rawurlencode( $tc_theme_ver ),
+            'heritageBase' => home_url( '/family/heritage/' ),
+        ) );
+    }
+
     // Load + enrich the puzzle data: resolve every surface/object
     // attachment ID to a URL so the engine (JS) never has to. Phase 4
     // edits drawer-puzzle.json only; this code does not change.
