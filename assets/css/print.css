@@ -66,13 +66,23 @@
     }
 
     #primary,
-    #primary * {
+    #primary *,
+    #primary *::before,
+    #primary *::after {
         color: #1f1f1f !important;
         background-color: transparent !important;
         background-image: none !important;
         box-shadow: none !important;
         text-shadow: none !important;
         filter: none !important;
+        /* The frosted reading plates use backdrop-filter: blur() brightness(0.5).
+           In print Chrome flattens those into opaque transparency groups that
+           painted OVER the chapter headings (headings printed blank). Kill every
+           backdrop-filter, and any opacity/blend that could spawn a layer. */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        opacity: 1 !important;
+        mix-blend-mode: normal !important;
         border-color: #d8d8d8 !important;
         -webkit-text-stroke: 0 !important;
     }
@@ -206,25 +216,26 @@
           nested .heritage-longread__eyebrow ("Chapter One").
           Thomas page: h2.about-section__heading + h3.about-section__subheading.
        -------------------------------------------------------- */
+    /* Chapters FLOW (no forced page break). A forced break-before:page made
+       Chrome start a new fragment of the frosted-glass plate at the page top
+       and flatten it into a transparency group that painted OVER the chapter
+       heading — so every non-first chapter heading printed invisible. The
+       first chapter (Prologue) already flowed and rendered fine, so letting
+       all chapters flow fixes it. Strong top margin keeps them well separated;
+       break-after:avoid stops a heading orphaning at the foot of a page. */
     #primary .heritage-longread__chapter,
     #primary .about-section__heading {
         font-family: Georgia, serif !important;
         font-weight: 700 !important;
         font-size: 19pt !important;
         line-height: 1.15 !important;
-        margin: 0 0 0.5em !important;
+        margin: 2.4em 0 0.5em !important;
         padding: 0 !important;
-        break-before: page;
-        page-break-before: always;
-        break-after: avoid;
-        page-break-after: avoid;
-    }
-
-    /* The very first chapter shouldn't force a blank page right after the
-       cover + dek — let it flow. */
-    #primary .heritage-longread__dek + .heritage-longread__chapter {
-        break-before: auto;
-        page-break-before: auto;
+        border: 0 !important;
+        break-before: auto !important;
+        page-break-before: auto !important;
+        break-after: avoid !important;
+        page-break-after: avoid !important;
     }
 
     #primary .heritage-longread__eyebrow {
