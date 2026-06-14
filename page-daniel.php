@@ -110,7 +110,7 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
 
                     <p>If you held me to three words: compassionate, creative, patient. If you held me to three more: shy, quiet, private. He won't be the one standing out in a crowd or working the room &mdash; he's the boy off to the side, quietly taking the whole thing in, working out how the world actually runs underneath what everyone is saying about it. It showed up early, in pre-K, when making friends and speaking up didn't come easily. It takes him a while to come out of his shell. But when he does &mdash; and he does &mdash; he is funny, sharp, adventurous, and fully alive.</p>
 
-                    <p>There are three small moles under his right eye, set in a line, and they are Orion's Belt exactly &mdash; even the brightness is right, the middle one a little softer than its neighbours. I noticed it years ago and I've never been able to unsee it: a boy with a constellation on his face, mad about space. I don't think that's a coincidence either.</p>
+                    <p>He has three small moles set in a line, and they are Orion's Belt exactly &mdash; even the brightness is right, the middle one a little softer than its neighbours. I noticed it years ago and I've never been able to unsee it: a boy with a constellation, mad about space. I don't think that's a coincidence either.</p>
 
                     <p>He has a dry, oddball humour. He'll make a strange noise out of nowhere for no reason I can identify. But he's funniest when he's excited &mdash; when a story gets hold of him and he has to tell it <em>right now</em>, all in a rush, usually at bedtime when he's finally good and ready to talk. We call him a lot of things around the house: G, Bro, Brosky, Bra, Dude, Little Dude. When he's tired he goes whiny and slow, and I call it draggin' ass, which makes him groan, which is rather the point.</p>
 
@@ -255,7 +255,7 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
                         <figcaption>Off to school, 2025.</figcaption>
                     </figure>
 
-                    <p>He's in grade five at Crystal Park School, and he likes it there. His subject is math &mdash; he's proud of his division, and rightly so &mdash; and every year he comes home with something for teamwork or for STEM. His report cards do the same quiet thing he does: they just keep getting better, a little at a time, no fuss. He's pulled toward science and space, with a side interest in history.</p>
+                    <p>He's in grade five now, and he likes it there. His subject is math &mdash; he's proud of his division, and rightly so &mdash; and every year he comes home with something for teamwork or for STEM. His report cards do the same quiet thing he does: they just keep getting better, a little at a time, no fuss. He's pulled toward science and space, with a side interest in history.</p>
 
                     <p>Right now he's between things &mdash; he recently set boxing down, and he's taking the time to figure out what's next, which I think is exactly the right move at ten. I don't want him to feel he has to be anything. I want him to find what he actually loves and go at it. He's becoming a smart, kind, adventurous kid, and the soft, curious centre of him &mdash; the part that wants to know how the world really works &mdash; is the part I would protect with everything I have.</p>
 
