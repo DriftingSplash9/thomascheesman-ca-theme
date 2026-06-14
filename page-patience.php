@@ -290,59 +290,6 @@ get_header(); ?>
 
             <?php tc_render_family_links( 'patience' ); ?>
 
-            <?php
-            // Photo wall — Patience.
-            //
-            // 139 photos sourced from inc/gallery-patience.php (curated
-            // ordering lives in partiences.XLSX → re-import via the
-            // converter). Five chronological-ish sections derived from
-            // the order index; section labels are placeholder editorial
-            // names that Thomas can tweak as memory clarifies.
-            //
-            // Counts sum to 139: 28 + 28 + 28 + 28 + 27.
-            // 134 year-tagged photos sourced from partiences-styled.XLSX.
-            // Sections group sparse years together so the rhythm is even
-            // (2013 alone has 37 photos; 2021/2022 only 2 each, so they
-            // ride along with neighbours).
-            $patience_items = require get_stylesheet_directory() . '/inc/gallery-patience.php';
-            tc_render_photo_gallery(
-                $patience_items,
-                array(
-                    array( 'label' => 'Year One — 2013',          'years' => array( 2013 ) ),
-                    array( 'label' => 'Toddler Years — 2014–2016', 'years' => array( 2014, 2015, 2016 ) ),
-                    array( 'label' => 'Little Person — 2017–2018', 'years' => array( 2017, 2018 ) ),
-                    array( 'label' => 'A Big Year — 2019',         'years' => array( 2019 ) ),
-                    array( 'label' => 'The Quiet Years — 2020–2022', 'years' => array( 2020, 2021, 2022 ) ),
-                    array( 'label' => 'Schoolgirl — 2023–Today',   'years' => array( 2023, 2024, 2025, 2026 ) ),
-                ),
-                'Patience'
-            );
-
-            // More from the album — extra photos Thomas added, optimized into
-            // the theme (assets/img/patience-extra/). One un-year-sectioned
-            // block at the end; caption + weave the best into the prose later.
-            $pe = get_stylesheet_directory_uri() . '/assets/img/patience-extra/';
-            $patience_extra = array(
-                array( 'url' => $pe . 'patience-embracing-me.jpg' ),
-                array( 'url' => $pe . 'patience-k-grad.jpg' ),
-                array( 'url' => $pe . 'patience-canada-day.jpg' ),
-                array( 'url' => $pe . 'west-ed-mall-with-patience.jpg' ),
-                array( 'url' => $pe . 'windy-afternoon-at-school.jpg' ),
-                array( 'url' => $pe . 'aunty-bonnie-and-patience.jpg' ),
-                array( 'url' => $pe . 'boxing-patience-and-daniel.jpg' ),
-                array( 'url' => $pe . 'family-boat-ride.jpg' ),
-                array( 'url' => $pe . 'sleeping-on-boat-cruise.jpg' ),
-                array( 'url' => $pe . 'nice-family-at-river.jpg' ),
-                array( 'url' => $pe . 'selfie-with-kids.jpg' ),
-                array( 'url' => $pe . 'visit-with-papa-jim.jpg' ),
-            );
-            tc_render_photo_gallery(
-                $patience_extra,
-                array( array( 'label' => 'More from the album', 'count' => count( $patience_extra ) ) ),
-                'Patience'
-            );
-            ?>
-
             <!-- Home videos — playable .mp4 uploads (WP media, 2026/06). The
                  .mov uploads (jumping-pool, slo-mo) play on iOS but not desktop
                  Chrome; add them here once re-encoded to .mp4. -->

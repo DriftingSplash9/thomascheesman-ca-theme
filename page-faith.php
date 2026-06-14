@@ -255,26 +255,6 @@ get_header(); ?>
 
             <?php tc_render_family_links( 'faith' ); ?>
 
-            <?php
-            // 219 year-tagged photos sourced from faiths.XLSX. Section
-            // structure mirrors Patience/Daniel (Faith born March 2017).
-            // The 3 photos tagged 2016 are pre-natal — pregnancy / ultrasound
-            // shots — folded into the Year One section.
-            $faith_items = require get_stylesheet_directory() . '/inc/gallery-faith.php';
-            tc_render_photo_gallery(
-                $faith_items,
-                array(
-                    array( 'label' => 'Year One — 2016–2017',     'years' => array( 2016, 2017 ) ),
-                    array( 'label' => 'Toddler Years — 2018',     'years' => array( 2018 ) ),
-                    array( 'label' => 'Little Person — 2019–2020', 'years' => array( 2019, 2020 ) ),
-                    array( 'label' => 'The Pandemic Years — 2021–2022', 'years' => array( 2021, 2022 ) ),
-                    array( 'label' => 'Schoolgirl Begins — 2023–2024', 'years' => array( 2023, 2024 ) ),
-                    array( 'label' => 'Today — 2025–2026',         'years' => array( 2025, 2026 ) ),
-                ),
-                'Faith'
-            );
-            ?>
-
             <!-- Home videos — playable .mp4 uploads (WP media, 2026/06).
                  Re-encoded from .mov (HEVC/VP9) to web-optimized H.264 +
                  faststart so they play in desktop Chrome, not just iOS. -->
