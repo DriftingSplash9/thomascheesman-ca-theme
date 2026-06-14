@@ -43,7 +43,7 @@ get_header(); ?>
 
                     <p>Everybody starts with the eyes. You can't help it. They're two different colours, and on a bright day the blue comes up like something switched on from the inside &mdash; I've lost whole minutes to those eyes, and I'd lose them again. But I'm getting ahead of myself. The eyes came later. First there was a name, and before the name there was a dream.</p>
 
-                    <p>Faith arrived on the 29th of March, 2017 &mdash; eight pounds, twenty inches, and the last full stop on our family. We'd chewed over names for months and I had nothing; Melanie had all the ideas and I had a blank page. Then the name turned up in a dream, of all places. I woke at three in the morning, shook Melanie half-awake, and asked her what she thought of &ldquo;Faith.&rdquo; She mumbled &ldquo;I like it&rdquo; and was gone again before I'd finished the sentence. We came within an inch of calling her Charlotte. I'm glad we didn't, and here's why.</p>
+                    <p>Faith arrived in the spring of 2017 &mdash; the last full stop on our family. We'd chewed over names for months and I had nothing; Melanie had all the ideas and I had a blank page. Then the name turned up in a dream, of all places. I woke at three in the morning, shook Melanie half-awake, and asked her what she thought of &ldquo;Faith.&rdquo; She mumbled &ldquo;I like it&rdquo; and was gone again before I'd finished the sentence. We came within an inch of calling her Charlotte. I'm glad we didn't, and here's why.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-right">
                         <img
@@ -54,9 +54,7 @@ get_header(); ?>
                         <figcaption>Safe with Mom again.</figcaption>
                     </figure>
 
-                    <p>It was the day after she was born, an ordinary errand &mdash; the nurse and I carrying her down the hall for a change and a bath, an incubator waiting to warm her after. She gave a little cough. Then, in the nurse's arms, she started to go blue. The nurse had her down and was doing CPR and calling for help before my brain had caught up to my eyes, and then they were running, and there was no room for me in the elevator, so I took the stairs two at a time.</p>
-
-                    <p>At the top there was a knot of people around a newborn &mdash; six nurses, two doctors, all of them moving fast &mdash; and my heart went straight through the floor, because I was certain that baby was mine. Then the elevator opened and Melanie came out of it in a wheelchair, upright on sheer will a day after major surgery, scanning the room like a hawk. She saw it before I did: a second, smaller, calmer cluster off to the side. <em>That</em> one was Faith. We looked at each other and didn't say a word, because there was nothing to do and nothing to say &mdash; only to have faith that she'd be alright. She was. She came back to us breathing and already a little furious about the whole business, and she has been going at full tilt ever since.</p>
+                    <p>Not long after she was born there was a moment &mdash; the kind that empties the air out of a room &mdash; when her breathing needed help, and the place filled with swift, skilled hands. I have never forgotten the terror of it, or the relief that came after, or the sight of her mother &mdash; upright on sheer will a day after major surgery &mdash; wheeling herself in to be there for it, scanning the room like a hawk. We looked at each other and didn't say a word, because there was nothing to do and nothing to say &mdash; only to have faith that she'd be alright. She was. She came back to us breathing and already a little furious about the whole business, and she has been going at full tilt ever since.</p>
 
                     <?php /* Screen-reader-only h2 — see page-patience.php:
                              groups the h3 chapters so the outline doesn't

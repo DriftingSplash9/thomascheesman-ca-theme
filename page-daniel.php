@@ -29,7 +29,7 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
             <span class="page-hero__eyebrow">Son &mdash; middle</span>
             <h1 class="page-hero__title kinetic-text">Daniel</h1>
             <p class="page-hero__subtitle kinetic-fade">
-                Charlie Brown &mdash; the quiet observer, the maker, the boy with a constellation on his face
+                Charlie Brown &mdash; the quiet observer, the maker, the boy with a constellation of his own
             </p>
         </div>
     </section>
@@ -49,9 +49,9 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
                         <figcaption>The elegant son.</figcaption>
                     </figure>
 
-                    <p>Daniel was born on the 30th of June, 2015, at the QE2 in Grande Prairie &mdash; average weight, a touch short, and he has carried that compact build all the way to today. Patience had made us a family; Daniel rounded us out, a boy and a girl, and just like that we were complete &mdash; the envy, I think, of every family that ended up with all boys or all girls or no kids at all. What amazed me was that there was still so much room left in my heart. I would have sworn it was full. It wasn't.</p>
+                    <p>Daniel arrived in the summer of 2015. Patience had made us a family; Daniel rounded us out, a boy and a girl, and just like that we were complete &mdash; the envy, I think, of every family that ended up with all boys or all girls or no kids at all. What amazed me was that there was still so much room left in my heart. I would have sworn it was full. It wasn't.</p>
 
-                    <p>By the time he came along, Melanie and I were more than ready. I was between jobs and took a couple of months off after the birth so I could be the kind of help I hadn't managed to be when Patience arrived. He showed up just after Township 71 closed its doors &mdash; our whole pregnancy ran the length of that place's last season, the sort of thing you only notice looking back. Because Patience had come by C-section, Daniel's was scheduled; once you've had the one, a natural birth gets risky, so they book you in. The day we brought him home, both sets of grandparents were waiting &mdash; and my dad had surprised us and driven up too.</p>
+                    <p>By the time he came along, Melanie and I were more than ready. I was between jobs and took a couple of months off after the birth so I could be the kind of help I hadn't managed to be when Patience arrived. He showed up just after Township 71 closed its doors &mdash; our whole pregnancy ran the length of that place's last season, the sort of thing you only notice looking back. The day we brought him home, both sets of grandparents were waiting &mdash; and my dad had surprised us and driven up too.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-right">
                         <img
@@ -64,9 +64,9 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
 
                     <p>My first memory of him is holding him after his first weigh-in. Melanie was still a little loopy and being stitched up from the operation, so the first snuggle fell to me. He was so small, and so pink, and he had these enormous brown puppy eyes that I have never quite gotten over. Patience would hold him and it was, every single time, the cutest thing I had ever seen.</p>
 
-                    <p>The early weeks were hard in the way nobody puts on a greeting card. A tongue-tie meant breastfeeding wouldn't take, so there was pumping &mdash; endless pumping, a big rented machine that roared in the night, cups and hoses and Melanie running on fumes and sheer stubborn will, trying everything natural and medicinal to keep the milk coming. I was deep in my own pain by then and short on sleep, and between the two of us we were about as tired as two people can be. She had it worse. She always did, in those early days.</p>
+                    <p>The early weeks were hard in the way nobody puts on a greeting card. Feeding a newborn turned out to be its own long battle, and Melanie fought it on fumes and sheer stubborn will. I was deep in my own pain by then and short on sleep, and between the two of us we were about as tired as two people can be. She had it worse. She always did, in those early days.</p>
 
-                    <p>We named him Daniel for a few reasons at once. It was the name of my best friend as a boy; it was the name of Melanie's best friend from her own childhood; and it was her father's name. For whatever reason it had always sat in the back of my mind as the name I would use if I ever had a son &mdash; it was even on the shortlist for Patience, right up until we found out she was a she. His full name is Daniel Eric Thomas Cheesman: Eric for his great-grandfather, and Thomas for reasons I intend to take to the grave.</p>
+                    <p>We named him Daniel for a few reasons at once. It was the name of my best friend as a boy; it was the name of Melanie's best friend from her own childhood; and it was her father's name. For whatever reason it had always sat in the back of my mind as the name I would use if I ever had a son &mdash; it was even on the shortlist for Patience, right up until we found out she was a she. His name carries his great-grandfather Eric in it, and one more name I intend to take to the grave.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--big-left">
                         <img

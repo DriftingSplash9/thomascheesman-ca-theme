@@ -56,7 +56,7 @@ get_header(); ?>
 
                     <p>We called her Patience &mdash; Melanie's idea, and I loved it the second I heard it. Her middle name is Kristi-Ann: Kristi-Ann for a dear friend of Melanie's who was lost to a motorcycle, and Ann for my mom, Maryann. A name with two people already living inside it before she'd taken a breath &mdash; and she's been growing to fill all three ever since.</p>
 
-                    <p>She was due on the fourteenth of September, and then she simply&hellip; wasn't. The days went by one at a time &mdash; grandparents arriving and leaving again, the doctor beginning to murmur about inducing. The twenty-third finally sent us to the hospital, and the hospital sent us straight back home to wait some more. We returned on the twenty-fourth, were admitted, and when she wouldn't dilate and her heart rate started to slip, the call came for an emergency caesarean. The twenty-fourth, naturally, was also the morning I was due to start a new job as head chef at Ric's Grill. I'd hauled the orientation binders all the way to the maternity ward, figuring I'd get a little reading done between visits. I never turned a page. Some priorities sort themselves out for you.</p>
+                    <p>She was due in the middle of September, and then she simply&hellip; wasn't. The days went by one at a time &mdash; grandparents arriving and leaving again &mdash; until she came, in her own time and on her own terms, after a long stretch of waiting that suited her name before she'd even worn it. It taught us early how little of this we control. Her arrival, naturally, landed on the very morning I was due to start a new job as head chef at Ric's Grill. I'd hauled the orientation binders all the way to the maternity ward, figuring I'd get a little reading done between visits. I never turned a page. Some priorities sort themselves out for you.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-left">
                         <img
@@ -67,7 +67,7 @@ get_header(); ?>
                         <figcaption>Asleep over Mom's shoulder &mdash; the spit of the slumped angel in her tattoo.</figcaption>
                     </figure>
 
-                    <p>That first night I sat up by the big windows with her while Melanie slept, the two of us a couple of days past the last real rest either of us had had. We'd just come back from her bath, and she was wrapped tight the way only a pediatric nurse can manage &mdash; a neat little parcel of a person. I looked out at the dark and felt the whole thing land at once: I was a father, she was healthy, we were going to be alright. Breathe in. Breathe out. (The feeding took us a while to crack &mdash; a tongue tie, an upper lip tie, a couple of snips that didn't take, and in the end she settled happily on formula. First lesson of fatherhood: the plan is whatever works.)</p>
+                    <p>That first night I sat up by the big windows with her while Melanie slept, the two of us a couple of days past the last real rest either of us had had. We'd just come back from her bath, and she was wrapped tight the way only a pediatric nurse can manage &mdash; a neat little parcel of a person. I looked out at the dark and felt the whole thing land at once: I was a father, she was healthy, we were going to be alright. Breathe in. Breathe out. (The feeding took us a while to crack, the way it often does, and in the end the plan became whatever worked &mdash; the first lesson of fatherhood, and not the last.)</p>
 
                     <?php /* Screen-reader-only h2: the chapter heads below are
                              h3s, and jumping h1 → h3 fails heading-order
@@ -96,7 +96,7 @@ get_header(); ?>
                         <figcaption>Where's my coffee?</figcaption>
                     </figure>
 
-                    <p>She's twelve going on sixteen now, which mostly means I see the back of a closing door. She lives online &mdash; gaming, chatting, watching shows with friends who are three rooms and one screen away &mdash; and I have taken to texting my own daughter to come and eat in my own kitchen. Weekends belong to sleepovers at her best friend's &mdash; the same one since kindergarten, which is about as far back as a friendship goes &mdash; the all-night kind nobody will admit are all-nighters. And every single morning when I drop her off, she reaches over and turns the radio down so her friends won't hear what her dad listens to. I crank it back up. I'm never fast enough; the door's already shut. What she actually listens to once that door closes is a mystery to me &mdash; whatever's climbing TikTok, I assume, though she's not telling.</p>
+                    <p>She's at the age now where I mostly see the back of a closing door. She'd live inside a screen if we let her &mdash; gaming, chatting, watching shows with friends who are three rooms and one screen away &mdash; and I have taken to texting my own daughter to come and eat in my own kitchen. She has a best friend she's kept since kindergarten, which is about as far back as a friendship goes. And every single morning when I drop her off, she reaches over and turns the radio down so nobody hears what her dad listens to. I crank it back up. I'm never fast enough; the door's already shut. What she actually listens to once that door closes is a mystery to me, and she's not telling.</p>
 
                     <h3>The one who runs the show</h3>
 
@@ -133,7 +133,7 @@ get_header(); ?>
                         <figcaption>Meeting her baby brother. She's been a great big sister to Daniel ever since.</figcaption>
                     </figure>
 
-                    <p>I think she lost a little of her childhood early to that, and I couldn't stop the caution that grew up in its place. To this day, if she hears a loud bang somewhere in the house, or a stumble on the stairs, her very first fear is that it's me. If I could lift one thing off her shoulders, it would be exactly that. I wish she'd be gentler with herself and let the parents do the parenting &mdash; but the hardest trick in this whole life is learning when to set a thing down, and I'm trying to teach it to her the only way I know how, which is by example. Mixed results so far, I'll admit.</p>
+                    <p>I wish she'd be gentler with herself and let the parents do the parenting. If I could lift one thing off her shoulders, it would be exactly that &mdash; the worrying she does on everyone else's behalf. But the hardest trick in this whole life is learning when to set a thing down, and I'm trying to teach it to her the only way I know how, which is by example. Mixed results so far, I'll admit.</p>
 
                     <h3>The little things</h3>
 
