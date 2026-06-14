@@ -272,10 +272,11 @@
        -------------------------------------------------------- */
     #primary .heritage-crosslink,        /* HCS aside              */
     #primary .heritage-siblings,         /* sibling / family nav   */
+    #primary .tc-photo-gallery,          /* kid photo walls — gated, never in print */
     #primary .kid-videos,                /* home videos            */
     #primary [class*="game-cta"],        /* arcade CTA             */
     #primary .thomas-cta,                /* Thomas-page nav links  */
-    #primary .thomas-gallery,            /* phone-dump gallery     */
+    #primary .container:has(.thomas-gallery), /* Thomas gallery block + its "Gallery" heading */
     #primary .heritage-longread__maplink,
     #primary .heritage-longread__next,
     #primary .heritage-longread__return,
@@ -351,9 +352,24 @@
        -------------------------------------------------------- */
     #primary .heritage-tree {
         display: block !important;
+        /* screen centres the tree with width:min(62rem,92vw) + margin-left:50%
+           + translateX(-50%); all three must go or it slides off the page. */
+        width: auto !important;
+        max-width: 100% !important;
         margin: 1.6em 0 !important;
         padding: 0 !important;
+        transform: none !important;
+        text-align: left !important;
         break-inside: auto;
+    }
+
+    /* Decorative connector lines / glow pseudo-elements don't belong in print. */
+    #primary .heritage-tree__gen::before,
+    #primary .heritage-tree__gen::after,
+    #primary .heritage-tree__couple::before,
+    #primary .heritage-tree__couple::after {
+        display: none !important;
+        content: none !important;
     }
 
     #primary .heritage-tree__title {

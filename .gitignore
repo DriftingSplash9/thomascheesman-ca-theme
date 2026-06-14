@@ -7,6 +7,11 @@ test-image-urls.py
 remove-dead-images.py
 image-audit*.xlsx
 
+# Keepsake PDF generator + its output. The generator runs locally (Playwright
+# + Pillow); the finished PDFs are uploaded to WP Media, not committed.
+build-keepsake-pdfs.py
+keepsake-pdfs/
+
 # Secret-bearing files that should never land in git. Belt-and-
 # suspenders: even if one of these gets dropped into the theme folder
 # by mistake (e.g. a Google Cloud credentials.json from the Site Kit
