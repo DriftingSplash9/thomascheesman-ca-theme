@@ -142,7 +142,7 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
                         <figcaption>One of his Elmo productions, before Kermit came along.</figcaption>
                     </figure>
 
-                    <p>This spring he spent two or three weekends building what he calls the Man Hut &mdash; a fort cobbled together out of old pallets and a tired girly playhouse we had kicking around. We spent the next weekend painting it. Then it went cool and rainy, which the land needed and the boy did not, and the Man Hut has been waiting out the weather ever since. It'll get its summer.</p>
+                    <p>This spring he spent two or three weekends building what he calls the Man Hut with his crafty uncle JP &mdash; a fort cobbled together out of old pallets and a tired girly playhouse we had kicking around. We spent the next weekend painting it. Then it went cool and rainy, which the land needed and the boy did not, and the Man Hut has been waiting out the weather ever since. It'll get its summer.</p>
 
                     <figure class="heritage-line__figure heritage-line__figure--small-right">
                         <img

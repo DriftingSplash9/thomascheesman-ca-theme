@@ -54,7 +54,7 @@ get_header(); ?>
                         <figcaption>Holding her, flat-out disbelieving I was somebody's father.</figcaption>
                     </figure>
 
-                    <p>We called her Patience &mdash; Melanie's idea, and I loved it the second I heard it. Her middle name is Kristi-Ann: Kristi-Ann for a dear friend of Melanie's who was lost to a motorcycle, and Ann for my mom, Maryann. A name with two people already living inside it before she'd taken a breath &mdash; and she's been growing to fill all three ever since.</p>
+                    <p>We called her Patience &mdash; Melanie's idea, and I loved it the second I heard it. Her middle name is Kristi-Ann: Kristi for a dear friend of Melanie's who was lost to a motorcycle, and Ann for my mom, Maryann. A name with two people already living inside it before she'd taken a breath &mdash; and she's been growing to fill all three ever since.</p>
 
                     <p>She was due in the middle of September, and then she simply&hellip; wasn't. The days went by one at a time &mdash; grandparents arriving and leaving again &mdash; until she came, in her own time and on her own terms, after a long stretch of waiting that suited her name before she'd even worn it. It taught us early how little of this we control. Her arrival, naturally, landed on the very morning I was due to start a new job as head chef at Ric's Grill. I'd hauled the orientation binders all the way to the maternity ward, figuring I'd get a little reading done between visits. I never turned a page. Some priorities sort themselves out for you.</p>
 
