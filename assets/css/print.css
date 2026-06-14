@@ -315,6 +315,66 @@
     }
 
     /* --------------------------------------------------------
+       8b. LINEAGE TABLE — must fit the print column. Left to its
+           natural width the 7-column genealogy table overflows the
+           page, and Chrome then scales the ENTIRE page down to fit
+           (~0.67x) — which is why lines WITH a table (Haistes etc.)
+           printed smaller than lines without one (Cheesmans) and
+           their chapter headings collapsed onto the kicker. fixed
+           layout + width:100% + wrapping keeps it inside the page.
+       -------------------------------------------------------- */
+    #primary .heritage-longread__table {
+        width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+        font-size: 7.5pt !important;
+        margin: 1.2em 0 !important;
+        break-inside: auto;
+    }
+
+    #primary .heritage-longread__table th,
+    #primary .heritage-longread__table td {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        padding: 2pt 3pt !important;
+        vertical-align: top !important;
+        border: 1px solid #ddd !important;
+        text-align: left !important;
+    }
+
+    #primary .heritage-longread__table th {
+        font-weight: 700 !important;
+    }
+
+    /* --------------------------------------------------------
+       8c. LINEAGE RIBBON — the horizontal ancestor chain (nodes
+           joined by arrows). On screen it scrolls sideways
+           (overflow-x:auto, width:min(62rem,92vw)+translateX(-50%));
+           in print that strip expands to ~1650px and was THE cause
+           of the whole-page down-scaling. Reset the centring, drop
+           the scroll, and let the nodes WRAP so it fits the page
+           and prints as a flowing chain (a kept "flow chart").
+       -------------------------------------------------------- */
+    #primary .heritage-longread__ribbon {
+        width: auto !important;
+        max-width: 100% !important;
+        margin: 1.4em 0 !important;
+        transform: none !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        overflow: visible !important;
+        gap: 12px 20px !important;
+        justify-content: flex-start !important;
+        break-inside: auto;
+    }
+
+    #primary .heritage-longread__ribbon-node {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* --------------------------------------------------------
        9. DESCENT TREE — linearise the interactive tree into a
           stacked, facts-open block for print.
        -------------------------------------------------------- */
