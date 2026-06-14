@@ -304,46 +304,14 @@
     }
 
     /* --------------------------------------------------------
-       8. FIGURES — centred plates, never split across a page.
-          (Floats are dropped; images centre between paragraphs.)
+       8. PHOTOS — omitted from the keepsake PDFs. These are
+          text keepsakes plus the descent "flow chart" trees.
+          The trees are text (spans/lists), not <figure>/<img>,
+          so hiding every figure/image leaves them untouched.
        -------------------------------------------------------- */
     #primary figure,
-    #primary .heritage-line__figure,
-    #primary .heritage-longread__hero {
-        float: none !important;
-        clear: both !important;
-        width: auto !important;
-        max-width: 100% !important;
-        margin: 1.1em auto !important;
-        padding: 0 !important;
-        text-align: center !important;
-        break-inside: avoid;
-        page-break-inside: avoid;
-    }
-
-    #primary figure img {
-        display: block !important;
-        margin: 0 auto !important;
-        max-width: 100% !important;
-        max-height: 5in !important;   /* keep a tall portrait from eating a page */
-        height: auto !important;
-        width: auto !important;
-        border: 1px solid #e2e2e2 !important;
-    }
-
-    /* The pair figure (two side-by-side images) — let them sit together. */
-    #primary .heritage-line__figure--pair img {
-        max-width: 48% !important;
-        display: inline-block !important;
-        margin: 0 0.5% !important;
-    }
-
-    #primary figcaption {
-        font-size: 9.5pt !important;
-        font-style: italic !important;
-        color: #666 !important;
-        margin-top: 0.4em !important;
-        text-align: center !important;
+    #primary img {
+        display: none !important;
     }
 
     /* --------------------------------------------------------
