@@ -228,14 +228,28 @@
         font-family: Georgia, serif !important;
         font-weight: 700 !important;
         font-size: 19pt !important;
-        line-height: 1.15 !important;
-        margin: 2.4em 0 0.5em !important;
+        line-height: 1.25 !important;
+        margin: 2.4em 0 0.45em !important;
         padding: 0 !important;
         border: 0 !important;
         break-before: auto !important;
         page-break-before: auto !important;
+        /* Keep the whole title together (don't split a multi-line heading across
+           a page — that dropped its last line to the next page top under the
+           kicker) and keep it with the kicker that follows. */
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
         break-after: avoid !important;
         page-break-after: avoid !important;
+    }
+
+    /* The ✦ ::before ornament on non-first chapters made Chrome's print engine
+       under-size the heading box (the last title line overflowed it, and the
+       kicker landed on top). The Prologue, which has no ::before, never had the
+       bug. Drop the ornament in print to fix the height calc. */
+    #primary .heritage-longread__chapter::before {
+        display: none !important;
+        content: none !important;
     }
 
     #primary .heritage-longread__eyebrow {
@@ -274,8 +288,14 @@
         font-size: 10.5pt !important;
         font-style: italic !important;
         color: #555 !important;
-        margin: -0.2em 0 1em !important;
+        /* Chrome's print engine lets the heading's last title line overflow its
+           box, so the kicker (next sibling) overlapped it. Heading padding /
+           line-height / flow-root don't move it, but the kicker's own top margin
+           does (~1:1). A generous top margin clears the overflow on even a
+           3-line title; shorter titles just get a roomier gap. */
+        margin: 2.3em 0 1.1em !important;
         text-align: left !important;
+        clear: both !important;
     }
 
     /* --------------------------------------------------------
