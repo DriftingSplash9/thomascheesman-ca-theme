@@ -106,6 +106,20 @@ function tc_ventures_enqueue_scripts() {
         wp_get_theme()->get( 'Version' )
     );
 
+    // Keepsake print stylesheet — turns the heritage long-reads and the
+    // person pages into a clean book layout when printed / saved to PDF.
+    // The 5th arg (media="print") means it's ONLY applied while printing,
+    // so it never affects the on-screen site and isn't render-blocking.
+    // It's also injected directly by build-keepsake-pdfs.py, so PDF
+    // generation doesn't depend on this being deployed first.
+    wp_enqueue_style(
+        'tc-print',
+        get_stylesheet_directory_uri() . '/assets/css/print.css',
+        array( 'astra-child-style' ),
+        wp_get_theme()->get( 'Version' ),
+        'print'
+    );
+
     // GSAP core library (CDN).
     wp_enqueue_script(
         'gsap-core',
@@ -160,6 +174,21 @@ function tc_ventures_enqueue_scripts() {
         'siteUrl'  => home_url(),
         'themeUrl' => get_stylesheet_directory_uri(),
     ));
+
+    // Print prep — when a reader saves a page to PDF (Ctrl+P), open every
+    // collapsed <details> (the heritage Notes appendix) so it prints, then
+    // restore its state afterward. print.css handles the rest of the layout;
+    // the keepsake PDF generator opens these the same way before rendering.
+    wp_add_inline_script(
+        'tc-ventures-main',
+        'window.addEventListener("beforeprint",function(){'
+            . 'document.querySelectorAll("details").forEach(function(d){'
+            . 'd.dataset.tcPrintWasOpen=d.open?"1":"0";d.open=true;});});'
+        . 'window.addEventListener("afterprint",function(){'
+            . 'document.querySelectorAll("details").forEach(function(d){'
+            . 'if(d.dataset.tcPrintWasOpen==="0"){d.open=false;}delete d.dataset.tcPrintWasOpen;});});',
+        'after'
+    );
 
     // Desk menu interactions. Self-contained module: wires the drawer
     // + search affordances inside the .tc-desk overlay. Open/close of
