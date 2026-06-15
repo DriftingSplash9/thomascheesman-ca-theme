@@ -691,6 +691,26 @@ function tc_review_titles() {
 		'family/heritage/rycrofts/story'    => "The Rycrofts — Leeds, Hawai'i, and the town drawn from a hat | thomascheesman.ca",
 		'family/heritage/rycrofts/steinkes' => "The Steinkes — German Poland to the prairie, fifteen children | thomascheesman.ca",
 		'family/heritage/haistes/story'     => "The Haistes — thirteen generations, Yorkshire to the Peace Country | thomascheesman.ca",
+		// Section + spoke pages (2026-06 review, round 2 — extends C3
+		// beyond the long-reads, which shipped first because all five
+		// shared the literal "Story -". These pages previously inherited
+		// AIOSEO's bare "<Page> - thomascheesman.ca".
+		'about'                             => "About Thomas Cheesman — chef, father, and a letter to my kids | thomascheesman.ca",
+		'hcs'                               => "Living with Hajdu-Cheney syndrome — a patient's first-hand account | thomascheesman.ca",
+		'hcs/case-studies'                  => "Hajdu-Cheney syndrome — case studies and research, gathered by a patient | thomascheesman.ca",
+		'contact'                           => "Contact Thomas Cheesman — a click-to-copy address, no forms | thomascheesman.ca",
+		'capybara'                          => "CopyCatCapybara — Faith's click-the-capybara game | thomascheesman.ca",
+		'family'                            => "The family — three kids, eight lines, five countries, one Alberta home | thomascheesman.ca",
+		'family/patience'                   => "Patience — the eldest of the three, in her dad's words | thomascheesman.ca",
+		'family/daniel'                     => "Daniel — the only boy of the three, in his dad's words | thomascheesman.ca",
+		'family/faith'                      => "Faith — the youngest of the three, in her dad's words | thomascheesman.ca",
+		'family/thomas'                     => "Thomasito — born a Lakeman, raised a Cheesman, here to tell it | thomascheesman.ca",
+		'family/heritage'                   => "The family lines — eight families, five countries, four centuries | thomascheesman.ca",
+		'family/heritage/cheesmans'         => "The Cheesmans — the chosen name, from the Turner Valley oil patch | thomascheesman.ca",
+		'family/heritage/dochertys'         => "The Dochertys — Donegal to the Lanarkshire coal to the prairie | thomascheesman.ca",
+		'family/heritage/lakemans'          => "The Lakemans — Dutch polders to Royal Dutch Shell to Calgary | thomascheesman.ca",
+		'family/heritage/rycrofts'          => "The Rycrofts — Leeds to the Kingdom of Hawai'i to the Peace Country | thomascheesman.ca",
+		'family/heritage/haistes'           => "The Haistes — thirteen generations, a Yorkshire tannery to Alberta | thomascheesman.ca",
 	);
 }
 add_filter( 'aioseo_title', function ( $title ) {
@@ -848,6 +868,40 @@ add_action( 'init', function () {
 // Stop advertising the WordPress version in <head> and feeds.
 remove_action( 'wp_head', 'wp_generator' );
 add_filter( 'the_generator', '__return_empty_string' );
+
+/**
+ * Asset diet (2026-06 review, round 2 — G1 quick wins).
+ *
+ * 1. Drop the WordPress emoji polyfill. Modern browsers render emoji
+ *    natively, so the detection script + its inline CSS + the twemoji
+ *    fetch are dead weight on every page. (The homepage pillar icons
+ *    are real emoji glyphs and paint fine without it.)
+ * 2. Remove the jquery-migrate shim from jQuery's dependency chain.
+ *    The theme's own JS is vanilla (main.js, desk-menu.js declare no
+ *    jQuery deps); migrate only back-fills pre-3.0 APIs nothing here
+ *    calls. jQuery itself still loads for Astra/core. AFTER DEPLOY,
+ *    sanity-check the lightbox, desk menu, and arcade once; if any
+ *    jQuery-driven piece misbehaves, delete the second filter below.
+ */
+add_action( 'init', function () {
+    remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+    remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+    remove_action( 'wp_print_styles', 'print_emoji_styles' );
+    remove_action( 'admin_print_styles', 'print_emoji_styles' );
+    remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+    remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+    remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+} );
+
+add_filter( 'wp_default_scripts', function ( $scripts ) {
+    if ( is_admin() || empty( $scripts->registered['jquery'] ) ) {
+        return;
+    }
+    $scripts->registered['jquery']->deps = array_diff(
+        $scripts->registered['jquery']->deps,
+        array( 'jquery-migrate' )
+    );
+} );
 
 /**
  * Curated /llms.txt — served the same way as the Bing verification
