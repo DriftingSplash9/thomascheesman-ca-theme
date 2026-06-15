@@ -31,10 +31,19 @@ get_header();
  */
 if ( ! function_exists( 'tc_thomas_fig' ) ) {
 	function tc_thomas_fig( $file, $side = 'right', $alt = '', $caption = '', $credit = '' ) {
-		$base  = get_stylesheet_directory_uri() . '/assets/img/thomas/';
+		// $file may be a bare filename (resolved against the theme's thomas
+		// image folder), a root-relative path like /wp-content/uploads/... (a
+		// WP Media upload), or a full absolute URL.
+		if ( preg_match( '#^https?://#', $file ) ) {
+			$src = $file;
+		} elseif ( isset( $file[0] ) && $file[0] === '/' ) {
+			$src = home_url( $file );
+		} else {
+			$src = get_stylesheet_directory_uri() . '/assets/img/thomas/' . $file;
+		}
 		$class = 'about-figure about-figure--' . ( $side === 'center' ? 'center' : $side );
 		echo '<figure class="' . esc_attr( $class ) . '">';
-		echo '<img src="' . esc_url( $base . $file ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" />';
+		echo '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" />';
 		if ( $caption || $credit ) {
 			echo '<figcaption>' . esc_html( $caption );
 			if ( $credit ) {
@@ -214,7 +223,7 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 				<p class="thomas-era">The climb &middot; 2004&ndash;2012</p>
 				<h2 class="about-section__heading">What the kitchen gave me</h2>
 
-				<?php tc_thomas_fig( 'thomas-chef.jpg', 'left', 'Thomas in chef whites', 'In the whites.' ); ?>
+				<?php tc_thomas_fig( '/wp-content/uploads/2026/06/me.jpg', 'left', 'Thomas in chef whites', 'In the whites.' ); ?>
 
 				<p>The kitchen, for me, was an escape &mdash; and a strange kind of medicine. My body hurt in a way that made the first movements of the day hard, but once I was moving I felt almost well, because the pain is like rust in the joints that has to be worked loose; the moment I stop, I seize back up. The line kept me moving, eight and ten and twelve hours at a stretch, and it gave me something to point all of it at. The leadership had been built into me young, out on the farms, and the disease had taught me to work smarter rather than harder, which turns out to be exactly the thing a busy kitchen rewards. I came up the Keg line over a couple of years to assistant manager, then ran the kitchen as manager for the better part of a decade, and took the whole thing over the day the head chef had a heart attack.</p>
 
