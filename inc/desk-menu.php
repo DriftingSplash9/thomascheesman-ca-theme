@@ -339,12 +339,14 @@ function tc_render_desk_menu() {
             </div>
 
             <div class="tc-desk__mobile-meta-block">
-                <span class="tc-desk__mobile-meta-label">The Next Generation</span>
+                <span class="tc-desk__mobile-meta-label">The Family</span>
                 <ul>
                     <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">The family tree</a></li>
                     <li><a class="tc-plain-kid tc-plain-kid--patience" href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
                     <li><a class="tc-plain-kid tc-plain-kid--daniel" href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Daniel</a></li>
                     <li><a class="tc-plain-kid tc-plain-kid--faith" href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Faith</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/family/thomas' ) ); ?>">Thomas</a></li>
+                    <?php /* Melanie's page slots in here, beside Thomas, once it's built. */ ?>
                     <li><a href="<?php echo esc_url( home_url( '/capybara' ) ); ?>">Faith's Capybara Clicker</a></li>
                 </ul>
             </div>
