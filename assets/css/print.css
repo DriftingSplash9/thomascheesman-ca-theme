@@ -335,14 +335,58 @@
     }
 
     /* --------------------------------------------------------
-       8. PHOTOS — omitted from the keepsake PDFs. These are
-          text keepsakes plus the descent "flow chart" trees.
-          The trees are text (spans/lists), not <figure>/<img>,
-          so hiding every figure/image leaves them untouched.
+       8. FIGURES — centred plates, never split across a page.
+          (Floats are dropped; images centre between paragraphs.)
+          The authored inline figures print; the photo-grid
+          gallery walls and video facades stay hidden via §6.
+          The descent "flow chart" trees are text (spans/lists),
+          not <figure>/<img>, so they're untouched here.
        -------------------------------------------------------- */
     #primary figure,
-    #primary img {
-        display: none !important;
+    #primary .heritage-line__figure,
+    #primary .heritage-longread__hero {
+        /* Explicit display so this rule fully overrides any prior blanket
+           hide (the live-deployed CSS may still carry the old
+           `#primary figure{display:none}` until a deploy + cache purge; the
+           generator injects this file on top, so it must win outright — a
+           display:none figure container would hide its images even when the
+           <img> itself is set visible below). */
+        display: block !important;
+        float: none !important;
+        clear: both !important;
+        width: auto !important;
+        max-width: 100% !important;
+        margin: 1.1em auto !important;
+        padding: 0 !important;
+        text-align: center !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    #primary figure img,
+    #primary .heritage-longread__hero img {
+        display: block !important;
+        margin: 0 auto !important;
+        max-width: 100% !important;
+        max-height: 5in !important;   /* keep a tall portrait from eating a page */
+        height: auto !important;
+        width: auto !important;
+        border: 1px solid #e2e2e2 !important;
+    }
+
+    /* The pair figure (two side-by-side images) — let them sit together. */
+    #primary .heritage-line__figure--pair img {
+        max-width: 48% !important;
+        display: inline-block !important;
+        margin: 0 0.5% !important;
+    }
+
+    #primary figcaption {
+        font-size: 9.5pt !important;
+        font-style: italic !important;
+        color: #666 !important;
+        margin-top: 0.4em !important;
+        text-align: center !important;
     }
 
     /* --------------------------------------------------------
