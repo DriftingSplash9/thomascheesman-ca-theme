@@ -123,7 +123,7 @@ function tc_ventures_enqueue_scripts() {
     // GSAP core library (CDN).
     wp_enqueue_script(
         'gsap-core',
-        'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js',
+        get_stylesheet_directory_uri() . '/assets/js/vendor/gsap-3.12.2.min.js',
         array(),
         '3.12.2',
         array( 'in_footer' => true, 'strategy' => 'defer' )
@@ -132,7 +132,7 @@ function tc_ventures_enqueue_scripts() {
     // GSAP ScrollTrigger plugin — depends on GSAP core.
     wp_enqueue_script(
         'gsap-scroll-trigger',
-        'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js',
+        get_stylesheet_directory_uri() . '/assets/js/vendor/ScrollTrigger-3.12.2.min.js',
         array( 'gsap-core' ),
         '3.12.2',
         array( 'in_footer' => true, 'strategy' => 'defer' )
@@ -146,7 +146,7 @@ function tc_ventures_enqueue_scripts() {
     // to ES modules and the UMD path is unreliable across CDNs.
     wp_enqueue_script(
         'three-js',
-        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+        get_stylesheet_directory_uri() . '/assets/js/vendor/three-r128.min.js',
         array(),
         'r128',
         array( 'in_footer' => true, 'strategy' => 'defer' )
@@ -308,7 +308,7 @@ function tc_ventures_enqueue_scripts() {
         );
         wp_enqueue_script(
             'd3',
-            'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js',
+            get_stylesheet_directory_uri() . '/assets/js/vendor/d3-7.8.5.min.js',
             array(),
             '7.8.5',
             array( 'in_footer' => true, 'strategy' => 'defer' )
@@ -318,7 +318,7 @@ function tc_ventures_enqueue_scripts() {
         // `topojson.feature` global either way.
         wp_enqueue_script(
             'topojson-client',
-            'https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js',
+            get_stylesheet_directory_uri() . '/assets/js/vendor/topojson-3.0.2.min.js',
             array(),
             '3.0.2',
             array( 'in_footer' => true, 'strategy' => 'defer' )
@@ -699,6 +699,7 @@ function tc_review_titles() {
 		'hcs'                               => "Living with Hajdu-Cheney syndrome — a patient's first-hand account | thomascheesman.ca",
 		'hcs/case-studies'                  => "Hajdu-Cheney syndrome — case studies and research, gathered by a patient | thomascheesman.ca",
 		'contact'                           => "Contact Thomas Cheesman — a click-to-copy address, no forms | thomascheesman.ca",
+		'privacy'                           => "Privacy — what I do with your data | thomascheesman.ca",
 		'capybara'                          => "CopyCatCapybara — Faith's click-the-capybara game | thomascheesman.ca",
 		'family'                            => "The family — three kids, eight lines, five countries, one Alberta home | thomascheesman.ca",
 		'family/patience'                   => "Patience — the eldest of the three, in her dad's words | thomascheesman.ca",

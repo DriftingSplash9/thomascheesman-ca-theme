@@ -590,15 +590,26 @@ function tc_ability_append_quote( $input ) {
  * Ref: https://docs.litespeedtech.com/lscache/lscwp/api/
  */
 function tc_ability_purge_cache() {
-    $purged = false;
-    if ( has_action( 'litespeed_purge_all' ) ) {
-        do_action( 'litespeed_purge_all' );
-        $purged = true;
+    $candidates = array(
+        'litespeed_purge_all',
+        'litespeed_purge_all_lscache',
+        'litespeed_purge_all_cssjs',
+        'litespeed_purge_all_ccss',
+        'litespeed_purge_all_ucss',
+        'litespeed_purge_all_object',
+        'litespeed_purge_all_localres',
+    );
+    $fired = array();
+    foreach ( $candidates as $tc_action ) {
+        if ( has_action( $tc_action ) ) {
+            do_action( $tc_action );
+            $fired[] = $tc_action;
+        }
     }
     return array(
-        'purged'  => $purged,
-        'message' => $purged
-            ? 'LiteSpeed cache purged (all pages + optimized CSS/JS).'
+        'purged'  => ! empty( $fired ),
+        'message' => $fired
+            ? 'Purged via: ' . implode( ', ', $fired )
             : 'LiteSpeed Cache not detected; nothing purged.',
     );
 }
