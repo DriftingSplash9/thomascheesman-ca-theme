@@ -197,6 +197,17 @@ function tc_ventures_enqueue_scripts() {
         wp_get_theme()->get( 'Version' ),
         array( 'in_footer' => true, 'strategy' => 'defer' )
     );
+    // G7: the overlay markup itself is fetched on first click rather
+    // than rendered into every page — see tc_ajax_load_desk_menu() in
+    // inc/desk-menu.php and wireMenuTriggerLoader() in desk-menu.js.
+    wp_localize_script(
+        'tc-desk-menu',
+        'tcDeskMenu',
+        array(
+            'ajaxUrl' => esc_url_raw( admin_url( 'admin-ajax.php' ) ),
+            'action'  => 'tc_load_desk_menu',
+        )
+    );
 
     // Desk-games arcade. The canvas games (Snake / Pong / Pac-Man /
     // Asteroids / Brickles / Solitaire) tucked behind the toad

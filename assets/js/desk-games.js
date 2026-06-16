@@ -1844,6 +1844,12 @@
     window.TCDeskGames.asteroids = startAsteroids;
     window.TCDeskGames.brickles  = startBrickles;
     window.TCDeskGames.solitaire = startSolitaire;
+    // G7: the games drawer markup doesn't exist at DOMContentLoaded
+    // time anymore (it's part of the deferred desk-menu fetch), so
+    // this file's own init() below bails on first run. desk-menu.js's
+    // wireMenuTriggerLoader() calls this to re-run init() right after
+    // injecting the markup, the same way it re-runs its own init().
+    window.TCDeskGames.init = init;
 
     if ( doc.readyState === 'loading' ) {
         doc.addEventListener( 'DOMContentLoaded', init );

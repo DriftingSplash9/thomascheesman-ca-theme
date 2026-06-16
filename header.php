@@ -99,14 +99,16 @@
 
 <!-- ============================================================
      DESK MENU — the BHAG navigation surface.
-     Replaces the legacy fullscreen overlay menu (retired in C4 of
-     the desk-menu rebuild). Markup rendered by tc_render_desk_menu()
-     from inc/desk-menu.php. Open/close handled by desk-menu.js,
-     which binds to the same [data-menu-trigger] button above and
-     toggles html.tc-desk-open.
+     G7 (payload diet, 2026-06): markup is NOT rendered here anymore.
+     The plain list is the default menu and the desk is opt-in, so
+     most visitors never open this overlay — inlining its ~25-30 KB
+     of markup into every page cost everyone for a feature most never
+     use. desk-menu.js fetches it from the tc_load_desk_menu AJAX
+     action (inc/desk-menu.php) on the FIRST click of
+     [data-menu-trigger], injects it, then wires it exactly as before.
+     Open/close still toggles html.tc-desk-open once present.
 
      main.js's initSiteChrome() still runs (the live clock + reduced
-     motion handling); it bails when #tc-menu is missing, so removing
-     the old markup is enough — no main.js edit required.
+     motion handling); it bails when #tc-menu is missing, so no
+     main.js edit was needed.
      ============================================================ -->
-<?php tc_render_desk_menu(); ?>

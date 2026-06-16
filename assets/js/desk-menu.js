@@ -28,6 +28,17 @@
     var doc = document;
 
     function init() {
+        // G7 (payload diet): the overlay markup is no longer rendered
+        // into the page — it's fetched on the first menu-trigger click
+        // (see wireMenuTriggerLoader). Until that happens #tc-desk-menu
+        // doesn't exist, so there's nothing here for the rest of init()
+        // to wire up; just arm the loader and stop. Once the fetch
+        // lands, init() runs again — this time the overlay is present,
+        // so every wire* below attaches for real.
+        if ( ! doc.getElementById( 'tc-desk-menu' ) ) {
+            wireMenuTriggerLoader();
+            return;
+        }
         wireMenuTrigger();
         wireMenuMode();
         wireDrawer( 'tc-desk-bin',       'tc-desk-slideshow-drawer' );
@@ -42,6 +53,73 @@
         wireHotspotTilt();
         wireMobileAccordion();
         wireHotspotKeys();
+    }
+
+    /**
+     * G7 loader: [data-menu-trigger] (the capsule button AND the
+     * footer's "back to the desk" button) normally just toggle the
+     * overlay open. Before it's ever been fetched, the first click on
+     * EITHER one instead pulls the markup from tc_load_desk_menu,
+     * injects it, re-runs init() (now a real wireMenuTrigger() takes
+     * over for good), and opens the overlay so the click that asked
+     * for the menu is the click that gets it.
+     *
+     * desk-games.js wires its own picker the same way main.js wires
+     * the desk menu — via its own DOMContentLoaded — but it bails
+     * immediately if #tc-desk-games-drawer is missing (it will be, on
+     * the first pass), so it's re-invoked here too via the
+     * window.TCDeskGames.init hook it exposes for this purpose.
+     */
+    function wireMenuTriggerLoader() {
+        var triggers = doc.querySelectorAll( '[data-menu-trigger]' );
+        if ( ! triggers.length ) return;
+        var loading = false;
+
+        function onFirstClick( e ) {
+            if ( e ) e.preventDefault();
+            if ( loading ) return;
+            loading = true;
+            triggers.forEach( function ( t ) { t.setAttribute( 'aria-busy', 'true' ); } );
+
+            var cfg = window.tcDeskMenu || {};
+            var url = cfg.ajaxUrl ? ( cfg.ajaxUrl + '?action=' + ( cfg.action || 'tc_load_desk_menu' ) ) : '';
+            if ( ! url ) {
+                loading = false;
+                triggers.forEach( function ( t ) { t.removeAttribute( 'aria-busy' ); } );
+                return;
+            }
+
+            fetch( url, { credentials: 'same-origin' } )
+                .then( function ( res ) { return res.text(); } )
+                .then( function ( html ) {
+                    triggers.forEach( function ( t ) {
+                        t.removeAttribute( 'aria-busy' );
+                        t.removeEventListener( 'click', onFirstClick );
+                    } );
+                    var wrap = doc.createElement( 'div' );
+                    wrap.innerHTML = html.trim();
+                    var node = wrap.firstElementChild;
+                    if ( ! node ) return;
+                    doc.body.insertBefore( node, doc.body.firstChild );
+
+                    init(); // overlay now exists -> the real wiring happens
+                    if ( window.TCDeskGames && typeof window.TCDeskGames.init === 'function' ) {
+                        window.TCDeskGames.init();
+                    }
+
+                    var overlay = doc.getElementById( 'tc-desk-menu' );
+                    if ( overlay && typeof overlay.__tcDeskOverlayOpen === 'function' ) {
+                        overlay.__tcDeskOverlayOpen();
+                    }
+                } )
+                .catch( function ( err ) {
+                    loading = false;
+                    triggers.forEach( function ( t ) { t.removeAttribute( 'aria-busy' ); } );
+                    if ( window.console ) console.warn( '[TC] desk menu failed to load', err );
+                } );
+        }
+
+        triggers.forEach( function ( t ) { t.addEventListener( 'click', onFirstClick ); } );
     }
 
     /* The clickable hotspots are divs with role="button" (the markup
@@ -206,6 +284,9 @@
 
         // Expose close() so Esc can call it from the global handler.
         overlay.__tcDeskOverlayClose = close;
+        // Expose open() so the G7 loader can open the overlay the
+        // instant its just-injected markup is wired (see init()).
+        overlay.__tcDeskOverlayOpen = open;
 
         // Any link inside the overlay closes the menu on click so the
         // navigation doesn't leave it hanging open. Skip anchors with

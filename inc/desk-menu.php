@@ -684,3 +684,25 @@ function tc_render_desk_menu() {
 </div>
     <?php
 }
+
+/**
+ * AJAX: deliver the desk-menu markup on demand (G7 — payload diet,
+ * 2026-06).
+ *
+ * The overlay is opt-in — the plain list is the default menu, the
+ * desk is the "secret" — so most visitors never open it. Rendering
+ * it into every page's HTML cost ~25-30 KB of markup nobody asked
+ * for. Instead, header.php no longer calls tc_render_desk_menu()
+ * directly; desk-menu.js fetches this endpoint on the FIRST click
+ * of [data-menu-trigger] and injects the response, then re-runs its
+ * own init() now that the markup exists. See wireMenuTriggerLoader()
+ * in assets/js/desk-menu.js.
+ */
+add_action( 'wp_ajax_tc_load_desk_menu', 'tc_ajax_load_desk_menu' );
+add_action( 'wp_ajax_nopriv_tc_load_desk_menu', 'tc_ajax_load_desk_menu' );
+function tc_ajax_load_desk_menu() {
+    nocache_headers();
+    header( 'Content-Type: text/html; charset=utf-8' );
+    tc_render_desk_menu();
+    wp_die();
+}
