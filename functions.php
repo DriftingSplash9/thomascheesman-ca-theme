@@ -140,17 +140,12 @@ function tc_ventures_enqueue_scripts() {
 
     // (GSAP MotionPathPlugin enqueue was removed with the jeep timeline.)
 
-    // Three.js (UMD build) — used by main.js to drive the WebGL background.
-    // Pinned to r128 because it's widely cached on cdnjs and definitively
-    // has the UMD `three.min.js` artifact. Newer releases (r150+) shifted
-    // to ES modules and the UMD path is unreliable across CDNs.
-    wp_enqueue_script(
-        'three-js',
-        get_stylesheet_directory_uri() . '/assets/js/vendor/three-r128.min.js',
-        array(),
-        'r128',
-        array( 'in_footer' => true, 'strategy' => 'defer' )
-    );
+    // Three.js is intentionally NOT enqueued (G3/C12). It powers only the
+    // decorative WebGL background, so main.js lazy-loads it from the vendored
+    // copy (tcVentures.threeUrl) once the browser is idle — and not at all
+    // under prefers-reduced-motion. Keeping the ~600 KB three.min.js out of
+    // every page's combined bundle is the biggest initial-load win on the site.
+    // Vendored at assets/js/vendor/three-r128.min.js.
 
     // Custom main JavaScript — depends on GSAP, ScrollTrigger, and Three.js.
     // Loaded in the footer (final arg = true) so it runs after DOM parse.
@@ -159,7 +154,7 @@ function tc_ventures_enqueue_scripts() {
     wp_enqueue_script(
         'tc-ventures-main',
         get_stylesheet_directory_uri() . '/assets/js/main.js',
-        array( 'gsap-core', 'gsap-scroll-trigger', 'three-js' ),
+        array( 'gsap-core', 'gsap-scroll-trigger' ),
         wp_get_theme()->get( 'Version' ),
         // 'defer' on the WHOLE chain, not just the libraries: WordPress
         // silently downgrades a script's defer strategy when any script
@@ -173,6 +168,7 @@ function tc_ventures_enqueue_scripts() {
     wp_localize_script( 'tc-ventures-main', 'tcVentures', array(
         'siteUrl'  => home_url(),
         'themeUrl' => get_stylesheet_directory_uri(),
+        'threeUrl' => get_stylesheet_directory_uri() . '/assets/js/vendor/three-r128.min.js',
     ));
 
     // Print prep — when a reader saves a page to PDF (Ctrl+P), open every
@@ -489,7 +485,7 @@ function tc_ventures_enqueue_scripts() {
     // wp_script_add_data( $handle, 'strategy', 'defer' ) is the WP 6.3+
     // official API. Replaces the old script_loader_tag string-replace
     // hacks.
-    foreach ( array( 'gsap-core', 'gsap-scroll-trigger', 'three-js' ) as $tc_defer_handle ) {
+    foreach ( array( 'gsap-core', 'gsap-scroll-trigger' ) as $tc_defer_handle ) {
         wp_script_add_data( $tc_defer_handle, 'strategy', 'defer' );
     }
 

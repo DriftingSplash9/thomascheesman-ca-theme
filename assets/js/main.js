@@ -33,10 +33,25 @@ document.addEventListener('DOMContentLoaded', function () {
     // first content paint don't compete with three.js for the main
     // thread. requestIdleCallback isn't in older Safari yet, so fall
     // back to a 400 ms setTimeout — still post-paint, still works.
+    // WebGL background (G3): three.js is the single biggest dependency and the
+    // background is purely decorative, so we don't download it unless we'll
+    // actually paint it. Skip entirely under reduced-motion; otherwise inject
+    // the vendored three.js on idle, then init. Fails gracefully if missing.
+    function tcLoadWebGLBackground() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (typeof THREE !== 'undefined') { tcInit(initWebGLBackground); return; }
+        var url = (window.tcVentures && window.tcVentures.threeUrl) || '';
+        if (!url) return;
+        var s = document.createElement('script');
+        s.src = url;
+        s.onload = function () { tcInit(initWebGLBackground); };
+        s.onerror = function () { console.warn('[TC] three.js failed to load - WebGL bg skipped'); };
+        document.head.appendChild(s);
+    }
     if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(function () { tcInit(initWebGLBackground); }, { timeout: 1500 });
+        window.requestIdleCallback(tcLoadWebGLBackground, { timeout: 1500 });
     } else {
-        setTimeout(function () { tcInit(initWebGLBackground); }, 400);
+        setTimeout(tcLoadWebGLBackground, 400);
     }
     tcInit(initSiteChrome);
     tcInit(initKineticHero);
