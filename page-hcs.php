@@ -426,7 +426,7 @@ get_header(); ?>
                     />
                 </figure>
 
-                <p>There are a hundred of us documented in the medical literature. Less than fifty of us are still alive. If you are one of us, or you love one of us, or you treat one of us, or you've stumbled onto this page because something in your body is acting like something on this page &mdash; please know that you are not alone, and please consider reaching out.</p>
+                <p>There are a hundred of us documented in the medical literature. Less than fifty of us are still alive. If you are one of us, or you love one of us, or you treat one of us, or you've stumbled onto this page because something in your body is acting like something on this page &mdash; please know that you are not alone, and please consider reaching out &mdash; and if you'd rather find others who are actually living it, that's what I built <a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare</a> for.</p>
 
                 <p class="about-closing">
                     The fastest way to reach me is email: <span data-tc-rot13="<?php echo esc_attr( str_rot13( 'thomasmcheesman@gmail.com' ) ); ?>"><?php echo esc_html( str_rot13( 'thomasmcheesman@gmail.com' ) ); ?></span>

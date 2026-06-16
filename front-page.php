@@ -37,9 +37,9 @@ get_header(); ?>
                     </div>
                     <h3>Family &amp; Stories</h3>
                     <p>
-                        Life's greatest joy comes from the people we love. Discover the stories of Patience, Daniel, Faith, and the extended family that makes me whole.
+                        Patience, Daniel, and Faith — and the eight family lines that took four hundred years and five countries to arrive in one Alberta house. If you're new here, start with them.
                     </p>
-                    <a href="<?php echo home_url('/family'); ?>">Explore My Family Stories &rarr;</a>
+                    <a href="<?php echo home_url('/family'); ?>">Meet the family &rarr;</a>
                 </div>
 
                 <!-- PILLAR 2: RARE DISEASE & BYR -->
@@ -49,7 +49,7 @@ get_header(); ?>
                     </div>
                     <h3>Rare Disease &amp; BYR</h3>
                     <p>
-                        Hajdu-Cheney Syndrome shaped how I think about rare conditions. I built Bare Your Rare so patients with ultra-rare diseases could tell their stories together — that's where the deeper writing lives.
+                        I'm one of fewer than fifty people alive with Hajdu-Cheney syndrome. It taught me what 'rare' actually costs — so I built Bare Your Rare, where people with ultra-rare diseases tell their own stories. The deeper writing lives there.
                     </p>
                     <a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Visit Bare Your Rare &rarr;</a>
                 </div>
@@ -61,7 +61,7 @@ get_header(); ?>
                     </div>
                     <h3>Community &amp; Service</h3>
                     <p>
-                        Giving back matters. I volunteer with Grande Prairie Residential Society to provide accessible housing in our community.
+                        When your own body teaches you what an accessible home is worth, you don't forget it. I volunteer with the Grande Prairie Residential Society to help build them — and yes, I made their website too.
                     </p>
                     <a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">Visit GPRS (I created this website too!) &rarr;</a>
                 </div>
