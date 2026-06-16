@@ -53,6 +53,10 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
         setTimeout(tcLoadWebGLBackground, 400);
     }
+    // Make the skip-link target focusable so activating "Skip to content"
+    // moves keyboard focus INTO the main region, not just scrolls to it.
+    var tcMain = document.getElementById('primary');
+    if (tcMain && !tcMain.hasAttribute('tabindex')) tcMain.setAttribute('tabindex', '-1');
     tcInit(initSiteChrome);
     tcInit(initKineticHero);
     tcInit(initHeroScrollOut);

@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.586
+Version: 1.0.587
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -7442,4 +7442,34 @@ body:has(.thomas-page) {
 }
 @media (prefers-reduced-motion: reduce) {
     .tc-read-progress { transition: none; }
+}
+
+/* ============================================
+   SKIP LINK (G5 a11y) — WCAG 2.4.1 bypass + 2.4.7 visible focus
+   The link ships as .screen-reader-text (hidden) until focused. Reveal it
+   as a clear, high-contrast control ABOVE the fixed capsule/desk chrome so
+   a keyboard user can see and use it. Owned here (specificity 0,3,0) rather
+   than trusting the parent theme's reveal, which the custom chrome could
+   out-stack. ============================================ */
+.skip-link.screen-reader-text:focus {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 12px 18px;
+    clip: auto;
+    -webkit-clip-path: none;
+    clip-path: none;
+    overflow: visible;
+    z-index: 100001;
+    color: var(--text-dark, #E5E7F5);
+    background: var(--bg-card, #0E1226);
+    border: 2px solid var(--primary-color, #22D3EE);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+    font: 600 1rem/1 system-ui, sans-serif;
+    text-decoration: none;
+    outline: none;
 }
