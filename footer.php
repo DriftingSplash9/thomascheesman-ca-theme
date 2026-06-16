@@ -86,6 +86,7 @@
                         <li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Home</a></li>
                         <li><a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About</a></li>
                         <li><a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/privacy' ) ); ?>">Privacy</a></li>
                     </ul>
                 </nav>
 
