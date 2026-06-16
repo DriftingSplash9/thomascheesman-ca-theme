@@ -2606,7 +2606,13 @@ function initLongreadChapterRail() {
 
     chapters.forEach(function (h) {
         const eyebrow = h.querySelector('.heritage-longread__eyebrow');
-        const label = (eyebrow ? eyebrow.textContent : h.textContent).trim();
+        // Use the chapter's real title, not its "Chapter N" / "Prologue"
+        // eyebrow. The heading is <span.eyebrow>Chapter One</span>Title, so
+        // textContent concatenates the two — strip the eyebrow prefix.
+        const full = h.textContent.trim();
+        const eb = eyebrow ? eyebrow.textContent.trim() : '';
+        let label = (eb && full.indexOf(eb) === 0) ? full.slice(eb.length).trim() : full;
+        if (!label) label = eb;
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.href = '#' + h.id;
