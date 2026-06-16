@@ -377,7 +377,7 @@ function tc_render_desk_menu() {
 
         </div>
         <button type="button" class="tc-desk__mode-toggle tc-desk__mode-toggle--desk" data-tc-menu-mode="desk">
-            &larr; Back to the desk
+            psst &mdash; see my actual desk &rarr;
         </button>
     </nav>
 

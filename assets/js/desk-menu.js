@@ -83,8 +83,15 @@
         function apply( mode ) {
             doc.documentElement.classList.toggle( 'tc-desk-plain', mode === 'plain' );
         }
+        // Newcomers (no saved choice) and storage-blocked visitors get the
+        // plain list; the desk is the "secret" menu, revealed via the
+        // [data-tc-menu-mode="desk"] toggle. Returning visitors who chose
+        // the desk keep it. Apply plain first, then upgrade to desk only on
+        // the explicit saved choice, so any storage failure still lands on
+        // plain.
+        apply( 'plain' );
         try {
-            if ( localStorage.getItem( KEY ) === 'plain' ) { apply( 'plain' ); }
+            if ( localStorage.getItem( KEY ) === 'desk' ) { apply( 'desk' ); }
         } catch ( e ) {}
         var buttons = doc.querySelectorAll( '[data-tc-menu-mode]' );
         for ( var i = 0; i < buttons.length; i++ ) {

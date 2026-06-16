@@ -1262,7 +1262,28 @@ html.tc-desk-open .tc-desk__toc{
 /* "Back to the desk" lives in normal flow inside the plain nav. */
 .tc-desk__mode-toggle--desk{
     display: block;
-    margin: 36px auto 0;
+    margin: 40px auto 0;
+    /* The "secret desk" reveal: deliberately understated -- a quiet text
+       line, not a frosted pill, so finding the desk feels like discovering
+       it rather than flipping a setting. Overrides the pill base above
+       (same specificity, later in source). */
+    padding: 4px 8px;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    color: rgba(214,246,251,0.55);
+    opacity: 0.85;
+}
+.tc-desk__mode-toggle--desk:hover,
+.tc-desk__mode-toggle--desk:focus-visible{
+    background: none;
+    border: none;
+    color: #eaf9fc;
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 /* The desk-return toggle is pointless on touch (the desk metaphor is
    already off there) — hide it on small screens. */
