@@ -248,6 +248,28 @@ function tc_register_agent_abilities() {
      * ============================================================
      */
 
+    wp_register_ability( 'tc-portfolio/purge-cache', array(
+        'label'         => 'Purge the LiteSpeed cache',
+        'description'   => 'Purge the entire LiteSpeed cache (full-page + optimized CSS/JS) -- the admin-bar "Purge All" equivalent. Run after a theme deploy so new markup and assets go live. Non-destructive: the cache rebuilds on the next request.',
+        'category'      => 'tc-content',
+        'input_schema'  => array( 'type' => 'object' ),
+        'output_schema' => array(
+            'type'       => 'object',
+            'properties' => array(
+                'purged'  => array( 'type' => 'boolean' ),
+                'message' => array( 'type' => 'string' ),
+            ),
+        ),
+        'execute_callback'    => 'tc_ability_purge_cache',
+        'permission_callback' => 'tc_ability_can_edit_pages',
+        'meta' => array(
+            'mcp'         => array( 'public' => true ),
+            'destructive' => false,
+            'idempotent'  => true,
+        ),
+    ) );
+
+
     wp_register_ability( 'tc-portfolio/update-page-content', array(
         'label'         => 'Update a page\'s content',
         'description'   => 'Replace the post_content of a specific page. WordPress sanitises the HTML via wp_kses_post(). Writes a revision.',
@@ -533,5 +555,27 @@ function tc_ability_append_quote( $input ) {
     return array(
         'total_entries' => count( $entries ),
         'success'       => true,
+    );
+}
+
+/**
+ * Execute: purge the LiteSpeed cache (the "Purge All" equivalent).
+ *
+ * Fires LiteSpeed Cache's documented purge-all action so an agent can
+ * flush stale page + CSS/JS cache after a deploy without anyone opening
+ * wp-admin. Reports purged=false (no-op) when LiteSpeed Cache is inactive.
+ * Ref: https://docs.litespeedtech.com/lscache/lscwp/api/
+ */
+function tc_ability_purge_cache() {
+    $purged = false;
+    if ( has_action( 'litespeed_purge_all' ) ) {
+        do_action( 'litespeed_purge_all' );
+        $purged = true;
+    }
+    return array(
+        'purged'  => $purged,
+        'message' => $purged
+            ? 'LiteSpeed cache purged (all pages + optimized CSS/JS).'
+            : 'LiteSpeed Cache not detected; nothing purged.',
     );
 }
