@@ -1706,7 +1706,11 @@ function initWebGLBackground() {
         left: '0',
         width: '100%',
         height: '100%',
-        zIndex: '-1',
+        // z:-2 keeps the WebGL gradient BEHIND the particle constellation
+        // (z:-1). three.js now lazy-loads on idle (G3), so this canvas is
+        // appended AFTER the particle canvas; without an explicit z-index
+        // the later element would win the tie and paint over the dots.
+        zIndex: '-2',
         pointerEvents: 'none',
     });
     document.body.appendChild(canvas);
