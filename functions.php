@@ -1145,3 +1145,40 @@ function tc_render_read_next() {
     <?php
     wp_reset_postdata();
 }
+
+/**
+ * De-duplicate AIOSEO's Open Graph image + clean og:site_name
+ * (2026-06 review, G1 follow-up).
+ *
+ * The theme emits the authoritative og:image / twitter:image for every
+ * page (tc_review_social_image(), the wp_head priority-0 emitter above).
+ * AIOSEO ALSO emits an og:image on the front page (a legacy Social-
+ * Networks setting not exposed in this install's admin), so the homepage
+ * carries two og:image tags — ours (desk-hero) and AIOSEO's IMG_8550.
+ * AIOSEO also renders og:site_name as "thomascheesman.ca -" (it appends a
+ * separator to the site name).
+ *
+ * aioseo_facebook_tags is AIOSEO's supported filter over its Facebook /
+ * Open Graph markup. Blank any og:image* key that ALREADY EXISTS so the
+ * theme's single tag stands alone, and force the clean site name. We only
+ * touch keys that exist, so we never introduce an empty tag on a page
+ * AIOSEO left imageless. Ref: https://aioseo.com/docs/aioseo_facebook_tags/
+ *
+ * VERIFY after deploy: the homepage should show ONE og:image (desk-hero)
+ * and og:site_name should read "thomascheesman.ca". If AIOSEO emits empty
+ * <meta> tags instead of omitting them, switch the blanking to unset().
+ */
+add_filter( 'aioseo_facebook_tags', function ( $tags ) {
+    if ( ! is_array( $tags ) ) {
+        return $tags;
+    }
+    foreach ( array_keys( $tags ) as $tc_k ) {
+        if ( 0 === strpos( $tc_k, 'og:image' ) ) {
+            $tags[ $tc_k ] = '';
+        }
+    }
+    if ( isset( $tags['og:site_name'] ) ) {
+        $tags['og:site_name'] = get_bloginfo( 'name' );
+    }
+    return $tags;
+}, 20 );
