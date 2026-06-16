@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
     tcInit(initScrollReveals);
     tcInit(initHeritagePage);
     tcInit(initLongreadChapterRail);
+    tcInit(initReadingProgress);
     tcInit(initHeritageTreeTilt);
     tcInit(initHeritageTreeFacts);
     tcInit(initFilmReels);
@@ -2619,6 +2620,36 @@ function initLongreadChapterRail() {
  * smooth-scrolls on click, and highlights the active chapter on scroll.
  * Hidden on narrow viewports via CSS (no room beside the reading column).
  */
+/**
+ * Reading-progress bar (G4) for the long-form pages — heritage long-reads
+ * and the Thomas page. A thin fixed bar at the very top fills left-to-right
+ * as you scroll through the article body, tinted with the line accent. Pure
+ * orientation affordance: no layout/content effect, scaleX transform only.
+ */
+function initReadingProgress() {
+    var article = document.querySelector('.heritage-longread, .thomas-page');
+    if (!article) return;
+    var bar = document.createElement('div');
+    bar.className = 'tc-read-progress';
+    bar.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(bar);
+    var ticking = false;
+    function update() {
+        ticking = false;
+        var top = article.getBoundingClientRect().top + window.scrollY;
+        var total = article.offsetHeight - window.innerHeight;
+        var pct = total > 0 ? (window.scrollY - top) / total : 0;
+        pct = pct < 0 ? 0 : (pct > 1 ? 1 : pct);
+        bar.style.transform = 'scaleX(' + pct + ')';
+    }
+    function onScroll() {
+        if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+}
+
 function initThomasTOC() {
     const page = document.querySelector('.thomas-page');
     if (!page) return;
