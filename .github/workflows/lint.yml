@@ -1,0 +1,32 @@
+name: Lint
+
+# Syntax tripwire for a solo, auto-deploying repo. Hostinger deploys on
+# push regardless of this check — CI does NOT gate the deploy — but a red
+# X (and the email GitHub sends) flags a PHP/JS syntax slip before you find
+# it on the live site. php + node are pre-installed on ubuntu-latest, so
+# there's nothing to set up.
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP syntax check (php -l)
+        run: |
+          set -e
+          for f in $(git ls-files '*.php' | grep -v '^\.claude/'); do
+            php -l "$f"
+          done
+
+      - name: JS syntax check (node --check)
+        run: |
+          set -e
+          for f in $(git ls-files 'assets/js/*.js'); do
+            node --check "$f"
+          done

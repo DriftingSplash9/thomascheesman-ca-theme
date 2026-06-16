@@ -87,5 +87,8 @@ _Last refreshed: 2026-06-06 (theme ~1.0.455). Pages-only site (no public blog)._
 - **Stack:** WordPress 7.0 + Astra 4.13 parent + this child theme. Hostinger + LiteSpeed.
 - **Deploy:** push `origin/main` → Hostinger auto-deploys. Then **LiteSpeed → Purge All** + hard-refresh.
 - **Cache busting:** bump `style.css` `Version:` (Edit tool, never `sed`) every theme-code commit → busts all enqueued CSS/JS.
+- **Cache purge (agent):** Claude runs the `tc-portfolio/purge-cache` MCP ability after every push — no manual purge needed. It fires LiteSpeed's `litespeed_purge_all` + object purge. NOTE: those hooks do **not** clear the combined CSS/JS bundles; for that, admin bar **LiteSpeed → Toolbox → Purge → Purge All - CSS/JS Cache** (or they rebuild when the enqueue set changes).
+- **Agent abilities (MCP `thomascheesman`, `inc/agent-abilities.php`):** read-only `list-plugins` / `list-pages` / `get-page` / `list-quotes` / `get-leaderboard`; write `update-page-content` / `append-quote` / `create-page`; maintenance `purge-cache`.
+- **CI:** `.github/workflows/lint.yml` runs `php -l` + `node --check` on every push to `main` — a syntax tripwire; it does **not** gate the Hostinger deploy.
 - **Bing verify:** `functions.php` (`TC_BING_VERIFY_TOKEN`).
 - Sharp edges, privacy rules, and "what's next" live in `CLAUDE.md` + the latest `V0.*.md`.
