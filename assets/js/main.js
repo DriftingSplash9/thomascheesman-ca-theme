@@ -1350,12 +1350,9 @@ function initScrollReveals() {
  */
 function initParticleField() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // Homepage and per-person pages get particles — atmosphere for the
-    // hero on the homepage, and identity layer over the WebGL tint on
-    // each kid's page. Heritage spokes and other pages stay clean.
-    const isHome = document.body.classList.contains('home');
-    const isPersonSpoke = !!document.querySelector('.person-spoke');
-    if (!isHome && !isPersonSpoke) return;
+    // Constellation runs site-wide (re-enabled per request): drifting dots
+    // that gravitate to the cursor, link to ~2 nearest neighbours, and shed
+    // connections as they wander. Reduced-motion already sat it out above.
 
     const canvas = document.createElement('canvas');
     canvas.className = 'particle-field-canvas';
@@ -1382,9 +1379,34 @@ function initParticleField() {
     resize();
     window.addEventListener('resize', resize);
 
+    // Tint: the field picks up the page's accent so it reads differently
+    // per line / page. Falls back to the original pale blue-white if no
+    // accent variable is set (e.g. the homepage).
+    function tcReadTint() {
+        var els = [
+            document.querySelector('.heritage-longread, .heritage-line, .person-spoke, .thomas-page'),
+            document.body, document.documentElement
+        ];
+        var raw = '';
+        for (var i = 0; i < els.length && !raw; i++) {
+            if (!els[i]) continue;
+            var cs = getComputedStyle(els[i]);
+            raw = (cs.getPropertyValue('--line-color') || cs.getPropertyValue('--webgl-accent') || '').trim();
+        }
+        var m = raw.match(/^#([0-9a-fA-F]{6})$/) || raw.match(/^#([0-9a-fA-F]{3})$/);
+        if (m) {
+            var hx = m[1];
+            if (hx.length === 3) hx = hx[0]+hx[0]+hx[1]+hx[1]+hx[2]+hx[2];
+            return parseInt(hx.slice(0,2),16)+', '+parseInt(hx.slice(2,4),16)+', '+parseInt(hx.slice(4,6),16);
+        }
+        var rgb = raw.match(/(\d+)\D+(\d+)\D+(\d+)/);
+        if (rgb) return rgb[1]+', '+rgb[2]+', '+rgb[3];
+        return '210, 225, 255';
+    }
+    var tintRGB = tcReadTint();
     // ---- Constants shared across layers ----
     const ATTRACT_RADIUS   = 180;
-    const ATTRACT_STRENGTH = 0.025;    // halved per request
+    const ATTRACT_STRENGTH = 0.045;    // restored for a stronger cursor pull
     const CONNECT_DISTANCE = 180;
     const DAMPING          = 0.97;
     const MAX_VEL_BASE     = 1.6;      // ~35% reduction
@@ -1393,11 +1415,11 @@ function initParticleField() {
     const CONN_PHASE_FREQ  = 0.000314; // ~20s period
     const CONN_PHASE_GATE  = 0.7;      // sin > 0.7 → wants 2 connections
 
-    // ---- Per-layer config (count cut 25%, alphas reduced) ----
+    // ---- Per-layer config (alphas restored for visibility) ----
     const LAYERS = [
-        { count: 30, speed: 0.6, scrollFactor: 0.2, size: 0.8, pAlpha: 0.12, lAlpha: 0.05 },
-        { count: 30, speed: 1.0, scrollFactor: 0.5, size: 1.0, pAlpha: 0.18, lAlpha: 0.07 },
-        { count: 30, speed: 1.5, scrollFactor: 0.8, size: 1.4, pAlpha: 0.25, lAlpha: 0.09 },
+        { count: 30, speed: 0.6, scrollFactor: 0.2, size: 0.8, pAlpha: 0.22, lAlpha: 0.10 },
+        { count: 30, speed: 1.0, scrollFactor: 0.5, size: 1.0, pAlpha: 0.34, lAlpha: 0.14 },
+        { count: 30, speed: 1.5, scrollFactor: 0.8, size: 1.4, pAlpha: 0.48, lAlpha: 0.18 },
     ];
 
     LAYERS.forEach(function (layer) {
@@ -1541,7 +1563,7 @@ function initParticleField() {
                 for (let k = 0; k < lineCount; k++) {
                     const c = candidates[k];
                     const alpha = (1 - c.d / CONNECT_DISTANCE) * layer.lAlpha;
-                    ctx.strokeStyle = 'rgba(200, 220, 255, ' + alpha + ')';
+                    ctx.strokeStyle = 'rgba(' + tintRGB + ', ' + alpha + ')';
                     ctx.beginPath();
                     ctx.moveTo(p.x, pRenderY);
                     ctx.lineTo(c.x, c.y);
@@ -1550,7 +1572,7 @@ function initParticleField() {
             }
 
             // --- Particles ---
-            ctx.fillStyle = 'rgba(220, 230, 255, ' + layer.pAlpha + ')';
+            ctx.fillStyle = 'rgba(' + tintRGB + ', ' + layer.pAlpha + ')';
             for (let i = 0; i < layer.particles.length; i++) {
                 const p = layer.particles[i];
                 const pRenderY = ((p.y - offsetY) % h + h) % h;
