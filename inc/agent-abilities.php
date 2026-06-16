@@ -270,6 +270,29 @@ function tc_register_agent_abilities() {
     ) );
 
 
+    wp_register_ability( 'tc-portfolio/list-plugins', array(
+        'label'         => 'List installed plugins',
+        'description'   => 'List every installed plugin with name, plugin file, version, and whether it is active. Read-only. Useful for auditing plugin bloat and load-time impact.',
+        'category'      => 'tc-content',
+        'input_schema'  => array( 'type' => 'object' ),
+        'output_schema' => array(
+            'type'  => 'array',
+            'items' => array(
+                'type'       => 'object',
+                'properties' => array(
+                    'name'    => array( 'type' => 'string' ),
+                    'file'    => array( 'type' => 'string' ),
+                    'version' => array( 'type' => 'string' ),
+                    'active'  => array( 'type' => 'boolean' ),
+                ),
+            ),
+        ),
+        'execute_callback'    => 'tc_ability_list_plugins',
+        'permission_callback' => 'tc_ability_can_edit_pages',
+        'meta' => array( 'mcp' => array( 'public' => true ) ),
+    ) );
+
+
     wp_register_ability( 'tc-portfolio/update-page-content', array(
         'label'         => 'Update a page\'s content',
         'description'   => 'Replace the post_content of a specific page. WordPress sanitises the HTML via wp_kses_post(). Writes a revision.',
@@ -578,4 +601,28 @@ function tc_ability_purge_cache() {
             ? 'LiteSpeed cache purged (all pages + optimized CSS/JS).'
             : 'LiteSpeed Cache not detected; nothing purged.',
     );
+}
+
+/**
+ * Execute: list installed plugins (read-only).
+ *
+ * Returns name, plugin file, version, and active flag for every
+ * installed plugin so an agent can audit plugin bloat / load impact.
+ */
+function tc_ability_list_plugins() {
+    if ( ! function_exists( 'get_plugins' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+    $all    = get_plugins();
+    $active = (array) get_option( 'active_plugins', array() );
+    $out    = array();
+    foreach ( $all as $file => $data ) {
+        $out[] = array(
+            'name'    => isset( $data['Name'] ) ? $data['Name'] : $file,
+            'file'    => $file,
+            'version' => isset( $data['Version'] ) ? $data['Version'] : '',
+            'active'  => in_array( $file, $active, true ),
+        );
+    }
+    return $out;
 }
