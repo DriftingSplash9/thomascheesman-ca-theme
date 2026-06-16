@@ -144,42 +144,20 @@ function tc_send_security_headers() {
             'interest-cohort=()',
         ) ),
 
-        // Loose CSP. Still hardens four meaningful things:
+        // G9 (2026-06): nonce + 'strict-dynamic' script-src, no more
+        // 'unsafe-inline' / 'unsafe-eval'. Verified clean in
+        // Report-Only mode first — homepage, a heritage long-read
+        // (JSON-LD + YouTube embed), the G7 desk-menu AJAX-injected
+        // overlay + games drawer, and the LiteSpeed cache-hit path
+        // (confirmed the same nonce value appears in both the cached
+        // header and the cached HTML's <script> tags, since LiteSpeed
+        // caches them together as one unit) — all produced zero
+        // violations. Still hardens four other things unconditionally:
         //   - base-uri 'self'           — blocks <base> tag injection
         //   - form-action 'self'        — blocks form-jacking redirects
         //   - object-src 'none'         — kills Flash / Java applets
         //   - frame-ancestors 'self'    — blocks clickjacking iframes
-        // 'unsafe-inline' + 'unsafe-eval' stay here for now — this is
-        // the ENFORCED policy, kept loose until the Report-Only policy
-        // below comes back clean from a live verification pass. See
-        // the nonce'd Content-Security-Policy-Report-Only entry for
-        // the G9 tightened policy actually being tested.
         'Content-Security-Policy'   => implode( ' ', array(
-            "default-src 'self' https: data: blob:;",
-            "script-src 'self' https: 'unsafe-inline' 'unsafe-eval';",
-            "style-src 'self' https: 'unsafe-inline';",
-            "img-src 'self' https: data: blob:;",
-            "font-src 'self' https: data:;",
-            "connect-src 'self' https:;",
-            "media-src 'self' https: blob:;",
-            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://accounts.google.com;",
-            "frame-ancestors 'self';",
-            "object-src 'none';",
-            "base-uri 'self';",
-            "form-action 'self';",
-            "upgrade-insecure-requests;",
-        ) ),
-
-        // G9 — nonce-based script-src, in REPORT-ONLY mode for now.
-        // Drops 'unsafe-inline' and 'unsafe-eval' from script-src in
-        // favour of a per-request nonce + 'strict-dynamic' (see
-        // tc_csp_nonce() above). This header never blocks anything —
-        // it only makes the browser log would-this-have-been-blocked
-        // violations to the console — so it's safe to ship while it's
-        // verified against the live site. Once a clean pass confirms
-        // nothing breaks, fold this into the real policy above and
-        // delete this entry.
-        'Content-Security-Policy-Report-Only' => implode( ' ', array(
             "default-src 'self' https: data: blob:;",
             "script-src 'self' https: 'nonce-" . tc_csp_nonce() . "' 'strict-dynamic';",
             "style-src 'self' https: 'unsafe-inline';",
