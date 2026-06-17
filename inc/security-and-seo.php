@@ -28,53 +28,6 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * One CSP nonce per request (G9 — nonce-based script-src, 2026-06).
- *
- * 'strict-dynamic' is the script-src keyword that lets a nonce'd
- * script create further <script> tags (main.js lazily injecting
- * three.js, desk-drawer.js injecting Matter.js, etc.) without those
- * descendants needing a nonce of their own. The trade-off: browsers
- * that understand strict-dynamic then ignore 'self'/https: for the
- * INITIAL scripts too, so even our own same-origin <script src> tags
- * need this nonce to run at all — see the script_loader_tag and
- * wp_inline_script_attributes filters below, which attach it to every
- * WP-managed script tag, src= and inline alike.
- */
-function tc_csp_nonce() {
-    static $nonce = null;
-    if ( null === $nonce ) {
-        $nonce = base64_encode( random_bytes( 16 ) );
-    }
-    return $nonce;
-}
-
-/**
- * Attach the CSP nonce to every enqueued <script src="..."> tag.
- * Skipped in wp-admin — that's a different surface with its own
- * inline scripts, and tc_send_security_headers() never sends our CSP
- * there anyway.
- */
-add_filter( 'script_loader_tag', function ( $tag, $handle, $src ) {
-    if ( is_admin() || strpos( $tag, ' nonce=' ) !== false ) {
-        return $tag;
-    }
-    return preg_replace( '/<script /', '<script nonce="' . esc_attr( tc_csp_nonce() ) . '" ', $tag, 1 );
-}, 10, 3 );
-
-/**
- * Attach the CSP nonce to every wp_add_inline_script() /
- * wp_localize_script() generated <script> block (the "-js-extra" /
- * "-js-before" / "-js-after" tags WP prints alongside a handle).
- */
-add_filter( 'wp_inline_script_attributes', function ( $attributes ) {
-    if ( is_admin() ) {
-        return $attributes;
-    }
-    $attributes['nonce'] = tc_csp_nonce();
-    return $attributes;
-} );
-
-/**
  * Send security headers on every front-end response.
  *
  * Wired to the send_headers action — fires after WP has routed the
@@ -144,22 +97,32 @@ function tc_send_security_headers() {
             'interest-cohort=()',
         ) ),
 
-        // G9 (2026-06): nonce + 'strict-dynamic' script-src, no more
-        // 'unsafe-inline' / 'unsafe-eval'. Verified clean in
-        // Report-Only mode first — homepage, a heritage long-read
-        // (JSON-LD + YouTube embed), the G7 desk-menu AJAX-injected
-        // overlay + games drawer, and the LiteSpeed cache-hit path
-        // (confirmed the same nonce value appears in both the cached
-        // header and the cached HTML's <script> tags, since LiteSpeed
-        // caches them together as one unit) — all produced zero
-        // violations. Still hardens four other things unconditionally:
+        // NOTE — this header is NOT what the browser actually sees.
+        // Hostinger's LiteSpeed injects its own minimal CSP at the
+        // server layer AFTER PHP returns, stripping whatever we send
+        // here (confirmed 2026-06-16: even a per-request nonce header
+        // never survived, and the bare server CSP appeared on static
+        // .css/.js too). The AUTHORITATIVE site CSP is therefore the
+        // mod_headers block in public_html/.htaccess, which runs last
+        // and wins. We keep this PHP header as defense-in-depth (it
+        // takes over if that .htaccess block is ever removed) and keep
+        // the two policies in sync.
+        //
+        // That host behaviour also killed the G9 nonce experiment: a
+        // real nonce-based CSP needs a dynamic per-request header, but
+        // the only header that survives is a STATIC .htaccess one,
+        // which can't carry a nonce — so don't re-attempt nonce CSP on
+        // this host. Inline scripts (GSAP/Three.js initializers,
+        // wp_localize_script output, the stylesheet preload-swap) keep
+        // 'unsafe-inline'. We DID drop 'unsafe-eval' (audited unused).
+        // Still hardens four meaningful things:
         //   - base-uri 'self'           — blocks <base> tag injection
         //   - form-action 'self'        — blocks form-jacking redirects
         //   - object-src 'none'         — kills Flash / Java applets
         //   - frame-ancestors 'self'    — blocks clickjacking iframes
         'Content-Security-Policy'   => implode( ' ', array(
             "default-src 'self' https: data: blob:;",
-            "script-src 'self' https: 'nonce-" . tc_csp_nonce() . "' 'strict-dynamic';",
+            "script-src 'self' https: 'unsafe-inline';",
             "style-src 'self' https: 'unsafe-inline';",
             "img-src 'self' https: data: blob:;",
             "font-src 'self' https: data:;",
@@ -262,7 +225,7 @@ function tc_render_person_schema() {
      */
     $person = apply_filters( 'tc_person_schema', $person );
 
-    echo "\n" . '<script type="application/ld+json" nonce="' . esc_attr( tc_csp_nonce() ) . '" class="tc-person-schema">';
+    echo "\n" . '<script type="application/ld+json" class="tc-person-schema">';
     // wp_json_encode handles UTF-8 + escaping correctly. The slashes /
     // unicode flags keep the output compact and human-readable in source.
     echo wp_json_encode( $person, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );

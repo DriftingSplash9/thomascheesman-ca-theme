@@ -567,27 +567,15 @@ function tc_defer_heavy_stylesheets( $tag, $handle ) {
     if ( ! in_array( $handle, $deferred, true ) ) {
         return $tag;
     }
-    // WP emits style tags with single-quoted attributes. Swap rel and
-    // give the link a stable id. The onload="" attribute this used to
-    // carry doesn't work under a nonce-based CSP (G9) — script-src
-    // nonces only cover <script> elements, not inline event-handler
-    // attributes on arbitrary tags — so the swap moves to a sibling
-    // <script> instead. That script runs synchronously, immediately
-    // after the <link> in the HTML stream, which is what makes this
-    // race-free: the 'load' listener is attached long before the
-    // network request for the CSS can possibly resolve.
-    $link_id = 'tc-preload-' . $handle;
+    // WP emits style tags with single-quoted attributes. Swap rel and add
+    // the preload onload swap dance. Preserve the original tag for the
+    // <noscript> fallback so the same URL + media + version-string apply.
     $preload = str_replace(
         array( "rel='stylesheet'", 'rel="stylesheet"' ),
-        "rel='preload' as='style' id='{$link_id}'",
+        "rel='preload' as='style' onload=\"this.onload=null;this.rel='stylesheet'\"",
         $tag
     );
-    $swap = sprintf(
-        '<script nonce="%s">(function(l){function f(){l.rel="stylesheet";}if(l.sheet){f();}else{l.addEventListener("load",f);}})(document.getElementById("%s"));</script>',
-        esc_attr( tc_csp_nonce() ),
-        esc_js( $link_id )
-    );
-    return $preload . $swap . '<noscript>' . $tag . '</noscript>';
+    return $preload . '<noscript>' . $tag . '</noscript>';
 }
 add_filter( 'style_loader_tag', 'tc_defer_heavy_stylesheets', 10, 2 );
 

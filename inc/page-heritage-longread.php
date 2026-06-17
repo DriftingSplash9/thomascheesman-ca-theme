@@ -158,24 +158,7 @@ get_header();
                     <div class="heritage-line__body heritage-line__body--longread">
                         <?php
                         if ( $lr_body !== '' && is_readable( $lr_body ) ) {
-                            // G9: a couple of these auto-generated bodies
-                            // (never hand-edit) embed a VideoObject JSON-LD
-                            // <script> for an inline YouTube reference.
-                            // Nonce it here, at render time, rather than
-                            // touching the generator output — a future
-                            // regeneration from the manuscript can't
-                            // silently drop it and break the CSP.
-                            ob_start();
                             require $lr_body;
-                            $lr_body_html = ob_get_clean();
-                            if ( function_exists( 'tc_csp_nonce' ) ) {
-                                $lr_body_html = preg_replace(
-                                    '/<script\s+type="application\/ld\+json">/',
-                                    '<script type="application/ld+json" nonce="' . esc_attr( tc_csp_nonce() ) . '">',
-                                    $lr_body_html
-                                );
-                            }
-                            echo $lr_body_html;
                         }
                         ?>
                     </div>
