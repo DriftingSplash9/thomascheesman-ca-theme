@@ -418,6 +418,16 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 		</div>
 	</article>
 
+	<?php
+	// Book-quality PDF of this story — renders only once keepsake-thomas.pdf
+	// is in Media. See inc/keepsake-download.php.
+	if ( function_exists( 'tc_render_keepsake_download' ) ) :
+	?>
+		<div class="container container--narrow">
+			<?php tc_render_keepsake_download( 'thomas', __( 'Download my story as a keepsake PDF', 'tc-ventures-child' ) ); ?>
+		</div>
+	<?php endif; ?>
+
 	<!-- ============================ GALLERY ============================ -->
 	<?php
 	// Photo wall — Thomas. Auto-includes every optimized g-*.jpg in the folder

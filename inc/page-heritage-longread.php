@@ -165,6 +165,14 @@ get_header();
                 </section>
             </div>
 
+            <?php
+            // Book-quality PDF of this line — renders only once the file is in
+            // Media (keepsake-<slug>.pdf). See inc/keepsake-download.php.
+            if ( function_exists( 'tc_render_keepsake_download' ) ) {
+                tc_render_keepsake_download( $lr_slug );
+            }
+            ?>
+
             <?php if ( $lr_next_url !== '' ) : ?>
                 <p class="heritage-line__readmore heritage-longread__next">
                     <a href="<?php echo esc_url( $lr_next_url ); ?>">Next line &rarr; <?php echo wp_kses_post( $lr_next_label ); ?></a>

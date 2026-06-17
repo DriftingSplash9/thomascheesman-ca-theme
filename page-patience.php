@@ -288,6 +288,14 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php
+            // Book-quality PDF of this story — renders only once
+            // keepsake-patience.pdf is in Media. See inc/keepsake-download.php.
+            if ( function_exists( 'tc_render_keepsake_download' ) ) {
+                tc_render_keepsake_download( 'patience', __( "Download Patience's story as a keepsake PDF", 'tc-ventures-child' ) );
+            }
+            ?>
+
             <?php tc_render_family_links( 'patience' ); ?>
 
             <!-- Home videos — playable .mp4 uploads (WP media, 2026/06). The
