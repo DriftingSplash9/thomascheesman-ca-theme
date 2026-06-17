@@ -23,12 +23,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
  * Resolve a keepsake PDF's URL from the Media Library by its slug.
  *
- * Looks up the attachment whose slug is "keepsake-<slug>" — WordPress derives
- * that slug from the uploaded filename keepsake-<slug>.pdf. The result is
- * cached in a transient so it isn't a query on every page load; only a *found*
- * URL is cached, so the button appears on the next load after the file is
- * uploaded rather than waiting for a cache to expire. The cache is also flushed
- * when a matching attachment is added/edited/removed (see below).
+ * Finds the NEWEST attachment for the line. WordPress derives an attachment's
+ * slug from the uploaded filename, and when a file of the same name is
+ * re-uploaded it appends -1, -2… (keepsake-thomas.pdf -> keepsake-thomas-1.pdf).
+ * Matching the bare slug would keep serving the FIRST (oldest) upload, so we
+ * match "keepsake-<slug>" OR "keepsake-<slug>-N", newest first — a fresh
+ * re-upload then wins automatically with no need to delete the old file.
+ *
+ * The result is cached in a transient so it isn't a query on every page load;
+ * only a *found* URL is cached, so the button appears on the next load after a
+ * file is uploaded rather than waiting for the cache to expire. The cache is
+ * also flushed when a matching attachment is added/edited/removed (see below).
  *
  * @param string $slug Keepsake slug, e.g. 'cheesmans' or 'patience'.
  * @return string      The PDF URL, or '' if it isn't in the Media Library yet.
@@ -45,23 +50,29 @@ function tc_keepsake_pdf_url( $slug ) {
 		return $override;
 	}
 
-	$key    = 'tc_keepsake_url_' . $slug;
+	// Key namespaced (_v2_) so it never reads a value cached by the earlier
+	// exact-match resolver (which could have stored an older -0 upload).
+	$key    = 'tc_keepsake_url_v2_' . $slug;
 	$cached = get_transient( $key );
 	if ( is_string( $cached ) && '' !== $cached ) {
 		return $cached;
 	}
 
-	$ids = get_posts( array(
-		'post_type'        => 'attachment',
-		'post_status'      => 'inherit',
-		'name'             => 'keepsake-' . $slug,
-		'posts_per_page'   => 1,
-		'fields'           => 'ids',
-		'no_found_rows'    => true,
-		'suppress_filters' => false,
-	) );
+	global $wpdb;
+	$id = $wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT ID FROM {$wpdb->posts}
+			  WHERE post_type = 'attachment'
+			    AND post_status = 'inherit'
+			    AND ( post_name = %s OR post_name LIKE %s )
+			  ORDER BY post_date DESC, ID DESC
+			  LIMIT 1",
+			'keepsake-' . $slug,
+			$wpdb->esc_like( 'keepsake-' . $slug . '-' ) . '%'
+		)
+	);
 
-	$url = $ids ? (string) wp_get_attachment_url( $ids[0] ) : '';
+	$url = $id ? (string) wp_get_attachment_url( (int) $id ) : '';
 	if ( '' !== $url ) {
 		set_transient( $key, $url, WEEK_IN_SECONDS );
 	}
@@ -108,9 +119,14 @@ function tc_render_keepsake_download( $slug, $label = '' ) {
  */
 function tc_keepsake_flush_url_cache( $post_id ) {
 	$post = get_post( $post_id );
-	if ( $post && 0 === strpos( (string) $post->post_name, 'keepsake-' ) ) {
-		delete_transient( 'tc_keepsake_url_' . substr( $post->post_name, strlen( 'keepsake-' ) ) );
+	if ( ! $post || 0 !== strpos( (string) $post->post_name, 'keepsake-' ) ) {
+		return;
 	}
+	// Strip the 'keepsake-' prefix and any WordPress -N dedupe suffix to get the
+	// base slug, so (re)uploading keepsake-thomas-1 still flushes the 'thomas' key.
+	$base = substr( $post->post_name, strlen( 'keepsake-' ) );
+	$base = preg_replace( '/-\d+$/', '', $base );
+	delete_transient( 'tc_keepsake_url_v2_' . $base );
 }
 add_action( 'add_attachment', 'tc_keepsake_flush_url_cache' );
 add_action( 'edit_attachment', 'tc_keepsake_flush_url_cache' );
