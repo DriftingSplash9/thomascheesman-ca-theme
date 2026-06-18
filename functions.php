@@ -650,6 +650,7 @@ add_filter( 'aioseo_description', function ( $description ) {
         'hcs'                                     => 'Living with Hajdu-Cheney syndrome — one of the rarest bone disorders on Earth — told first-hand: diagnosis, fractures, fusions, and a good life anyway.',
         'hcs/case-studies'                        => 'Case studies and research on Hajdu-Cheney syndrome, gathered by a patient — for the newly diagnosed, their families, and the clinicians who treat them.',
         'contact'                                 => 'Write to Thomas Cheesman — a click-to-copy address, no forms, no tracking. Letters welcome; stories about the family lines doubly so.',
+        'privacy'                                 => 'What this site does with your data — almost nothing: no analytics, no advertising, no tracking cookies, nothing sold. Only what a feature can\'t work without.',
         'family'                                  => 'The family tree of Patience, Daniel, and Faith — three kids in Grande Prairie where eight family lines from five countries finally meet.',
         'family/patience'                         => 'Patience, the eldest of the three — her story in her dad\'s words: who she is, what she loves, and the letter he wrote her for later.',
         'family/daniel'                           => 'Daniel, the only boy of the three — his story in his dad\'s words, from a hundred questions answered together to the letter written for later.',

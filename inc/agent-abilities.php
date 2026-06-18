@@ -371,7 +371,10 @@ function tc_register_agent_abilities() {
                 'status'  => array(
                     'type'    => 'string',
                     'enum'    => array( 'publish', 'draft', 'pending', 'private' ),
-                    'default' => 'publish',
+                    // Audit SEC-1: default to draft, never publish. An agent (or a
+                    // leaked Claude-Agent app password) must explicitly pass
+                    // status=publish to put a live page on the site.
+                    'default' => 'draft',
                 ),
                 'content' => array( 'type' => 'string', 'description' => 'Optional HTML body. Sanitised by wp_kses_post(). Leave empty for template-rendered pages.' ),
             ),
@@ -492,9 +495,11 @@ function tc_ability_create_page( $input ) {
         return new WP_Error( 'bad_input', 'A title is required.' );
     }
 
-    $status = isset( $input['status'] ) ? (string) $input['status'] : 'publish';
+    // SEC-1: draft is the safe default for both the unset and the invalid case,
+    // so a malformed or omitted status can never silently publish.
+    $status = isset( $input['status'] ) ? (string) $input['status'] : 'draft';
     if ( ! in_array( $status, array( 'publish', 'draft', 'pending', 'private' ), true ) ) {
-        $status = 'publish';
+        $status = 'draft';
     }
 
     // Resolve an optional parent by numeric id or slug.
