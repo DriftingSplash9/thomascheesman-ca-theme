@@ -20,6 +20,7 @@ require_once get_stylesheet_directory() . '/inc/drawer-events.php';
 require_once get_stylesheet_directory() . '/inc/security-and-seo.php';
 require_once get_stylesheet_directory() . '/inc/cross-links.php';
 require_once get_stylesheet_directory() . '/inc/keepsake-download.php';
+require_once get_stylesheet_directory() . '/inc/family-login.php';
 
 /**
  * Enqueue parent and child theme styles and scripts.
@@ -300,6 +301,17 @@ function tc_ventures_enqueue_scripts() {
         $tc_theme_ver,
         array( 'in_footer' => true, 'strategy' => 'defer' )
     );
+
+    // Family login page + the kid-page "kept for family" gate notice (the
+    // styled wp_login_form and the .family-gate prompt). inc/family-login.php.
+    if ( is_page( array( 'family-login', 'patience', 'daniel', 'faith' ) ) ) {
+        wp_enqueue_style(
+            'tc-family',
+            get_stylesheet_directory_uri() . '/assets/css/family.css',
+            array( 'astra-child-style' ),
+            $tc_theme_ver
+        );
+    }
 
     // The Lanterns of Record — the converging-families map at /map
     // (page-map.php; spec at docs/CONVERGING-MAP-SPEC.md). D3 + the

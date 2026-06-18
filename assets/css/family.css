@@ -1,0 +1,190 @@
+/**
+ * family.css — the family-login page form + the "kept for family" gate notice
+ * shown on the kids' pages in place of the gated photo albums.
+ *
+ * Loaded only on the family-login page and the three kid pages (enqueued
+ * conditionally in functions.php). Dark theme; picks up each page's
+ * --line-color accent where one is set (kid pages do), amber otherwise.
+ */
+
+/* ----------------------------------------------------------------
+   GATE NOTICE — stands in for a gated photo album.
+   ---------------------------------------------------------------- */
+.family-gate {
+    max-width: 640px;
+    margin: clamp(40px, 7vw, 72px) auto clamp(24px, 4vw, 40px);
+    padding: clamp(28px, 4vw, 40px) clamp(22px, 3vw, 34px);
+    text-align: center;
+    background: color-mix(in srgb, var(--line-color, #f4b740) 8%, rgba(255, 255, 255, 0.02));
+    border: 1px solid color-mix(in srgb, var(--line-color, #f4b740) 30%, transparent);
+    border-radius: 10px;
+}
+
+.family-gate__icon {
+    display: block;
+    font-size: 30px;
+    line-height: 1;
+    margin-bottom: 12px;
+    opacity: 0.85;
+}
+
+.family-gate__heading {
+    margin: 0 0 8px;
+    font-size: clamp(20px, 2.6vw, 25px);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.family-gate__prose {
+    margin: 0 auto 20px;
+    max-width: 46ch;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.family-gate__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--line-color, #f4b740) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--line-color, #f4b740) 55%, transparent);
+    border-radius: 999px;
+    transition: background 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+
+.family-gate__cta:hover,
+.family-gate__cta:focus-visible {
+    background: color-mix(in srgb, var(--line-color, #f4b740) 28%, transparent);
+    border-color: color-mix(in srgb, var(--line-color, #f4b740) 75%, transparent);
+    transform: translateY(-2px);
+}
+
+.family-gate__cta span {
+    transition: transform 200ms ease;
+}
+
+.family-gate__cta:hover span,
+.family-gate__cta:focus-visible span {
+    transform: translateX(3px);
+}
+
+/* ----------------------------------------------------------------
+   SIGN-IN PAGE — the wrapped wp_login_form().
+   ---------------------------------------------------------------- */
+.family-login {
+    max-width: 420px;
+    margin: clamp(24px, 4vw, 40px) auto 0;
+}
+
+.family-login #loginform {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: clamp(24px, 3.5vw, 34px);
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
+.family-login #loginform p {
+    margin: 0;
+}
+
+.family-login #loginform label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.family-login #loginform input[type="text"],
+.family-login #loginform input[type="password"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    font-size: 16px; /* >=16px so iOS doesn't zoom on focus */
+    color: #fff;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.family-login #loginform input[type="text"]:focus,
+.family-login #loginform input[type="password"]:focus {
+    outline: none;
+    border-color: #f4b740;
+    box-shadow: 0 0 0 3px rgba(244, 183, 64, 0.25);
+}
+
+.family-login .login-remember label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    margin-bottom: 0;
+}
+
+.family-login .login-remember input {
+    width: auto;
+}
+
+.family-login #wp-submit {
+    width: 100%;
+    padding: 13px 18px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: #f4b740;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
+}
+
+.family-login #wp-submit:hover,
+.family-login #wp-submit:focus-visible {
+    background: #f6c45f;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(244, 183, 64, 0.28);
+}
+
+.family-login__status {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 16px;
+}
+
+.family-login__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    margin: 0;
+}
+
+.family-login__signout {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.family-login__signout:hover,
+.family-login__signout:focus-visible {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.family-login__help {
+    margin: 18px 0 0;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+}

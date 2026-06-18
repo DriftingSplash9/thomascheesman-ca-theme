@@ -314,6 +314,31 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
 
             <?php tc_render_family_links( 'daniel' ); ?>
 
+            <?php if ( tc_user_is_family() ) : ?>
+                <?php
+                // Photo wall — Daniel. GATED to signed-in family
+                // (inc/family-login.php). 222 photos from inc/gallery-daniel.php;
+                // restored from git 629dd99 behind the family login. The 9999
+                // bucket catches items Thomas hasn't year-tagged yet.
+                $daniel_items = require get_stylesheet_directory() . '/inc/gallery-daniel.php';
+                tc_render_photo_gallery(
+                    $daniel_items,
+                    array(
+                        array( 'label' => 'Year One — 2015',           'years' => array( 2015 ) ),
+                        array( 'label' => 'Toddler Years — 2016',      'years' => array( 2016 ) ),
+                        array( 'label' => 'Little Person — 2017–2018', 'years' => array( 2017, 2018 ) ),
+                        array( 'label' => 'A Big Year — 2019',          'years' => array( 2019 ) ),
+                        array( 'label' => 'The Quiet Years — 2020–2022', 'years' => array( 2020, 2021, 2022 ) ),
+                        array( 'label' => 'Schoolboy — 2023–Today',    'years' => array( 2023, 2024, 2025, 2026 ) ),
+                        array( 'label' => 'Newly added — to sort',      'years' => array( 9999 ) ),
+                    ),
+                    'Daniel'
+                );
+                ?>
+            <?php else : ?>
+                <?php tc_render_family_gate_notice( 'Daniel' ); ?>
+            <?php endif; ?>
+
         </div>
     </article>
 
