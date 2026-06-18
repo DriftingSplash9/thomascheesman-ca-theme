@@ -257,15 +257,6 @@ get_header(); ?>
                 </a>
             </p>
 
-            <?php
-            // Book-quality PDF of this story — GATED to family (it contains the
-            // kids' photos). Renders only for signed-in family AND once
-            // keepsake-faith.pdf is in Media. See inc/keepsake-download.php.
-            if ( tc_user_is_family() && function_exists( 'tc_render_keepsake_download' ) ) {
-                tc_render_keepsake_download( 'faith', __( "Download Faith's story as a keepsake PDF", 'tc-ventures-child' ) );
-            }
-            ?>
-
             <?php tc_render_family_links( 'faith' ); ?>
 
             <?php if ( tc_user_is_family() ) : ?>

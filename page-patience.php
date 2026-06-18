@@ -294,15 +294,6 @@ get_header(); ?>
                 </div>
             </section>
 
-            <?php
-            // Book-quality PDF of this story — GATED to family (it contains the
-            // kids' photos). Renders only for signed-in family AND once
-            // keepsake-patience.pdf is in Media. See inc/keepsake-download.php.
-            if ( tc_user_is_family() && function_exists( 'tc_render_keepsake_download' ) ) {
-                tc_render_keepsake_download( 'patience', __( "Download Patience's story as a keepsake PDF", 'tc-ventures-child' ) );
-            }
-            ?>
-
             <?php tc_render_family_links( 'patience' ); ?>
 
             <?php if ( tc_user_is_family() ) : ?>
