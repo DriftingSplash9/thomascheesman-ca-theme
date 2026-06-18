@@ -45,6 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
      was born but before Daniel and Faith, so there is one Papa Sam photo
      (with Patience) and three with Nana Bette (one per grandchild). The
      2x2 visual asymmetry carries that story without prose. -->
+<?php if ( tc_user_is_family() ) : // OD-1: kids' photos gated to family ?>
 <div class="heritage-line__grid heritage-line__grid--2x2">
     <figure class="heritage-line__figure">
         <img
@@ -75,6 +76,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         />
     </figure>
 </div>
+<?php endif; ?>
 
 <p>Sam and Bette's daughter <strong>Lana Lyn Rycroft</strong> (1961&ndash;2015) is Melanie's mother &mdash; she married Dan Steven Haiste, of the Yorkshire-and-prairie Haistes, and that is where I come into the picture. Lana died too young, the same hard year as her father Sam. Their youngest great-grandchild carries her name forward: <strong>Faith</strong>.</p>
 

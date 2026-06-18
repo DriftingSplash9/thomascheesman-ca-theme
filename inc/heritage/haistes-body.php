@@ -24,6 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     <a href="<?php echo esc_url( home_url( '/family/heritage/haistes/story' ) ); ?>">Read the full Haiste story &mdash; thirteen generations, Yorkshire to the Peace Country &rarr;</a>
 </p>
 
+<?php if ( tc_user_is_family() ) : // OD-1: kids' photos gated to family ?>
 <figure class="heritage-line__figure">
     <img
         src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/10/20170330_160029-scaled.jpg' ) ); ?>"
@@ -31,6 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         loading="lazy"
     />
 </figure>
+<?php endif; ?>
 
 <p>The earliest confirmed Haiste in Melanie's direct line is <strong>John Haiste</strong>, born around 1840 in Yorkshire, who married <strong>Jessy Hobson</strong> in late 1866 in the Wharfedale registration district, near Otley. They had nine children. One of those children was <strong>Ernest Haiste</strong>, born October 16, 1881, in Pontefract, Yorkshire &mdash; a working-class family in industrial Yorkshire when the textile mills and coal mines were running flat-out.</p>
 

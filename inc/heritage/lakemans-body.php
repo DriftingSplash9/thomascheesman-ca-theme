@@ -43,6 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <p>A year or two later my dad met my mom. The story goes like this: my mother had a brief relationship with a guy named Jim, and after it ended, she asked Jim to introduce her to <em>his tall blonde friend</em>. As it turned out, Jim had two tall blonde friends. Mom had her eye on the other one. She got my dad. As Martin puts it: <em>&ldquo;if it wasn't for Jim, I might never have been your father.&rdquo;</em></p>
 
+<?php if ( tc_user_is_family() ) : // OD-1: kids' photos gated to family ?>
 <figure class="heritage-line__figure">
     <img
         src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/10/img_1883-scaled.jpg' ) ); ?>"
@@ -50,6 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         loading="lazy"
     />
 </figure>
+<?php endif; ?>
 
 <p>My grandmother <strong>Suzanna Verboom</strong> was born September 25, 1918, in Ter Aar, Zuid-Holland, in the Netherlands. The surname is pronounced &ldquo;ver-BOAM.&rdquo; She lived to be 100, dying in Calgary in 2018. Her father was a tailor and a barber whose shop was attached to the family home, and he taught her to sew and tailor &mdash; she became a most excellent seamstress, and she'll be remembered for her cooking, her impeccable taste, and the unmistakable Dutch accent she never lost.</p>
 
@@ -63,6 +65,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <p>The Verbooms were a Ter Aar family. Suzanna's parents were <strong>Cornelis Verboom</strong> and <strong>Aagje Donker</strong>. Her brother Pieter Verboom married a woman named Kelly and ran a hair salon about a block south of his father's barber shop &mdash; he got around on a Vespa big enough to fit himself, his wife, and two daughters. Her other brother Jacob &ldquo;Yap&rdquo; Verboom took over the barber shop when their father retired. So somewhere in Ter Aar, the odds are good that Verboom cousins or grandchildren are still cutting hair.</p>
 
+<?php if ( tc_user_is_family() ) : // OD-1: kids' photos gated to family ?>
 <figure class="heritage-line__figure">
     <img
         src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/10/20170528_192344-scaled.jpg' ) ); ?>"
@@ -70,6 +73,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
         loading="lazy"
     />
 </figure>
+<?php endif; ?>
 
 <p>Going back another generation on the Lakeman side: my great-grandfather was <strong>Pieter Karel Willem Lakeman</strong> &mdash; known in the family as P.K.W. &mdash; born January 27, 1881, in The Hague. He served as Burgemeester (mayor) in the Dutch East Indies, including postings in Magelang (1929&ndash;1934) and Malang (1933&ndash;1936). He patrolled his whole district on horseback. He retired to the Netherlands in 1933, when my grandfather was 15. They sailed back to Holland together.</p>
 

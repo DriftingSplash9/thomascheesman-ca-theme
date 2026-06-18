@@ -121,6 +121,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
 
                 <p>Melanie and I were apart for a decade before we got back together, and then had three kids in five years. The kids' stories, and the eight family lines that meet in them, live at <a href="<?php echo esc_url( home_url( '/family' ) ); ?>">/family</a>.</p>
 
+                <?php if ( tc_user_is_family() ) : // OD-1: kids' photos gated to family ?>
                 <figure class="about-figure about-figure--left">
                     <img
                         src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/20180109_172138-scaled.jpg' ) ); ?>"
@@ -129,6 +130,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
                     />
                     <figcaption>Daniel and I.</figcaption>
                 </figure>
+                <?php endif; ?>
 
                 <p>Since I left the kitchen I've used a lot of that returned time putting our family history together &mdash; back to the 1600s on a couple of branches. The long-form research turns into video documentaries on YouTube at <a href="https://www.youtube.com/@DriftingSplash9">@DriftingSplash9</a>. <em>The Lakeman Branch of Our Family</em> and <em>Haiste Family Line From Daniel On</em> are the two longest, ninety minutes each. The condensed versions live in the heritage section of this site.</p>
             </section>
@@ -139,6 +141,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
             <section class="about-section scroll-animate">
                 <h2 class="about-section__heading">Three sites I built</h2>
 
+                <?php if ( tc_user_is_family() ) : // OD-1: kids' photos gated to family ?>
                 <figure class="about-figure about-figure--right">
                     <img
                         src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/DSC1161-scaled.jpg' ) ); ?>"
@@ -147,6 +150,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
                     />
                     <figcaption>Patience and I.</figcaption>
                 </figure>
+                <?php endif; ?>
 
                 <p>I run three websites now, which is funny to type given that I'm not a programmer.</p>
 
@@ -161,6 +165,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
             <section class="about-section scroll-animate">
                 <h2 class="about-section__heading">What I'm chewing on</h2>
 
+                <?php if ( tc_user_is_family() ) : // OD-1: kids' photos gated to family ?>
                 <figure class="about-figure about-figure--left">
                     <img
                         src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/IMG_3500-scaled.jpg' ) ); ?>"
@@ -169,6 +174,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
                     />
                     <figcaption>Faith and I.</figcaption>
                 </figure>
+                <?php endif; ?>
 
                 <p>I've kept structured goals &mdash; BHAGs, PDPs, annual reviews &mdash; for almost twenty years. The frameworks stayed even when the kitchen left. I admit the framework has been a little neglected the last year or so.</p>
 
