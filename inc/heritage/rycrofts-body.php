@@ -76,7 +76,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     </figure>
 </div>
 
-<p>Sam and Bette's daughter <strong>Lana Lyn Rycroft</strong> (1961&ndash;2015) is Melanie's mother &mdash; she married Dan Steven Haiste, of the Yorkshire-and-prairie Haistes, and that is where I come into the picture. Lana died too young, the same hard year as her father Sam. Their youngest great-grandchild carries her name forward: <strong>Faith <em>Lana Lyn</em> Cheesman</strong>.</p>
+<p>Sam and Bette's daughter <strong>Lana Lyn Rycroft</strong> (1961&ndash;2015) is Melanie's mother &mdash; she married Dan Steven Haiste, of the Yorkshire-and-prairie Haistes, and that is where I come into the picture. Lana died too young, the same hard year as her father Sam. Their youngest great-grandchild carries her name forward: <strong>Faith</strong>.</p>
 
 <figure class="heritage-line__figure">
     <img
