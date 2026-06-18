@@ -204,6 +204,10 @@ get_header(); ?>
         Most of the recent family photos on these pages were taken by my good friend Dalyn Echo in summer 2024. Thanks Dalyn.
     </p>
 
+    <div class="container container--narrow">
+        <?php comments_template(); // open-tier comments — see inc/comments.php ?>
+    </div>
+
 </main>
 
 <?php get_footer(); ?>

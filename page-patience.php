@@ -359,6 +359,8 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php comments_template(); // family-tier comments — see inc/comments.php ?>
+
         <?php else : // OD-1/PRIV-1 page gate ?>
 
             <?php tc_render_family_gate_notice( 'Patience', 'page' ); ?>

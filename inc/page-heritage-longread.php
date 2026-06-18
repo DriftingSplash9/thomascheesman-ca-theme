@@ -183,6 +183,12 @@ get_header();
                 <a href="<?php echo esc_url( $lr_returl ); ?>">&larr; Back to <?php echo esc_html( $lr_retlabel ); ?></a>
             </p>
 
+            <?php
+            // Open-tier comments (moderated). Active on every long-read; see
+            // inc/comments.php for the tier map + moderation/honeypot/privacy.
+            comments_template();
+            ?>
+
         </div>
     </article>
 

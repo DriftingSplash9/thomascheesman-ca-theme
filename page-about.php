@@ -193,6 +193,10 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
         </div>
     </article>
 
+    <div class="container container--narrow">
+        <?php comments_template(); // open-tier comments — see inc/comments.php ?>
+    </div>
+
 </main>
 
 <?php get_footer(); ?>

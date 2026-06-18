@@ -21,6 +21,7 @@ require_once get_stylesheet_directory() . '/inc/security-and-seo.php';
 require_once get_stylesheet_directory() . '/inc/cross-links.php';
 require_once get_stylesheet_directory() . '/inc/keepsake-download.php';
 require_once get_stylesheet_directory() . '/inc/family-login.php';
+require_once get_stylesheet_directory() . '/inc/comments.php';
 
 /**
  * Enqueue parent and child theme styles and scripts.

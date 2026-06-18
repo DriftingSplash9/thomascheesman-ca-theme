@@ -515,6 +515,10 @@ if ( ! function_exists( 'tc_thomas_fig' ) ) {
 		</div>
 	</div>
 
+    <div class="container container--narrow">
+        <?php comments_template(); // open-tier comments — see inc/comments.php ?>
+    </div>
+
 </main>
 
 <?php get_footer(); ?>

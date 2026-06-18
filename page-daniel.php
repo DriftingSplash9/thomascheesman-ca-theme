@@ -337,6 +337,8 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
                 <?php tc_render_family_gate_notice( 'Daniel' ); ?>
             <?php endif; ?>
 
+            <?php comments_template(); // family-tier comments — see inc/comments.php ?>
+
         <?php else : // OD-1/PRIV-1 page gate ?>
 
             <?php tc_render_family_gate_notice( 'Daniel', 'page' ); ?>
