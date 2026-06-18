@@ -82,6 +82,9 @@ $tc_count = get_comments_number();
 					. '</p>',
 				'comment_notes_after' => '',
 				'label_submit'        => esc_html__( 'Send note', 'tc-ventures-child' ),
+				// A <button> (not the default <input>) so it can carry the
+				// rotating gleam ::before, like the header capsule pill.
+				'submit_button'       => '<button name="%1$s" type="submit" id="%2$s" class="%3$s">%4$s</button>',
 			)
 		);
 
