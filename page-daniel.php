@@ -305,9 +305,10 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
             </section>
 
             <?php
-            // Book-quality PDF of this story — renders only once
+            // Book-quality PDF of this story — GATED to family (it contains the
+            // kids' photos). Renders only for signed-in family AND once
             // keepsake-daniel.pdf is in Media. See inc/keepsake-download.php.
-            if ( function_exists( 'tc_render_keepsake_download' ) ) {
+            if ( tc_user_is_family() && function_exists( 'tc_render_keepsake_download' ) ) {
                 tc_render_keepsake_download( 'daniel', __( "Download Daniel's story as a keepsake PDF", 'tc-ventures-child' ) );
             }
             ?>
