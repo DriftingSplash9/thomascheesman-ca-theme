@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 <figure class="heritage-line__figure">
     <img
         src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/10/20170330_160029-scaled.jpg' ) ); ?>"
-        alt="<?php esc_attr_e( 'Papa Dan Haiste meeting newborn Daniel, March 2017', 'tc-ventures-child' ); ?>"
+        alt="<?php esc_attr_e( 'Papa Dan Haiste meeting his newborn grandchild', 'tc-ventures-child' ); ?>"
         loading="lazy"
     />
 </figure>
