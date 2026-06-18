@@ -23,13 +23,19 @@ get_header(); ?>
             <span class="page-hero__eyebrow">Daughter &mdash; eldest</span>
             <h1 class="page-hero__title kinetic-text">Patience</h1>
             <p class="page-hero__subtitle kinetic-fade">
-                The natural-born leader who tries to hide her dimples
+                <?php if ( tc_user_is_family() ) : ?>
+                    The natural-born leader who tries to hide her dimples
+                <?php else : ?>
+                    A page kept for family.
+                <?php endif; ?>
             </p>
         </div>
     </section>
 
     <article class="heritage-lines">
         <div class="container container--narrow">
+
+        <?php if ( tc_user_is_family() ) : // OD-1/PRIV-1: whole page gated to family ?>
 
             <section class="heritage-line heritage-line--spoke heritage-line--person scroll-animate" id="patience">
                 <div class="heritage-line__body">
@@ -361,6 +367,12 @@ get_header(); ?>
                     </figure>
                 </div>
             </section>
+
+        <?php else : // OD-1/PRIV-1 page gate ?>
+
+            <?php tc_render_family_gate_notice( 'Patience', 'page' ); ?>
+
+        <?php endif; ?>
 
         </div>
     </article>

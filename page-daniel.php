@@ -29,13 +29,19 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
             <span class="page-hero__eyebrow">Son &mdash; middle</span>
             <h1 class="page-hero__title kinetic-text">Daniel</h1>
             <p class="page-hero__subtitle kinetic-fade">
-                Charlie Brown &mdash; the quiet observer, the maker, the boy with a constellation of his own
+                <?php if ( tc_user_is_family() ) : ?>
+                    Charlie Brown &mdash; the quiet observer, the maker, the boy with a constellation of his own
+                <?php else : ?>
+                    A page kept for family.
+                <?php endif; ?>
             </p>
         </div>
     </section>
 
     <article class="heritage-lines">
         <div class="container container--narrow">
+
+        <?php if ( tc_user_is_family() ) : // OD-1/PRIV-1: whole page gated to family ?>
 
             <section class="heritage-line heritage-line--spoke heritage-line--person scroll-animate" id="daniel">
                 <div class="heritage-line__body">
@@ -339,6 +345,12 @@ $di = home_url( '/wp-content/uploads/2026/06/' ); // Daniel photo base (WP Media
             <?php else : ?>
                 <?php tc_render_family_gate_notice( 'Daniel' ); ?>
             <?php endif; ?>
+
+        <?php else : // OD-1/PRIV-1 page gate ?>
+
+            <?php tc_render_family_gate_notice( 'Daniel', 'page' ); ?>
+
+        <?php endif; ?>
 
         </div>
     </article>

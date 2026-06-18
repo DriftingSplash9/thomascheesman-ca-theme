@@ -199,21 +199,33 @@ function tc_family_login_url( $redirect = '' ) {
 
 /**
  * The "this is kept for family" prompt shown to non-family in place of gated
- * content (e.g. the kids' photo albums).
+ * content. Two registers: an 'album' context (the kids' photo albums) and a
+ * 'page' context (a whole kid page gated behind the login — OD-1/PRIV-1).
  *
- * @param string $name  Optional first name, for a warmer line.
+ * @param string $name    Optional first name, for a warmer line.
+ * @param string $context 'album' (default) or 'page'.
  */
-function tc_render_family_gate_notice( $name = '' ) {
-	$msg = $name
-		? sprintf( __( "%s's photo album is kept for family.", 'tc-ventures-child' ), $name )
-		: __( 'These photos are kept for family.', 'tc-ventures-child' );
+function tc_render_family_gate_notice( $name = '', $context = 'album' ) {
+	if ( 'page' === $context ) {
+		$heading = __( 'Kept for family', 'tc-ventures-child' );
+		$msg     = $name
+			? sprintf( __( "%s's page is kept for family.", 'tc-ventures-child' ), $name )
+			: __( 'This page is kept for family.', 'tc-ventures-child' );
+		$sub     = __( 'Signed-in family can read the full page here.', 'tc-ventures-child' );
+	} else {
+		$heading = __( 'Family photo album', 'tc-ventures-child' );
+		$msg     = $name
+			? sprintf( __( "%s's photo album is kept for family.", 'tc-ventures-child' ), $name )
+			: __( 'These photos are kept for family.', 'tc-ventures-child' );
+		$sub     = __( 'Signed-in family can see the full album here.', 'tc-ventures-child' );
+	}
 	?>
 	<aside class="family-gate scroll-animate" aria-labelledby="family-gate-heading">
 		<span class="family-gate__icon" aria-hidden="true">&#128274;</span>
-		<h2 id="family-gate-heading" class="family-gate__heading"><?php esc_html_e( 'Family photo album', 'tc-ventures-child' ); ?></h2>
+		<h2 id="family-gate-heading" class="family-gate__heading"><?php echo esc_html( $heading ); ?></h2>
 		<p class="family-gate__prose">
 			<?php echo esc_html( $msg ); ?>
-			<?php esc_html_e( 'Signed-in family can see the full album here.', 'tc-ventures-child' ); ?>
+			<?php echo esc_html( $sub ); ?>
 		</p>
 		<a class="family-gate__cta" href="<?php echo esc_url( tc_family_login_url() ); ?>">
 			<?php esc_html_e( 'Family sign-in', 'tc-ventures-child' ); ?>

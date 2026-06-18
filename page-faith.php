@@ -21,13 +21,19 @@ get_header(); ?>
             <span class="page-hero__eyebrow">Daughter &mdash; youngest</span>
             <h1 class="page-hero__title kinetic-text">Faith</h1>
             <p class="page-hero__subtitle kinetic-fade">
-                Came to me in a dream at 3 a.m.
+                <?php if ( tc_user_is_family() ) : ?>
+                    Came to me in a dream at 3 a.m.
+                <?php else : ?>
+                    A page kept for family.
+                <?php endif; ?>
             </p>
         </div>
     </section>
 
     <article class="heritage-lines">
         <div class="container container--narrow">
+
+        <?php if ( tc_user_is_family() ) : // OD-1/PRIV-1: whole page gated to family ?>
 
             <section class="heritage-line heritage-line--spoke heritage-line--person scroll-animate" id="faith">
                 <div class="heritage-line__body">
@@ -306,6 +312,12 @@ get_header(); ?>
                     </figure>
                 </div>
             </section>
+
+        <?php else : // OD-1/PRIV-1 page gate ?>
+
+            <?php tc_render_family_gate_notice( 'Faith', 'page' ); ?>
+
+        <?php endif; ?>
 
         </div>
     </article>

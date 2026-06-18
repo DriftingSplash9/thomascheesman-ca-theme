@@ -971,6 +971,24 @@ add_action( 'after_setup_theme', function () {
 } );
 
 /**
+ * OD-1 / PRIV-1: noindex the three kids' spoke pages.
+ *
+ * These pages are gated behind the family login (only signed-in family see the
+ * prose, photos, and the "letter for later"). Even gated, we don't want the URL
+ * or its first-name title sitting in search results, so force a noindex robots
+ * directive. Uses the core wp_robots filter; if a future SEO-plugin config
+ * overrides it, mirror the noindex on these pages in AIOSEO too.
+ */
+add_filter( 'wp_robots', function ( $robots ) {
+	if ( is_page( array( 'patience', 'daniel', 'faith' ) ) ) {
+		$robots['noindex'] = true;
+		$robots['follow']  = true;
+		unset( $robots['index'] );
+	}
+	return $robots;
+} );
+
+/**
  * Theme setup: register features the theme supports.
  * Runs once, after Astra's own after_setup_theme.
  */
