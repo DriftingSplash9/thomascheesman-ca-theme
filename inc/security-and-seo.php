@@ -188,6 +188,10 @@ function tc_render_person_schema() {
         '@id'          => home_url( '/#thomas' ),
         'name'         => 'Thomas Cheesman',
         'url'          => home_url( '/' ),
+        // Audit AEO-1: portrait for the knowledge-graph card. Bare stem (no
+        // -e<digits> edited-thumbnail suffix — that variant can 404 on
+        // Hostinger; the stem is the durable URL).
+        'image'        => home_url( '/wp-content/uploads/2026/04/329522544_2994549090848961_1632327471623159622_n.jpg' ),
         'jobTitle'     => 'Builder, writer, rare-disease advocate',
         'description'  => 'Former chef. Father of three. Lives with Hajdu-Cheney Syndrome. Builds personal sites and writes about rare disease through Bare Your Rare.',
         'homeLocation' => array(
