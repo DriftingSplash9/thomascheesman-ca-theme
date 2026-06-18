@@ -257,32 +257,6 @@ get_header(); ?>
                 </a>
             </p>
 
-            <?php tc_render_family_links( 'faith' ); ?>
-
-            <?php if ( tc_user_is_family() ) : ?>
-                <?php
-                // Photo wall — Faith. GATED to signed-in family
-                // (inc/family-login.php). 219 photos from inc/gallery-faith.php;
-                // restored from git 629dd99 behind the family login. The 3 photos
-                // tagged 2016 are pre-natal, folded into Year One.
-                $faith_items = require get_stylesheet_directory() . '/inc/gallery-faith.php';
-                tc_render_photo_gallery(
-                    $faith_items,
-                    array(
-                        array( 'label' => 'Year One — 2016–2017',     'years' => array( 2016, 2017 ) ),
-                        array( 'label' => 'Toddler Years — 2018',     'years' => array( 2018 ) ),
-                        array( 'label' => 'Little Person — 2019–2020', 'years' => array( 2019, 2020 ) ),
-                        array( 'label' => 'The Pandemic Years — 2021–2022', 'years' => array( 2021, 2022 ) ),
-                        array( 'label' => 'Schoolgirl Begins — 2023–2024', 'years' => array( 2023, 2024 ) ),
-                        array( 'label' => 'Today — 2025–2026',         'years' => array( 2025, 2026 ) ),
-                    ),
-                    'Faith'
-                );
-                ?>
-            <?php else : ?>
-                <?php tc_render_family_gate_notice( 'Faith' ); ?>
-            <?php endif; ?>
-
             <!-- Home videos — playable .mp4 uploads (WP media, 2026/06).
                  Re-encoded from .mov (HEVC/VP9) to web-optimized H.264 +
                  faststart so they play in desktop Chrome, not just iOS. -->
@@ -304,7 +278,29 @@ get_header(); ?>
                 </div>
             </section>
 
+            <?php
+            // Photo wall — Faith. (Whole page is already gated to family
+            // above — OD-1.) 219 photos from inc/gallery-faith.php (restored
+            // from git 629dd99). The 3 photos tagged 2016 are pre-natal, folded
+            // into Year One. Renders as a peek-behind-cover wall.
+            $faith_items = require get_stylesheet_directory() . '/inc/gallery-faith.php';
+            tc_render_photo_gallery(
+                $faith_items,
+                array(
+                    array( 'label' => 'Year One — 2016–2017',     'years' => array( 2016, 2017 ) ),
+                    array( 'label' => 'Toddler Years — 2018',     'years' => array( 2018 ) ),
+                    array( 'label' => 'Little Person — 2019–2020', 'years' => array( 2019, 2020 ) ),
+                    array( 'label' => 'The Pandemic Years — 2021–2022', 'years' => array( 2021, 2022 ) ),
+                    array( 'label' => 'Schoolgirl Begins — 2023–2024', 'years' => array( 2023, 2024 ) ),
+                    array( 'label' => 'Today — 2025–2026',         'years' => array( 2025, 2026 ) ),
+                ),
+                'Faith'
+            );
+            ?>
+
             <?php comments_template(); // family-tier comments — see inc/comments.php ?>
+
+            <?php tc_render_family_links( 'faith' ); ?>
 
         <?php else : // OD-1/PRIV-1 page gate ?>
 

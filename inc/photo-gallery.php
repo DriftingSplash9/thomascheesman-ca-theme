@@ -235,10 +235,47 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
             : __( 'The photo wall', 'tc-ventures-child' );
 
         echo '<button type="button" class="tc-photo-gallery__cover" aria-expanded="false">';
+
+        // Peek — a teaser strip of the first few photos so the wall isn't a
+        // blind door. Only these few thumbnails load now (small candidates);
+        // the rest stay deferred in the <template>. The peek lives INSIDE the
+        // button, so initDeferredGalleries()'s cover.remove() clears it on open
+        // (no JS change needed). Videos are skipped — stills make better teasers.
+        $peek = array();
+        foreach ( $normalised as $entry ) {
+            if ( ! preg_match( '/\.(mp4|webm|mov|m4v|ogg|ogv)(\?|#|$)/i', $entry['url'] ) ) {
+                $peek[] = $entry;
+            }
+            if ( count( $peek ) >= 6 ) {
+                break;
+            }
+        }
+        if ( $peek ) {
+            echo '<span class="tc-photo-gallery__peek" aria-hidden="true">';
+            foreach ( $peek as $pk ) {
+                $pk_resp = '';
+                $pk_att  = tc_gallery_attachment_id( $pk['url'] );
+                if ( $pk_att ) {
+                    $pk_ss = wp_get_attachment_image_srcset( $pk_att, 'medium' );
+                    if ( $pk_ss ) {
+                        $pk_resp = sprintf( ' srcset="%s" sizes="180px"', esc_attr( $pk_ss ) );
+                    }
+                }
+                printf(
+                    '<img src="%1$s" alt="" loading="eager" decoding="async"%2$s />',
+                    esc_url( $pk['url'] ),
+                    $pk_resp
+                );
+            }
+            echo '</span>';
+        }
+
+        echo '<span class="tc-photo-gallery__cover-bar">';
         echo '<span class="tc-photo-gallery__cover-icon" aria-hidden="true">&#10064;</span>';
         echo '<span class="tc-photo-gallery__cover-text">';
         echo '<span class="tc-photo-gallery__cover-title">' . esc_html( $cover_label ) . '</span>';
-        echo '<span class="tc-photo-gallery__cover-meta">' . wp_kses( $meta, array() ) . ' &middot; ' . esc_html__( 'click to open', 'tc-ventures-child' ) . '</span>';
+        echo '<span class="tc-photo-gallery__cover-meta">' . wp_kses( $meta, array() ) . ' &middot; ' . esc_html__( 'see them all', 'tc-ventures-child' ) . '</span>';
+        echo '</span>';
         echo '</span>';
         echo '</button>';
         echo '<template class="tc-photo-gallery__tpl">';

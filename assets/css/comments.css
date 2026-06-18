@@ -199,22 +199,38 @@
     resize: vertical;
 }
 
-.form-submit .submit,
-.tc-comments__form .submit {
+/* Astra ships a #submit ID rule whose specificity beats a plain class,
+   which left the button text invisible. Prefix with the #comments id so
+   our styling reliably wins. */
+#comments .form-submit .submit,
+#comments .tc-comments__form .submit,
+#comments input#submit,
+#comments button#submit {
     appearance: none;
+    -webkit-appearance: none;
     cursor: pointer;
-    padding: 0.7rem 1.5rem;
+    display: inline-block;
+    width: auto;
+    padding: 0.7rem 1.6rem;
     font: inherit;
-    font-weight: 600;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
     color: #06121a;
     background: var(--primary-color);
     border: 1px solid var(--secondary-color);
     border-radius: 999px;
+    text-transform: none;
     transition: var(--transition);
 }
 
-.form-submit .submit:hover,
-.form-submit .submit:focus {
+#comments .form-submit .submit:hover,
+#comments .form-submit .submit:focus,
+#comments input#submit:hover,
+#comments input#submit:focus,
+#comments button#submit:hover,
+#comments button#submit:focus {
+    color: #06121a;
     background: var(--secondary-color);
     box-shadow: var(--shadow-md);
 }

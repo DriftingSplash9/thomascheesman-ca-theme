@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.604
+Version: 1.0.605
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -5066,12 +5066,12 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
    slideshow button, scaled up to a full-width invitation. */
 .tc-photo-gallery__cover {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
     width: min(46rem, 92vw);
     margin: 1.5rem auto 1rem;
-    padding: 1.35rem 2rem;
+    padding: 0.85rem 0.85rem 1.05rem;
     background: rgba(176, 140, 74, 0.08);
     border: 1px dashed rgba(176, 140, 74, 0.5);
     border-radius: 14px;
@@ -5091,6 +5091,31 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(176, 140, 74, 0.2);
     outline: none;
+}
+/* Peek — a clipped strip of the first few photos. Each thumb keeps its
+   natural aspect (height-constrained, width auto — never cropped, per the
+   no-cover rule); the row is clipped at the edge and fades out to signal
+   "there's more behind the door". */
+.tc-photo-gallery__peek {
+    display: flex;
+    gap: 4px;
+    height: 108px;
+    overflow: hidden;
+    border-radius: 10px;
+    -webkit-mask-image: linear-gradient(to right, #000 80%, transparent);
+    mask-image: linear-gradient(to right, #000 80%, transparent);
+}
+.tc-photo-gallery__peek img {
+    height: 100%;
+    width: auto;
+    display: block;
+    border-radius: 6px;
+}
+.tc-photo-gallery__cover-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
 }
 .tc-photo-gallery__cover-icon {
     font-size: 1.6rem;

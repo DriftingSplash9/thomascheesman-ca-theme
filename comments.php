@@ -28,19 +28,19 @@ $tc_count = get_comments_number();
 
 <section id="comments" class="tc-comments tc-comments--<?php echo esc_attr( $tc_tier ); ?>">
 
-	<h2 class="tc-comments__title">
-		<?php
-		if ( $tc_count > 0 ) {
+	<?php // Only a heading when there ARE notes — otherwise the form's own
+	      // "Leave a note" title is the heading (avoids a double title). ?>
+	<?php if ( have_comments() ) : ?>
+		<h2 class="tc-comments__title">
+			<?php
 			printf(
 				/* translators: %s: comment count */
 				esc_html( _n( '%s note', '%s notes', $tc_count, 'tc-ventures-child' ) ),
 				esc_html( number_format_i18n( $tc_count ) )
 			);
-		} else {
-			esc_html_e( 'Leave a note', 'tc-ventures-child' );
-		}
-		?>
-	</h2>
+			?>
+		</h2>
+	<?php endif; ?>
 
 	<?php if ( 'family' === $tc_tier ) : ?>
 		<p class="tc-comments__scope tc-comments__scope--family">
