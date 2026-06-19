@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.621
+Version: 1.0.622
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3651,13 +3651,24 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
    readable on both light and dark backdrops. */
 a:focus-visible,
 button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
 summary:focus-visible,
 [tabindex]:focus-visible,
 [role="button"]:focus-visible,
 [role="link"]:focus-visible {
+    outline: 2px solid #f4b740;
+    outline-offset: 3px;
+    border-radius: 3px;
+    /* Warm amber glow on the focused text so the indicator reads as lit,
+       not flat — matches the site's glow language (capsule, candle-flame
+       headings). The outline stays as the accessible, always-visible
+       anchor; the glow is the depth on top. */
+    text-shadow: 0 0 10px rgba(244, 183, 64, 0.9), 0 0 3px rgba(244, 183, 64, 0.6);
+}
+/* Form fields: outline only — a glowing placeholder/value reads as a
+   bug, not a focus cue. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
     outline: 2px solid #f4b740;
     outline-offset: 3px;
     border-radius: 2px;
