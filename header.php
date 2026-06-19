@@ -26,19 +26,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="profile" href="https://gmpg.org/xfn/11">
 
-    <?php /* Preconnect hints for the four third-party origins we hit
-       early in the page lifecycle. The browser opens TCP + TLS in
-       parallel with HTML parsing, so by the time the corresponding
-       <link rel=stylesheet> / <script src> tags are encountered the
-       connection is warm. Saves ~100-200 ms of DNS+TLS on cold cache
-       per origin.
+    <?php /* Preconnect hints for the CDN origins we hit early in the page
+       lifecycle. The browser opens TCP + TLS in parallel with HTML
+       parsing, so by the time the corresponding <script src> tags are
+       encountered the connection is warm. Saves ~100-200 ms of DNS+TLS
+       on cold cache per origin. Both serve scripts CORS, so `crossorigin`.
 
-       fonts.gstatic.com needs `crossorigin` because font files are
-       always CORS-fetched; cdnjs + unpkg also serve scripts CORS so
-       same treatment. fonts.googleapis.com serves CSS without CORS
-       so no crossorigin attr. */ ?>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+       The Google Fonts origins (fonts.googleapis.com / fonts.gstatic.com)
+       are gone: the display fonts are self-hosted from the theme now
+       (PERF-1, assets/fonts/ + assets/css/fonts.css). */ ?>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
 

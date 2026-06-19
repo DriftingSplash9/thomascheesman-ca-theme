@@ -65,34 +65,26 @@ function tc_ventures_enqueue_scripts() {
         wp_get_theme()->get( 'Version' )
     );
 
-    // Child-theme Google Fonts — Italiana + Fraunces + Caveat.
+    // Child-theme display fonts — Italiana + Fraunces + Caveat, SELF-HOSTED
+    // (PERF-1). The woff2 files live in assets/fonts/ and the @font-face
+    // rules (font-display:swap) in assets/css/fonts.css.
     //
-    //   Italiana (400)     — Didone display serif used by the lightbox
-    //                        counter ("01 / 06").
-    //   Fraunces (var)     — variable serif used by the footer marquee.
-    //                        Two axes: wght 300..900 drives the per-
-    //                        character "breathing" at the marquee edges,
-    //                        opsz 9..144 keeps display sizes from looking
-    //                        thin. Google serves a single variable file
-    //                        covering both ranges.
-    //   Caveat (400, 600)  — handwritten font used by the desk-menu hover
-    //                        cards (small attribution slips that fade in
-    //                        on hotspot hover).
+    //   Italiana (400)     — Didone display serif (lightbox counter "01 / 06").
+    //   Fraunces (var)     — variable serif (footer marquee "breathing");
+    //                        opsz 9..144 + wght 300..900 in one woff2/subset.
+    //   Caveat (var)       — handwritten font (desk-menu hover slips); the
+    //                        variable woff2 covers the 400 + 600 it's used at.
     //
-    // Combined into a single Google Fonts request — Google supports
-    // multiple `family=` params per CSS URL — so the browser opens one
-    // TLS connection to fonts.googleapis.com instead of three. Saves
-    // 2 RTTs on cold cache (was tc-italiana + tc-fraunces + tc-caveat).
-    // The corresponding preconnect hints live in header.php.
+    // Self-hosting removes the render-blocking fonts.googleapis.com request +
+    // the fonts.gstatic.com cross-origin handshake (preconnects dropped in
+    // header.php), and drops a third-party dependency — matching the site's
+    // no-tracking stance. Handle kept first in the chain so dependents
+    // (desk-drawer, capybara) still order after it.
     wp_enqueue_style(
-        'tc-google-fonts',
-        'https://fonts.googleapis.com/css2'
-            . '?family=Italiana'
-            . '&family=Fraunces:opsz,wght@9..144,300..900'
-            . '&family=Caveat:wght@400;600'
-            . '&display=swap',
+        'tc-fonts',
+        get_stylesheet_directory_uri() . '/assets/css/fonts.css',
         array(),
-        null
+        wp_get_theme()->get( 'Version' )
     );
 
     // Desk menu — the BHAG navigation surface. Loaded site-wide; the
@@ -257,7 +249,7 @@ function tc_ventures_enqueue_scripts() {
     wp_enqueue_style(
         'tc-desk-drawer',
         get_stylesheet_directory_uri() . '/assets/css/desk-drawer.css',
-        array( 'astra-child-style', 'tc-google-fonts' ),
+        array( 'astra-child-style', 'tc-fonts' ),
         wp_get_theme()->get( 'Version' )
     );
     wp_enqueue_style(
@@ -533,7 +525,7 @@ function tc_ventures_enqueue_scripts() {
         wp_enqueue_style(
             'tc-capybara',
             get_stylesheet_directory_uri() . '/assets/css/capybara.css',
-            array( 'astra-child-style', 'tc-google-fonts' ),
+            array( 'astra-child-style', 'tc-fonts' ),
             $tc_ver
         );
         wp_enqueue_script(
