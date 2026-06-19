@@ -1150,8 +1150,10 @@ html.tc-desk-open .tc-desk__toc{
         border-bottom: 1px solid #f6f1e322;
     }
     .tc-desk__mobile-list a:hover,
-    .tc-desk__mobile-list a:focus{
+    .tc-desk__mobile-list a:focus-visible{
         color: #fff;
+        background: rgba(244, 183, 64, 0.16);
+        border-radius: 6px;
     }
     .tc-desk__mobile-meta{
         display: grid;

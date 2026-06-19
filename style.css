@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.620
+Version: 1.0.621
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -3639,15 +3639,25 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 }
 
 
-/* Sitewide focus-visible default. :where() drops specificity to 0 so
-   any component-specific :focus-visible rule (capsule trigger, weather
-   pill, desk-menu buttons, etc.) wins without !important wars. Catches
-   any focusable element that didn't have a tuned focus style — pillar-
-   card links, footer compartment links, gallery slideshow controls when
-   in fullscreen, the rot13 click-to-copy email card on /contact, and
-   future surfaces. Amber outline matches the brand accent and stays
-   readable against both light and dark backdrops. */
-:where(*:focus-visible) {
+/* Sitewide keyboard focus indicator (WCAG 2.4.7 Focus Visible).
+   Targets real interactive elements so it carries enough specificity
+   (0,1,1 / 0,2,0) to BEAT the Astra parent theme's link-focus resets.
+   The previous version wrapped this in :where() — which drops specificity
+   to 0 — and it silently lost on plain links: the plain menu, the drawer
+   cards, and pillar/footer links all showed NO focus ring at all when
+   tabbing (audited 2026-06-19). This still sits BELOW the component-tuned
+   .class:focus-visible rules (capsule, .tc-btn, gallery, etc.), so those
+   keep their own custom glow. Amber matches the brand accent and stays
+   readable on both light and dark backdrops. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible,
+[role="link"]:focus-visible {
     outline: 2px solid #f4b740;
     outline-offset: 3px;
     border-radius: 2px;
