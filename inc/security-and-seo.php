@@ -236,37 +236,3 @@ function tc_render_person_schema() {
     echo '</script>' . "\n";
 }
 add_action( 'wp_head', 'tc_render_person_schema', 30 );
-
-
-/**
- * Replace the robots.txt Sitemap reference with WordPress's canonical
- * wp-sitemap.xml.
- *
- * Current state: AIOSEO injects `Sitemap: https://.../sitemap.xml`,
- * which 302-redirects to wp-sitemap.xml. Crawlers follow the redirect,
- * but giving them the final URL up-front is cleaner and avoids the
- * appearance of a redirect chain in SEO audits.
- *
- * If AIOSEO is serving its own robots.txt (rather than letting WP
- * generate it and filtering through robots_txt), this filter is a
- * no-op — confirm with `curl https://thomascheesman.ca/robots.txt`
- * after deploy. If our line doesn't appear, the same change can be
- * made in AIOSEO → Tools → Robots.txt Editor.
- *
- * @param string $output The existing robots.txt body.
- * @param bool   $public Whether the site is set to public.
- */
-function tc_fix_robots_sitemap( $output, $public ) {
-    if ( ! $public ) {
-        return $output;
-    }
-    // Strip any existing Sitemap: lines so we don't end up with both
-    // the legacy /sitemap.xml AND the canonical wp-sitemap.xml.
-    $output = preg_replace( '/^Sitemap:.*$/mi', '', $output );
-    // Tidy up the run of blank lines preg_replace left behind, then
-    // append our canonical reference.
-    $output = preg_replace( "/\n{3,}/", "\n\n", $output );
-    $output = rtrim( $output ) . "\n\nSitemap: " . home_url( '/wp-sitemap.xml' ) . "\n";
-    return $output;
-}
-add_filter( 'robots_txt', 'tc_fix_robots_sitemap', 99, 2 );
