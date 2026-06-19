@@ -166,6 +166,29 @@ get_header();
             </div>
 
             <?php
+            // TRUST-1: a "last updated" colophon closing the story. Sourced from
+            // get_the_modified_date() — the SAME value the Article JSON-LD reports
+            // as dateModified (functions.php) — so the visible date and the
+            // structured data can never disagree. To refresh it, re-save the
+            // page in wp-admin (the prose lives in a theme include, so a file
+            // edit alone won't bump the WP modified date).
+            $lr_post    = get_queried_object();
+            $lr_upd_iso = $lr_post ? get_the_modified_date( 'c', $lr_post ) : '';
+            $lr_upd_txt = $lr_post ? get_the_modified_date( get_option( 'date_format' ) ? get_option( 'date_format' ) : 'F j, Y', $lr_post ) : '';
+            if ( $lr_upd_iso && $lr_upd_txt ) :
+            ?>
+                <p class="heritage-longread__updated">
+                    <?php
+                    printf(
+                        /* translators: %s: the date this story was last updated. */
+                        esc_html__( 'Last updated %s', 'tc-ventures-child' ),
+                        '<time datetime="' . esc_attr( $lr_upd_iso ) . '">' . esc_html( $lr_upd_txt ) . '</time>'
+                    );
+                    ?>
+                </p>
+            <?php endif; ?>
+
+            <?php
             // Book-quality PDF of this line — renders only once the file is in
             // Media (keepsake-<slug>.pdf). See inc/keepsake-download.php.
             if ( function_exists( 'tc_render_keepsake_download' ) ) {
