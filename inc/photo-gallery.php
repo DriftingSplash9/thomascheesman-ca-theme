@@ -124,6 +124,65 @@ function tc_gallery_attachment_id( string $url ) : int {
     return $id;
 }
 
+/**
+ * Responsive <img> for the hard-coded essay figures on /about + /hcs.
+ *
+ * Those pages inline media-library URLs in a plain <img src> tag, which
+ * bypasses WordPress's responsive-image system — so the browser fetched
+ * the full-size original for a figure that displays at <=320px (floated
+ * .about-figure--left/right) or <=480px (.about-hero-figure). PERF-3
+ * measured ~244 KB of waste on /hcs from exactly this.
+ *
+ * This resolves the URL to its attachment (reusing the gallery's cached
+ * lookup) and emits srcset + sizes + intrinsic width/height so the
+ * browser picks a right-sized candidate, while data-tc-full* hands the
+ * lightbox the real full file (see tcWrapImgForLightbox in main.js).
+ * When the URL has no library attachment (external, deleted, or an
+ * -e<digits> edited thumbnail), it degrades to the same plain <img> the
+ * template emitted before — so nothing breaks.
+ *
+ * @param string $url     Media-library file URL (as hard-coded in the page).
+ * @param string $alt     Alt text.
+ * @param string $sizes   CSS `sizes` hint for the figure's displayed width.
+ * @param string $loading 'lazy' (default) or 'eager'.
+ */
+function tc_fig_img( string $url, string $alt, string $sizes = '', string $loading = 'lazy' ) : void {
+    if ( '' === $url ) {
+        return;
+    }
+
+    $att   = tc_gallery_attachment_id( $url );
+    $extra = '';
+
+    if ( $att ) {
+        $srcset = $sizes ? wp_get_attachment_image_srcset( $att, 'full' ) : '';
+        if ( $srcset ) {
+            $extra .= sprintf( ' srcset="%s" sizes="%s"', esc_attr( $srcset ), esc_attr( $sizes ) );
+        }
+        $meta = wp_get_attachment_metadata( $att );
+        if ( ! empty( $meta['width'] ) && ! empty( $meta['height'] ) ) {
+            // Intrinsic dims reserve space (CLS) and, with srcset, give
+            // the lightbox the true full-size dimensions to open against.
+            $extra .= sprintf(
+                ' width="%d" height="%d" data-tc-full="%s" data-tc-fullw="%d" data-tc-fullh="%d"',
+                (int) $meta['width'],
+                (int) $meta['height'],
+                esc_url( $url ),
+                (int) $meta['width'],
+                (int) $meta['height']
+            );
+        }
+    }
+
+    printf(
+        '<img src="%1$s" alt="%2$s" loading="%3$s" decoding="async"%4$s />',
+        esc_url( $url ),
+        esc_attr( $alt ),
+        esc_attr( $loading ),
+        $extra
+    );
+}
+
 function tc_render_photo_gallery( array $items, array $sections = array(), string $alt_prefix = 'Photo' ) : void {
     if ( empty( $items ) ) {
         return;

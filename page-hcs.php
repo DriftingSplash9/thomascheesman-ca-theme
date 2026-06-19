@@ -48,11 +48,12 @@ get_header(); ?>
     <section class="hcs-hero-figure-section">
         <div class="container container--narrow">
             <figure class="about-hero-figure">
-                <img
-                    src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/day-after-surgert.jpg' ) ); ?>"
-                    alt="<?php esc_attr_e( 'In a halo brace after cervical spinal fusion, July 2022', 'tc-ventures-child' ); ?>"
-                    loading="eager"
-                />
+                <?php tc_fig_img(
+                    home_url( '/wp-content/uploads/2026/04/day-after-surgert.jpg' ),
+                    __( 'In a halo brace after cervical spinal fusion, July 2022', 'tc-ventures-child' ),
+                    '(max-width: 520px) calc(100vw - 40px), 480px',
+                    'eager'
+                ); ?>
                 <figcaption>After the cervical fusion, July 2022.</figcaption>
             </figure>
         </div>
@@ -70,11 +71,11 @@ get_header(); ?>
                 <h2 class="about-section__heading">The plain-English version</h2>
 
                 <figure class="about-figure about-figure--right">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/Capture.png' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Autosomal dominant inheritance pattern diagram', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/Capture.png' ),
+                        __( 'Autosomal dominant inheritance pattern diagram', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>Autosomal dominant inheritance &mdash; one parent, one-in-two odds per pregnancy.</figcaption>
                 </figure>
 
@@ -98,22 +99,22 @@ get_header(); ?>
                 <p>My case is unusual in one important way. I have been tested twice for the known NOTCH2 mutations that cause HCS in most people, and both times the test came back clean. I do not carry a recognized pathogenic variant. My diagnosis is clinical &mdash; confirmed on the way my body has built itself, not on a line of code in my genome. That makes me a footnote in my own disease. Most published case studies are children or middle-aged adults with a confirmed mutation; I am forty-five, with the phenotype of a textbook case and the genotype of someone the textbook hasn't met yet.</p>
 
                 <figure class="about-figure about-figure--left">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/hands-and-xray-scaled.png' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Hands beside an X-ray showing acro-osteolysis at the fingertips', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/hands-and-xray-scaled.png' ),
+                        __( 'Hands beside an X-ray showing acro-osteolysis at the fingertips', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>Acro-osteolysis: the tips of the fingers, dissolved.</figcaption>
                 </figure>
 
                 <p>My version, in fast-forward: childhood pneumonias every other year, growing up on farms doing the manual labour the other kids did. A neck injury before I can remember limited my range of motion turning my head. I was injured once at a chiropractor. A basketball injury at fifteen that knocked my neck into permanent slightly more reduced range. A culinary career &mdash; The Keg, SAIT, then Ric's Grill, then Township 71, then teaching at GPRC, then Majors Homestyle. Twenty years of bisphosphonates starting in 2004. A neck DVT in 2017 because I have no clavicles and pinched a vein closed in my sleep. A sledding accident in January 2022 that nearly finished off what was left of the alignment in my upper spine. A couple accidents playing with kids finished it off leading to a cervical fusion in July 2022 that runs from the base of my skull to my T3 &mdash; three rods, twelve plates, forty-odd screws, donor bone, and enough bone glue for three people. I weigh 98 pounds today. My BMI is 13.6. The right condyle of my jaw is gone; the left is partially eroded.</p>
 
                 <figure class="about-figure about-figure--right">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/10_AX_T1_low_through_mandible.png' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Axial T1 MRI through the mandible showing cervical fusion hardware', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/10_AX_T1_low_through_mandible.png' ),
+                        __( 'Axial T1 MRI through the mandible showing cervical fusion hardware', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>Three rods, twelve plates, forty-odd screws.</figcaption>
                 </figure>
 
@@ -133,11 +134,11 @@ get_header(); ?>
                 <h2 class="about-section__heading">What I lost</h2>
 
                 <figure class="about-figure about-figure--left">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/me-in-the-sait-kitchen.jpg' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Thomas in the SAIT culinary kitchen, apprentice years', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/me-in-the-sait-kitchen.jpg' ),
+                        __( 'Thomas in the SAIT culinary kitchen, apprentice years', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>The kitchen at SAIT, apprentice years.</figcaption>
                 </figure>
 
@@ -146,33 +147,33 @@ get_header(); ?>
                 <p>I ran Township 71 after shutting down Ric's Grill. At the same time all this was going on I taught the cooking part of the Hospitality and Tourism Diploma at the college up here in Grande Prairie. The last full kitchen I ran was Majors Homestyle and Tractor Jack's. By 2018 I couldn't sustain eight let alone twelve hours on the line with a thirty-pound stockpot and a 50lb box of potatoes. Standing and walking twelve miles a day across an eight-to-sixteen-hour shift was no joy. I knew before everyone around me that the kitchen was going to lose this argument. I'm grateful I left on my own terms. I am also still angry about it some days, I felt like I had years left in me and I did not intend to let my family down the way I did. I should have left years before so that I would have the gas left for my new family. Even today I am torn between not wanting to overdo it and at the same time there is a lot of guilt for not helping more with housework and chores. I wish to rest my feet as much as possible because no matter what I do they ache every day. I wake at 5am and they ache, I think about going to Walmart or the Superstore or the Mall and they yell &ldquo;NOOOOOOOO!&rdquo; at me before we even go.</p>
 
                 <figure class="about-figure about-figure--right">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/foot-3.jpg' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Foot showing a bone spike on the underside', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/foot-3.jpg' ),
+                        __( 'Foot showing a bone spike on the underside', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>A bone spike, on the bottom of the foot.</figcaption>
                 </figure>
 
                 <p>The hands took the kitchen. After the hands, slower losses, the kind that don't have one moment to point at. Both wrists that won't bend backwards. Shoulders that won't lift above my head. A left thumb dislocated in a few places. A right hand more degenerated than the left, but the left compensated by losing a ring finger to partial dislocation. Most of my fingertips are dissolved or gone. There were bone spikes growing on the bottom of my feet. Both feet have very little up-and-down rocking left. The arches are inverted.</p>
 
                 <figure class="about-figure about-figure--left">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/img_0288-e1760286860822.webp' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Both hands showing acro-osteolysis at the fingertips', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/img_0288-e1760286860822.webp' ),
+                        __( 'Both hands showing acro-osteolysis at the fingertips', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>Both hands, today.</figcaption>
                 </figure>
 
                 <p>The current ledger, since you asked. My ribs hurt &mdash; the right back ribs especially, where they don't unite cleanly anymore, and the front ones that have started to feel like they're pressing in on the lung. That is not a cool feeling. My back hurts at T8/9, where there's a wedge fracture and a big osteophyte that doesn't care what chair I'm sitting in. My right shoulder is in a queue for an ultrasound to be booked; I've been waiting for that call since mid-February. The bone scan I'm waiting for has been in the same queue since the same week. I need iron levels checked, a fluoroscopy, a colonoscopy. I have nocturnal bowel movements I'm not used to having, and the occasional accident I'm even less used to. The ribs and the back wake me up at night. I tried six weeks of low-FODMAP and got about ten percent of my gut back, which is something but is not enough to claim victory. I had a cortisone shot in a finger that made the pain worse for two weeks; the same finger turned out to have an infection in the tip; the nail was surgically cut off; two rounds of antibiotics; the nail is growing back; it still bothers me. I am thinking about going back on oxycodone, which is the kind of decision that is difficult to make, seldom is there a way back when one is degenerative like this. I think it is common when someone's back is in rough shape.</p>
 
                 <figure class="about-figure about-figure--right">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/osteolysis-of-jaw-bones.webp' ) ); ?>"
-                        alt="<?php esc_attr_e( 'CT scan showing osteolysis of the jaw bones', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/osteolysis-of-jaw-bones.webp' ),
+                        __( 'CT scan showing osteolysis of the jaw bones', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>Osteolysis of the jaw bones.</figcaption>
                 </figure>
 
@@ -191,11 +192,11 @@ get_header(); ?>
                 <p>The biggest thing HCS gave me is time. Not extra time &mdash; there is no extra of anything when your spine is fused and your weight is dropping. Time back. The hours a chef spends on a line are not yours. They are the kitchen's. When the kitchen took itself off the table, those hours came back. I have used them poorly some days and well most days, and the well days have produced more than I would have predicted.</p>
 
                 <figure class="about-figure about-figure--right">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/family-by-river.jpg' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Thomas with the three kids', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/family-by-river.jpg' ),
+                        __( 'Thomas with the three kids', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>The kids. Daniel, Patience, Faith.</figcaption>
                 </figure>
 
@@ -218,11 +219,11 @@ get_header(); ?>
                 <h2 class="about-section__heading">The genetic question</h2>
 
                 <figure class="about-figure about-figure--right">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/fall-leaves-scaled.jpg' ) ); ?>"
-                        alt="<?php esc_attr_e( 'The three kids together', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2024/08/fall-leaves-scaled.jpg' ),
+                        __( 'The three kids together', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                 </figure>
 
                 <p>When Melanie and I decided to have children, we knew the math. HCS is autosomal dominant &mdash; fifty percent. Each pregnancy was a coin flip, and we flipped it three times, knowing.</p>
@@ -244,11 +245,11 @@ get_header(); ?>
                 <h2 class="about-section__heading">What I wish I had known</h2>
 
                 <figure class="about-figure about-figure--left">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/day-after-surgert.jpg' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Day after the cervical spinal fusion, July 2022', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/day-after-surgert.jpg' ),
+                        __( 'Day after the cervical spinal fusion, July 2022', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>Day after the fusion.</figcaption>
                 </figure>
 
@@ -259,11 +260,11 @@ get_header(); ?>
                 <p>Photograph and back up every page of your medical paperwork. The same documents will be asked for again at every appeal, every program transition, every specialist intake. The first copy you make is the easiest. Make three. If you worked there is your disability pension, provincial/state benefits, some municipal benefits though they only require income statements. If you have a rare condition and do your own research your files are very helpful.</p>
 
                 <figure class="about-figure about-figure--right">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/14_SAG_MEDIC_RIGHT_bone_detail.png' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Sagittal MRI showing erosion of the right jaw condyle', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/14_SAG_MEDIC_RIGHT_bone_detail.png' ),
+                        __( 'Sagittal MRI showing erosion of the right jaw condyle', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>TMJ MRI, right side &mdash; the condyle is gone.</figcaption>
                 </figure>
 
@@ -276,11 +277,11 @@ get_header(); ?>
                 <p>The "rapid reinstatement" rule is your safety net for trying work. If you leave AISH for employment and earnings later drop, you can be reinstated within two years without a fresh medical. Knowing that exists makes attempting work less terrifying. Most people don't know it exists.</p>
 
                 <figure class="about-figure about-figure--left">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/05/foot-4-2-e1778818711872.jpg' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Foot X-ray showing a broken surgical screw', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/05/foot-4-2-e1778818711872.jpg' ),
+                        __( 'Foot X-ray showing a broken surgical screw', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>A surgical screw, broken.</figcaption>
                 </figure>
 
@@ -302,11 +303,11 @@ get_header(); ?>
                 <p>This is the part of the page nobody else can write about my disease, because nobody else has been reading my disease from the inside for forty years.</p>
 
                 <figure class="about-figure about-figure--right">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/Signal_transduction_v1.png' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Notch signaling pathway diagram', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/Signal_transduction_v1.png' ),
+                        __( 'Notch signaling pathway diagram', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>The Notch signaling pathway &mdash; one of the oldest tools evolution has.</figcaption>
                 </figure>
 
@@ -319,11 +320,11 @@ get_header(); ?>
                 <p>NOTCH2's main partner ligand is JAG1 &mdash; Jagged1 &mdash; and JAG1 is the bridge between bone disease and blood disease. In bone marrow, Jagged1 helps decide whether stem cells stay quiet, divide, or commit to becoming red blood cells, white cells, or platelets. The same axis that is dialed too loud in my skeleton is also instructing my immune system. Most of us with HCS don't show dramatic blood phenotypes &mdash; but the link is there, and it is one reason I read my own bloodwork carefully.</p>
 
                 <figure class="about-figure about-figure--left">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/Pamidronate-and-HCS.png' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Bisphosphonate mechanism slowing osteoclast bone resorption', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/Pamidronate-and-HCS.png' ),
+                        __( 'Bisphosphonate mechanism slowing osteoclast bone resorption', 'tc-ventures-child' ),
+                        '(max-width: 768px) calc(100vw - 40px), 320px'
+                    ); ?>
                     <figcaption>Pamidronate slowing the demolition crew.</figcaption>
                 </figure>
 
@@ -342,11 +343,11 @@ get_header(); ?>
                 <h2 class="about-section__heading">What I write about now</h2>
 
                 <figure class="about-hero-figure">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/NORD_Journey_4.25.21-scaled-1.jpg' ) ); ?>"
-                        alt="<?php esc_attr_e( 'NORD infographic mapping the rare-disease patient journey', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/NORD_Journey_4.25.21-scaled-1.jpg' ),
+                        __( 'NORD infographic mapping the rare-disease patient journey', 'tc-ventures-child' ),
+                        '(max-width: 520px) calc(100vw - 40px), 480px'
+                    ); ?>
                     <figcaption>The patient&rsquo;s journey, mapped &mdash; NORD.</figcaption>
                 </figure>
 
@@ -427,11 +428,11 @@ get_header(); ?>
                  ====================================================== -->
             <section class="about-section about-section--closing scroll-animate">
                 <figure class="about-hero-figure about-hero-figure--small">
-                    <img
-                        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/329522544_2994549090848961_1632327471623159622_n.jpg' ) ); ?>"
-                        alt="<?php esc_attr_e( 'Recent portrait of Thomas Cheesman, post-recovery', 'tc-ventures-child' ); ?>"
-                        loading="lazy"
-                    />
+                    <?php tc_fig_img(
+                        home_url( '/wp-content/uploads/2026/04/329522544_2994549090848961_1632327471623159622_n.jpg' ),
+                        __( 'Recent portrait of Thomas Cheesman, post-recovery', 'tc-ventures-child' ),
+                        '(max-width: 360px) calc(100vw - 40px), 320px'
+                    ); ?>
                 </figure>
 
                 <p>There are a hundred of us documented in the medical literature. Less than fifty of us are still alive. If you are one of us, or you love one of us, or you treat one of us, or you've stumbled onto this page because something in your body is acting like something on this page &mdash; please know that you are not alone, and please consider reaching out &mdash; and if you'd rather find others who are actually living it, that's what I built <a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare</a> for.</p>
