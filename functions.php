@@ -23,6 +23,7 @@ require_once get_stylesheet_directory() . '/inc/keepsake-download.php';
 require_once get_stylesheet_directory() . '/inc/family-login.php';
 require_once get_stylesheet_directory() . '/inc/comments.php';
 require_once get_stylesheet_directory() . '/inc/seo-overrides.php';
+require_once get_stylesheet_directory() . '/inc/hcs-faq.php';
 
 /**
  * Enqueue parent and child theme styles and scripts.

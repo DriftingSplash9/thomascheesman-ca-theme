@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.615
+Version: 1.0.616
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -4539,6 +4539,60 @@ body:has(.person-spoke--faith)    { --webgl-tint: #EC4899; --webgl-accent: #FBCF
 
 .about-list li:last-child {
     margin-bottom: 0;
+}
+
+/* HCS FAQ (FAQPage schema + visible accordion) — see inc/hcs-faq.php.
+   Quick-reference Q&A appended to /hcs for newly-diagnosed searchers.
+   <details> accordion follows the long-read Notes pattern (rotating ▸
+   marker, hidden native marker); tinted to the site cyan since /hcs
+   carries no per-line colour. Links/paragraphs inherit .about-section. */
+.hcs-faq__list {
+    margin: 8px 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.hcs-faq__item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.hcs-faq__q {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6em;
+    padding: 1em 0;
+    font-size: clamp(1.05rem, 1.9vw, 1.22rem);
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--text-dark);
+    transition: color 0.2s ease;
+}
+.hcs-faq__q::-webkit-details-marker { display: none; }
+.hcs-faq__q::before {
+    content: "\25B8"; /* ▸ */
+    color: var(--primary-color);
+    font-size: 0.85em;
+    line-height: 1.55;
+    flex: 0 0 auto;
+    transition: transform 0.2s ease;
+}
+.hcs-faq__item[open] > .hcs-faq__q::before {
+    transform: rotate(90deg);
+}
+.hcs-faq__q:hover,
+.hcs-faq__q:focus-visible {
+    color: var(--primary-color);
+}
+.hcs-faq__a {
+    padding: 0 0 1.2em 1.7em;
+}
+.hcs-faq__a p {
+    font-size: clamp(1rem, 1.8vw, 1.08rem);
+    line-height: 1.7;
+    color: var(--text-medium);
+    margin: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+    .hcs-faq__q::before { transition: none; }
 }
 
 /* Contact directory on /contact — quiet two-column rows (channel

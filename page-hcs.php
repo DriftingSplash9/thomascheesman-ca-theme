@@ -363,6 +363,14 @@ get_header(); ?>
             </section>
 
             <!-- ======================================================
+                 SECTION 9.5 — Common questions (HCS FAQ)
+                 Quick-reference Q&A + FAQPage JSON-LD. Content + schema
+                 both come from inc/hcs-faq.php (single source of truth);
+                 every answer is distilled from the essay above.
+                 ====================================================== -->
+            <?php tc_render_hcs_faq(); ?>
+
+            <!-- ======================================================
                  SECTION 10 — Resources
                  Curated list. No figures.
                  ====================================================== -->
