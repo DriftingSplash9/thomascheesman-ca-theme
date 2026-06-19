@@ -227,7 +227,7 @@ function tc_render_family_gate_notice( $name = '', $context = 'album' ) {
 			<?php echo esc_html( $msg ); ?>
 			<?php echo esc_html( $sub ); ?>
 		</p>
-		<a class="family-gate__cta" href="<?php echo esc_url( tc_family_login_url() ); ?>">
+		<a class="family-gate__cta tc-btn" href="<?php echo esc_url( tc_family_login_url() ); ?>">
 			<?php esc_html_e( 'Family sign-in', 'tc-ventures-child' ); ?>
 			<span aria-hidden="true">&nbsp;&rarr;</span>
 		</a>
@@ -254,7 +254,7 @@ function tc_render_family_login_form() {
 			?>
 		</p>
 		<p class="family-login__actions">
-			<a class="family-gate__cta" href="<?php echo esc_url( home_url( '/family' ) ); ?>">
+			<a class="family-gate__cta tc-btn" href="<?php echo esc_url( home_url( '/family' ) ); ?>">
 				<?php esc_html_e( 'Go to the family pages', 'tc-ventures-child' ); ?> <span aria-hidden="true">&rarr;</span>
 			</a>
 			<a class="family-login__signout" href="<?php echo esc_url( wp_logout_url( home_url( '/' ) ) ); ?>">

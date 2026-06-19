@@ -286,7 +286,7 @@ function tc_render_photo_gallery( array $items, array $sections = array(), strin
     // small galleries stay quiet (clicking through them is fine).
     if ( count( $normalised ) >= 12 ) {
         echo '<div class="tc-photo-gallery__toolbar">';
-        echo '<button type="button" class="tc-photo-gallery__slideshow-btn" data-tc-autoplay-ms="4500">';
+        echo '<button type="button" class="tc-photo-gallery__slideshow-btn tc-btn" data-tc-autoplay-ms="4500">';
         echo '<span class="tc-photo-gallery__slideshow-icon" aria-hidden="true">&#9654;</span>';
         echo '<span class="tc-photo-gallery__slideshow-label">' . esc_html__( 'Play as slideshow', 'tc-ventures-child' ) . '</span>';
         echo '</button>';

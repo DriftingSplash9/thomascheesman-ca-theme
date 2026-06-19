@@ -101,7 +101,7 @@ function tc_render_keepsake_download( $slug, $label = '' ) {
 	}
 	?>
 	<p class="tc-pdf-download">
-		<a class="tc-pdf-download__link" href="<?php echo esc_url( $url ); ?>" download>
+		<a class="tc-pdf-download__link tc-btn" href="<?php echo esc_url( $url ); ?>" download>
 			<span class="tc-pdf-download__icon" aria-hidden="true">&#x2913;</span>
 			<span class="tc-pdf-download__text"><?php echo esc_html( $label ); ?></span>
 			<span class="tc-pdf-download__hint" aria-hidden="true">PDF</span>

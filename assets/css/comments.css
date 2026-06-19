@@ -199,14 +199,16 @@
     resize: vertical;
 }
 
-/* Outline pill that mirrors the header MENU trigger (.tc-capsule__trigger):
-   translucent cyan fill, a primary-tinted border, light uppercase label.
-   Scoped under #comments so it out-specifies Astra's #submit ID rule
-   (which otherwise left the label invisible). */
+/* The same gleam outline pill as the site-wide .tc-btn (style.css),
+   tinted to the page's --line-color (cyan fallback) so it matches the
+   other buttons on heritage long-reads + kid pages. Kept scoped under
+   #comments so it out-specifies Astra's #submit ID rule (which otherwise
+   left the label invisible — the reason this can't just use .tc-btn). */
 #comments .form-submit .submit,
 #comments .tc-comments__form .submit,
 #comments input#submit,
 #comments button#submit {
+    --btn-accent: var(--line-color, var(--primary-color));
     appearance: none;
     -webkit-appearance: none;
     cursor: pointer;
@@ -221,7 +223,7 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-dark);
-    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+    background: color-mix(in srgb, var(--btn-accent) 10%, transparent);
     /* No static border — the ::before paints the rotating gleam ring. */
     border: 0;
     border-radius: 999px;
@@ -247,12 +249,12 @@
     border-radius: inherit;
     background: conic-gradient(
         from var(--capsule-shine-angle, 0deg),
-        rgba(34, 211, 238, 0.25) 0deg,
-        rgba(34, 211, 238, 0.25) 240deg,
-        rgba(34, 211, 238, 0.55) 280deg,
-        rgba(229, 231, 245, 0.95) 300deg,
-        rgba(34, 211, 238, 0.55) 320deg,
-        rgba(34, 211, 238, 0.25) 360deg
+        color-mix(in srgb, var(--btn-accent) 25%, transparent) 0deg,
+        color-mix(in srgb, var(--btn-accent) 25%, transparent) 240deg,
+        color-mix(in srgb, var(--btn-accent) 55%, transparent) 280deg,
+        rgba(255, 255, 255, 0.92) 300deg,
+        color-mix(in srgb, var(--btn-accent) 55%, transparent) 320deg,
+        color-mix(in srgb, var(--btn-accent) 25%, transparent) 360deg
     );
     -webkit-mask:
         linear-gradient(#fff 0 0) content-box,
@@ -272,15 +274,15 @@
 #comments button#submit:hover,
 #comments button#submit:focus {
     color: #fff;
-    background: color-mix(in srgb, var(--primary-color) 22%, transparent);
+    background: color-mix(in srgb, var(--btn-accent) 22%, transparent);
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px color-mix(in srgb, var(--primary-color) 32%, transparent);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--btn-accent) 32%, transparent);
 }
 
 #comments .form-submit .submit:focus-visible,
 #comments input#submit:focus-visible,
 #comments button#submit:focus-visible {
-    outline: 2px solid var(--primary-color);
+    outline: 2px solid var(--btn-accent);
     outline-offset: 3px;
 }
 
