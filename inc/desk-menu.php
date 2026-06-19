@@ -186,6 +186,7 @@ function tc_render_desk_menu() {
                         class="tc-desk__search-input"
                         id="tc-desk-search-input"
                         name="s"
+                        aria-label="<?php esc_attr_e( 'Search the site', 'tc-ventures-child' ); ?>"
                         placeholder="<?php esc_attr_e( 'Looking for something?', 'tc-ventures-child' ); ?>"
                         autocomplete="off"
                         required
@@ -647,6 +648,7 @@ function tc_render_desk_menu() {
                                     data-games-entry-input
                                     maxlength="16"
                                     autocomplete="off"
+                                    aria-label="<?php esc_attr_e( 'Your name for the leaderboard', 'tc-ventures-child' ); ?>"
                                     placeholder="<?php esc_attr_e( 'name', 'tc-ventures-child' ); ?>"
                                 >
                                 <button type="submit" data-games-entry-submit>Submit</button>
