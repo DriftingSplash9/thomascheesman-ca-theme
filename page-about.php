@@ -49,7 +49,7 @@ $personal_host = preg_replace( '#^https?://#', '', home_url() );
                 </figure>
 
                 <p class="about-lead">
-                    Hi, I'm Thomas Cheesman. I cooked for a living for the better part of two decades, I apprenticed a couple chefs and even taught at the local college, though for the last and my only semester, and stopped when Hajdu-Cheney Syndrome made the line unbearable. I live in Grande Prairie, Alberta, with Melanie and our three kids &mdash; Daniel, Patience, and Faith. The rest of this page is where the threads come from.
+                    Hi, I'm Thomas Cheesman. I cooked for a living for the better part of two decades, I apprenticed a couple chefs and even taught at the local college, though for the last and my only semester, and stopped when Hajdu-Cheney Syndrome made the line unbearable. I live in Grande Prairie, Alberta, with Melanie and our three kids &mdash; Daniel, Patience, and Faith. The rest of this page is where the threads come from. There's also <a href="<?php echo esc_url( home_url( '/family/thomas' ) ); ?>">the long way round</a> &mdash; the full, first-person version of the whole story.
                 </p>
             </section>
 

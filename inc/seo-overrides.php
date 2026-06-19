@@ -175,11 +175,24 @@ add_action( 'wp_head', function () {
 		return;
 	}
 
+	// E-E-A-T at the point of citation: AI retrieval (RAG / query
+	// fan-out) often grabs a SINGLE essay URL in isolation, where the
+	// homepage Person node isn't present. So the author reference here
+	// carries the Experience/Expertise signal inline — description +
+	// knowsAbout mirror the fuller homepage Person (security-and-seo.php)
+	// so the two never contradict. All of it is stated on the pages.
 	$tc_person = array(
-		'@type' => 'Person',
-		'@id'   => home_url( '/#thomas' ),
-		'name'  => 'Thomas Cheesman',
-		'url'   => home_url( '/' ),
+		'@type'      => 'Person',
+		'@id'        => home_url( '/#thomas' ),
+		'name'       => 'Thomas Cheesman',
+		'url'        => home_url( '/' ),
+		'description' => 'Former chef. Father of three. Lives with Hajdu-Cheney Syndrome. Writes the family record and, through Bare Your Rare, about rare disease.',
+		'knowsAbout' => array(
+			'Hajdu-Cheney Syndrome',
+			'Rare diseases',
+			'Genealogy',
+			'Culinary arts',
+		),
 	);
 	$tc_headline = $tc_is_story
 		? trim( explode( '|', $tc_titles[ $tc_uri ] )[0] )
