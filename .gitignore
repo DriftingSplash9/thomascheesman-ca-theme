@@ -12,6 +12,12 @@ image-audit*.xlsx
 build-keepsake-pdfs.py
 keepsake-pdfs/
 
+# Preservation export (RISK-1) — local off-host mirror of the PUBLIC site
+# (HTML + media). Generator is stdlib-only; the ~100 MB output is for
+# off-host backup + the Internet Archive, never committed.
+build-site-archive.py
+site-archive/
+
 # Secret-bearing files that should never land in git. Belt-and-
 # suspenders: even if one of these gets dropped into the theme folder
 # by mistake (e.g. a Google Cloud credentials.json from the Site Kit
