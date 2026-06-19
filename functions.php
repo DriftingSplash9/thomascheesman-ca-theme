@@ -516,6 +516,23 @@ function tc_ventures_enqueue_scripts() {
     // that looks wrong, re-enable by removing this dequeue.
     wp_dequeue_style( 'astra-google-fonts' );
 
+    // Strip any lingering Google Fonts resource hints (PERF-1). Even with
+    // Astra's google fonts dequeued and ours self-hosted, Astra/core still
+    // advertise fonts.googleapis.com / fonts.gstatic.com via wp_resource_hints
+    // — and a preconnect still opens a TLS handshake to Google for nothing,
+    // which defeats the point of dropping the dependency. Runs before
+    // wp_resource_hints fires (wp_head priority 2).
+    add_filter( 'wp_resource_hints', function ( $urls, $relation_type ) {
+        if ( in_array( $relation_type, array( 'preconnect', 'dns-prefetch', 'prefetch' ), true ) ) {
+            $urls = array_filter( $urls, function ( $u ) {
+                $href = is_array( $u ) ? ( isset( $u['href'] ) ? $u['href'] : '' ) : $u;
+                return false === strpos( $href, 'fonts.googleapis.com' )
+                    && false === strpos( $href, 'fonts.gstatic.com' );
+            } );
+        }
+        return $urls;
+    }, 20, 2 );
+
     // Faith's CopyCatCapybara Clicker — only on its own page template, so
     // the rest of the site pays nothing. REST leaderboard URL passed in;
     // the four boards (capybara-5/15/30/60) are whitelisted in
