@@ -146,7 +146,7 @@ get_header(); ?>
                 <a class="heritage-card" href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>">
                     <div class="heritage-card__image">
                         <img
-                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_9355-1.jpg' ) ); ?>"
+                            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/Senior-Lakemans.jpg' ) ); ?>"
                             alt="<?php esc_attr_e( 'Martin Lakeman with his three sons', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />

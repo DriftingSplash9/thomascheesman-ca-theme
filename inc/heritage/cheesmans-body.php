@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <figure class="heritage-line__figure">
     <img
-        src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_9372.jpg' ) ); ?>"
+        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/IMG_9355.jpg' ) ); ?>"
         alt="<?php esc_attr_e( 'Thomas with his brothers — the Cheesman / Lakeman boys', 'tc-ventures-child' ); ?>"
         loading="lazy"
     />
@@ -62,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <figure class="heritage-line__figure">
     <img
-        src="<?php echo esc_url( home_url( '/wp-content/uploads/2024/08/img_9292-1-1.jpg' ) ); ?>"
+        src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/10159744567463708.jpg' ) ); ?>"
         alt="<?php esc_attr_e( 'Christopher and Bonnie Cheesman with their sons Sebastian and Logan', 'tc-ventures-child' ); ?>"
         loading="lazy"
     />
