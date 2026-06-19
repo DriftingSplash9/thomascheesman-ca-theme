@@ -147,7 +147,7 @@ get_header(); ?>
                     <div class="heritage-card__image">
                         <img
                             src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/Senior-Lakemans.jpg' ) ); ?>"
-                            alt="<?php esc_attr_e( 'Martin Lakeman with his three sons', 'tc-ventures-child' ); ?>"
+                            alt="<?php esc_attr_e( 'Suzan Lakeman with her sons Lex, Reink, and Martin', 'tc-ventures-child' ); ?>"
                             loading="lazy"
                         />
                     </div>

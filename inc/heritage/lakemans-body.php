@@ -27,6 +27,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <p>My biological father is <strong>Martin Gerard Lakeman</strong>, born March 30, 1957, at the Holy Cross Hospital in Calgary. The newspaper announcement that ran a few days later read: <em>&ldquo;Dr. and Mrs. R. Lakeman announce the birth of their son Martin Gerard on March 30th at Holy Cross Hospital.&rdquo;</em> Martin has two older brothers, <strong>Rienk Jr.</strong> and <strong>Alexander &ldquo;Lex&rdquo; Lakeman</strong>, both born outside Canada. Martin was the first of the three sons to be born on Canadian soil.</p>
 
+<?php /* Two generations of Lakeman brothers, side by side: Suzanna with
+         her three sons (Martin, Thomas's father, among them), and Thomas
+         with his own brothers a generation on. */ ?>
+<div class="heritage-line__grid heritage-line__grid--2x2">
+    <figure class="heritage-line__figure">
+        <img
+            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/Senior-Lakemans.jpg' ) ); ?>"
+            alt="<?php esc_attr_e( 'Suzan Lakeman with her sons Lex, Reink, and Martin', 'tc-ventures-child' ); ?>"
+            loading="lazy"
+        />
+        <figcaption>Suzanna with her three sons &mdash; Lex, Reink, and Martin.</figcaption>
+    </figure>
+    <figure class="heritage-line__figure">
+        <img
+            src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/06/IMG_9355.jpg' ) ); ?>"
+            alt="<?php esc_attr_e( 'Thomas with his brothers — the Cheesman / Lakeman boys', 'tc-ventures-child' ); ?>"
+            loading="lazy"
+        />
+        <figcaption>A generation on &mdash; Thomas with his own brothers.</figcaption>
+    </figure>
+</div>
+
 <figure class="heritage-line__figure">
     <img
         src="<?php echo esc_url( home_url( '/wp-content/uploads/2026/04/grandparents-with-fam.jpg' ) ); ?>"
