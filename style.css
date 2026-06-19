@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.609
+Version: 1.0.610
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1048,7 +1048,7 @@ html.cursor-custom .pswp__button {
    Mirrors the header capsule trigger (.tc-capsule__trigger) + its
    rotating conic-gradient border (.tc-capsule::before). Tints to the
    page's --line-color where one is set (heritage lines, kid pages),
-   cyan (--primary-color) otherwise. Reuses the globally-registered
+   warm gold (#f4b740) otherwise. Reuses the globally-registered
    --capsule-shine-angle @property + capsule-shine keyframes above.
 
    Apply to <a> or <button> — NOT <input>, whose replaced box can't
@@ -1057,7 +1057,11 @@ html.cursor-custom .pswp__button {
    recipe but stays scoped to out-specify Astra's #submit ID rule.
    ============================================================ */
 .tc-btn {
-    --btn-accent: var(--line-color, var(--primary-color));
+    /* Tint to the page's --line-color (heritage lines, kid pages); fall back
+       to the warm editorial gold the buttons have always used — NOT cyan,
+       which clashes on the warm non-heritage pages (Thomas/About/HCS/etc.).
+       The header capsule stays cyan; content buttons are gold/per-line. */
+    --btn-accent: var(--line-color, #f4b740);
     appearance: none;
     -webkit-appearance: none;
     cursor: pointer;

@@ -200,15 +200,15 @@
 }
 
 /* The same gleam outline pill as the site-wide .tc-btn (style.css),
-   tinted to the page's --line-color (cyan fallback) so it matches the
-   other buttons on heritage long-reads + kid pages. Kept scoped under
-   #comments so it out-specifies Astra's #submit ID rule (which otherwise
-   left the label invisible — the reason this can't just use .tc-btn). */
+   tinted to the page's --line-color with a warm-gold fallback (matching
+   .tc-btn) so it agrees with the other buttons on every page. Kept scoped
+   under #comments so it out-specifies Astra's #submit ID rule (which
+   otherwise left the label invisible — the reason this can't just use .tc-btn). */
 #comments .form-submit .submit,
 #comments .tc-comments__form .submit,
 #comments input#submit,
 #comments button#submit {
-    --btn-accent: var(--line-color, var(--primary-color));
+    --btn-accent: var(--line-color, #f4b740);
     appearance: none;
     -webkit-appearance: none;
     cursor: pointer;
