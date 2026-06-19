@@ -162,6 +162,15 @@ function initKineticHero() {
  */
 function splitIntoCharSpans(element) {
     const text = element.textContent.trim();
+    // A11Y-3: the char spans created below are each aria-hidden, so once we
+    // empty the element the heading would have NO accessible name. The home
+    // hero sets aria-label in PHP; inner-page heroes (page-hero__title) don't
+    // — so self-heal here to guarantee every kinetic heading keeps its full
+    // phrase for screen readers (axe empty-heading fix). Won't clobber a
+    // label already set in PHP.
+    if (!element.hasAttribute('aria-label')) {
+        element.setAttribute('aria-label', text);
+    }
     element.textContent = '';
     const chars = [];
 
