@@ -2296,11 +2296,28 @@ function initHeaderNav() {
     }
 
     // ---- 2. scroll-collapse ----
+    // The bar clips the nav only WHILE it morphs, so links never spill
+    // mid-animation; at rest it's overflow:visible so the dropdown trays
+    // can escape. --morphing covers the expand animation (collapse is
+    // covered by html.tc-head-min). A timeout clears it in case the
+    // transition is interrupted or reduced-motion skips it entirely.
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let ticking = false;
+    let wasMin  = false;
+    let morphT;
     function syncScroll() {
         const min = desktop.matches && window.scrollY > 80;
         html.classList.toggle('tc-head-min', min);
-        if (min) closeAll(null);
+        if (min) {
+            closeAll(null);
+            clearTimeout(morphT);
+            nav.classList.remove('tc-headnav--morphing');
+        } else if (wasMin && !reduceMotion.matches) {
+            nav.classList.add('tc-headnav--morphing');
+            clearTimeout(morphT);
+            morphT = setTimeout(function () { nav.classList.remove('tc-headnav--morphing'); }, 650);
+        }
+        wasMin = min;
     }
     window.addEventListener('scroll', function () {
         if (ticking) return;

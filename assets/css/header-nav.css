@@ -83,7 +83,11 @@
         flex: 0 1 auto;          /* size to content; shrinks to 0 when condensed */
         min-width: 0;            /* allow the flex item to shrink to 0 */
         margin-left: 22px;
-        overflow: hidden;
+        /* Visible at rest so the dropdown trays (which hang BELOW the nav)
+           aren't clipped. Only clipped while the bar morphs — see
+           .tc-headnav--morphing (expand) + html.tc-head-min (collapse),
+           toggled in initHeaderNav so links never spill mid-animation. */
+        overflow: visible;
         visibility: visible;     /* expand direction: shown immediately */
         transition:
             opacity 0.28s ease,
@@ -91,6 +95,8 @@
             margin-left 0.45s cubic-bezier(0.16, 1, 0.3, 1),
             visibility 0s;
     }
+
+    .tc-headnav--morphing { overflow: hidden; }
 
     .tc-headnav__list {
         list-style: none;
@@ -331,13 +337,15 @@
        CONDENSED STATE — html.tc-head-min (set by JS past ~80px scroll)
        ============================================================ */
     html.tc-head-min .tc-capsule {
-        left: calc(50% - var(--tc-head-min-w, 360px) / 2);
+        /* Condense back to the top-right corner (right edge 20px in). */
+        left: calc(100% - 20px - var(--tc-head-min-w, 360px));
         width: var(--tc-head-min-w, 360px);
     }
     html.tc-head-min .tc-headnav {
         opacity: 0;
         max-width: 0;
         margin-left: 0;
+        overflow: hidden;
         pointer-events: none;
         /* Drop out of the tab order once faded (collapse direction only:
            the delayed visibility flips after the 0.3s opacity fade). */
