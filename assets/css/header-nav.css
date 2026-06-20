@@ -1,0 +1,385 @@
+/* ============================================================
+   header-nav.css — the full-width header navigation
+   ------------------------------------------------------------
+   Turns the top-right glass capsule (.tc-capsule, base styles in
+   style.css) into a FULL-WIDTH floating nav bar on desktop that
+   smoothly CONDENSES back to the compact pill on scroll — and
+   keeps the exact rotating cyan gleam border (.tc-capsule::before)
+   the whole way.
+
+   Design (brainstormed with Thomas, 2026-06):
+     - Morph: bar shrinks toward its top-right anchor into the pill;
+       the nav fades a beat before the width contracts. Driven by a
+       single class set in JS: html.tc-head-min.
+     - Museum-Drawer dropdowns: frosted trays that slide down with a
+       staggered item reveal.
+     - Heritage drawer de-walled: Hub + Map, a rule, then the 8 lines
+       each with a 2px chip in its own --line-color pastel.
+     - Family file-tabs: items lift on hover like labelled tabs.
+     - Living Border: the gleam subtly shifts behaviour per hovered
+       section (faster on Heritage, calmer on HCS, warmer on Family).
+
+   DESKTOP ONLY (>=1000px). Phones/tablets keep the compact capsule
+   + the separate mobile accordion (tc-mobile-menu) untouched — the
+   nav is display:none below the breakpoint. With JS off, the bar
+   simply stays expanded (no collapse) — a clean no-JS fallback.
+
+   The desk-menu BHAG is unchanged: the MENU trigger still opens it.
+   ============================================================ */
+
+/* The nav is hidden by default (mobile + no-JS-safe baseline). */
+.tc-headnav {
+    display: none;
+}
+
+/* ============================================================
+   DESKTOP: the bar becomes full-width and morphs on scroll.
+   ============================================================ */
+@media (min-width: 1000px) {
+
+    /* Span from the right anchor (right:20px in style.css) across to
+       a 20px left gutter. Width is the morph lever: it transitions to
+       the JS-measured pill width (--tc-head-min-w) when condensed, so
+       the bar visibly gathers toward the top-right corner. We switch
+       the capsule's flex `gap` off and use explicit left-margins so a
+       collapsed (max-width:0) nav leaves NO dead space behind it. */
+    .tc-capsule {
+        gap: 0;
+        width: calc(100vw - 40px);
+        max-width: 1680px;
+        transition:
+            width 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 0.3s ease;
+    }
+
+    /* Re-create the capsule's 14px rhythm with margins (gap is off). */
+    .tc-capsule__divider,
+    .tc-capsule__weather,
+    .tc-capsule__trigger {
+        margin-left: 14px;
+    }
+
+    .tc-headnav {
+        display: block;
+        flex: 1 1 auto;
+        min-width: 0;            /* allow the flex item to shrink to 0 */
+        margin-left: 22px;
+        overflow: hidden;
+        visibility: visible;     /* expand direction: shown immediately */
+        transition:
+            opacity 0.28s ease,
+            max-width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+            margin-left 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0s;
+    }
+
+    .tc-headnav__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+    }
+
+    .tc-headnav__item {
+        position: relative;
+    }
+
+    /* Top-level link / disclosure button — same look for <a> and
+       <button> so the row reads uniform. */
+    .tc-headnav__link {
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        color: var(--text-dark, #e8ecf8);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        line-height: 1;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .tc-headnav__link:hover,
+    .tc-headnav__item:focus-within > .tc-headnav__link {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.07);
+    }
+
+    /* Current page marker. */
+    .tc-headnav__link[aria-current="page"] {
+        color: var(--primary-color, #22d3ee);
+    }
+
+    .tc-headnav__chev {
+        font-size: 9px;
+        opacity: 0.7;
+        transition: transform 0.25s ease;
+    }
+
+    .tc-headnav__item:hover .tc-headnav__chev,
+    .tc-headnav__item:focus-within .tc-headnav__chev,
+    .tc-headnav__toggle[aria-expanded="true"] .tc-headnav__chev {
+        transform: rotate(180deg);
+    }
+
+    /* ----- Museum-Drawer dropdown ----- */
+    .tc-headnav__drawer {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 50%;
+        transform: translateX(-50%) translateY(-8px);
+        min-width: 220px;
+        padding: 10px;
+        border-radius: 16px;
+        background: rgba(10, 12, 28, 0.92);
+        backdrop-filter: blur(16px) saturate(140%);
+        -webkit-backdrop-filter: blur(16px) saturate(140%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+            opacity 0.26s ease,
+            transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0s linear 0.32s;
+        z-index: 5;
+    }
+
+    /* A little hover bridge so the cursor can travel from the trigger
+       to the tray without crossing a dead gap and closing it. */
+    .tc-headnav__drawer::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -12px;
+        height: 12px;
+    }
+
+    .tc-headnav__item:hover > .tc-headnav__drawer,
+    .tc-headnav__item:focus-within > .tc-headnav__drawer,
+    .tc-headnav__drawer.is-open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+        transition:
+            opacity 0.26s ease,
+            transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0s;
+    }
+
+    /* The rightmost tray (Elsewhere) right-aligns to its trigger so it
+       can't spill past the viewport edge. */
+    .tc-headnav__item:last-child > .tc-headnav__drawer {
+        left: auto;
+        right: 0;
+        transform: translateX(0) translateY(-8px);
+    }
+    .tc-headnav__item:last-child:hover > .tc-headnav__drawer,
+    .tc-headnav__item:last-child:focus-within > .tc-headnav__drawer,
+    .tc-headnav__item:last-child > .tc-headnav__drawer.is-open {
+        transform: translateX(0) translateY(0);
+    }
+
+    .tc-headnav__drawer ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .tc-headnav__drawer a {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 12px;
+        border-radius: 9px;
+        color: var(--text-light, #b9c2da);
+        font-size: 13px;
+        line-height: 1.2;
+        text-decoration: none;
+        white-space: nowrap;
+        /* per-item reveal: collapsed start state */
+        opacity: 0;
+        transform: translateY(6px);
+        transition:
+            color 0.18s ease,
+            background-color 0.18s ease,
+            opacity 0.3s ease,
+            transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .tc-headnav__drawer a:hover,
+    .tc-headnav__drawer a:focus-visible {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Staggered reveal once the tray is open. */
+    .tc-headnav__item:hover > .tc-headnav__drawer a,
+    .tc-headnav__item:focus-within > .tc-headnav__drawer a,
+    .tc-headnav__drawer.is-open a {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .tc-headnav__drawer a { transition-delay: 0s; }
+    .tc-headnav__item:hover > .tc-headnav__drawer li:nth-child(1) a,
+    .tc-headnav__item:focus-within > .tc-headnav__drawer li:nth-child(1) a,
+    .tc-headnav__drawer.is-open li:nth-child(1) a { transition-delay: 0.02s; }
+    .tc-headnav__item:hover > .tc-headnav__drawer li:nth-child(2) a,
+    .tc-headnav__item:focus-within > .tc-headnav__drawer li:nth-child(2) a,
+    .tc-headnav__drawer.is-open li:nth-child(2) a { transition-delay: 0.05s; }
+    .tc-headnav__item:hover > .tc-headnav__drawer li:nth-child(3) a,
+    .tc-headnav__item:focus-within > .tc-headnav__drawer li:nth-child(3) a,
+    .tc-headnav__drawer.is-open li:nth-child(3) a { transition-delay: 0.08s; }
+    .tc-headnav__item:hover > .tc-headnav__drawer li:nth-child(4) a,
+    .tc-headnav__item:focus-within > .tc-headnav__drawer li:nth-child(4) a,
+    .tc-headnav__drawer.is-open li:nth-child(4) a { transition-delay: 0.11s; }
+    .tc-headnav__item:hover > .tc-headnav__drawer li:nth-child(n+5) a,
+    .tc-headnav__item:focus-within > .tc-headnav__drawer li:nth-child(n+5) a,
+    .tc-headnav__drawer.is-open li:nth-child(n+5) a { transition-delay: 0.14s; }
+
+    /* ----- Family drawer: file-tab lift ----- */
+    .tc-headnav__drawer--family a {
+        border-bottom: 2px solid transparent;
+        border-radius: 9px 9px 0 0;
+        transition:
+            color 0.18s ease,
+            background-color 0.18s ease,
+            border-color 0.18s ease,
+            opacity 0.3s ease,
+            transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tc-headnav__item:hover > .tc-headnav__drawer--family a:hover,
+    .tc-headnav__drawer--family.is-open a:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.1);
+        border-bottom-color: var(--tab-accent, var(--primary-color, #22d3ee));
+    }
+    .tc-headnav__drawer--family a.tc-plain-kid--patience { --tab-accent: #f7a6c4; }
+    .tc-headnav__drawer--family a.tc-plain-kid--daniel   { --tab-accent: #7fc7e8; }
+    .tc-headnav__drawer--family a.tc-plain-kid--faith    { --tab-accent: #c4a6f7; }
+
+    /* ----- Heritage drawer: Hub/Map split + line chips ----- */
+    .tc-headnav__drawer--heritage {
+        min-width: 360px;
+    }
+    .tc-headnav__drawer-top {
+        display: flex;
+        gap: 6px;
+    }
+    .tc-headnav__drawer-top li { flex: 1; }
+    .tc-headnav__drawer-rule {
+        border: 0;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 8px 4px;
+    }
+    .tc-headnav__lines {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px 10px;
+    }
+    .tc-headnav__chip {
+        flex: 0 0 auto;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--hn-chip, #888);
+        box-shadow: 0 0 8px var(--hn-chip, transparent);
+    }
+
+    .tc-headnav__ext {
+        font-size: 10px;
+        opacity: 0.6;
+        margin-left: 2px;
+    }
+
+    /* ============================================================
+       CONDENSED STATE — html.tc-head-min (set by JS past ~80px scroll)
+       ============================================================ */
+    html.tc-head-min .tc-capsule {
+        width: var(--tc-head-min-w, 360px);
+    }
+    html.tc-head-min .tc-headnav {
+        opacity: 0;
+        max-width: 0;
+        margin-left: 0;
+        pointer-events: none;
+        /* Drop out of the tab order once faded (collapse direction only:
+           the delayed visibility flips after the 0.3s opacity fade). */
+        visibility: hidden;
+        transition:
+            opacity 0.28s ease,
+            max-width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+            margin-left 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0s linear 0.3s;
+    }
+    /* close any open drawer while condensing */
+    html.tc-head-min .tc-headnav__drawer {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Measurement helper: JS adds this to read the natural pill width
+       (width:auto, nav removed, no animation) and writes it back into
+       --tc-head-min-w. */
+    .tc-capsule.tc-head-measuring {
+        width: auto !important;
+        transition: none !important;
+    }
+    .tc-capsule.tc-head-measuring .tc-headnav {
+        max-width: 0;
+        margin-left: 0;
+        opacity: 0;
+    }
+
+    /* ============================================================
+       LIVING BORDER — the gleam shifts behaviour per hovered section.
+       Motion/feel only; no jarring colour change except a gentle warm
+       cast on Family. Set via is-sect-* on the capsule (JS).
+       ============================================================ */
+    .tc-capsule.is-sect-heritage::before { animation-duration: 4.5s; }
+    .tc-capsule.is-sect-hcs::before      { animation-duration: 16s; }
+    .tc-capsule.is-sect-family::before {
+        background: conic-gradient(
+            from var(--capsule-shine-angle, 0deg),
+            rgba(244, 183, 64, 0.22) 0deg,
+            rgba(244, 183, 64, 0.22) 240deg,
+            rgba(244, 183, 64, 0.5) 280deg,
+            rgba(255, 240, 214, 0.95) 300deg,
+            rgba(244, 183, 64, 0.5) 320deg,
+            rgba(244, 183, 64, 0.22) 360deg
+        );
+    }
+}
+
+/* ============================================================
+   REDUCED MOTION — honour the user's preference. The morph snaps,
+   the trays appear without slide/stagger, and the gleam holds still.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .tc-capsule,
+    .tc-headnav,
+    .tc-headnav__drawer,
+    .tc-headnav__drawer a {
+        transition: none !important;
+    }
+    .tc-capsule::before { animation: none !important; }
+    .tc-headnav__drawer a { opacity: 1; transform: none; }
+}

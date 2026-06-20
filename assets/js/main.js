@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var tcMain = document.getElementById('primary');
     if (tcMain && !tcMain.hasAttribute('tabindex')) tcMain.setAttribute('tabindex', '-1');
     tcInit(initSiteChrome);
+    tcInit(initHeaderNav);
     tcInit(initKineticHero);
     tcInit(initHeroScrollOut);
     // Home-page reveal animations (pillar tumble + blog-card random
@@ -2198,6 +2199,128 @@ function initInkTrail() {
  *   3. Reduced motion — animation is short-circuited; the menu still
  *      opens and closes, but instantly. The capsule clock still runs.
  */
+/* ============================================================
+ * initHeaderNav — the full-width header navigation (desktop).
+ *
+ *   1. Measures the compact-pill width and writes it to
+ *      --tc-head-min-w, so the bar can TRANSITION its width down to
+ *      the pill on scroll (you can't animate width to `auto`).
+ *   2. Toggles html.tc-head-min past an 80px scroll threshold
+ *      (rAF-throttled), which drives the condense morph in CSS.
+ *   3. Wires the dropdown disclosures (click + Esc + click-outside;
+ *      hover/focus open is pure CSS) and the per-section "living
+ *      border" tint on the gleam.
+ *
+ * Desktop only (>=1000px): below that the nav is display:none and the
+ * scroll class is never set. With JS off, the bar just stays expanded.
+ * ============================================================ */
+function initHeaderNav() {
+    const html = document.documentElement;
+    const bar  = document.querySelector('.tc-capsule');
+    const nav  = document.querySelector('.tc-headnav');
+    if (!bar || !nav) return;
+
+    const desktop = window.matchMedia('(min-width: 1000px)');
+
+    // ---- disclosures (declared first so syncScroll can close them) ----
+    const items   = Array.prototype.slice.call(nav.querySelectorAll('.tc-headnav__item'));
+    const toggles = Array.prototype.slice.call(nav.querySelectorAll('.tc-headnav__toggle'));
+
+    function closeAll(except) {
+        toggles.forEach(function (t) {
+            if (t === except) return;
+            t.setAttribute('aria-expanded', 'false');
+            const d = document.getElementById(t.getAttribute('aria-controls'));
+            if (d) d.classList.remove('is-open');
+        });
+    }
+
+    toggles.forEach(function (t) {
+        const d = document.getElementById(t.getAttribute('aria-controls'));
+        if (!d) return;
+        t.addEventListener('click', function () {
+            const open = t.getAttribute('aria-expanded') === 'true';
+            closeAll(t);
+            t.setAttribute('aria-expanded', open ? 'false' : 'true');
+            d.classList.toggle('is-open', !open);
+        });
+        function escClose(e) {
+            if (e.key === 'Escape') {
+                t.setAttribute('aria-expanded', 'false');
+                d.classList.remove('is-open');
+                t.focus();
+            }
+        }
+        t.addEventListener('keydown', escClose);
+        d.addEventListener('keydown', escClose);
+    });
+
+    // Click anywhere outside the nav closes any open tray.
+    document.addEventListener('click', function (e) {
+        if (!nav.contains(e.target)) closeAll(null);
+    });
+
+    // ---- living border: tint the gleam by hovered/focused section ----
+    const SECT = { 'hn-heritage': 'is-sect-heritage', 'hn-hcs': 'is-sect-hcs', 'hn-family': 'is-sect-family' };
+    function clearSect() { bar.classList.remove('is-sect-heritage', 'is-sect-hcs', 'is-sect-family'); }
+    items.forEach(function (item) {
+        const t   = item.querySelector('.tc-headnav__toggle');
+        const cls = t ? SECT[t.getAttribute('aria-controls')] : null;
+        function on()  { clearSect(); if (cls) bar.classList.add(cls); }
+        item.addEventListener('mouseenter', on);
+        item.addEventListener('focusin', on);
+        item.addEventListener('mouseleave', clearSect);
+        item.addEventListener('focusout', function (e) {
+            if (!item.contains(e.relatedTarget)) clearSect();
+        });
+    });
+
+    // ---- 1. measure the condensed pill width ----
+    function measureMin() {
+        if (!desktop.matches) return;
+        bar.classList.add('tc-head-measuring');
+        const w = Math.ceil(bar.getBoundingClientRect().width);
+        bar.classList.remove('tc-head-measuring');
+        if (w > 0) html.style.setProperty('--tc-head-min-w', w + 'px');
+    }
+    measureMin();
+    // The weather temperature changes the pill width when it resolves.
+    const temp = document.querySelector('[data-tc-weather-temp]');
+    if (temp && 'MutationObserver' in window) {
+        new MutationObserver(measureMin).observe(temp, { childList: true, characterData: true, subtree: true });
+    }
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(measureMin);
+    } else {
+        setTimeout(measureMin, 600);
+    }
+
+    // ---- 2. scroll-collapse ----
+    let ticking = false;
+    function syncScroll() {
+        const min = desktop.matches && window.scrollY > 80;
+        html.classList.toggle('tc-head-min', min);
+        if (min) closeAll(null);
+    }
+    window.addEventListener('scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () { syncScroll(); ticking = false; });
+    }, { passive: true });
+
+    // Re-measure + re-sync on resize (debounced; crossing the breakpoint).
+    let rt;
+    window.addEventListener('resize', function () {
+        clearTimeout(rt);
+        rt = setTimeout(function () {
+            html.style.removeProperty('--tc-head-min-w');
+            measureMin();
+            syncScroll();
+        }, 200);
+    });
+    syncScroll();
+}
+
 function initSiteChrome() {
     const html = document.documentElement;
     const trigger = document.querySelector('[data-menu-trigger]');

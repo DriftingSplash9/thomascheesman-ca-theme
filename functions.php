@@ -103,6 +103,17 @@ function tc_ventures_enqueue_scripts() {
         wp_get_theme()->get( 'Version' )
     );
 
+    // Full-width header navigation — the desktop nav bar that condenses
+    // into the capsule on scroll (header.php + initHeaderNav in main.js).
+    // Loads after the child stylesheet so it can override the capsule's
+    // base layout; the gleam border + reduced-motion fallbacks live here.
+    wp_enqueue_style(
+        'tc-header-nav',
+        get_stylesheet_directory_uri() . '/assets/css/header-nav.css',
+        array( 'astra-child-style' ),
+        wp_get_theme()->get( 'Version' )
+    );
+
     // Keepsake print stylesheet — turns the heritage long-reads and the
     // person pages into a clean book layout when printed / saved to PDF.
     // The 5th arg (media="print") means it's ONLY applied while printing,

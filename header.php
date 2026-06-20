@@ -62,6 +62,95 @@
         <span class="screen-reader-text"> &mdash; <?php echo esc_html( get_bloginfo( 'name' ) ); ?>, home</span>
     </a>
 
+    <?php /* Full-width header navigation (desktop >=1000px only; CSS hides
+             it below that, where the compact pill + mobile accordion take
+             over). Condenses into the pill on scroll — see header-nav.css +
+             initHeaderNav() in main.js. The section parents are disclosure
+             buttons; each tray's first item is the hub/overview so the
+             destination stays one click away. Links mirror the plain/mobile
+             menus in inc/desk-menu.php. */ ?>
+    <nav class="tc-headnav" aria-label="<?php esc_attr_e( 'Primary', 'tc-ventures-child' ); ?>">
+        <ul class="tc-headnav__list">
+
+            <li class="tc-headnav__item">
+                <a class="tc-headnav__link" href="<?php echo esc_url( home_url( '/' ) ); ?>"<?php echo is_front_page() ? ' aria-current="page"' : ''; ?>>Home</a>
+            </li>
+
+            <li class="tc-headnav__item">
+                <a class="tc-headnav__link" href="<?php echo esc_url( home_url( '/about' ) ); ?>"<?php echo is_page( 'about' ) ? ' aria-current="page"' : ''; ?>>About</a>
+            </li>
+
+            <li class="tc-headnav__item">
+                <button type="button" class="tc-headnav__link tc-headnav__toggle" aria-expanded="false" aria-controls="hn-hcs">
+                    HCS <span class="tc-headnav__chev" aria-hidden="true">&#x25BE;</span>
+                </button>
+                <div class="tc-headnav__drawer" id="hn-hcs">
+                    <ul>
+                        <li><a href="<?php echo esc_url( home_url( '/hcs' ) ); ?>">Hajdu-Cheney Syndrome</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/hcs/case-studies' ) ); ?>">Case studies &amp; research</a></li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="tc-headnav__item">
+                <button type="button" class="tc-headnav__link tc-headnav__toggle" aria-expanded="false" aria-controls="hn-family">
+                    Family <span class="tc-headnav__chev" aria-hidden="true">&#x25BE;</span>
+                </button>
+                <div class="tc-headnav__drawer tc-headnav__drawer--family" id="hn-family">
+                    <ul>
+                        <li><a href="<?php echo esc_url( home_url( '/family' ) ); ?>">The family tree</a></li>
+                        <li><a class="tc-plain-kid tc-plain-kid--patience" href="<?php echo esc_url( home_url( '/family/patience' ) ); ?>">Patience</a></li>
+                        <li><a class="tc-plain-kid tc-plain-kid--daniel" href="<?php echo esc_url( home_url( '/family/daniel' ) ); ?>">Daniel</a></li>
+                        <li><a class="tc-plain-kid tc-plain-kid--faith" href="<?php echo esc_url( home_url( '/family/faith' ) ); ?>">Faith</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/family/thomas' ) ); ?>">Thomas &mdash; the long way round</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/capybara' ) ); ?>">Faith&rsquo;s Capybara Clicker</a></li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="tc-headnav__item">
+                <button type="button" class="tc-headnav__link tc-headnav__toggle" aria-expanded="false" aria-controls="hn-heritage">
+                    Heritage <span class="tc-headnav__chev" aria-hidden="true">&#x25BE;</span>
+                </button>
+                <div class="tc-headnav__drawer tc-headnav__drawer--heritage" id="hn-heritage">
+                    <ul class="tc-headnav__drawer-top">
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage' ) ); ?>">Heritage hub</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage/map' ) ); ?>">The Map</a></li>
+                    </ul>
+                    <hr class="tc-headnav__drawer-rule">
+                    <ul class="tc-headnav__lines">
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage/cheesmans' ) ); ?>"><span class="tc-headnav__chip" style="--hn-chip:#E9C87E" aria-hidden="true"></span>Cheesmans</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage/dochertys' ) ); ?>"><span class="tc-headnav__chip" style="--hn-chip:#DFA8C8" aria-hidden="true"></span>Dochertys</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage/dochertys/mcivers' ) ); ?>"><span class="tc-headnav__chip" style="--hn-chip:#8FD0C6" aria-hidden="true"></span>McIvers</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage/lakemans' ) ); ?>"><span class="tc-headnav__chip" style="--hn-chip:#A8D5A2" aria-hidden="true"></span>Lakemans</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage/lakemans/verbooms' ) ); ?>"><span class="tc-headnav__chip" style="--hn-chip:#9FBCE8" aria-hidden="true"></span>Verbooms</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts' ) ); ?>"><span class="tc-headnav__chip" style="--hn-chip:#F0A58F" aria-hidden="true"></span>Rycrofts</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage/rycrofts/steinkes' ) ); ?>"><span class="tc-headnav__chip" style="--hn-chip:#A9BFCF" aria-hidden="true"></span>Steinkes</a></li>
+                        <li><a href="<?php echo esc_url( home_url( '/family/heritage/haistes' ) ); ?>"><span class="tc-headnav__chip" style="--hn-chip:#B7A8E3" aria-hidden="true"></span>Haistes</a></li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="tc-headnav__item">
+                <a class="tc-headnav__link" href="<?php echo esc_url( home_url( '/contact' ) ); ?>"<?php echo is_page( 'contact' ) ? ' aria-current="page"' : ''; ?>>Contact</a>
+            </li>
+
+            <li class="tc-headnav__item">
+                <button type="button" class="tc-headnav__link tc-headnav__toggle" aria-expanded="false" aria-controls="hn-elsewhere">
+                    Elsewhere <span class="tc-headnav__chev" aria-hidden="true">&#x25BE;</span>
+                </button>
+                <div class="tc-headnav__drawer" id="hn-elsewhere">
+                    <ul>
+                        <li><a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare <span class="tc-headnav__ext" aria-hidden="true">&#x2197;</span></a></li>
+                        <li><a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">GPRS <span class="tc-headnav__ext" aria-hidden="true">&#x2197;</span></a></li>
+                        <li><a href="https://tc-timeline.vercel.app/" target="_blank" rel="noopener noreferrer">My whole life <span class="tc-headnav__ext" aria-hidden="true">&#x2197;</span></a></li>
+                    </ul>
+                </div>
+            </li>
+
+        </ul>
+    </nav>
+
     <span class="tc-capsule__divider" aria-hidden="true"></span>
 
     <?php /* The visible text is the live temperature, which a static
