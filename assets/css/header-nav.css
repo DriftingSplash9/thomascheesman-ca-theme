@@ -45,12 +45,30 @@
        collapsed (max-width:0) nav leaves NO dead space behind it. */
     .tc-capsule {
         gap: 0;
-        width: calc(100vw - 40px);
-        max-width: 1680px;
+        justify-content: center;   /* a centred cluster, not a stretched strip */
+        right: auto;
+        left: max(20px, calc(50% - 520px));
+        width: min(1040px, calc(100vw - 40px));
+        background: rgba(8, 10, 26, 0.72);   /* a touch more solid than the pill */
         transition:
+            left 0.55s cubic-bezier(0.16, 1, 0.3, 1),
             width 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
             opacity 0.3s ease;
+    }
+
+    /* More presence than the mobile pill: brighter gleam baseline + a
+       hair thicker ring so the centred bar reads crisp, not faint. */
+    .tc-capsule::before {
+        padding: 1.5px;
+        background: conic-gradient(
+            from var(--capsule-shine-angle, 0deg),
+            rgba(34, 211, 238, 0.42) 0deg,
+            rgba(34, 211, 238, 0.42) 240deg,
+            rgba(34, 211, 238, 0.7) 280deg,
+            rgba(229, 231, 245, 1) 300deg,
+            rgba(34, 211, 238, 0.7) 320deg,
+            rgba(34, 211, 238, 0.42) 360deg
+        );
     }
 
     /* Re-create the capsule's 14px rhythm with margins (gap is off). */
@@ -62,7 +80,7 @@
 
     .tc-headnav {
         display: block;
-        flex: 1 1 auto;
+        flex: 0 1 auto;          /* size to content; shrinks to 0 when condensed */
         min-width: 0;            /* allow the flex item to shrink to 0 */
         margin-left: 22px;
         overflow: hidden;
@@ -102,7 +120,7 @@
         gap: 5px;
         padding: 7px 12px;
         border-radius: 999px;
-        color: var(--text-dark, #e8ecf8);
+        color: #eef1fb;
         font-size: 13px;
         font-weight: 600;
         letter-spacing: 0.01em;
@@ -313,6 +331,7 @@
        CONDENSED STATE — html.tc-head-min (set by JS past ~80px scroll)
        ============================================================ */
     html.tc-head-min .tc-capsule {
+        left: calc(50% - var(--tc-head-min-w, 360px) / 2);
         width: var(--tc-head-min-w, 360px);
     }
     html.tc-head-min .tc-headnav {
