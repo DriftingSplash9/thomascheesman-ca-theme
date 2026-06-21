@@ -43,16 +43,18 @@ function tc_ventures_enqueue_scripts() {
         wp_get_theme( 'astra' )->get( 'Version' )
     );
 
-    // PhotoSwipe v5 lightbox CSS (CDN). The JS for PhotoSwipe is
-    // dynamically imported by main.js's initLightbox() the first time
-    // the user clicks a figure — keeps the initial load light.
+    // PhotoSwipe v5 lightbox CSS — SELF-HOSTED (PERF-1; assets/css/vendor/).
+    // The JS for PhotoSwipe is dynamically imported by main.js's
+    // initLightbox() the first time the user clicks a figure — keeps the
+    // initial load light. Vendored alongside the ESM in assets/js/vendor/
+    // so the lightbox makes zero third-party requests.
     //
     // Enqueued BEFORE the child stylesheet so the child can override
     // PhotoSwipe's defaults (frosted pills on buttons, counter, etc.).
     // Same-specificity selectors lose if PhotoSwipe loads later.
     wp_enqueue_style(
         'photoswipe',
-        'https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.css',
+        get_stylesheet_directory_uri() . '/assets/css/vendor/photoswipe-5.4.4.css',
         array(),
         '5.4.4'
     );
@@ -177,6 +179,10 @@ function tc_ventures_enqueue_scripts() {
         'siteUrl'  => home_url(),
         'themeUrl' => get_stylesheet_directory_uri(),
         'threeUrl' => get_stylesheet_directory_uri() . '/assets/js/vendor/three-r128.min.js',
+        // PhotoSwipe v5 ESM — SELF-HOSTED (PERF-1). main.js dynamically
+        // imports the lightbox + core from the theme; no unpkg request.
+        'pswpLightboxUrl' => get_stylesheet_directory_uri() . '/assets/js/vendor/photoswipe-5.4.4/photoswipe-lightbox.esm.js',
+        'pswpUrl'         => get_stylesheet_directory_uri() . '/assets/js/vendor/photoswipe-5.4.4/photoswipe.esm.js',
     ));
 
     // Print prep — when a reader saves a page to PDF (Ctrl+P), open every
@@ -490,6 +496,19 @@ function tc_ventures_enqueue_scripts() {
                 // `video:` action, not a combine, so it plays its own
                 // audio independently.
                 'combineWhoosh'  => get_stylesheet_directory_uri() . '/assets/audio/combine-whoosh.mp3?ver=' . rawurlencode( $tc_theme_ver ),
+            ),
+            // Third-party media libs the drawer engine lazy-imports —
+            // SELF-HOSTED (PERF-1). PhotoSwipe (gallery view), pdf.js
+            // (parchment "scroll" PDFs) + its worker, and hls.js (HLS
+            // audio). Vendored in assets/js/vendor/; no jsDelivr/unpkg.
+            // The pdf.worker .mjs ships as .js so Hostinger serves a JS
+            // MIME type (module workers reject application/octet-stream).
+            'vendor' => array(
+                'pswpLightbox' => get_stylesheet_directory_uri() . '/assets/js/vendor/photoswipe-5.4.4/photoswipe-lightbox.esm.js',
+                'pswp'         => get_stylesheet_directory_uri() . '/assets/js/vendor/photoswipe-5.4.4/photoswipe.esm.js',
+                'pdf'          => get_stylesheet_directory_uri() . '/assets/js/vendor/pdf-4.0.379.min.js',
+                'pdfWorker'    => get_stylesheet_directory_uri() . '/assets/js/vendor/pdf.worker-4.0.379.min.js',
+                'hls'          => get_stylesheet_directory_uri() . '/assets/js/vendor/hls-1.5.min.js',
             ),
             'engineUrl'    => get_stylesheet_directory_uri()
                 . '/assets/js/drawer-engine.js?ver=' . rawurlencode( $tc_theme_ver ),

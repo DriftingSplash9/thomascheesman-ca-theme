@@ -722,9 +722,10 @@ window.TCDrawerEngine = ( function () {
             open();
             return;
         }
+        var V = ( window.tcSecretDrawer && window.tcSecretDrawer.vendor ) || {};
         Promise.all( [
-            import( 'https://unpkg.com/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.js' ),
-            import( 'https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.esm.js' ),
+            import( V.pswpLightbox ),
+            import( V.pswp ),
         ] ).then( function ( mods ) {
             pswpLightboxClass = mods[ 0 ].default;
             pswpModule = mods[ 1 ];
@@ -738,19 +739,20 @@ window.TCDrawerEngine = ( function () {
     // either a plain URL string ("scroll": "https://…") or an object
     // ("scroll": { url, after:[…] }) — the latter mirrors gallery's
     // after-chain pattern so a future caller can sequence actions
-    // post-close. PDF.js is lazy-loaded from jsDelivr the first time
-    // a scroll opens; the module is memoised so subsequent opens are
-    // a single network round-trip for the PDF itself.
+    // post-close. PDF.js is lazy-loaded from the theme (self-hosted,
+    // PERF-1) the first time a scroll opens; the module is memoised so
+    // subsequent opens are a single network round-trip for the PDF itself.
     var pdfjs = null;
     function loadPdfJs() {
         if ( pdfjs ) return Promise.resolve( pdfjs );
-        var base = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/';
-        return import( base + 'pdf.min.mjs' ).then( function ( mod ) {
+        var V = ( window.tcSecretDrawer && window.tcSecretDrawer.vendor ) || {};
+        return import( V.pdf ).then( function ( mod ) {
             pdfjs = mod;
             // The worker URL has to be set before getDocument() — once,
-            // module-globally. jsDelivr serves the matching worker mjs
-            // at the same versioned path.
-            pdfjs.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.mjs';
+            // module-globally. Self-hosted from the theme; the .mjs worker
+            // ships as .js so Hostinger serves a JS MIME (module workers
+            // reject application/octet-stream).
+            pdfjs.GlobalWorkerOptions.workerSrc = V.pdfWorker;
             return pdfjs;
         } );
     }
@@ -1326,7 +1328,8 @@ window.TCDrawerEngine = ( function () {
             if ( ! hlsLoading ) {
                 hlsLoading = true;
                 var s = document.createElement( 'script' );
-                s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5/dist/hls.min.js';
+                // hls.js — self-hosted from the theme (PERF-1).
+                s.src = ( window.tcSecretDrawer && window.tcSecretDrawer.vendor && window.tcSecretDrawer.vendor.hls ) || '';
                 s.onload  = function () { hlsLoading = false; attachSrc(); };
                 s.onerror = function () { hlsLoading = false; };
                 document.head.appendChild( s );

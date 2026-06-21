@@ -22,7 +22,9 @@
 ( function () {
     'use strict';
 
-    var MATTER_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js';
+    // Matter.js is SELF-HOSTED from the theme (PERF-1, assets/js/vendor/).
+    // The URL is built at click-time from window.tcVentures.themeUrl —
+    // see wireMarble(), where it loads alongside desk-pinball.js.
 
     document.addEventListener( 'DOMContentLoaded', function () {
         var footer = document.querySelector( '[data-tc-drawer]' );
@@ -197,8 +199,8 @@
             if ( loaded ) return;
             loaded = true;
             marble.classList.add( 'is-loading' );
-            loadScript( MATTER_CDN ).then( function () {
-                var themeBase = ( window.tcVentures && window.tcVentures.themeUrl ) || '';
+            var themeBase = ( window.tcVentures && window.tcVentures.themeUrl ) || '';
+            loadScript( themeBase + '/assets/js/vendor/matter-0.20.0.min.js' ).then( function () {
                 var v = ( window.tcDeskGames && window.tcDeskGames.version ) || Date.now();
                 return loadScript( themeBase + '/assets/js/desk-pinball.js?ver=' + encodeURIComponent( v ) );
             } ).then( function () {

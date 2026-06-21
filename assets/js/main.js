@@ -875,12 +875,17 @@ function tcEnsurePhotoSwipe() {
     if (tcPhotoSwipeRequested) return;
     tcPhotoSwipeRequested = true;
 
-    import('https://unpkg.com/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.js')
+    // PhotoSwipe v5 ESM, self-hosted from the theme (PERF-1) — URLs come
+    // from window.tcVentures (localised in functions.php), same as threeUrl.
+    const pswpLightboxUrl = (window.tcVentures && window.tcVentures.pswpLightboxUrl) || '';
+    const pswpUrl = (window.tcVentures && window.tcVentures.pswpUrl) || '';
+
+    import(pswpLightboxUrl)
         .then(({ default: PhotoSwipeLightbox }) => {
             const lightbox = new PhotoSwipeLightbox({
                 gallery: '#primary',
                 children: 'a.lightbox-link[data-pswp-width]',
-                pswpModule: () => import('https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.esm.js'),
+                pswpModule: () => import(pswpUrl),
                 // bgOpacity 1.0 leaves the .pswp__bg element fully opaque
                 // so its backdrop-filter (blur 8px) renders cleanly. The
                 // visible transparency comes from the rgba() bg color
