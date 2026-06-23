@@ -619,6 +619,15 @@
     .tc-drawer__marble-cup:has(.tc-drawer__marble:focus-visible)::before {
         width: 78px;
     }
+    /* Reunite the TOP SCORE plaque with the marble — it's the pinball high
+       score, so it belongs by the ball, not stranded next to the signature.
+       Stacked just above the marble in the right margin (verified on a 1731px
+       viewport: ~18px gap above the cup, centred, clear + not clipped). The
+       signature keeps its own spot in the bottom-right plaque compartment. */
+    .tc-drawer__topscore {
+        right: -150px;
+        bottom: 188px;
+    }
 }
 
 .tc-drawer__marble-tip {
