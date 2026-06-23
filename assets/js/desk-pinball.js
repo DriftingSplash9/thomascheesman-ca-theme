@@ -236,14 +236,24 @@
             Bodies.rectangle( ( 711 + 746 ) / 2, TABLE_H - 8, 36, 8, wallOpts ),
         ] );
 
-        // ---- drain trough lips (slope inward at the bottom so the
-        // ball funnels toward the center between the flippers).
+        // ---- FUNNEL WALLS — the fix for "the ball drains down the sides
+        // before I can hit it." The table is landscape (760 wide) with the
+        // flippers at the centre, so the outlanes used to be ~115px of open
+        // space each — balls poured down them straight to the drain. These
+        // two walls close the bottom corners: each slopes from a side wall
+        // down to just outside a flipper base, so a ball anywhere along the
+        // bottom is funnelled INTO the flipper zone instead of past it. Only
+        // the centre gap between the flipper tips still reaches the drain
+        // (which the flippers guard). They sit just below the slingshots.
         World.add( w, [
-            Bodies.rectangle( 60, TABLE_H - 50, 180, t, Object.assign( {}, wallOpts, {
-                angle: Math.PI / 8,
+            // left: from the left wall (~14, 380) down to the left flipper
+            // base (~265, 440). length 258, angle atan(60/251) ≈ 0.234.
+            Bodies.rectangle( 139, 410, 258, t, Object.assign( {}, wallOpts, {
+                angle: 0.234,
             } ) ),
-            Bodies.rectangle( TABLE_W - 60 - 70, TABLE_H - 50, 180, t, Object.assign( {}, wallOpts, {
-                angle: -Math.PI / 8,
+            // right: mirror, from (~746, 380) down to (~495, 440).
+            Bodies.rectangle( 621, 410, 258, t, Object.assign( {}, wallOpts, {
+                angle: -0.234,
             } ) ),
         ] );
 
@@ -386,12 +396,15 @@
             render: { fillStyle: COLORS.flipper },
         };
 
-        // LEFT — pivots around world (250, 410). Hinge sits at
-        // body-local (-40, 0) i.e. 40 px left of body center.
-        this.leftFlipper = Bodies.rectangle( 0, 0, 80, 14,
+        // LEFT — pivots around world (270, 412). Hinge sits at body-local
+        // (-45, 0). Wider (90) and the pivots are closer together than
+        // before, so the pair covers more of the bottom and the centre
+        // drain gap between the tips is smaller (harder to drain, easier
+        // to cradle). Funnel walls deliver the ball to the base at ~265.
+        this.leftFlipper = Bodies.rectangle( 0, 0, 90, 14,
             Object.assign( {}, flipperOpts, { label: 'flipper:left' } ) );
-        this.leftPivot        = { x: 250, y: 410 };
-        this.leftHingeOffset  = { x: -40, y: 0 };
+        this.leftPivot        = { x: 270, y: 412 };
+        this.leftHingeOffset  = { x: -45, y: 0 };
         this.leftRestAngle    = 0.35;
         this.leftActiveAngle  = -0.55;
         this.leftAngle        = this.leftRestAngle;
@@ -399,11 +412,11 @@
                               this.leftHingeOffset, this.leftAngle );
         World.add( w, this.leftFlipper );
 
-        // RIGHT — pivots around world (510, 410). Hinge at body-local (+40, 0).
-        this.rightFlipper = Bodies.rectangle( 0, 0, 80, 14,
+        // RIGHT — pivots around world (490, 412). Hinge at body-local (+45, 0).
+        this.rightFlipper = Bodies.rectangle( 0, 0, 90, 14,
             Object.assign( {}, flipperOpts, { label: 'flipper:right' } ) );
-        this.rightPivot        = { x: 510, y: 410 };
-        this.rightHingeOffset  = { x: 40, y: 0 };
+        this.rightPivot        = { x: 490, y: 412 };
+        this.rightHingeOffset  = { x: 45, y: 0 };
         this.rightRestAngle    = -0.35;
         this.rightActiveAngle  = 0.55;
         this.rightAngle        = this.rightRestAngle;
@@ -975,8 +988,8 @@
         grad.addColorStop( 0, COLORS.flipperShine );
         grad.addColorStop( 1, COLORS.flipper );
         ctx.fillStyle = grad;
-        // Rounded rectangle 80×14
-        var w = 80, h = 14, r = 5;
+        // Rounded rectangle 90×14 (matches the wider flipper body)
+        var w = 90, h = 14, r = 5;
         ctx.beginPath();
         ctx.moveTo( -w / 2 + r, -h / 2 );
         ctx.lineTo(  w / 2 - r, -h / 2 );
