@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.627
+Version: 1.0.628
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1295,7 +1295,36 @@ body.admin-bar .tc-capsule {
     width: 16px;
     height: 10px;
     /* Bars are absolutely positioned children so we can rotate them
-       around the same center to form an X. */
+       around the same center to form an X — shown ONLY while open.
+       At rest the ::before below draws a brass cup drawer-pull: the
+       header trigger is "the desk pull" (see docs/SECRET-DRAWER-VISION.md). */
+}
+
+/* At rest: a recessed brass cup pull (bin-pull). Layered insets carve the
+   finger hollow + lip highlight; the brass tones tie to the capsule's warm
+   gold gleam. Cross-fades to the ✕ bars when the desk opens. */
+.tc-capsule__trigger-bars::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 17px;
+    height: 11px;
+    transform: translate(-50%, -50%);
+    border-radius: 2px 2px 8px 8px;
+    background: linear-gradient(180deg, #f2deac 0%, #c9a55e 45%, #9a7836 100%);
+    box-shadow:
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.5),
+        inset 0 -3.5px 4px rgba(48, 33, 10, 0.55),
+        0 1px 1.5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.3s ease, opacity 0.25s ease;
+}
+
+/* Hover = a subtle downward "tug" — the nudge that says: pull me open. */
+.tc-capsule__trigger:hover .tc-capsule__trigger-bars::before {
+    transform: translate(-50%, calc(-50% + 2px));
+    filter: brightness(1.08);
 }
 
 .tc-capsule__trigger-bars span {
@@ -1305,8 +1334,10 @@ body.admin-bar .tc-capsule {
     height: 1.5px;
     background: currentColor;
     border-radius: 1px;
+    opacity: 0;
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-                top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                top 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.25s ease;
 }
 
 .tc-capsule__trigger-bars span:nth-child(1) { top: 2px; }
@@ -1321,6 +1352,26 @@ html.tc-menu-open .tc-capsule__trigger-bars span:nth-child(1) {
 html.tc-menu-open .tc-capsule__trigger-bars span:nth-child(2) {
     top: 4.25px;
     transform: rotate(-45deg);
+}
+
+/* Open: the brass cup drops away and the two bars become the ✕ close. */
+html.tc-menu-open .tc-capsule__trigger-bars::before {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 3px));
+}
+
+html.tc-menu-open .tc-capsule__trigger-bars span {
+    opacity: 1;
+}
+
+/* Reduced motion: keep the cup + cross-fade, drop the tug/drop movement. */
+@media (prefers-reduced-motion: reduce) {
+    .tc-capsule__trigger-bars::before,
+    .tc-capsule__trigger:hover .tc-capsule__trigger-bars::before,
+    html.tc-menu-open .tc-capsule__trigger-bars::before {
+        transition: opacity 0.2s ease;
+        transform: translate(-50%, -50%);
+    }
 }
 
 /* While the menu is open, swap the trigger's color emphasis subtly. */
