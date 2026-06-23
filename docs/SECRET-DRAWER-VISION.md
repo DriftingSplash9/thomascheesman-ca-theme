@@ -3,6 +3,8 @@
 > **Status:** Vision / draft for review. **Not** a rebuild plan — the drawer
 > already exists as a deep escape room. This is the spec for taking it from
 > *great* to *unforgettable*, written 2026-06-22 (theme at 1.0.627).
+> **All key decisions resolved 2026-06-22** (see §7). Committed scope: **months**
+> (Phases 0–5).
 >
 > Precedent for this kind of doc: [`docs/CONVERGING-MAP-SPEC.md`](CONVERGING-MAP-SPEC.md).
 > BHAG surface → **plan-first, no freelancing.** Chains land in commit-sized
@@ -135,8 +137,8 @@ question is not "what to build" — it's "does anyone ever find the brass pull?"
 - **D2.** Audit + improve the **footer secret-drawer handle's** findability —
   is the current hover/affordance enough that a curious visitor notices it?
   (Needs a `secret-drawer.js` read + a real-device look before proposing.)
-- **D3.** Decide how loud the cue should be — the magic depends on it feeling
-  *found*, not advertised. A whisper, not a banner.
+- **D3.** *DECIDED 2026-06-22: a **nudge***, not a pure whisper — a noticeable
+  invitation to discover (not a banner). Findable on purpose; still feels *found*.
 
 ### I — More things interacting *(most buildable; engine's wheelhouse)*
 The engine already does `combine`. Adding inter-object reactions is squarely
@@ -147,9 +149,16 @@ content-driven (JSON chains), not new engine code.
 
 ### B — The kids relic *(uniquely his; meaning over quantity)*
 Deepen objects so each is a **portal to a memory of the kids/family**, not just
-a clue. New knick-knacks welcome **only if each earns a moment.** Candidate
-hooks: link select discoveries to the kids' pages / family content already on
-the site (gated appropriately per OD-1 / family-login).
+a clue. New knick-knacks welcome **only if each earns a moment.**
+- **Privacy by opacity (Thomas's principle, 2026-06-22):** the connection
+  between Thomas, a kid, and an object is **private and opaque** — a stranger
+  sees a knick-knack + a generic flavour beat and *doesn't "get" it*, so the
+  personal meaning is **naturally self-gating**. No family-login wall is needed
+  for meaning that only he can decode.
+- **The one boundary (OD-1 still holds):** opacity protects *meaning*, not
+  *identifiable content*. Anything that surfaces a name, face, birthdate, etc.
+  is still OD-1 territory and routes through the family gate. (The existing
+  chain-16 kid-camera gallery is real photos — a pre-existing call, not reopened.)
 
 ### R — The drawer that remembers → a VISITORS' BOOK *(decided 2026-06-22)*
 The "remembering" trace is concretized as a **visitors' book** — a comment
@@ -226,10 +235,10 @@ ambitious R last).
 2. ~~**R / "remembering"** — what trace?~~ — **DECIDED: a moderated visitors'
    book** disguised as a guestbook (see Workstream R). Still open *within* it:
    how loud is the "sign here" invitation?
-3. **D3** — how *discoverable* should the secret drawer be? Whisper vs. nudge.
-4. **B** — which kid memories / objects are in scope to surface, and how do they
-   intersect the family-login gate (OD-1)?
-5. **Scope of effort** — weeks (Phases 0–2) vs. months (through Phase 5)?
+3. ~~**D3** — whisper vs. nudge?~~ — **DECIDED: a nudge** (findable on purpose).
+4. ~~**B** — kid objects + the gate?~~ — **DECIDED: privacy-by-opacity** (meaning
+   is private/self-gating; only *identifiable content* hits the family gate).
+5. ~~**Scope of effort?**~~ — **DECIDED: months** (Phases 0–5).
 
 ---
 
