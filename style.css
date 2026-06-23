@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.629
+Version: 1.0.630
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -1282,8 +1282,12 @@ body.admin-bar .tc-capsule {
 }
 
 .tc-capsule__trigger:hover {
-    background: color-mix(in srgb, var(--primary-color) 22%, transparent);
+    /* Solid-ish cyan + DARK text so the label stays readable. The old
+       translucent tint washed the off-white text out to invisible over
+       the frosted capsule (the "Menu goes invisible on hover" bug). */
+    background: color-mix(in srgb, var(--primary-color) 80%, transparent);
     border-color: var(--primary-color);
+    color: var(--bg-base);
 }
 
 .tc-capsule__trigger:focus-visible {
@@ -1292,10 +1296,12 @@ body.admin-bar .tc-capsule {
 }
 
 /* Active state while the overlay is open (real class is tc-desk-open) —
-   both triggers light up, cueing that clicking again (or Esc) closes. */
+   both triggers go solid cyan with dark text (readable), cueing that
+   clicking again (or Esc) closes. */
 html.tc-desk-open .tc-capsule__trigger {
     border-color: var(--primary-color);
-    background: color-mix(in srgb, var(--primary-color) 25%, transparent);
+    background: var(--primary-color);
+    color: var(--bg-base);
 }
 
 /* Mobile: drop the clock and brand tail to reclaim space. */
