@@ -78,6 +78,7 @@
         function onFirstClick( e ) {
             if ( e ) e.preventDefault();
             if ( loading ) return;
+            var clicked = e && e.currentTarget;
             loading = true;
             triggers.forEach( function ( t ) { t.setAttribute( 'aria-busy', 'true' ); } );
 
@@ -106,6 +107,10 @@
                     if ( window.TCDeskGames && typeof window.TCDeskGames.init === 'function' ) {
                         window.TCDeskGames.init();
                     }
+
+                    // Force the clicked trigger's mode (plain vs desk) AFTER
+                    // init's default-mode pass, so the right view opens.
+                    applyMenuMode( clicked && clicked.getAttribute( 'data-menu-mode' ) );
 
                     var overlay = doc.getElementById( 'tc-desk-menu' );
                     if ( overlay && typeof overlay.__tcDeskOverlayOpen === 'function' ) {
@@ -181,6 +186,16 @@
         }
     }
 
+    /* Force the menu mode from a trigger's data-menu-mode. The capsule's
+       "Menu" trigger forces the plain list; "T's Desktop" (and the footer
+       "back to the desk") force the immersive desk — deterministically, on
+       each open. Mode is the html.tc-desk-plain class. */
+    function applyMenuMode( mode ) {
+        if ( mode === 'plain' || mode === 'desk' ) {
+            doc.documentElement.classList.toggle( 'tc-desk-plain', mode === 'plain' );
+        }
+    }
+
     /**
      * Any [data-menu-trigger] element toggles the desk overlay. There
      * are currently two: the hamburger button in the top-right capsule
@@ -209,8 +224,8 @@
             triggers.forEach( function ( t ) {
                 t.setAttribute( 'aria-expanded', 'true' );
             });
-            primaryTrigger.setAttribute( 'aria-label', 'Close menu' );
-            if ( label ) label.textContent = 'Close';
+            // Two static triggers (Menu / T's Desktop) — no label morph;
+            // aria-expanded conveys state, click-again / Esc closes.
             // Move focus INTO the dialog (it claims aria-modal). The
             // overlay carries tabindex="-1" in the markup for this.
             overlay.focus( { preventScroll: true } );
@@ -234,8 +249,6 @@
             triggers.forEach( function ( t ) {
                 t.setAttribute( 'aria-expanded', 'false' );
             });
-            primaryTrigger.setAttribute( 'aria-label', 'Open menu' );
-            if ( label ) label.textContent = 'Menu';
             // Return focus to the primary trigger so keyboard users keep
             // their place.
             primaryTrigger.focus({ preventScroll: true });
@@ -249,7 +262,14 @@
         }
 
         triggers.forEach( function ( t ) {
-            t.addEventListener( 'click', toggle );
+            t.addEventListener( 'click', function () {
+                // On open, force this trigger's mode (Menu -> plain,
+                // T's Desktop -> desk); on close, leave the mode alone.
+                if ( ! doc.documentElement.classList.contains( 'tc-desk-open' ) ) {
+                    applyMenuMode( t.getAttribute( 'data-menu-mode' ) );
+                }
+                toggle();
+            });
         });
 
         // While the overlay is open it declares aria-modal="true" — back

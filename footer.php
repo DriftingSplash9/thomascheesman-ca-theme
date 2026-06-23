@@ -220,6 +220,7 @@
         <button type="button"
                 class="tc-drawer__back"
                 data-menu-trigger
+                data-menu-mode="desk"
                 aria-label="<?php esc_attr_e( 'Open the desk menu', 'tc-ventures-child' ); ?>">
             &larr; back to the desk
         </button>

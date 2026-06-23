@@ -57,6 +57,21 @@
         <span class="screen-reader-text"> &mdash; <?php echo esc_html( get_bloginfo( 'name' ) ); ?>, home</span>
     </a>
 
+    <?php /* "Menu" trigger — opens the overlay as the PLAIN vertical list
+             (data-menu-mode="plain"). A persistent capsule child, so it stays
+             reachable when the nav bar collapses on scroll; the immersive desk
+             is the separate "T's Desktop" trigger on the right. */ ?>
+    <button
+        type="button"
+        class="tc-capsule__trigger tc-capsule__trigger--plain"
+        data-menu-trigger
+        data-menu-mode="plain"
+        aria-controls="tc-desk-menu"
+        aria-expanded="false"
+    >
+        <span class="tc-capsule__trigger-label">Menu</span>
+    </button>
+
     <?php /* Full-width header navigation (desktop >=1000px only; CSS hides
              it below that, where the compact pill + mobile accordion take
              over). Condenses into the pill on scroll — see header-nav.css +
@@ -163,17 +178,13 @@
 
     <button
         type="button"
-        class="tc-capsule__trigger"
+        class="tc-capsule__trigger tc-capsule__trigger--desk"
         data-menu-trigger
+        data-menu-mode="desk"
         aria-controls="tc-desk-menu"
         aria-expanded="false"
-        aria-label="<?php esc_attr_e( 'Open menu', 'tc-ventures-child' ); ?>"
     >
-        <span class="tc-capsule__trigger-label" data-trigger-label>Menu</span>
-        <span class="tc-capsule__trigger-bars" aria-hidden="true">
-            <span></span>
-            <span></span>
-        </span>
+        <span class="tc-capsule__trigger-label">T&rsquo;s Desktop</span>
     </button>
 </header>
 
