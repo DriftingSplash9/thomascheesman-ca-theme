@@ -141,7 +141,7 @@
             '<div class="tc-pinball__banner" data-pinball-banner aria-live="polite"></div>' +
             '<button type="button" class="tc-pinball__exit" data-pinball-exit aria-label="Exit pinball">×</button>' +
             '<div class="tc-pinball__hint" data-pinball-hint>' +
-                '<strong>controls</strong> · A / L flippers · Space plunger · Esc exits' +
+                '<strong>controls</strong> · A / L flippers · Space plunger · Shift / B nudge · Esc exits' +
             '</div>';
         document.body.appendChild( this.root );
         this.prevBodyOverflow = document.body.style.overflow;
@@ -169,6 +169,10 @@
         this.plungerActive = false;
         this.leftFlipperUp = false;
         this.rightFlipperUp = false;
+        this.sparks = [];     // bumper-hit spark particles
+        this.nudgeUntil = 0;  // nudge cooldown timestamp
+        this.shake = null;    // { x, y, until } screen-shake offset
+        this.stuckFrames = 0; // anti-stuck watchdog counter
 
         // ---- engine
         this.engine = Engine.create();
@@ -510,6 +514,10 @@
                 if ( k === 'a' )       { self.leftFlipperUp  = true;  e.preventDefault(); }
                 if ( k === 'l' || k === 'd' ) { self.rightFlipperUp = true; e.preventDefault(); }
                 if ( k === ' ' )       { self.plungerActive = true;   e.preventDefault(); }
+                // Nudges — Left/Right Shift bump the sides, B bumps up.
+                if ( e.code === 'ShiftLeft'  && ! e.repeat ) { self.nudge( 'left' );  e.preventDefault(); }
+                if ( e.code === 'ShiftRight' && ! e.repeat ) { self.nudge( 'right' ); e.preventDefault(); }
+                if ( k === 'b' && ! e.repeat )               { self.nudge( 'up' );    e.preventDefault(); }
                 if ( k === 'escape' )  { self.destroy(); }
             } else {
                 if ( k === 'a' )       { self.leftFlipperUp  = false; }
@@ -571,6 +579,28 @@
         this.plungerCharge = 0;
     };
 
+    // Table nudge — Left/Right Shift bump the sides, B bumps up. Gives the
+    // ball a small impulse (+ a brief screen shake) so the player can coax
+    // it out of a dead spot, like shoving a real machine. Convention: a
+    // LEFT-side bump shoves the ball RIGHT, and vice-versa. A short cooldown
+    // stops nudge-spam.
+    Pinball.prototype.nudge = function ( side ) {
+        var now = performance.now();
+        if ( now < this.nudgeUntil ) return;
+        this.nudgeUntil = now + 180;
+        var vx = 0, vy = 0, sx = 0, sy = 0;
+        if ( side === 'left'  ) { vx =  4.4; vy = -1.6; sx = -7; }
+        if ( side === 'right' ) { vx = -4.4; vy = -1.6; sx =  7; }
+        if ( side === 'up'    ) { vy = -5.8; sy = -8; }
+        if ( this.theBall ) {
+            Body.setVelocity( this.theBall, {
+                x: this.theBall.velocity.x + vx,
+                y: this.theBall.velocity.y + vy,
+            } );
+        }
+        this.shake = { x: sx, y: sy, until: now + 130 };
+    };
+
     // ================================================================
     // COLLISIONS — score, multiplier, banners, drain handling.
     Pinball.prototype.bindCollisions = function () {
@@ -601,7 +631,7 @@
     Pinball.prototype.handleBumper = function ( body ) {
         body.tcFlashUntil = performance.now() + 160;
         this.totalBumperHits++;
-        this.bumperHits[ body.tcName ] = ( this.bumperHits[ body.tcName ] || 0 ) + 1;
+        var hits = this.bumperHits[ body.tcName ] = ( this.bumperHits[ body.tcName ] || 0 ) + 1;
         this.addScore( 100 );
         // Apply a small extra impulse to the ball so the bumper feels alive.
         if ( this.theBall ) {
@@ -609,9 +639,34 @@
             Body.applyForce( this.theBall, this.theBall.position,
                 { x: dir.x * 0.012, y: dir.y * 0.012 } );
         }
+        // Sparks fly off on every hit, tinted to the post's current colour.
+        this.spawnSparks( body.position.x, body.position.y, bumperBrightColor( hits ) );
+        // The post warms from cyan toward GOLD over its first 12 hits; the
+        // 12th hit locks it gold for good, and a gold post then gives the
+        // ball a small speed boost on every hit.
+        if ( hits === 12 ) {
+            this.flashBanner( body.tcName + ' is GOLD — it speeds the ball up now', 2400 );
+        }
+        if ( hits >= 12 && this.theBall ) {
+            var v = this.theBall.velocity;
+            Body.setVelocity( this.theBall, { x: v.x * 1.16, y: v.y * 1.16 } );
+        }
         // Story-credit easter egg at 10 cumulative hits per object.
-        if ( this.bumperHits[ body.tcName ] === 10 ) {
+        if ( hits === 10 ) {
             this.flashBanner( body.tcStory, 3200 );
+        }
+    };
+
+    // Spawn a little burst of spark particles at a point.
+    Pinball.prototype.spawnSparks = function ( x, y, color ) {
+        for ( var i = 0; i < 9; i++ ) {
+            var a = Math.random() * Math.PI * 2, sp = 1.8 + Math.random() * 3.2;
+            this.sparks.push( {
+                x: x, y: y,
+                vx: Math.cos( a ) * sp,
+                vy: Math.sin( a ) * sp - 1.2,
+                life: 1, color: color,
+            } );
         }
     };
 
@@ -781,11 +836,40 @@
 
         Engine.update( this.engine, dt );
 
+        // Spark particles (bumper hits) — integrate + age out.
+        for ( var si = this.sparks.length - 1; si >= 0; si-- ) {
+            var sp = this.sparks[ si ];
+            sp.x += sp.vx; sp.y += sp.vy; sp.vy += 0.16; sp.life -= 0.045;
+            if ( sp.life <= 0 ) this.sparks.splice( si, 1 );
+        }
+
         // Edge cases — ball flew out the top, or is stuck in the trough?
         if ( this.theBall && this.theBall.position.y < -30 ) {
             // Re-spawn in the shooter lane.
             Body.setPosition( this.theBall, { x: TABLE_W - 36, y: TABLE_H - 30 } );
             Body.setVelocity( this.theBall, { x: 0, y: 0 } );
+        }
+
+        // Anti-stuck watchdog — if the ball sits nearly motionless in the
+        // playfield (not the shooter lane, where it waits for the plunger)
+        // for ~3s, give it a small random nudge so it can never wedge for
+        // good. Cheap insurance for any geometry corner I haven't tuned.
+        if ( this.theBall && ! this.gameOver ) {
+            var inLane = this.theBall.position.x > TABLE_W - 60 &&
+                         this.theBall.position.y > TABLE_H * 0.45;
+            var spd = Math.hypot( this.theBall.velocity.x, this.theBall.velocity.y );
+            if ( ! inLane && spd < 0.35 ) {
+                this.stuckFrames++;
+                if ( this.stuckFrames > 170 ) {
+                    Body.setVelocity( this.theBall, {
+                        x: ( Math.random() - 0.5 ) * 5,
+                        y: -3 - Math.random() * 3,
+                    } );
+                    this.stuckFrames = 0;
+                }
+            } else {
+                this.stuckFrames = 0;
+            }
         }
 
         this.updateMultiplier();
@@ -861,6 +945,17 @@
         ctx.fillStyle = vg;
         ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
 
+        // Screen-shake — jitter the playfield (not the felt) briefly after a
+        // nudge. Wrapped in save/restore; everything below is offset.
+        var shx = 0, shy = 0;
+        if ( this.shake && now < this.shake.until ) {
+            var sk = ( this.shake.until - now ) / 130;
+            shx = this.shake.x * sk * ( 0.4 + Math.random() * 0.6 );
+            shy = this.shake.y * sk * ( 0.4 + Math.random() * 0.6 );
+        }
+        ctx.save();
+        ctx.translate( shx, shy );
+
         // Walls — draw all static rectangles as wood.
         var self = this;
         var bodies = Composite.allBodies( this.engine.world );
@@ -899,30 +994,30 @@
             ctx.stroke();
         } );
 
-        // Bumpers — glowing glass discs with a bright rim + specular dot.
+        // Bumpers — glass discs that warm toward gold with hits; bright rim
+        // + specular dot.
         this.bumpers.forEach( function ( bp ) {
-            var flash = bp.tcFlashUntil > now;
+            var flash  = bp.tcFlashUntil > now;
+            var hits   = self.bumperHits[ bp.tcName ] || 0;
+            var base   = bumperColor( hits ), bright = bumperBrightColor( hits );
             var radius = bp.circleRadius;
             var x = bp.position.x, y = bp.position.y;
             ctx.save();
-            // subtle glow (kept small — a faint halo, not a bloom)
-            ctx.shadowColor = flash ? '#ffffff' : COLORS.bumperBright;
+            ctx.shadowColor = flash ? '#ffffff' : bright;
             ctx.shadowBlur  = flash ? 5 : 3;
             var grad = ctx.createRadialGradient( x - 5, y - 6, 2, x, y, radius );
-            grad.addColorStop( 0, flash ? '#ffffff' : COLORS.bumperBright );
-            grad.addColorStop( 1, flash ? COLORS.bumperBright : COLORS.bumper );
+            grad.addColorStop( 0, flash ? '#ffffff' : bright );
+            grad.addColorStop( 1, flash ? bright : base );
             ctx.fillStyle = grad;
             ctx.beginPath();
             ctx.arc( x, y, radius, 0, Math.PI * 2 );
             ctx.fill();
             ctx.restore();
-            // bright rim ring
             ctx.lineWidth = 2;
-            ctx.strokeStyle = flash ? '#ffffff' : COLORS.bumperBright;
+            ctx.strokeStyle = flash ? '#ffffff' : bright;
             ctx.beginPath();
             ctx.arc( x, y, radius - 1, 0, Math.PI * 2 );
             ctx.stroke();
-            // specular highlight
             ctx.fillStyle = 'rgba(255,255,255,0.65)';
             ctx.beginPath();
             ctx.arc( x - radius * 0.32, y - radius * 0.36, radius * 0.22, 0, Math.PI * 2 );
@@ -971,12 +1066,24 @@
             ctx.restore();
         }
 
+        // Sparks — bumper-hit particles, fading as they fly.
+        this.sparks.forEach( function ( sp ) {
+            ctx.globalAlpha = Math.max( 0, sp.life );
+            ctx.fillStyle = sp.color;
+            ctx.beginPath();
+            ctx.arc( sp.x, sp.y, 2.2 * sp.life + 0.6, 0, Math.PI * 2 );
+            ctx.fill();
+        } );
+        ctx.globalAlpha = 1;
+
         // Plunger charge meter — thin vertical bar in the shooter lane.
         if ( this.plungerActive ) {
             ctx.fillStyle = COLORS.hud;
             ctx.fillRect( TABLE_W - 32, TABLE_H - 16,
                           14, -120 * this.plungerCharge );
         }
+
+        ctx.restore(); // end screen-shake transform
     };
 
     function labelOfRamp( label ) {
@@ -985,6 +1092,19 @@
         if ( label === 'ramp:site' )      return 'site';
         if ( label === 'ramp:elsewhere' ) return 'elsewhere';
         return '';
+    }
+
+    // A post's colour by hit count — warms from cyan toward gold over its
+    // first 12 hits, then locks gold. (bright = the lit/highlight tone.)
+    function bumperColor( hits ) {
+        if ( hits >= 12 ) return '#f5c33a';
+        var h = 187 - ( 187 - 46 ) * hits / 12;
+        return 'hsl(' + Math.round( h ) + ', 78%, 56%)';
+    }
+    function bumperBrightColor( hits ) {
+        if ( hits >= 12 ) return '#ffe79a';
+        var h = 187 - ( 187 - 46 ) * hits / 12;
+        return 'hsl(' + Math.round( h ) + ', 92%, 76%)';
     }
 
     // Trace a rounded rectangle (body-local). Shared by the walls.
