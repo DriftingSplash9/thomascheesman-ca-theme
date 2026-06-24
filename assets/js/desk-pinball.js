@@ -251,9 +251,15 @@
             Bodies.rectangle( 139, 410, 258, t, Object.assign( {}, wallOpts, {
                 angle: 0.234,
             } ) ),
-            // right: mirror, from (~746, 380) down to (~495, 440).
-            Bodies.rectangle( 621, 410, 258, t, Object.assign( {}, wallOpts, {
-                angle: -0.234,
+            // right: from the chute INNER wall (~697, 386) down to the
+            // right flipper base (~495, 440). It must STOP short of the
+            // plunger chute (lane x711-746) — an earlier version ran all
+            // the way to the right wall and crossed the shooter lane, so
+            // the launched ball ricocheted straight back to the plunger
+            // instead of escaping into the playfield. The inner chute wall
+            // (x697-711) closes the rest of the right side.
+            Bodies.rectangle( 596, 413, 209, t, Object.assign( {}, wallOpts, {
+                angle: -0.261,
             } ) ),
         ] );
 
