@@ -265,6 +265,24 @@
             } ) ),
         ] );
 
+        // ---- OUTLANE BARS — bridge the gap between each side wall and the
+        // slingshot, at the slingshot-top level, so a ball coming down the
+        // outlane is redirected toward the slingshots/flippers instead of
+        // dropping into the corner trap below (Thomas's "bouncy bar above
+        // them, in line with the top of the blue triangles" idea). Bouncy
+        // (restitution 1.0) so the ball springs back into play. Validated
+        // in-browser: outlane drops now reach the bottom instead of wedging.
+        World.add( w, [
+            // left "\" — high at the wall, low toward the slingshot.
+            Bodies.rectangle( 73, 324, 115, t, Object.assign( {}, wallOpts, {
+                angle: 0.139, restitution: 1.0,
+            } ) ),
+            // right "/" — high at the chute side, low toward the slingshot.
+            Bodies.rectangle( 628.5, 324, 138, t, Object.assign( {}, wallOpts, {
+                angle: -0.116, restitution: 1.0,
+            } ) ),
+        ] );
+
         // ---- BUMPERS — circular, springy, score 100 × mult per hit.
         // Five of them, named after desk objects. Names propagate to
         // the story-credit easter egg at 10 cumulative hits each.
@@ -310,11 +328,13 @@
             World.add( w, s );
             return s;
         }
+        // Tops SLOPE toward the centre so a ball can't rest on them — it
+        // rolls off toward the flippers (the flat tops used to be a perch).
         this.slingshots.push( slingshot( [
-            { x: 130, y: 330 }, { x: 220, y: 330 }, { x: 130, y: 400 },
+            { x: 130, y: 330 }, { x: 222, y: 352 }, { x: 130, y: 400 },
         ], 'slingshot:left' ) );
         this.slingshots.push( slingshot( [
-            { x: 470, y: 330 }, { x: 560, y: 330 }, { x: 560, y: 400 },
+            { x: 560, y: 330 }, { x: 468, y: 352 }, { x: 560, y: 400 },
         ], 'slingshot:right' ) );
 
         // ---- RAMPS — angled rails at the top representing the nav
