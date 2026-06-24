@@ -246,22 +246,18 @@
         // the centre gap between the flipper tips still reaches the drain
         // (which the flippers guard). They sit just below the slingshots.
         World.add( w, [
-            // left: from the left wall (~14, 356) down to JUST ABOVE the
-            // left flipper pivot (~270, 414). Connecting at the flipper
-            // (not below it) removes the corner pocket the ball used to
-            // wedge into. Bouncy (restitution 0.9) so a ball springs back
-            // UP into play instead of dying in the corner — Thomas's "kick
-            // out at the bottom" idea.
-            Bodies.rectangle( 142, 385, 263, t, Object.assign( {}, wallOpts, {
-                angle: 0.223, restitution: 0.9,
+            // left: starts ~22px OFF the wall (at x36, not x14) and runs
+            // down to just above the left flipper pivot (~270, 414). The gap
+            // between the wall (x14) and this funnel is the left gutter the
+            // ball can drain through, like a real outlane. Bouncy (0.9).
+            Bodies.rectangle( 153, 390, 239, t, Object.assign( {}, wallOpts, {
+                angle: 0.206, restitution: 0.9,
             } ) ),
-            // right: from the chute INNER wall (~697, 388) down to just
-            // above the right flipper pivot (~490, 414). Must stop short of
-            // the plunger chute (lane x711-746) — an earlier version ran to
-            // the right wall and crossed the shooter lane, bouncing the
-            // launched ball back to the plunger. Same bouncy connection.
-            Bodies.rectangle( 593.5, 401, 209, t, Object.assign( {}, wallOpts, {
-                angle: -0.125, restitution: 0.9,
+            // right: from just above the right flipper pivot (~490, 414) out
+            // to x675 — ~22px short of the chute inner wall (x697), leaving
+            // the right gutter. (Still clears the plunger lane x711-746.)
+            Bodies.rectangle( 582, 406, 186, t, Object.assign( {}, wallOpts, {
+                angle: -0.086, restitution: 0.9,
             } ) ),
         ] );
 
@@ -273,13 +269,16 @@
         // (restitution 1.0) so the ball springs back into play. Validated
         // in-browser: outlane drops now reach the bottom instead of wedging.
         World.add( w, [
-            // left "\" — high at the wall, low toward the slingshot.
-            Bodies.rectangle( 73, 324, 115, t, Object.assign( {}, wallOpts, {
-                angle: 0.139, restitution: 1.0,
+            // left "\" — starts ~22px off the wall (the gutter gap) and runs
+            // down toward the slingshot. Shorter than before so the ball can
+            // slip past it into the gutter (Thomas's ask).
+            Bodies.rectangle( 83, 328, 95, t, Object.assign( {}, wallOpts, {
+                angle: 0.117, restitution: 1.0,
             } ) ),
-            // right "/" — high at the chute side, low toward the slingshot.
-            Bodies.rectangle( 628.5, 324, 138, t, Object.assign( {}, wallOpts, {
-                angle: -0.116, restitution: 1.0,
+            // right "/" — from the slingshot out to ~22px short of the chute
+            // wall, leaving the right gutter gap.
+            Bodies.rectangle( 618, 325, 116, t, Object.assign( {}, wallOpts, {
+                angle: -0.121, restitution: 1.0,
             } ) ),
         ] );
 
@@ -889,7 +888,7 @@
             }
             ctx.save();
             ctx.shadowColor = COLORS.slingshot;
-            ctx.shadowBlur  = flash ? 24 : 9;
+            ctx.shadowBlur  = flash ? 5 : 3;
             ctx.fillStyle   = flash ? COLORS.bumperBright : COLORS.slingshot;
             trace();
             ctx.fill();
@@ -906,9 +905,9 @@
             var radius = bp.circleRadius;
             var x = bp.position.x, y = bp.position.y;
             ctx.save();
-            // outer glow
+            // subtle glow (kept small — a faint halo, not a bloom)
             ctx.shadowColor = flash ? '#ffffff' : COLORS.bumperBright;
-            ctx.shadowBlur  = flash ? 30 : 16;
+            ctx.shadowBlur  = flash ? 5 : 3;
             var grad = ctx.createRadialGradient( x - 5, y - 6, 2, x, y, radius );
             grad.addColorStop( 0, flash ? '#ffffff' : COLORS.bumperBright );
             grad.addColorStop( 1, flash ? COLORS.bumperBright : COLORS.bumper );
@@ -957,7 +956,7 @@
             var b = this.theBall;
             ctx.save();
             ctx.shadowColor = COLORS.ballShine;
-            ctx.shadowBlur  = 14;
+            ctx.shadowBlur  = 3;
             var bg2 = ctx.createRadialGradient(
                 b.position.x - 3, b.position.y - 3, 1,
                 b.position.x, b.position.y, BALL_R
@@ -988,19 +987,50 @@
         return '';
     }
 
+    // Trace a rounded rectangle (body-local). Shared by the walls.
+    function roundRectPath( ctx, x, y, w, h, r ) {
+        ctx.beginPath();
+        ctx.moveTo( x + r, y );
+        ctx.lineTo( x + w - r, y );
+        ctx.quadraticCurveTo( x + w, y, x + w, y + r );
+        ctx.lineTo( x + w, y + h - r );
+        ctx.quadraticCurveTo( x + w, y + h, x + w - r, y + h );
+        ctx.lineTo( x + r, y + h );
+        ctx.quadraticCurveTo( x, y + h, x, y + h - r );
+        ctx.lineTo( x, y + r );
+        ctx.quadraticCurveTo( x, y, x + r, y );
+        ctx.closePath();
+    }
+
     Pinball.prototype.drawWall = function ( b ) {
         var ctx = this.ctx;
+        // True body-local extents. Using the AABB (b.bounds) inflated every
+        // ROTATED wall into a fat block — that's what read as "blocky". Pull
+        // the real width/height from the vertices instead, like drawRect.
+        var cosA = Math.cos( -b.angle ), sinA = Math.sin( -b.angle );
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        b.vertices.forEach( function ( v ) {
+            var dx = v.x - b.position.x, dy = v.y - b.position.y;
+            var lx = dx * cosA - dy * sinA;
+            var ly = dx * sinA + dy * cosA;
+            if ( lx < minX ) minX = lx;
+            if ( lx > maxX ) maxX = lx;
+            if ( ly < minY ) minY = ly;
+            if ( ly > maxY ) maxY = ly;
+        } );
+        var w = maxX - minX, h = maxY - minY;
         ctx.save();
         ctx.translate( b.position.x, b.position.y );
         ctx.rotate( b.angle );
-        var grad = ctx.createLinearGradient( 0, -b.bounds.max.y + b.position.y,
-                                             0,  b.bounds.max.y - b.position.y );
-        grad.addColorStop( 0, COLORS.wallShine );
-        grad.addColorStop( 1, COLORS.wall );
+        // Tubular wood shade: lit edge → core → lit edge, so a rail reads
+        // as rounded rather than a flat slab.
+        var grad = ctx.createLinearGradient( 0, -h / 2, 0, h / 2 );
+        grad.addColorStop( 0,   COLORS.wallShine );
+        grad.addColorStop( 0.5, COLORS.wall );
+        grad.addColorStop( 1,   COLORS.wallShine );
         ctx.fillStyle = grad;
-        var w = b.bounds.max.x - b.bounds.min.x;
-        var h = b.bounds.max.y - b.bounds.min.y;
-        ctx.fillRect( -w / 2, -h / 2, w, h );
+        roundRectPath( ctx, -w / 2, -h / 2, w, h, Math.min( h / 2, 6 ) );
+        ctx.fill();
         ctx.restore();
     };
 
