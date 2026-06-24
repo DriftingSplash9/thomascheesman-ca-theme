@@ -246,20 +246,22 @@
         // the centre gap between the flipper tips still reaches the drain
         // (which the flippers guard). They sit just below the slingshots.
         World.add( w, [
-            // left: from the left wall (~14, 380) down to the left flipper
-            // base (~265, 440). length 258, angle atan(60/251) ≈ 0.234.
-            Bodies.rectangle( 139, 410, 258, t, Object.assign( {}, wallOpts, {
-                angle: 0.234,
+            // left: from the left wall (~14, 356) down to JUST ABOVE the
+            // left flipper pivot (~270, 414). Connecting at the flipper
+            // (not below it) removes the corner pocket the ball used to
+            // wedge into. Bouncy (restitution 0.9) so a ball springs back
+            // UP into play instead of dying in the corner — Thomas's "kick
+            // out at the bottom" idea.
+            Bodies.rectangle( 142, 385, 263, t, Object.assign( {}, wallOpts, {
+                angle: 0.223, restitution: 0.9,
             } ) ),
-            // right: from the chute INNER wall (~697, 386) down to the
-            // right flipper base (~495, 440). It must STOP short of the
-            // plunger chute (lane x711-746) — an earlier version ran all
-            // the way to the right wall and crossed the shooter lane, so
-            // the launched ball ricocheted straight back to the plunger
-            // instead of escaping into the playfield. The inner chute wall
-            // (x697-711) closes the rest of the right side.
-            Bodies.rectangle( 596, 413, 209, t, Object.assign( {}, wallOpts, {
-                angle: -0.261,
+            // right: from the chute INNER wall (~697, 388) down to just
+            // above the right flipper pivot (~490, 414). Must stop short of
+            // the plunger chute (lane x711-746) — an earlier version ran to
+            // the right wall and crossed the shooter lane, bouncing the
+            // launched ball back to the plunger. Same bouncy connection.
+            Bodies.rectangle( 593.5, 401, 209, t, Object.assign( {}, wallOpts, {
+                angle: -0.125, restitution: 0.9,
             } ) ),
         ] );
 
@@ -832,6 +834,14 @@
         ctx.fillStyle = bg;
         ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
 
+        // Vignette — push the edges darker for depth + focus on the play.
+        var vg = ctx.createRadialGradient( TABLE_W / 2, TABLE_H * 0.42, TABLE_H * 0.34,
+                                           TABLE_W / 2, TABLE_H * 0.5, TABLE_W * 0.62 );
+        vg.addColorStop( 0, 'rgba(0,0,0,0)' );
+        vg.addColorStop( 1, 'rgba(0,0,0,0.5)' );
+        ctx.fillStyle = vg;
+        ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
+
         // Walls — draw all static rectangles as wood.
         var self = this;
         var bodies = Composite.allBodies( this.engine.world );
@@ -846,32 +856,57 @@
             self.drawRectLabel( r, labelOfRamp( r.label ), flash );
         } );
 
-        // Slingshots.
+        // Slingshots — glowing triangles with a lit edge.
         this.slingshots.forEach( function ( s ) {
             var flash = s.tcFlashUntil > now;
-            ctx.fillStyle = flash ? COLORS.bumperBright : COLORS.slingshot;
-            ctx.beginPath();
-            s.vertices.forEach( function ( v, i ) {
-                if ( i === 0 ) ctx.moveTo( v.x, v.y );
-                else ctx.lineTo( v.x, v.y );
-            } );
-            ctx.closePath();
+            function trace() {
+                ctx.beginPath();
+                s.vertices.forEach( function ( v, i ) {
+                    if ( i === 0 ) ctx.moveTo( v.x, v.y );
+                    else ctx.lineTo( v.x, v.y );
+                } );
+                ctx.closePath();
+            }
+            ctx.save();
+            ctx.shadowColor = COLORS.slingshot;
+            ctx.shadowBlur  = flash ? 24 : 9;
+            ctx.fillStyle   = flash ? COLORS.bumperBright : COLORS.slingshot;
+            trace();
             ctx.fill();
+            ctx.restore();
+            ctx.lineWidth   = 2;
+            ctx.strokeStyle = flash ? '#ffffff' : COLORS.bumperBright;
+            trace();
+            ctx.stroke();
         } );
 
-        // Bumpers — circles with bright rim.
+        // Bumpers — glowing glass discs with a bright rim + specular dot.
         this.bumpers.forEach( function ( bp ) {
             var flash = bp.tcFlashUntil > now;
             var radius = bp.circleRadius;
-            var grad = ctx.createRadialGradient(
-                bp.position.x - 4, bp.position.y - 4, 2,
-                bp.position.x, bp.position.y, radius
-            );
+            var x = bp.position.x, y = bp.position.y;
+            ctx.save();
+            // outer glow
+            ctx.shadowColor = flash ? '#ffffff' : COLORS.bumperBright;
+            ctx.shadowBlur  = flash ? 30 : 16;
+            var grad = ctx.createRadialGradient( x - 5, y - 6, 2, x, y, radius );
             grad.addColorStop( 0, flash ? '#ffffff' : COLORS.bumperBright );
             grad.addColorStop( 1, flash ? COLORS.bumperBright : COLORS.bumper );
             ctx.fillStyle = grad;
             ctx.beginPath();
-            ctx.arc( bp.position.x, bp.position.y, radius, 0, Math.PI * 2 );
+            ctx.arc( x, y, radius, 0, Math.PI * 2 );
+            ctx.fill();
+            ctx.restore();
+            // bright rim ring
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = flash ? '#ffffff' : COLORS.bumperBright;
+            ctx.beginPath();
+            ctx.arc( x, y, radius - 1, 0, Math.PI * 2 );
+            ctx.stroke();
+            // specular highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.65)';
+            ctx.beginPath();
+            ctx.arc( x - radius * 0.32, y - radius * 0.36, radius * 0.22, 0, Math.PI * 2 );
             ctx.fill();
         } );
 
@@ -897,9 +932,12 @@
         this.drawFlipper( this.leftFlipper );
         this.drawFlipper( this.rightFlipper );
 
-        // Ball.
+        // Ball — glassy sphere with a soft glow so it reads as it moves.
         if ( this.theBall ) {
             var b = this.theBall;
+            ctx.save();
+            ctx.shadowColor = COLORS.ballShine;
+            ctx.shadowBlur  = 14;
             var bg2 = ctx.createRadialGradient(
                 b.position.x - 3, b.position.y - 3, 1,
                 b.position.x, b.position.y, BALL_R
@@ -911,6 +949,7 @@
             ctx.beginPath();
             ctx.arc( b.position.x, b.position.y, BALL_R, 0, Math.PI * 2 );
             ctx.fill();
+            ctx.restore();
         }
 
         // Plunger charge meter — thin vertical bar in the shooter lane.
