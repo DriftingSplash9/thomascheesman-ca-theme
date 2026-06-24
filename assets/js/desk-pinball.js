@@ -173,6 +173,7 @@
         this.nudgeUntil = 0;  // nudge cooldown timestamp
         this.shake = null;    // { x, y, until } screen-shake offset
         this.stuckFrames = 0; // anti-stuck watchdog counter
+        this.goldPosts = 0;   // how many of the 5 posts have hit gold
 
         // ---- engine
         this.engine = Engine.create();
@@ -432,10 +433,10 @@
         // before, so the pair covers more of the bottom and the centre
         // drain gap between the tips is smaller (harder to drain, easier
         // to cradle). Funnel walls deliver the ball to the base at ~265.
-        this.leftFlipper = Bodies.rectangle( 0, 0, 90, 14,
+        this.leftFlipper = Bodies.rectangle( 0, 0, 104, 14,
             Object.assign( {}, flipperOpts, { label: 'flipper:left' } ) );
         this.leftPivot        = { x: 270, y: 412 };
-        this.leftHingeOffset  = { x: -45, y: 0 };
+        this.leftHingeOffset  = { x: -52, y: 0 };
         this.leftRestAngle    = 0.35;
         this.leftActiveAngle  = -0.55;
         this.leftAngle        = this.leftRestAngle;
@@ -444,10 +445,10 @@
         World.add( w, this.leftFlipper );
 
         // RIGHT — pivots around world (490, 412). Hinge at body-local (+45, 0).
-        this.rightFlipper = Bodies.rectangle( 0, 0, 90, 14,
+        this.rightFlipper = Bodies.rectangle( 0, 0, 104, 14,
             Object.assign( {}, flipperOpts, { label: 'flipper:right' } ) );
         this.rightPivot        = { x: 490, y: 412 };
-        this.rightHingeOffset  = { x: 45, y: 0 };
+        this.rightHingeOffset  = { x: 52, y: 0 };
         this.rightRestAngle    = -0.35;
         this.rightActiveAngle  = 0.55;
         this.rightAngle        = this.rightRestAngle;
@@ -632,7 +633,9 @@
         body.tcFlashUntil = performance.now() + 160;
         this.totalBumperHits++;
         var hits = this.bumperHits[ body.tcName ] = ( this.bumperHits[ body.tcName ] || 0 ) + 1;
-        this.addScore( 100 );
+        var gold = hits >= 12;
+        // A gold post is worth 5× a normal one.
+        this.addScore( gold ? 500 : 100 );
         // Apply a small extra impulse to the ball so the bumper feels alive.
         if ( this.theBall ) {
             var dir = Vector.normalise( Vector.sub( this.theBall.position, body.position ) );
@@ -641,13 +644,21 @@
         }
         // Sparks fly off on every hit, tinted to the post's current colour.
         this.spawnSparks( body.position.x, body.position.y, bumperBrightColor( hits ) );
-        // The post warms from cyan toward GOLD over its first 12 hits; the
-        // 12th hit locks it gold for good, and a gold post then gives the
-        // ball a small speed boost on every hit.
+        // The post jumps through bold hues over its first 12 hits; the 12th
+        // locks it GOLD for good — gold posts score 5× AND speed the ball up.
         if ( hits === 12 ) {
-            this.flashBanner( body.tcName + ' is GOLD — it speeds the ball up now', 2400 );
+            this.goldPosts++;
+            this.flashBanner( body.tcName + ' is GOLD — 5× points + speed boost', 2400 );
+            // All five posts gold → jackpot.
+            if ( this.goldPosts === 5 ) {
+                this.score += 25000;
+                this.scoreEl.textContent = this.score.toLocaleString();
+                this.multiplier = Math.max( this.multiplier, 3 );
+                this.multUntil = performance.now() + 20000;
+                this.flashBanner( 'ALL FIVE POSTS GOLD — 25,000 + 3× for 20s!', 3600 );
+            }
         }
-        if ( hits >= 12 && this.theBall ) {
+        if ( gold && this.theBall ) {
             var v = this.theBall.velocity;
             Body.setVelocity( this.theBall, { x: v.x * 1.16, y: v.y * 1.16 } );
         }
@@ -1094,17 +1105,17 @@
         return '';
     }
 
-    // A post's colour by hit count — warms from cyan toward gold over its
-    // first 12 hits, then locks gold. (bright = the lit/highlight tone.)
+    // A post's colour by hit count — it jumps through BOLD, saturated hues
+    // so each hit really reads as a colour change, then locks GOLD on the
+    // 12th hit. (bright = the lit/highlight tone for the gradient + sparks.)
+    var POST_HUES = [ 187, 217, 258, 288, 318, 344, 8, 28, 52, 96, 146, 172 ];
     function bumperColor( hits ) {
         if ( hits >= 12 ) return '#f5c33a';
-        var h = 187 - ( 187 - 46 ) * hits / 12;
-        return 'hsl(' + Math.round( h ) + ', 78%, 56%)';
+        return 'hsl(' + POST_HUES[ hits ] + ', 95%, 56%)';
     }
     function bumperBrightColor( hits ) {
         if ( hits >= 12 ) return '#ffe79a';
-        var h = 187 - ( 187 - 46 ) * hits / 12;
-        return 'hsl(' + Math.round( h ) + ', 92%, 76%)';
+        return 'hsl(' + POST_HUES[ hits ] + ', 100%, 78%)';
     }
 
     // Trace a rounded rectangle (body-local). Shared by the walls.
@@ -1203,8 +1214,8 @@
         grad.addColorStop( 0, COLORS.flipperShine );
         grad.addColorStop( 1, COLORS.flipper );
         ctx.fillStyle = grad;
-        // Rounded rectangle 90×14 (matches the wider flipper body)
-        var w = 90, h = 14, r = 5;
+        // Rounded rectangle 104×14 (matches the flipper body)
+        var w = 104, h = 14, r = 5;
         ctx.beginPath();
         ctx.moveTo( -w / 2 + r, -h / 2 );
         ctx.lineTo(  w / 2 - r, -h / 2 );
