@@ -174,12 +174,13 @@
         this.shake = null;    // { x, y, until } screen-shake offset
         this.stuckFrames = 0; // anti-stuck watchdog counter
         this.goldPosts = 0;   // how many of the 5 posts have hit gold
+        this.overPanel = null;// game-over panel element while shown
 
         // ---- engine
         this.engine = Engine.create();
         this.engine.world.gravity.y = 1.0;
-        this.engine.positionIterations = 8;
-        this.engine.velocityIterations = 8;
+        this.engine.positionIterations = 12;
+        this.engine.velocityIterations = 10;
         this.engine.constraintIterations = 4;
 
         this.buildTable();
@@ -433,7 +434,7 @@
         // before, so the pair covers more of the bottom and the centre
         // drain gap between the tips is smaller (harder to drain, easier
         // to cradle). Funnel walls deliver the ball to the base at ~265.
-        this.leftFlipper = Bodies.rectangle( 0, 0, 104, 14,
+        this.leftFlipper = Bodies.rectangle( 0, 0, 104, 18,
             Object.assign( {}, flipperOpts, { label: 'flipper:left' } ) );
         this.leftPivot        = { x: 270, y: 412 };
         this.leftHingeOffset  = { x: -52, y: 0 };
@@ -445,7 +446,7 @@
         World.add( w, this.leftFlipper );
 
         // RIGHT — pivots around world (490, 412). Hinge at body-local (+45, 0).
-        this.rightFlipper = Bodies.rectangle( 0, 0, 104, 14,
+        this.rightFlipper = Bodies.rectangle( 0, 0, 104, 18,
             Object.assign( {}, flipperOpts, { label: 'flipper:right' } ) );
         this.rightPivot        = { x: 490, y: 412 };
         this.rightHingeOffset  = { x: 52, y: 0 };
@@ -776,12 +777,13 @@
     // END GAME — submit if score qualifies; show summary; close.
     Pinball.prototype.endGame = function () {
         this.gameOver = true;
-        this.flashBanner( 'Game over — ' + this.score.toLocaleString() + ' points', 3000 );
+        this.flashBanner( 'Game over — ' + this.score.toLocaleString() + ' points', 2600 );
 
         var self = this;
         var url = ( window.tcDeskGames && window.tcDeskGames.scoresUrl ) || '/wp-json/tc-games/v1/scores';
 
-        // Quick read first to decide if we should prompt for a name.
+        // Quick read first to decide if we should prompt for a name; either
+        // way we land on the Play Again / Exit panel.
         fetch( url + '?game=pinball', { credentials: 'same-origin' } )
             .then( function ( r ) { return r.ok ? r.json() : null; } )
             .then( function ( data ) {
@@ -791,18 +793,12 @@
                 var qualifies = self.score > 0 && (
                     rows.length < 10 || self.score > rows[ rows.length - 1 ].score
                 );
-                if ( ! qualifies ) {
-                    setTimeout( function () { self.destroy(); }, 2400 );
-                    return;
-                }
+                if ( ! qualifies ) { self.showEndPanel( null ); return; }
                 var name = ( window.prompt(
                     'Top 10! Initials or name (max 16 chars):',
                     'TC'
                 ) || '' ).trim();
-                if ( ! name ) {
-                    setTimeout( function () { self.destroy(); }, 1200 );
-                    return;
-                }
+                if ( ! name ) { self.showEndPanel( null ); return; }
                 fetch( url, {
                     method: 'POST',
                     credentials: 'same-origin',
@@ -813,18 +809,68 @@
                         score: self.score,
                     } ),
                 } )
-                .then( function () {
-                    self.flashBanner( 'Saved. Top score: ' + self.score.toLocaleString(), 2400 );
-                    setTimeout( function () { self.destroy(); }, 2600 );
-                } )
-                .catch( function () {
-                    self.flashBanner( 'Could not save score.', 2000 );
-                    setTimeout( function () { self.destroy(); }, 2200 );
-                } );
+                .then( function () { self.showEndPanel( 'Saved to the leaderboard.' ); } )
+                .catch( function () { self.showEndPanel( 'Could not save score.' ); } );
             } )
-            .catch( function () {
-                setTimeout( function () { self.destroy(); }, 2400 );
-            } );
+            .catch( function () { self.showEndPanel( null ); } );
+    };
+
+    // Game-over panel — final score + Play Again / Exit. Built with inline
+    // styles so it ships entirely in this JS file (no bundled-CSS change).
+    Pinball.prototype.showEndPanel = function ( note ) {
+        if ( this.overPanel ) return;
+        var panel = document.createElement( 'div' );
+        panel.className = 'tc-pinball__over';
+        panel.setAttribute( 'role', 'dialog' );
+        panel.setAttribute( 'aria-modal', 'true' );
+        panel.style.cssText = 'position:absolute;inset:0;z-index:12;display:flex;' +
+            'flex-direction:column;align-items:center;justify-content:center;gap:16px;' +
+            'text-align:center;background:rgba(8,6,20,0.85);';
+        panel.innerHTML =
+            '<div style="font:700 30px Georgia,serif;color:#00ff66;letter-spacing:2px;">GAME OVER</div>' +
+            '<div style="font:400 19px Georgia,serif;color:#e6fbff;">' +
+                this.score.toLocaleString() + ' points</div>' +
+            ( note ? '<div style="font:400 13px Georgia,serif;color:#9fb0d0;">' + note + '</div>' : '' );
+        var row = document.createElement( 'div' );
+        row.style.cssText = 'display:flex;gap:14px;margin-top:6px;';
+        var self = this;
+        function mkBtn( label, fn ) {
+            var b = document.createElement( 'button' );
+            b.type = 'button';
+            b.textContent = label;
+            b.style.cssText = 'font:600 14px Georgia,serif;letter-spacing:.04em;padding:11px 26px;' +
+                'border-radius:999px;border:1px solid #3fc7da;background:rgba(63,199,218,0.16);' +
+                'color:#e6fbff;cursor:pointer;';
+            b.addEventListener( 'mouseenter', function () { b.style.background = 'rgba(63,199,218,0.32)'; } );
+            b.addEventListener( 'mouseleave', function () { b.style.background = 'rgba(63,199,218,0.16)'; } );
+            b.addEventListener( 'click', fn );
+            return b;
+        }
+        var again = mkBtn( 'Play Again', function () { self.restart(); } );
+        row.appendChild( again );
+        row.appendChild( mkBtn( 'Exit', function () { self.destroy(); } ) );
+        panel.appendChild( row );
+        this.root.appendChild( panel );
+        this.overPanel = panel;
+        again.focus();
+    };
+
+    // Reset for a fresh game without tearing down the instance.
+    Pinball.prototype.restart = function () {
+        if ( this.overPanel ) { this.overPanel.remove(); this.overPanel = null; }
+        this.score = 0;        this.scoreEl.textContent = '0';
+        this.ball = 1;         this.ballEl.textContent  = '1';
+        this.multiplier = 1;   this.multUntil = 0;  this.multEl.textContent = '';
+        this.hcsThisBall = 0;
+        this.bumperHits = {};  this.totalBumperHits = 0;
+        this.unlocked25k = false; this.unlocked50k = false;
+        this.goldPosts = 0;
+        this.gameOver = false;
+        this.sparks = [];
+        this.stuckFrames = 0;
+        this.dropTargets.forEach( function ( d ) { d.tcDropped = false; d.isSensor = false; } );
+        this.spawnBall();
+        this.flashBanner( 'Push Space to launch', 1800 );
     };
 
     // ================================================================
@@ -845,7 +891,19 @@
             this.plungerCharge = Math.min( 1, this.plungerCharge + dt / 800 );
         }
 
-        Engine.update( this.engine, dt );
+        // Sub-step the physics so a fast ball can't tunnel through the thin
+        // flippers/walls in one big step. Then cap the ball's speed (the
+        // gold-post boosts can otherwise compound into a tunnelling missile).
+        var subSteps = 2;
+        for ( var ss = 0; ss < subSteps; ss++ ) {
+            Engine.update( this.engine, dt / subSteps );
+        }
+        if ( this.theBall ) {
+            var bv = this.theBall.velocity, bs = Math.hypot( bv.x, bv.y ), BMAX = 24;
+            if ( bs > BMAX ) {
+                Body.setVelocity( this.theBall, { x: bv.x / bs * BMAX, y: bv.y / bs * BMAX } );
+            }
+        }
 
         // Spark particles (bumper hits) — integrate + age out.
         for ( var si = this.sparks.length - 1; si >= 0; si-- ) {
@@ -1214,8 +1272,8 @@
         grad.addColorStop( 0, COLORS.flipperShine );
         grad.addColorStop( 1, COLORS.flipper );
         ctx.fillStyle = grad;
-        // Rounded rectangle 104×14 (matches the flipper body)
-        var w = 104, h = 14, r = 5;
+        // Rounded rectangle 104×18 (matches the flipper body)
+        var w = 104, h = 18, r = 6;
         ctx.beginPath();
         ctx.moveTo( -w / 2 + r, -h / 2 );
         ctx.lineTo(  w / 2 - r, -h / 2 );
