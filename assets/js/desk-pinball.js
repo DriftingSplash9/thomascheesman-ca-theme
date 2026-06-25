@@ -98,6 +98,7 @@
         ramp:     { distance: 12, outerStrength: 1.5, innerStrength: 0, quality: 0.3 },
         sling:    { distance: 10, outerStrength: 1.4, innerStrength: 0, quality: 0.3 },
         bumper:   { distance: 16, outerStrength: 2.2, innerStrength: 0, quality: 0.35 },
+        peg:      { distance: 9,  outerStrength: 1.6, innerStrength: 0, quality: 0.3 },
         ball:     { distance: 14, outerStrength: 2.0, innerStrength: 0, quality: 0.4 },
         spark:    { distance: 8,  outerStrength: 2.2, innerStrength: 0, quality: 0.3 },
     };
@@ -389,7 +390,7 @@
         bumperLabels.forEach( function ( spec ) {
             var b = Bodies.circle( spec.x, spec.y, 18, {
                 isStatic: true,
-                restitution: 1.6, // overspring so the ball pops
+                restitution: 1.7, // overspring so the ball pops
                 label: 'bumper:' + spec.name,
                 render: { fillStyle: COLORS.bumper },
             } );
@@ -400,13 +401,36 @@
             pinball.bumpers.push( b );
         } );
 
+        // ---- PINS — small static studs scattered through the otherwise
+        // empty mid-field ("more pins"). Gold, to contrast the cyan bumpers
+        // and give the ball more to ping off. r8 (vs the r10 ball) so they
+        // can't be tunnelled at the speed cap. Score 25 × mult.
+        this.pegs = [];
+        var pegSpots = [
+            { x: 360, y: 175 },
+            { x: 240, y: 250 }, { x: 480, y: 250 },
+            { x: 320, y: 320 }, { x: 400, y: 320 },
+            { x: 200, y: 320 }, { x: 520, y: 320 },
+        ];
+        pegSpots.forEach( function ( spec ) {
+            var p = Bodies.circle( spec.x, spec.y, 8, {
+                isStatic: true,
+                restitution: 1.25,
+                label: 'peg',
+                render: { fillStyle: COLORS.dropTarget },
+            } );
+            p.tcFlashUntil = 0;
+            World.add( w, p );
+            pinball.pegs.push( p );
+        } );
+
         // ---- SLINGSHOTS — triangular bumpers above each flipper.
         // High restitution; score 50 × mult.
         this.slingshots = [];
         function slingshot( verts, label ) {
             var s = Bodies.fromVertices( 0, 0, [ verts ], {
                 isStatic: true,
-                restitution: 1.4,
+                restitution: 1.5,
                 label: label,
                 render: { fillStyle: COLORS.slingshot },
             }, true );
@@ -568,7 +592,7 @@
         var y = TABLE_H - 30;
         this.theBall = Bodies.circle( x, y, BALL_R, {
             density: 0.025,
-            restitution: 0.82,
+            restitution: 0.88,
             // Lower air friction so the ball doesn't bleed velocity
             // climbing the chute; previously 0.005 left it arriving
             // at the deflector with too little energy to escape.
@@ -711,9 +735,23 @@
                     self.handleRamp( other );
                 } else if ( label.indexOf( 'drop:' ) === 0 ) {
                     self.handleDrop( other );
+                } else if ( label === 'peg' ) {
+                    self.handlePeg( other );
                 }
             } );
         } );
+    };
+
+    Pinball.prototype.handlePeg = function ( body ) {
+        body.tcFlashUntil = performance.now() + 140;
+        this.addScore( 25 );
+        this.spawnSparks( body.position.x, body.position.y, COLORS.dropTarget );
+        // Small nudge so the peg feels springy (lighter than a bumper).
+        if ( this.theBall ) {
+            var dir = Vector.normalise( Vector.sub( this.theBall.position, body.position ) );
+            Body.applyForce( this.theBall, this.theBall.position,
+                { x: dir.x * 0.006, y: dir.y * 0.006 } );
+        }
     };
 
     Pinball.prototype.handleBumper = function ( body ) {
@@ -985,7 +1023,7 @@
             Engine.update( this.engine, dt / subSteps );
         }
         if ( this.theBall ) {
-            var bv = this.theBall.velocity, bs = Math.hypot( bv.x, bv.y ), BMAX = 24;
+            var bv = this.theBall.velocity, bs = Math.hypot( bv.x, bv.y ), BMAX = 26;
             if ( bs > BMAX ) {
                 Body.setVelocity( this.theBall, { x: bv.x / bs * BMAX, y: bv.y / bs * BMAX } );
             }
@@ -1187,6 +1225,27 @@
             ctx.fillStyle = 'rgba(255,255,255,0.65)';
             ctx.beginPath();
             ctx.arc( x - radius * 0.32, y - radius * 0.36, radius * 0.22, 0, Math.PI * 2 );
+            ctx.fill();
+        } );
+
+        // Pins — small gold studs.
+        this.pegs.forEach( function ( p ) {
+            var flash = p.tcFlashUntil > now;
+            var r = p.circleRadius, x = p.position.x, y = p.position.y;
+            ctx.save();
+            ctx.shadowColor = COLORS.dropTarget;
+            ctx.shadowBlur  = flash ? 8 : 3;
+            var g = ctx.createRadialGradient( x - r * 0.3, y - r * 0.3, 1, x, y, r );
+            g.addColorStop( 0, '#fff3d0' );
+            g.addColorStop( 1, flash ? '#ffffff' : COLORS.dropTarget );
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc( x, y, r, 0, Math.PI * 2 );
+            ctx.fill();
+            ctx.restore();
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath();
+            ctx.arc( x - r * 0.3, y - r * 0.3, r * 0.3, 0, Math.PI * 2 );
             ctx.fill();
         } );
 
@@ -1563,6 +1622,11 @@
         bumpersG.filters = glow( GLOW.bumper, '#ffffff' );
         shakeRoot.addChild( bumpersG ); this.pixi.bumpersG = bumpersG;
 
+        // Pins — redrawn each frame (gold studs).
+        var pegsG = new P.Graphics();
+        pegsG.filters = glow( GLOW.peg, COLORS.dropTarget );
+        shakeRoot.addChild( pegsG ); this.pixi.pegsG = pegsG;
+
         // Drop targets + labels.
         var dropsG = new P.Graphics();
         shakeRoot.addChild( dropsG ); this.pixi.dropsG = dropsG;
@@ -1635,38 +1699,75 @@
                 : colorToNum( r.tcColor );
         } );
 
-        // Slingshots.
+        // Slingshots — dark slate body with a glowing "rubber band" on the
+        // kicker face (verts[0]→verts[1], the top-sloped edge the ball hits).
         var slingsG = px.slingsG; slingsG.clear();
         this.slingshots.forEach( function ( s ) {
             var flash = s.tcFlashUntil > now;
-            var pts = [];
-            s.vertices.forEach( function ( v ) { pts.push( v.x, v.y ); } );
-            slingsG.lineStyle( 2, colorToNum( flash ? '#ffffff' : COLORS.bumperBright ), 1 );
-            slingsG.beginFill( colorToNum( flash ? COLORS.bumperBright : COLORS.slingshot ), 1 );
+            var v = s.tcVerts;
+            var pts = [ v[ 0 ].x, v[ 0 ].y, v[ 1 ].x, v[ 1 ].y, v[ 2 ].x, v[ 2 ].y ];
+            slingsG.lineStyle( 0 );
+            slingsG.beginFill( 0x232f44, 1 );           // slate body
             slingsG.drawPolygon( pts );
             slingsG.endFill();
+            // a thin lit edge around the whole shape for definition
+            slingsG.lineStyle( 1.5, 0x3a4a66, 1 );
+            slingsG.drawPolygon( pts );
+            slingsG.lineStyle( 0 );
+            // the bright rubber band on the active edge
+            slingsG.lineStyle( 4, colorToNum( flash ? '#ffffff' : COLORS.bumperBright ), 1 );
+            slingsG.moveTo( v[ 0 ].x, v[ 0 ].y );
+            slingsG.lineTo( v[ 1 ].x, v[ 1 ].y );
+            slingsG.lineStyle( 0 );
         } );
 
-        // Bumpers — glassy discs, warm→gold by hits.
+        // Bumpers — dimensional pop-bumpers: dark socket, metallic ring,
+        // coloured body, cap rim, an idle-pulsing core, and a specular.
         var bumpersG = px.bumpersG; bumpersG.clear();
-        this.bumpers.forEach( function ( bp ) {
+        this.bumpers.forEach( function ( bp, bi ) {
             var flash = bp.tcFlashUntil > now;
             var hits = self.bumperHits[ bp.tcName ] || 0;
             var baseN = colorToNum( flash ? COLORS.bumperBright : bumperColor( hits ) );
             var brightN = colorToNum( bumperBrightColor( hits ) );
             var rad = bp.circleRadius, x = bp.position.x, y = bp.position.y;
-            bumpersG.beginFill( baseN, 1 );
+            var pulse = 0.5 + 0.5 * Math.sin( now / 320 + bi * 1.7 );
+            bumpersG.beginFill( 0x0a0814, 0.85 );           // dark socket
+            bumpersG.drawCircle( x, y, rad + 4 );
+            bumpersG.endFill();
+            bumpersG.beginFill( brightN, 0.32 );            // metallic ring
+            bumpersG.drawCircle( x, y, rad + 2 );
+            bumpersG.endFill();
+            bumpersG.beginFill( baseN, 1 );                 // body
             bumpersG.drawCircle( x, y, rad );
             bumpersG.endFill();
-            bumpersG.lineStyle( 2, flash ? 0xffffff : brightN, 1 );
+            bumpersG.lineStyle( 2.5, flash ? 0xffffff : brightN, 1 );  // cap rim
             bumpersG.drawCircle( x, y, rad - 1 );
             bumpersG.lineStyle( 0 );
-            bumpersG.beginFill( brightN, flash ? 0.85 : 0.5 );
-            bumpersG.drawCircle( x - rad * 0.28, y - rad * 0.3, rad * 0.42 );
+            bumpersG.beginFill( brightN, flash ? 0.95 : ( 0.35 + 0.4 * pulse ) ); // pulsing core
+            bumpersG.drawCircle( x, y, rad * ( 0.42 + 0.12 * pulse ) );
             bumpersG.endFill();
-            bumpersG.beginFill( 0xffffff, 0.7 );
-            bumpersG.drawCircle( x - rad * 0.32, y - rad * 0.36, rad * 0.2 );
+            bumpersG.beginFill( 0xffffff, 0.8 );            // specular
+            bumpersG.drawCircle( x - rad * 0.32, y - rad * 0.34, rad * 0.22 );
             bumpersG.endFill();
+        } );
+
+        // Pins — small gold studs with a bright rim + specular.
+        var pegsG = px.pegsG; pegsG.clear();
+        this.pegs.forEach( function ( p ) {
+            var flash = p.tcFlashUntil > now;
+            var r = p.circleRadius, x = p.position.x, y = p.position.y;
+            pegsG.beginFill( 0x0a0814, 0.85 );              // socket
+            pegsG.drawCircle( x, y, r + 1.5 );
+            pegsG.endFill();
+            pegsG.beginFill( colorToNum( flash ? '#ffffff' : COLORS.dropTarget ), 1 );
+            pegsG.drawCircle( x, y, r );
+            pegsG.endFill();
+            pegsG.lineStyle( 1.5, colorToNum( flash ? '#ffffff' : '#fff3d0' ), 1 );
+            pegsG.drawCircle( x, y, r - 0.5 );
+            pegsG.lineStyle( 0 );
+            pegsG.beginFill( 0xffffff, 0.75 );
+            pegsG.drawCircle( x - r * 0.3, y - r * 0.3, r * 0.32 );
+            pegsG.endFill();
         } );
 
         // Drop targets — dim when dropped; bright flash on hit.
