@@ -175,6 +175,7 @@
         this.stuckFrames = 0; // anti-stuck watchdog counter
         this.goldPosts = 0;   // how many of the 5 posts have hit gold
         this.overPanel = null;// game-over panel element while shown
+        this.ballTrail = [];  // recent ball positions for a motion trail
 
         // ---- engine
         this.engine = Engine.create();
@@ -482,7 +483,7 @@
         var y = TABLE_H - 30;
         this.theBall = Bodies.circle( x, y, BALL_R, {
             density: 0.025,
-            restitution: 0.6,
+            restitution: 0.82,
             // Lower air friction so the ball doesn't bleed velocity
             // climbing the chute; previously 0.005 left it arriving
             // at the deflector with too little energy to escape.
@@ -903,6 +904,9 @@
             if ( bs > BMAX ) {
                 Body.setVelocity( this.theBall, { x: bv.x / bs * BMAX, y: bv.y / bs * BMAX } );
             }
+            // Motion trail — a short history of recent spots.
+            this.ballTrail.push( { x: this.theBall.position.x, y: this.theBall.position.y } );
+            if ( this.ballTrail.length > 9 ) this.ballTrail.shift();
         }
 
         // Spark particles (bumper hits) — integrate + age out.
@@ -1006,6 +1010,13 @@
         ctx.fillStyle = bg;
         ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
 
+        // Soft top spotlight — lifts the upper playfield out of flat black.
+        var spot = ctx.createRadialGradient( TABLE_W / 2, 165, 30, TABLE_W / 2, 165, 350 );
+        spot.addColorStop( 0, 'rgba(122,112,225,0.13)' );
+        spot.addColorStop( 1, 'rgba(122,112,225,0)' );
+        ctx.fillStyle = spot;
+        ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
+
         // Vignette — push the edges darker for depth + focus on the play.
         var vg = ctx.createRadialGradient( TABLE_W / 2, TABLE_H * 0.42, TABLE_H * 0.34,
                                            TABLE_W / 2, TABLE_H * 0.5, TABLE_W * 0.62 );
@@ -1093,16 +1104,25 @@
             ctx.fill();
         } );
 
-        // Drop targets — letters; dimmed when dropped.
+        // Drop targets — lit, rounded letter tiles; dimmed when dropped.
         this.dropTargets.forEach( function ( d ) {
             var flash = d.tcFlashUntil > now;
-            ctx.fillStyle = d.tcDropped
-                ? COLORS.dropTargetOff
-                : ( flash ? '#ffffff' : COLORS.dropTarget );
             ctx.save();
             ctx.translate( d.position.x, d.position.y );
             ctx.rotate( d.angle );
-            ctx.fillRect( -28, -7, 56, 14 );
+            if ( d.tcDropped ) {
+                ctx.fillStyle = COLORS.dropTargetOff;
+            } else {
+                ctx.shadowColor = COLORS.dropTarget;
+                ctx.shadowBlur  = flash ? 8 : 3;
+                var dg = ctx.createLinearGradient( 0, -7, 0, 7 );
+                dg.addColorStop( 0, '#fff3d0' );
+                dg.addColorStop( 1, flash ? '#ffffff' : COLORS.dropTarget );
+                ctx.fillStyle = dg;
+            }
+            roundRectPath( ctx, -28, -7, 56, 14, 4 );
+            ctx.fill();
+            ctx.shadowBlur = 0;
             ctx.fillStyle = d.tcDropped ? '#1a1018' : '#3a2616';
             ctx.font = 'bold 12px Georgia, serif';
             ctx.textAlign = 'center';
@@ -1114,6 +1134,20 @@
         // Flippers.
         this.drawFlipper( this.leftFlipper );
         this.drawFlipper( this.rightFlipper );
+
+        // Ball trail — fading afterimages so fast shots streak.
+        if ( this.theBall && this.ballTrail.length > 1 ) {
+            for ( var ti = 0; ti < this.ballTrail.length - 1; ti++ ) {
+                var tp = this.ballTrail[ ti ];
+                var tf = ti / this.ballTrail.length;     // 0 oldest .. 1 newest
+                ctx.globalAlpha = tf * 0.35;
+                ctx.fillStyle = COLORS.ball;
+                ctx.beginPath();
+                ctx.arc( tp.x, tp.y, BALL_R * ( 0.35 + 0.55 * tf ), 0, Math.PI * 2 );
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
 
         // Ball — glassy sphere with a soft glow so it reads as it moves.
         if ( this.theBall ) {
@@ -1246,7 +1280,10 @@
             if ( ly < minY ) minY = ly;
             if ( ly > maxY ) maxY = ly;
         } );
-        ctx.fillRect( minX, minY, maxX - minX, maxY - minY );
+        ctx.shadowColor = color;
+        ctx.shadowBlur  = 4;
+        roundRectPath( ctx, minX, minY, maxX - minX, maxY - minY, 4 );
+        ctx.fill();
         ctx.restore();
     };
 
