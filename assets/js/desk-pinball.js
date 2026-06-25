@@ -350,10 +350,10 @@
         // the ball deflects and we award points.
         this.ramps = [];
         var rampSpecs = [
-            { x: 110, y: 130, angle: -0.4, label: 'ramp:family',    color: COLORS.ramp },
-            { x: 250, y: 110, angle: -0.2, label: 'ramp:hcs',       color: COLORS.rampHcs },
-            { x: 390, y: 110, angle:  0.2, label: 'ramp:site',      color: COLORS.ramp },
-            { x: 530, y: 130, angle:  0.4, label: 'ramp:elsewhere', color: COLORS.ramp },
+            { x: 110, y: 130, angle: -0.4, label: 'ramp:link',  color: '#4caf50' }, // green tunic
+            { x: 250, y: 110, angle: -0.2, label: 'ramp:ganon', color: '#e0452e' }, // special: double score
+            { x: 390, y: 110, angle:  0.2, label: 'ramp:zelda', color: '#e8b923' }, // royal gold
+            { x: 530, y: 130, angle:  0.4, label: 'ramp:impa',  color: '#7c6bd6' }, // Sheikah indigo
         ];
         rampSpecs.forEach( function ( spec ) {
             var r = Bodies.rectangle( spec.x, spec.y, 84, 10, {
@@ -374,16 +374,16 @@
         // hit. Clearing all 3 grants 5× multiplier for 10 seconds and
         // they reset.
         this.dropTargets = [];
-        var letters = [ 'T', 'C', 'V' ];
-        letters.forEach( function ( letter, i ) {
+        var places = [ 'Hyrule', 'Kakariko', 'Gerudo' ];
+        places.forEach( function ( place, i ) {
             var x = 260 + i * 70;
-            var d = Bodies.rectangle( x, 50, 56, 14, {
+            var d = Bodies.rectangle( x, 50, 64, 14, {
                 isStatic: true,
                 restitution: 0.6,
-                label: 'drop:' + letter,
+                label: 'drop:' + place,
                 render: { fillStyle: COLORS.dropTarget },
             } );
-            d.tcLetter = letter;
+            d.tcLabel = place;
             d.tcDropped = false;
             d.tcFlashUntil = 0;
             World.add( w, d );
@@ -690,11 +690,11 @@
 
     Pinball.prototype.handleRamp = function ( body ) {
         body.tcFlashUntil = performance.now() + 220;
-        if ( body.label === 'ramp:hcs' ) {
+        if ( body.label === 'ramp:ganon' ) {
             this.hcsThisBall++;
             this.addScore( 1000 );
             if ( this.hcsThisBall === 3 ) {
-                this.flashBanner( 'TILT — 1 in 200,000 live with Hajdu-Cheney.', 3400 );
+                this.flashBanner( 'TILT — Ganon awakens! The Triforce trembles.', 3400 );
             }
         } else {
             this.addScore( 500 );
@@ -713,7 +713,7 @@
         if ( allDown ) {
             this.multiplier = 5;
             this.multUntil = performance.now() + 10000;
-            this.flashBanner( '× 5 MULTIPLIER — 10 seconds', 2400 );
+            this.flashBanner( 'All Hyrule explored — ×5 for 10 seconds!', 2400 );
             var self = this;
             setTimeout( function () {
                 self.dropTargets.forEach( function ( d ) {
@@ -1120,14 +1120,14 @@
                 dg.addColorStop( 1, flash ? '#ffffff' : COLORS.dropTarget );
                 ctx.fillStyle = dg;
             }
-            roundRectPath( ctx, -28, -7, 56, 14, 4 );
+            roundRectPath( ctx, -32, -7, 64, 14, 4 );
             ctx.fill();
             ctx.shadowBlur = 0;
             ctx.fillStyle = d.tcDropped ? '#1a1018' : '#3a2616';
-            ctx.font = 'bold 12px Georgia, serif';
+            ctx.font = 'bold 10px Georgia, serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText( d.tcLetter, 0, 0 );
+            ctx.fillText( d.tcLabel, 0, 0 );
             ctx.restore();
         } );
 
@@ -1190,10 +1190,10 @@
     };
 
     function labelOfRamp( label ) {
-        if ( label === 'ramp:family' )    return 'family';
-        if ( label === 'ramp:hcs' )       return 'hcs';
-        if ( label === 'ramp:site' )      return 'site';
-        if ( label === 'ramp:elsewhere' ) return 'elsewhere';
+        if ( label === 'ramp:link' )  return 'Link';
+        if ( label === 'ramp:ganon' ) return 'Ganon';
+        if ( label === 'ramp:zelda' ) return 'Zelda';
+        if ( label === 'ramp:impa' )  return 'Impa';
         return '';
     }
 
