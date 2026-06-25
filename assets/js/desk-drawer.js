@@ -6,13 +6,18 @@
  *   2. Decode the rot13 email + copy-on-click.
  *   3. Live clock (Grande Prairie / America/Edmonton).
  *   4. Fetch the current pinball top score and pin it on the brass tag.
- *   5. Wire the marble button: lazy-load Matter.js, then desk-pinball.js,
- *      then hand off to TCPinball.boot(footerEl).
+ *   5. Wire the marble button: lazy-load Matter.js → PixiJS → pixi-filters
+ *      → desk-pinball.js, then hand off to TCPinball.boot(footerEl, {pixi}).
  *
  * Lazy-load policy: nothing pinball-related touches the network or main
  * thread until the visitor clicks the marble. Visitors who never click
- * pay zero. Matter.js (~85kb gz) and desk-pinball.js are both injected
- * on demand, cached by the browser thereafter.
+ * pay zero. Matter.js (~85kb gz), PixiJS (~140kb gz) + pixi-filters, and
+ * desk-pinball.js are all injected on demand, cached thereafter.
+ *
+ * The drawer marble launches the WebGL (Pixi) renderer; Pixi + pixi-filters
+ * load NON-FATALLY — if either fails, desk-pinball.js detects the missing
+ * PIXI global and falls back to the Canvas2D renderer (the same one the
+ * desk-menu arcade uses), so the game always boots.
  *
  * Mobile note: the desk-pinball table is keyboard-friendly (flippers on
  * A/L, plunger on Space). Touch flippers tap the left/right halves of
@@ -193,20 +198,29 @@
         var loaded = false;
         marble.addEventListener( 'click', function () {
             if ( window.TCPinball && window.TCPinball.boot ) {
-                window.TCPinball.boot( footer );
+                window.TCPinball.boot( footer, { renderer: 'pixi' } );
                 return;
             }
             if ( loaded ) return;
             loaded = true;
             marble.classList.add( 'is-loading' );
             var themeBase = ( window.tcVentures && window.tcVentures.themeUrl ) || '';
+            // Matter is required; Pixi + pixi-filters are the WebGL renderer
+            // and load non-fatally (pixi-filters needs the PIXI global, so
+            // only attempt it if Pixi actually loaded). desk-pinball.js
+            // downgrades to Canvas2D when PIXI is absent.
             loadScript( themeBase + '/assets/js/vendor/matter-0.20.0.min.js' ).then( function () {
+                return loadScriptSoft( themeBase + '/assets/js/vendor/pixi-7.4.2.min.js' );
+            } ).then( function () {
+                if ( ! window.PIXI ) return;
+                return loadScriptSoft( themeBase + '/assets/js/vendor/pixi-filters-5.3.0.min.js' );
+            } ).then( function () {
                 var v = ( window.tcDeskGames && window.tcDeskGames.version ) || Date.now();
                 return loadScript( themeBase + '/assets/js/desk-pinball.js?ver=' + encodeURIComponent( v ) );
             } ).then( function () {
                 marble.classList.remove( 'is-loading' );
                 if ( window.TCPinball && window.TCPinball.boot ) {
-                    window.TCPinball.boot( footer );
+                    window.TCPinball.boot( footer, { renderer: 'pixi' } );
                 }
             } ).catch( function ( err ) {
                 console.warn( 'Pinball failed to load — sorry.', err );
@@ -224,6 +238,14 @@
             s.onload = function () { resolve(); };
             s.onerror = function () { reject( new Error( 'Script failed: ' + src ) ); };
             document.head.appendChild( s );
+        } );
+    }
+
+    // Non-fatal load — resolves even on failure so an optional dependency
+    // (the WebGL renderer) never blocks the game from booting.
+    function loadScriptSoft( src ) {
+        return loadScript( src ).catch( function ( err ) {
+            console.warn( 'Optional script failed (continuing): ' + src, err );
         } );
     }
 

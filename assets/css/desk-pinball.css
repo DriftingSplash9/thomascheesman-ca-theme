@@ -45,8 +45,8 @@
     max-height: 100vh;
     aspect-ratio: 760 / 460;
     background: #0a0814;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
+    /* No image-rendering:pixelated — the WebGL (Pixi) renderer wants smooth
+       scaling; the Canvas2D fallback also reads fine antialiased. */
     cursor: crosshair;
     touch-action: none;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);

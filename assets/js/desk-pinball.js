@@ -91,6 +91,44 @@
         hudDim:        '#057a2f',
     };
 
+    // GlowFilter tuning for the WebGL renderer — per bright element group.
+    // distance = glow reach (px), outerStrength = intensity. Kept modest so
+    // the table reads as "lit", not blown out; Thomas tunes the look live.
+    var GLOW = {
+        ramp:     { distance: 12, outerStrength: 1.5, innerStrength: 0, quality: 0.3 },
+        sling:    { distance: 10, outerStrength: 1.4, innerStrength: 0, quality: 0.3 },
+        bumper:   { distance: 16, outerStrength: 2.2, innerStrength: 0, quality: 0.35 },
+        ball:     { distance: 14, outerStrength: 2.0, innerStrength: 0, quality: 0.4 },
+        spark:    { distance: 8,  outerStrength: 2.2, innerStrength: 0, quality: 0.3 },
+    };
+
+    // Is the Pixi WebGL renderer actually usable right now? True only when
+    // the global loaded (it's lazy + non-fatal) and WebGL is supported.
+    function pixiUsable() {
+        return !! ( window.PIXI && PIXI.Application &&
+            ( ! PIXI.utils || typeof PIXI.utils.isWebGLSupported !== 'function' ||
+              PIXI.utils.isWebGLSupported() ) );
+    }
+
+    // Resolve ANY CSS colour string (hex, hsl(), rgb(), name) to a 0xRRGGBB
+    // number for Pixi. Uses the browser's own canvas colour parser so the
+    // hsl() bumper-hue ramp and '#rrggbb' constants both Just Work.
+    var _colCanvas, _colCtx;
+    function colorToNum( css ) {
+        if ( typeof css === 'number' ) return css;
+        if ( ! _colCtx ) {
+            _colCanvas = document.createElement( 'canvas' );
+            _colCanvas.width = _colCanvas.height = 1;
+            _colCtx = _colCanvas.getContext( '2d' );
+        }
+        _colCtx.fillStyle = '#000';
+        _colCtx.fillStyle = css;           // browser normalises the colour
+        var s = _colCtx.fillStyle;         // '#rrggbb' (opaque) or 'rgba(...)'
+        if ( s.charAt( 0 ) === '#' ) return parseInt( s.slice( 1 ), 16 );
+        var m = s.match( /\d+/g );
+        return m ? ( ( +m[ 0 ] << 16 ) | ( +m[ 1 ] << 8 ) | +m[ 2 ] ) : 0xffffff;
+    }
+
     // ----------------------------------------------------------------
     // Public entry point. Boots a fresh game instance bound to the
     // given footer element. Multiple boots (Esc → reopen) are fine;
@@ -163,7 +201,17 @@
         this.prevBodyOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
         this.canvas = this.root.querySelector( 'canvas' );
-        this.ctx = this.canvas.getContext( '2d' );
+        // Renderer init. Pixi is opt-in (the drawer marble requests it) and
+        // honoured only when the lib actually loaded AND WebGL is available;
+        // otherwise downgrade to the proven Canvas2D path (also what the
+        // desk-menu arcade uses). The Pixi scene is built after the bodies
+        // exist (buildPixiScene(), below).
+        if ( this.renderer === 'pixi' && ! pixiUsable() ) {
+            this.renderer = 'canvas';
+        }
+        if ( this.renderer === 'canvas' ) {
+            this.ctx = this.canvas.getContext( '2d' );
+        }
         this.scoreEl  = this.root.querySelector( '[data-pinball-score]' );
         this.ballEl   = this.root.querySelector( '[data-pinball-ball]' );
         this.multEl   = this.root.querySelector( '[data-pinball-mult]' );
@@ -203,6 +251,27 @@
         this.buildTable();
         this.buildFlippers();
         this.spawnBall();
+
+        // Build the WebGL scene once the bodies exist. Any failure here
+        // downgrades cleanly to Canvas2D so the game still runs.
+        if ( this.renderer === 'pixi' ) {
+            try {
+                this.buildPixiScene();
+            } catch ( e ) {
+                console.warn( '[desk-pinball] Pixi init failed; using Canvas2D.', e );
+                this.teardownPixi();
+                // Pixi may have bound a WebGL context to the canvas, and a
+                // canvas can't switch contexts — swap in a fresh one (it's
+                // cloned before bindInput attaches the touch listeners).
+                if ( ! this.canvas.getContext( '2d' ) && this.canvas.parentNode ) {
+                    var fresh = this.canvas.cloneNode( false );
+                    this.canvas.parentNode.replaceChild( fresh, this.canvas );
+                    this.canvas = fresh;
+                }
+                this.renderer = 'canvas';
+                this.ctx = this.canvas.getContext( '2d' );
+            }
+        }
 
         this.bindInput();
         this.bindCollisions();
@@ -962,7 +1031,8 @@
         }
 
         this.updateMultiplier();
-        this.render();
+        if ( this.renderer === 'pixi' ) this.renderPixi();
+        else this.render();
         requestAnimationFrame( this.tick );
     };
 
@@ -1241,8 +1311,8 @@
         ctx.closePath();
     }
 
-    Pinball.prototype.drawWall = function ( b ) {
-        var ctx = this.ctx;
+    Pinball.prototype.drawWall = function ( b, ctxOverride ) {
+        var ctx = ctxOverride || this.ctx;
         // True body-local extents. Using the AABB (b.bounds) inflated every
         // ROTATED wall into a fat block — that's what read as "blocky". Pull
         // the real width/height from the vertices instead, like drawRect.
@@ -1342,6 +1412,337 @@
     };
 
     // ================================================================
+    // WEBGL RENDERER (PixiJS) — Phase 1b. Same Matter physics + game
+    // logic; only the drawing layer differs. The scene mirrors the
+    // Canvas2D render() exactly, then layers on real GlowFilter bloom.
+    //
+    // Strategy: bake the static stuff (felt + spotlight + vignette +
+    // walls) into one texture; build per-element display objects for
+    // the things that move (flippers, ball, trail) or change colour
+    // (ramps via .tint); redraw the cheap immediate-mode shapes
+    // (bumpers, slingshots, drop targets, sparks, plunger) each frame.
+    // Pixi's autoStart is off — we call app.render() from our tick().
+    // ================================================================
+
+    // A rounded rect centred on its own origin (for transform-driven
+    // elements like ramps, drawn white so .tint sets the colour).
+    function localRoundRect( w, h, r, color, alpha ) {
+        var g = new PIXI.Graphics();
+        g.beginFill( color, alpha == null ? 1 : alpha );
+        g.drawRoundedRect( -w / 2, -h / 2, w, h, r );
+        g.endFill();
+        return g;
+    }
+
+    // A flipper: 104×18 rounded bar + a lighter top highlight, centred on
+    // its origin so we can drive it by the Matter body's position/angle.
+    function makeFlipperGfx() {
+        var g = new PIXI.Graphics();
+        g.beginFill( colorToNum( COLORS.flipper ), 1 );
+        g.drawRoundedRect( -52, -9, 104, 18, 6 );
+        g.endFill();
+        g.beginFill( colorToNum( COLORS.flipperShine ), 0.5 );
+        g.drawRoundedRect( -52, -9, 104, 7, 5 );
+        g.endFill();
+        return g;
+    }
+
+    // The ball, baked once as a glassy radial-gradient sphere texture
+    // (super-sampled 4× then downscaled for a smooth edge). Reused for
+    // the motion-trail sprites too.
+    function makeBallTexture() {
+        var SS = 4, d = BALL_R * 2 * SS, r = BALL_R * SS;
+        var c = document.createElement( 'canvas' ); c.width = c.height = d;
+        var x = c.getContext( '2d' );
+        var g = x.createRadialGradient( r - 3 * SS, r - 3 * SS, 1, r, r, r );
+        g.addColorStop( 0, COLORS.ballShine );
+        g.addColorStop( 0.45, COLORS.ball );
+        g.addColorStop( 1, COLORS.ballRim );
+        x.fillStyle = g;
+        x.beginPath(); x.arc( r, r, r, 0, Math.PI * 2 ); x.fill();
+        return PIXI.Texture.from( c );
+    }
+
+    // Paint the never-moving table chrome into a 2D context (reused to
+    // build the baked background texture). Identical math to render().
+    Pinball.prototype.paintStaticBackground = function ( ctx ) {
+        var bg = ctx.createRadialGradient( TABLE_W / 2, TABLE_H * 0.35, 50,
+                                           TABLE_W / 2, TABLE_H * 0.5, TABLE_W );
+        bg.addColorStop( 0, '#1a1228' );
+        bg.addColorStop( 1, COLORS.bg );
+        ctx.fillStyle = bg; ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
+
+        var spot = ctx.createRadialGradient( TABLE_W / 2, 165, 30, TABLE_W / 2, 165, 350 );
+        spot.addColorStop( 0, 'rgba(122,112,225,0.13)' );
+        spot.addColorStop( 1, 'rgba(122,112,225,0)' );
+        ctx.fillStyle = spot; ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
+
+        var vg = ctx.createRadialGradient( TABLE_W / 2, TABLE_H * 0.42, TABLE_H * 0.34,
+                                           TABLE_W / 2, TABLE_H * 0.5, TABLE_W * 0.62 );
+        vg.addColorStop( 0, 'rgba(0,0,0,0)' );
+        vg.addColorStop( 1, 'rgba(0,0,0,0.5)' );
+        ctx.fillStyle = vg; ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
+
+        var self = this;
+        Composite.allBodies( this.engine.world ).forEach( function ( b ) {
+            if ( b.label === 'wall' ) self.drawWall( b, ctx );
+        } );
+    };
+
+    Pinball.prototype.buildPixiScene = function () {
+        var P = window.PIXI;
+        var self = this;
+
+        var app = new P.Application( {
+            view: this.canvas,
+            width: TABLE_W,
+            height: TABLE_H,
+            antialias: true,
+            backgroundColor: colorToNum( COLORS.bg ),
+            backgroundAlpha: 1,
+            resolution: Math.min( window.devicePixelRatio || 1, 2 ),
+            autoDensity: false,   // CSS (.tc-pinball__canvas) controls display size
+            autoStart: false,     // we drive render() from tick()
+            powerPreference: 'high-performance',
+        } );
+        this.app = app;
+        var stage = app.stage;
+
+        // Baked static background (felt + spotlight + vignette + walls).
+        var bgCanvas = document.createElement( 'canvas' );
+        bgCanvas.width = TABLE_W; bgCanvas.height = TABLE_H;
+        this.paintStaticBackground( bgCanvas.getContext( '2d' ) );
+        stage.addChild( new P.Sprite( P.Texture.from( bgCanvas ) ) );
+
+        // Dynamic playfield lives under shakeRoot (nudge jitters this, not
+        // the felt — matches Canvas2D).
+        var shakeRoot = new P.Container();
+        stage.addChild( shakeRoot );
+        this.pixi = { app: app, shakeRoot: shakeRoot };
+
+        // GlowFilter factory — returns null when pixi-filters didn't load
+        // (Pixi treats `.filters = null` as "no filters"), so the scene
+        // still renders, just without the bloom.
+        var Glow = P.filters && P.filters.GlowFilter;
+        function glow( cfg, colorCss ) {
+            if ( ! Glow ) return null;
+            var o = {}; for ( var k in cfg ) o[ k ] = cfg[ k ];
+            o.color = colorToNum( colorCss || '#ffffff' );
+            return [ new Glow( o ) ];
+        }
+
+        // Ramps — white rounded rects, tinted per frame; glow on the group.
+        var rampsBox = new P.Container();
+        rampsBox.filters = glow( GLOW.ramp, '#ffffff' );
+        this.pixi.rampGfx = this.ramps.map( function ( r ) {
+            var g = localRoundRect( 84, 10, 4, 0xffffff, 1 );
+            g.position.set( r.position.x, r.position.y );
+            g.rotation = r.angle;
+            g.tint = colorToNum( r.tcColor );
+            rampsBox.addChild( g );
+            return g;
+        } );
+        shakeRoot.addChild( rampsBox );
+
+        var rampLabelStyle = new P.TextStyle( {
+            fontFamily: 'Georgia, serif', fontSize: 9, fontWeight: 'bold', fill: 0x0a0814,
+        } );
+        this.pixi.rampLabels = this.ramps.map( function ( r ) {
+            var t = new P.Text( labelOfRamp( r.label ), rampLabelStyle );
+            t.anchor.set( 0.5 ); t.position.set( r.position.x, r.position.y ); t.rotation = r.angle;
+            shakeRoot.addChild( t ); return t;
+        } );
+
+        // Slingshots — redrawn each frame (2 triangles).
+        var slingsG = new P.Graphics();
+        slingsG.filters = glow( GLOW.sling, COLORS.bumperBright );
+        shakeRoot.addChild( slingsG ); this.pixi.slingsG = slingsG;
+
+        // Bumpers — redrawn each frame (5 glassy discs).
+        var bumpersG = new P.Graphics();
+        bumpersG.filters = glow( GLOW.bumper, '#ffffff' );
+        shakeRoot.addChild( bumpersG ); this.pixi.bumpersG = bumpersG;
+
+        // Drop targets + labels.
+        var dropsG = new P.Graphics();
+        shakeRoot.addChild( dropsG ); this.pixi.dropsG = dropsG;
+        var dropLabelStyle = new P.TextStyle( {
+            fontFamily: 'Georgia, serif', fontSize: 10, fontWeight: 'bold', fill: 0x3a2616,
+        } );
+        this.pixi.dropLabels = this.dropTargets.map( function ( d ) {
+            var t = new P.Text( d.tcLabel, dropLabelStyle );
+            t.anchor.set( 0.5 ); t.position.set( d.position.x, d.position.y );
+            shakeRoot.addChild( t ); return t;
+        } );
+
+        // Flippers — drawn once, transformed each frame.
+        var flippersBox = new P.Container();
+        this.pixi.flipperGfx = { left: makeFlipperGfx(), right: makeFlipperGfx() };
+        flippersBox.addChild( this.pixi.flipperGfx.left, this.pixi.flipperGfx.right );
+        shakeRoot.addChild( flippersBox );
+
+        // Ball texture → trail pool + ball sprite.
+        var ballTex = makeBallTexture();
+        this.pixi.ballTex = ballTex;
+        var trailBox = new P.Container();
+        this.pixi.trailSprites = [];
+        for ( var i = 0; i < 9; i++ ) {
+            var ts = new P.Sprite( ballTex );
+            ts.anchor.set( 0.5 ); ts.visible = false;
+            trailBox.addChild( ts ); this.pixi.trailSprites.push( ts );
+        }
+        shakeRoot.addChild( trailBox );
+
+        var ballSprite = new P.Sprite( ballTex );
+        ballSprite.anchor.set( 0.5 );
+        ballSprite.width = ballSprite.height = BALL_R * 2;
+        ballSprite.filters = glow( GLOW.ball, COLORS.ballShine );
+        shakeRoot.addChild( ballSprite ); this.pixi.ballSprite = ballSprite;
+
+        // Sparks + plunger meter (redrawn each frame).
+        var sparksG = new P.Graphics();
+        sparksG.filters = glow( GLOW.spark, '#ffffff' );
+        shakeRoot.addChild( sparksG ); this.pixi.sparksG = sparksG;
+
+        var plungerG = new P.Graphics();
+        shakeRoot.addChild( plungerG ); this.pixi.plungerG = plungerG;
+
+        // Paint frame one so the table isn't blank for a tick.
+        this.renderPixi();
+    };
+
+    // Per-frame scene sync — reads Matter bodies + game state, updates the
+    // Pixi display objects, then renders. Mirrors render()'s element order.
+    Pinball.prototype.renderPixi = function () {
+        var px = this.pixi;
+        if ( ! px ) return;
+        var now = performance.now();
+        var self = this;
+
+        // Screen-shake (felt stays; shakeRoot jitters).
+        var shx = 0, shy = 0;
+        if ( this.shake && now < this.shake.until ) {
+            var sk = ( this.shake.until - now ) / 130;
+            shx = this.shake.x * sk * ( 0.4 + Math.random() * 0.6 );
+            shy = this.shake.y * sk * ( 0.4 + Math.random() * 0.6 );
+        }
+        px.shakeRoot.position.set( shx, shy );
+
+        // Ramps — tint flips to bright on flash.
+        this.ramps.forEach( function ( r, i ) {
+            px.rampGfx[ i ].tint = ( r.tcFlashUntil > now )
+                ? colorToNum( COLORS.bumperBright )
+                : colorToNum( r.tcColor );
+        } );
+
+        // Slingshots.
+        var slingsG = px.slingsG; slingsG.clear();
+        this.slingshots.forEach( function ( s ) {
+            var flash = s.tcFlashUntil > now;
+            var pts = [];
+            s.vertices.forEach( function ( v ) { pts.push( v.x, v.y ); } );
+            slingsG.lineStyle( 2, colorToNum( flash ? '#ffffff' : COLORS.bumperBright ), 1 );
+            slingsG.beginFill( colorToNum( flash ? COLORS.bumperBright : COLORS.slingshot ), 1 );
+            slingsG.drawPolygon( pts );
+            slingsG.endFill();
+        } );
+
+        // Bumpers — glassy discs, warm→gold by hits.
+        var bumpersG = px.bumpersG; bumpersG.clear();
+        this.bumpers.forEach( function ( bp ) {
+            var flash = bp.tcFlashUntil > now;
+            var hits = self.bumperHits[ bp.tcName ] || 0;
+            var baseN = colorToNum( flash ? COLORS.bumperBright : bumperColor( hits ) );
+            var brightN = colorToNum( bumperBrightColor( hits ) );
+            var rad = bp.circleRadius, x = bp.position.x, y = bp.position.y;
+            bumpersG.beginFill( baseN, 1 );
+            bumpersG.drawCircle( x, y, rad );
+            bumpersG.endFill();
+            bumpersG.lineStyle( 2, flash ? 0xffffff : brightN, 1 );
+            bumpersG.drawCircle( x, y, rad - 1 );
+            bumpersG.lineStyle( 0 );
+            bumpersG.beginFill( brightN, flash ? 0.85 : 0.5 );
+            bumpersG.drawCircle( x - rad * 0.28, y - rad * 0.3, rad * 0.42 );
+            bumpersG.endFill();
+            bumpersG.beginFill( 0xffffff, 0.7 );
+            bumpersG.drawCircle( x - rad * 0.32, y - rad * 0.36, rad * 0.2 );
+            bumpersG.endFill();
+        } );
+
+        // Drop targets — dim when dropped; bright flash on hit.
+        var dropsG = px.dropsG; dropsG.clear();
+        this.dropTargets.forEach( function ( d, i ) {
+            var flash = d.tcFlashUntil > now, label = px.dropLabels[ i ];
+            var fillN;
+            if ( d.tcDropped ) { fillN = colorToNum( COLORS.dropTargetOff ); if ( label ) label.alpha = 0.35; }
+            else { fillN = colorToNum( flash ? '#ffffff' : COLORS.dropTarget ); if ( label ) label.alpha = 1; }
+            dropsG.beginFill( fillN, 1 );
+            dropsG.drawRoundedRect( d.position.x - 32, d.position.y - 7, 64, 14, 4 );
+            dropsG.endFill();
+        } );
+
+        // Flippers — transform-driven.
+        var lf = this.leftFlipper, rf = this.rightFlipper;
+        px.flipperGfx.left.position.set( lf.position.x, lf.position.y );
+        px.flipperGfx.left.rotation = lf.angle;
+        px.flipperGfx.right.position.set( rf.position.x, rf.position.y );
+        px.flipperGfx.right.rotation = rf.angle;
+
+        // Ball trail — fading afterimages.
+        var trail = this.ballTrail, tlen = trail.length;
+        for ( var ti = 0; ti < px.trailSprites.length; ti++ ) {
+            var spr = px.trailSprites[ ti ];
+            if ( ti < tlen - 1 ) {
+                var tp = trail[ ti ], tf = ti / tlen;
+                spr.visible = true;
+                spr.position.set( tp.x, tp.y );
+                spr.alpha = tf * 0.35;
+                spr.width = spr.height = BALL_R * ( 0.35 + 0.55 * tf ) * 2;
+            } else {
+                spr.visible = false;
+            }
+        }
+
+        // Ball.
+        if ( this.theBall ) {
+            px.ballSprite.visible = true;
+            px.ballSprite.position.set( this.theBall.position.x, this.theBall.position.y );
+        } else {
+            px.ballSprite.visible = false;
+        }
+
+        // Sparks.
+        var sparksG = px.sparksG; sparksG.clear();
+        this.sparks.forEach( function ( sp ) {
+            sparksG.beginFill( colorToNum( sp.color ), Math.max( 0, sp.life ) );
+            sparksG.drawCircle( sp.x, sp.y, 2.2 * sp.life + 0.6 );
+            sparksG.endFill();
+        } );
+
+        // Plunger charge meter.
+        var plungerG = px.plungerG; plungerG.clear();
+        if ( this.plungerActive ) {
+            var h = 120 * this.plungerCharge;
+            plungerG.beginFill( colorToNum( COLORS.hud ), 1 );
+            plungerG.drawRect( TABLE_W - 32, TABLE_H - 16 - h, 14, h );
+            plungerG.endFill();
+        }
+
+        this.app.render();
+    };
+
+    // Free the Pixi app + GPU resources. Idempotent.
+    Pinball.prototype.teardownPixi = function () {
+        if ( this.app ) {
+            try {
+                this.app.destroy( false, { children: true, texture: true, baseTexture: true } );
+            } catch ( e ) {}
+            this.app = null;
+        }
+        this.pixi = null;
+    };
+
+    // ================================================================
     // DESTROY — tear down listeners, remove the overlay, restore the
     // drawer to its quiet state. Idempotent.
     Pinball.prototype.destroy = function () {
@@ -1358,6 +1759,8 @@
             World.clear( this.engine.world, false );
             Engine.clear( this.engine );
         }
+        // Free the WebGL context + textures before pulling the canvas.
+        if ( this.app ) this.teardownPixi();
         if ( this.root && this.root.parentNode ) {
             this.root.parentNode.removeChild( this.root );
         }
