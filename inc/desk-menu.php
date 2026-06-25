@@ -610,6 +610,10 @@ function tc_render_desk_menu() {
                         <span class="tc-desk__drawer-card-title">Solitaire</span>
                         <span class="tc-desk__drawer-card-count" data-games-high="solitaire">&mdash;</span>
                     </a>
+                    <a href="#" class="tc-desk__drawer-card" data-game="pinball">
+                        <span class="tc-desk__drawer-card-title">Pinball</span>
+                        <span class="tc-desk__drawer-card-count" data-games-high="pinball">&mdash;</span>
+                    </a>
                 </div>
             </div>
 

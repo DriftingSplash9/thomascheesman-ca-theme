@@ -101,28 +101,44 @@
     // focused) and pressing Space activates it via the browser's
     // default button-activation behaviour, which calls boot() again
     // and gives the appearance that Space "exits the game".
+    // boot( host, opts ) — `host` is the element the game is attached to
+    // (the drawer <footer> when launched from the marble) or null/omitted
+    // when launched standalone (the desk-menu arcade). `opts.renderer` is
+    // 'canvas' (default, the OG Canvas2D look) or 'pixi' (the WebGL build).
+    // Back-compat: boot( footer ) still works — the drawer calls it that way.
     var current = null;
     window.TCPinball = {
-        boot: function ( footer ) {
+        boot: function ( host, opts ) {
             if ( current ) current.destroy();
-            current = new Pinball( footer );
-            var marble = footer.querySelector( '[data-tc-pinball-trigger]' );
-            if ( marble && typeof marble.blur === 'function' ) {
-                marble.blur();
+            current = new Pinball( host || null, opts || {} );
+            // The drawer launches from the marble button, which keeps
+            // keyboard focus; blur it so Space doesn't re-trigger boot().
+            // The arcade launch has no marble — guard for its absence.
+            if ( host && typeof host.querySelector === 'function' ) {
+                var marble = host.querySelector( '[data-tc-pinball-trigger]' );
+                if ( marble && typeof marble.blur === 'function' ) {
+                    marble.blur();
+                }
             }
         }
     };
 
     // ----------------------------------------------------------------
     // Pinball — one game instance.
-    function Pinball( footer ) {
+    function Pinball( host, opts ) {
         var self = this;
-        this.footer = footer;
-        this.interior = footer.querySelector( '.tc-drawer__interior' );
-        if ( ! this.interior ) {
-            console.warn( '[desk-pinball] missing .tc-drawer__interior; aborting.' );
-            return;
-        }
+        // `footer` is the drawer host (or null for the arcade launch). Its
+        // only roles are drawer-specific: dimming the compartments behind
+        // the table and blurring the marble. The full-screen overlay is
+        // appended to <body> regardless, so the game runs fine without it.
+        this.footer = host || null;
+        this.interior = this.footer
+            ? this.footer.querySelector( '.tc-drawer__interior' )
+            : null;
+        // Renderer selection — 'canvas' is the OG Canvas2D path; 'pixi' is
+        // the WebGL build (added in Phase 1b). Default keeps the arcade and
+        // any legacy caller on the proven Canvas2D renderer.
+        this.renderer = opts && opts.renderer === 'pixi' ? 'pixi' : 'canvas';
 
         // ---- overlay + canvas.
         // Full-screen: the overlay is position:fixed covering the
@@ -191,8 +207,8 @@
         this.bindInput();
         this.bindCollisions();
 
-        // mark the footer so CSS dims the compartments
-        this.footer.classList.add( 'is-pinball' );
+        // mark the footer so CSS dims the compartments (drawer only)
+        if ( this.footer ) this.footer.classList.add( 'is-pinball' );
 
         // Start the render loop.
         this.lastTs = performance.now();
@@ -1347,7 +1363,7 @@
         }
         // Restore the body scroll-lock that boot() set.
         document.body.style.overflow = this.prevBodyOverflow || '';
-        this.footer.classList.remove( 'is-pinball' );
+        if ( this.footer ) this.footer.classList.remove( 'is-pinball' );
         if ( current === this ) current = null;
     };
 

@@ -124,6 +124,48 @@
     }
 
     // ----------------------------------------------------------------
+    // Pinball launcher — the OG Canvas2D pinball lives in desk-pinball.js
+    // and depends on global Matter. Both are lazy-loaded the first time the
+    // arcade's Pinball card is clicked (mirrors desk-drawer.js's marble
+    // wiring), then booted standalone in Canvas2D mode. Subsequent clicks
+    // are instant. If desk-drawer's marble already loaded them, TCPinball is
+    // present and we boot immediately.
+    // ----------------------------------------------------------------
+    var pinballLoading = false;
+    function launchPinball() {
+        if ( window.TCPinball && window.TCPinball.boot ) {
+            window.TCPinball.boot( null, { renderer: 'canvas' } );
+            return;
+        }
+        if ( pinballLoading ) return;
+        pinballLoading = true;
+        var themeBase = ( window.tcVentures && window.tcVentures.themeUrl ) || '';
+        var v = ( window.tcDeskGames && window.tcDeskGames.version ) || Date.now();
+        loadScript( themeBase + '/assets/js/vendor/matter-0.20.0.min.js' ).then( function () {
+            return loadScript( themeBase + '/assets/js/desk-pinball.js?ver=' + encodeURIComponent( v ) );
+        } ).then( function () {
+            pinballLoading = false;
+            if ( window.TCPinball && window.TCPinball.boot ) {
+                window.TCPinball.boot( null, { renderer: 'canvas' } );
+            }
+        } ).catch( function ( err ) {
+            console.warn( 'Pinball failed to load — sorry.', err );
+            pinballLoading = false;
+        } );
+    }
+
+    function loadScript( src ) {
+        return new Promise( function ( resolve, reject ) {
+            var s = document.createElement( 'script' );
+            s.src = src;
+            s.async = true;
+            s.onload = function () { resolve(); };
+            s.onerror = function () { reject( new Error( 'Script failed: ' + src ) ); };
+            document.head.appendChild( s );
+        } );
+    }
+
+    // ----------------------------------------------------------------
     // Drawer wiring + view switching
     // ----------------------------------------------------------------
     function init() {
@@ -153,6 +195,12 @@
             asteroids: { title: 'Asteroids', controls: '&larr;&rarr; rotate &middot; &uarr; thrust &middot; space fire', start: startAsteroids },
             brickles:  { title: 'Brickles',  controls: '&larr;&rarr; paddle &mdash; clear the wall',   start: startBrickles  },
             solitaire: { title: 'Solitaire', controls: 'click to select &middot; click again to place', start: startSolitaire },
+            // Pinball is the OG Canvas2D footer game, re-homed here. It's a
+            // self-contained overlay with its own HUD + leaderboard, so it
+            // doesn't use the start(canvas, hooks) contract — `external`
+            // flags play() to launch it standalone. Listed here only so its
+            // high-score chip paints alongside the others.
+            pinball:   { title: 'Pinball',   external: true },
         };
 
         var currentKey  = null;
@@ -234,6 +282,11 @@
         function play( key ) {
             var game = GAMES[ key ];
             if ( ! game ) return;
+            // Pinball is a self-contained overlay game — it doesn't use the
+            // shared-canvas contract. Launch it standalone (lazy-loading
+            // Matter + desk-pinball.js) and leave the picker visible behind
+            // it; exiting the overlay returns the player right here.
+            if ( game.external ) { launchPinball(); return; }
             stopCurrent();
             currentKey = key;
             picker.hidden = true;
