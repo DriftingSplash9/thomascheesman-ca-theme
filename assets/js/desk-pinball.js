@@ -177,6 +177,13 @@
     // files to ship or fetch. One shared AudioContext, resumed on the first
     // user gesture (boot/keydown). All sounds are short blips with a quick
     // attack + exponential decay; tone() is a no-op if audio is unavailable.
+    // A single `muted` flag (persisted) silences both SFX and music.
+    var muted = false;
+    try { muted = localStorage.getItem( 'tcPinballMuted' ) === '1'; } catch ( e ) {}
+    function setMuted( m ) {
+        muted = m;
+        try { localStorage.setItem( 'tcPinballMuted', m ? '1' : '0' ); } catch ( e ) {}
+    }
     var _actx = null;
     function audioCtx() {
         if ( _actx === null ) {
@@ -187,6 +194,7 @@
         return _actx || null;
     }
     function tone( freq, dur, type, gain, sweepTo ) {
+        if ( muted ) return;
         var ctx = audioCtx(); if ( ! ctx ) return;
         var t = ctx.currentTime;
         var osc = ctx.createOscillator(), g = ctx.createGain();
@@ -214,6 +222,54 @@
         sector:  function () { [ 392, 523, 659 ].forEach( function ( f, i ) {
             setTimeout( function () { tone( f, 0.14, 'triangle', 0.10 ); }, i * 80 ); } ); },
     };
+
+    // ---- MUSIC — a gentle generative "spacey" loop, also synthesized (no
+    // files). A soft bass + arpeggio over a 4-chord minor progression, low
+    // under the SFX. Steps on a setInterval; honours the same `muted` flag.
+    function mtof( m ) { return 440 * Math.pow( 2, ( m - 69 ) / 12 ); }
+    function musicTone( freq, dur, type, gain ) {
+        if ( muted ) return;
+        var ctx = audioCtx(); if ( ! ctx ) return;
+        var t = ctx.currentTime;
+        var osc = ctx.createOscillator(), g = ctx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime( 0.0001, t );
+        g.gain.exponentialRampToValueAtTime( gain || 0.05, t + 0.03 );
+        g.gain.exponentialRampToValueAtTime( 0.0001, t + dur );
+        osc.connect( g ); g.connect( ctx.destination );
+        osc.start( t ); osc.stop( t + dur + 0.05 );
+    }
+    // Am – F – C – G (roots as MIDI), each with four chord tones to arpeggiate.
+    var MUSIC_CHORDS = [
+        { root: 45, tones: [ 45, 48, 52, 57 ] },
+        { root: 41, tones: [ 41, 45, 48, 53 ] },
+        { root: 48, tones: [ 48, 52, 55, 60 ] },
+        { root: 43, tones: [ 43, 47, 50, 55 ] },
+    ];
+    var _musicTimer = null, _musicStep = 0;
+    function startMusic() {
+        if ( _musicTimer ) return;
+        _musicStep = 0;
+        _musicTimer = setInterval( function () {
+            if ( muted ) return; // keep the clock running but stay silent
+            var bar = Math.floor( _musicStep / 8 ) % MUSIC_CHORDS.length;
+            var s = _musicStep % 8;
+            var ch = MUSIC_CHORDS[ bar ];
+            if ( s === 0 || s === 4 ) musicTone( mtof( ch.root - 12 ), 0.7, 'triangle', 0.06 );
+            musicTone( mtof( ch.tones[ s % ch.tones.length ] + 12 ), 0.32, 'sine', 0.045 );
+            if ( Math.random() < 0.12 ) musicTone( mtof( ch.tones[ 3 ] + 24 ), 0.5, 'sine', 0.03 );
+            _musicStep++;
+        }, 230 );
+    }
+    function stopMusic() { if ( _musicTimer ) { clearInterval( _musicTimer ); _musicTimer = null; } }
+
+    // Escape user-supplied leaderboard names before injecting into HTML.
+    function escapeHtml( s ) {
+        return String( s ).replace( /[&<>"']/g, function ( c ) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ c ];
+        } );
+    }
 
     // ----------------------------------------------------------------
     // Public entry point. Boots a fresh game instance bound to the
@@ -332,8 +388,10 @@
         this.gatesActive = false; // side-guards up (all pegs same on/off mode)
 
         // Prime the audio context within the boot click gesture so SFX are
-        // allowed to play (autoplay policy).
+        // allowed to play (autoplay policy), and start the background music.
         audioCtx();
+        startMusic();
+        this.buildMuteButton();
 
         // ---- engine
         this.engine = Engine.create();
@@ -1118,8 +1176,25 @@
         }, ms || 2000 );
     };
 
+    // A small round sound-toggle in the overlay's bottom-left.
+    Pinball.prototype.buildMuteButton = function () {
+        var b = document.createElement( 'button' );
+        b.type = 'button';
+        b.setAttribute( 'aria-label', 'Toggle sound' );
+        b.style.cssText = 'position:absolute;bottom:14px;left:14px;z-index:13;width:42px;height:42px;' +
+            'border-radius:999px;border:1px solid rgba(63,199,218,0.5);background:rgba(8,6,20,0.55);' +
+            'color:#bfefff;font-size:18px;line-height:1;cursor:pointer;';
+        b.textContent = muted ? '🔇' : '🔊';
+        b.addEventListener( 'click', function () {
+            setMuted( ! muted );
+            b.textContent = muted ? '🔇' : '🔊';
+        } );
+        this.root.appendChild( b );
+        this.muteBtn = b;
+    };
+
     // ================================================================
-    // END GAME — submit if score qualifies; show summary; close.
+    // END GAME — submit if score qualifies; show summary + top 10; close.
     Pinball.prototype.endGame = function () {
         this.gameOver = true;
         this.flashBanner( 'Game over — ' + this.score.toLocaleString() + ' points', 2600 );
@@ -1128,13 +1203,14 @@
         var url = ( window.tcDeskGames && window.tcDeskGames.scoresUrl ) || '/wp-json/tc-games/v1/scores';
 
         // Quick read first to decide if we should prompt for a name; either
-        // way we land on the Play Again / Exit panel.
+        // way we land on the Play Again / Exit panel (which shows the top 10).
         fetch( url + '?game=pinball', { credentials: 'same-origin' } )
             .then( function ( r ) { return r.ok ? r.json() : null; } )
             .then( function ( data ) {
                 var rows = data
                     ? ( Array.isArray( data ) ? data : ( data.pinball || [] ) )
                     : [];
+                self.topScores = rows.slice();
                 var qualifies = self.score > 0 && (
                     rows.length < 10 || self.score > rows[ rows.length - 1 ].score
                 );
@@ -1144,18 +1220,24 @@
                     'TC'
                 ) || '' ).trim();
                 if ( ! name ) { self.showEndPanel( null ); return; }
+                name = name.slice( 0, 16 );
+                // Optimistically place the new score so the board shows it
+                // immediately, even before the POST round-trips.
+                self.topScores = rows.concat( [ {
+                    name: name, score: self.score, ts: Math.floor( Date.now() / 1000 ), mine: true,
+                } ] ).sort( function ( a, b ) { return b.score - a.score; } ).slice( 0, 10 );
                 fetch( url, {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify( {
-                        game: 'pinball',
-                        name: name.slice( 0, 16 ),
-                        score: self.score,
-                    } ),
+                    body: JSON.stringify( { game: 'pinball', name: name, score: self.score } ),
                 } )
-                .then( function () { self.showEndPanel( 'Saved to the leaderboard.' ); } )
-                .catch( function () { self.showEndPanel( 'Could not save score.' ); } );
+                .then( function ( r ) { return r.ok ? r.json() : null; } )
+                .then( function ( j ) {
+                    if ( j && Array.isArray( j.scores ) ) self.topScores = j.scores;
+                    self.showEndPanel( 'Saved to the leaderboard.' );
+                } )
+                .catch( function () { self.showEndPanel( 'Could not save (shown locally).' ); } );
             } )
             .catch( function () { self.showEndPanel( null ); } );
     };
@@ -1176,9 +1258,30 @@
             '<div style="font:400 19px Georgia,serif;color:#e6fbff;">' +
                 this.score.toLocaleString() + ' points</div>' +
             ( note ? '<div style="font:400 13px Georgia,serif;color:#9fb0d0;">' + note + '</div>' : '' );
+        var self = this;
+
+        // Top-10 scoreboard.
+        var board = document.createElement( 'div' );
+        board.style.cssText = 'margin-top:2px;min-width:300px;max-width:80vw;' +
+            'font:400 13px Georgia,serif;color:#cfe;';
+        var scores = ( this.topScores || [] ).slice( 0, 10 );
+        if ( scores.length ) {
+            var rows = scores.map( function ( r, i ) {
+                var hi = r.mine ? 'color:#00ff66;font-weight:700;' : 'color:#cfe;';
+                return '<div style="display:flex;justify-content:space-between;gap:24px;' +
+                    'padding:2px 12px;' + hi + '">' +
+                    '<span>' + ( i + 1 ) + '. ' + escapeHtml( r.name || '—' ) + '</span>' +
+                    '<span>' + Number( r.score || 0 ).toLocaleString() + '</span></div>';
+            } ).join( '' );
+            board.innerHTML = '<div style="color:#00ff66;font-weight:700;letter-spacing:2px;' +
+                'margin-bottom:6px;">TOP 10</div>' + rows;
+        } else {
+            board.innerHTML = '<div style="color:#9fb0d0;">No scores yet — be the first.</div>';
+        }
+        panel.appendChild( board );
+
         var row = document.createElement( 'div' );
         row.style.cssText = 'display:flex;gap:14px;margin-top:6px;';
-        var self = this;
         function mkBtn( label, fn ) {
             var b = document.createElement( 'button' );
             b.type = 'button';
@@ -2239,6 +2342,7 @@
     Pinball.prototype.destroy = function () {
         if ( ! this.running ) return;
         this.running = false;
+        stopMusic();
         document.removeEventListener( 'keydown', this.onKey );
         document.removeEventListener( 'keyup',   this.onKey );
         if ( this.canvas ) {
