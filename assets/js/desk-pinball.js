@@ -604,9 +604,9 @@
         this.gates = [];
         var gateOpts = { isStatic: true, isSensor: true, label: 'gate',
                          restitution: 1.0, render: { fillStyle: COLORS.slingshot } };
-        this.gates.push( Bodies.rectangle( 27, 427, 40, 10,
+        this.gates.push( Bodies.rectangle( 27, 362, 40, 10,
             Object.assign( {}, gateOpts, { angle: 0.76 } ) ) );  // left "\"
-        this.gates.push( Bodies.rectangle( 689, 427, 34, 10,
+        this.gates.push( Bodies.rectangle( 689, 362, 34, 10,
             Object.assign( {}, gateOpts, { angle: -0.76 } ) ) ); // right "/"
         World.add( w, this.gates );
 
