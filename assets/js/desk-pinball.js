@@ -170,6 +170,48 @@
         'Gerudo Sands', 'Death Mountain', 'The Dark World',
     ];
 
+    // ---- SOUND — synthesized in-browser (WebAudio), so there are no audio
+    // files to ship or fetch. One shared AudioContext, resumed on the first
+    // user gesture (boot/keydown). All sounds are short blips with a quick
+    // attack + exponential decay; tone() is a no-op if audio is unavailable.
+    var _actx = null;
+    function audioCtx() {
+        if ( _actx === null ) {
+            try { _actx = new ( window.AudioContext || window.webkitAudioContext )(); }
+            catch ( e ) { _actx = false; }
+        }
+        if ( _actx && _actx.state === 'suspended' ) { try { _actx.resume(); } catch ( e ) {} }
+        return _actx || null;
+    }
+    function tone( freq, dur, type, gain, sweepTo ) {
+        var ctx = audioCtx(); if ( ! ctx ) return;
+        var t = ctx.currentTime;
+        var osc = ctx.createOscillator(), g = ctx.createGain();
+        osc.type = type || 'square';
+        osc.frequency.setValueAtTime( freq, t );
+        if ( sweepTo ) osc.frequency.exponentialRampToValueAtTime( Math.max( 1, sweepTo ), t + dur );
+        g.gain.setValueAtTime( 0.0001, t );
+        g.gain.exponentialRampToValueAtTime( gain || 0.12, t + 0.005 );
+        g.gain.exponentialRampToValueAtTime( 0.0001, t + dur );
+        osc.connect( g ); g.connect( ctx.destination );
+        osc.start( t ); osc.stop( t + dur + 0.02 );
+    }
+    var SFX = {
+        bumper:  function ( hits ) { tone( 480 + ( hits || 0 ) * 16, 0.07, 'square', 0.11 ); },
+        peg:     function () { tone( 900, 0.035, 'triangle', 0.07 ); },
+        sling:   function () { tone( 320, 0.06, 'sawtooth', 0.10, 200 ); },
+        ramp:    function () { tone( 440, 0.13, 'sine', 0.10, 900 ); },
+        flip:    function () { tone( 150, 0.03, 'square', 0.05 ); },
+        launch:  function () { tone( 200, 0.20, 'sawtooth', 0.10, 680 ); },
+        drain:   function () { tone( 440, 0.45, 'sine', 0.12, 100 ); },
+        gold:    function () { tone( 660, 0.10, 'square', 0.11 ); tone( 990, 0.13, 'square', 0.09 ); },
+        tilt:    function () { tone( 120, 0.5, 'sawtooth', 0.16, 70 ); },
+        jackpot: function () { [ 523, 659, 784, 1046 ].forEach( function ( f, i ) {
+            setTimeout( function () { tone( f, 0.13, 'square', 0.12 ); }, i * 70 ); } ); },
+        sector:  function () { [ 392, 523, 659 ].forEach( function ( f, i ) {
+            setTimeout( function () { tone( f, 0.14, 'triangle', 0.10 ); }, i * 80 ); } ); },
+    };
+
     // ----------------------------------------------------------------
     // Public entry point. Boots a fresh game instance bound to the
     // given footer element. Multiple boots (Esc → reopen) are fine;
@@ -282,6 +324,12 @@
         this.overPanel = null;// game-over panel element while shown
         this.ballTrail = [];  // recent ball positions for a motion trail
         this.bgTier = -1;     // current background "sector" (score/10k), Pixi
+        this.tiltMeter = 0;   // nudge-aggression accumulator
+        this.tilted = false;  // true → flippers dead until the next ball
+
+        // Prime the audio context within the boot click gesture so SFX are
+        // allowed to play (autoplay policy).
+        audioCtx();
 
         // ---- engine
         this.engine = Engine.create();
@@ -453,7 +501,7 @@
         // Score 25 × mult.
         this.pegs = [];
         var pegSpots = [
-            { x: 380, y: 150 },                       // top centre
+            { x: 380, y: 130 },                       // centre, in line between Ganon & Zelda
             { x: 290, y: 168 }, { x: 470, y: 168 },   // top inner arc
             { x: 150, y: 205 }, { x: 610, y: 205 },   // upper flanks
             { x: 95,  y: 260 }, { x: 650, y: 260 },   // outer edges
@@ -592,7 +640,7 @@
         // before, so the pair covers more of the bottom and the centre
         // drain gap between the tips is smaller (harder to drain, easier
         // to cradle). Funnel walls deliver the ball to the base at ~265.
-        this.leftFlipper = Bodies.rectangle( 0, 0, 104, 18,
+        this.leftFlipper = Bodies.rectangle( 0, 0, 104, 14,
             Object.assign( {}, flipperOpts, { label: 'flipper:left' } ) );
         this.leftPivot        = { x: 270, y: 412 };
         this.leftHingeOffset  = { x: -52, y: 0 };
@@ -604,7 +652,7 @@
         World.add( w, this.leftFlipper );
 
         // RIGHT — pivots around world (490, 412). Hinge at body-local (+45, 0).
-        this.rightFlipper = Bodies.rectangle( 0, 0, 104, 18,
+        this.rightFlipper = Bodies.rectangle( 0, 0, 104, 14,
             Object.assign( {}, flipperOpts, { label: 'flipper:right' } ) );
         this.rightPivot        = { x: 490, y: 412 };
         this.rightHingeOffset  = { x: 52, y: 0 };
@@ -653,6 +701,8 @@
         this.plungerCharge = 0;
         this.plungerActive = false;
         this.hcsThisBall = 0;
+        this.tilted = false;   // fresh ball is never tilted
+        this.tiltMeter = 0;
     };
 
     // ================================================================
@@ -669,10 +719,17 @@
 
         this.onKey = function ( e ) {
             if ( typing( e ) ) return;
+            audioCtx(); // keep the audio context live within a user gesture
             var k = e.key.toLowerCase();
             if ( e.type === 'keydown' ) {
-                if ( k === 'a' )       { self.leftFlipperUp  = true;  e.preventDefault(); }
-                if ( k === 'l' || k === 'd' ) { self.rightFlipperUp = true; e.preventDefault(); }
+                if ( k === 'a' ) {
+                    if ( ! self.leftFlipperUp && ! self.tilted ) SFX.flip();
+                    self.leftFlipperUp = true; e.preventDefault();
+                }
+                if ( k === 'l' || k === 'd' ) {
+                    if ( ! self.rightFlipperUp && ! self.tilted ) SFX.flip();
+                    self.rightFlipperUp = true; e.preventDefault();
+                }
                 if ( k === ' ' )       { self.plungerActive = true;   e.preventDefault(); }
                 // Nudges — Left/Right Shift bump the sides, B bumps up.
                 if ( e.code === 'ShiftLeft'  && ! e.repeat ) { self.nudge( 'left' );  e.preventDefault(); }
@@ -734,6 +791,7 @@
             // to give the launch real authority.
             var vy = -13 - 15 * this.plungerCharge;
             Body.setVelocity( b, { x: 0, y: vy } );
+            SFX.launch();
         }
         this.plungerActive = false;
         this.plungerCharge = 0;
@@ -746,8 +804,16 @@
     // stops nudge-spam.
     Pinball.prototype.nudge = function ( side ) {
         var now = performance.now();
+        if ( this.tilted || this.gameOver ) return;
         if ( now < this.nudgeUntil ) return;
         this.nudgeUntil = now + 180;
+
+        // Tilt accumulation — over-nudge and the table tilts. The meter
+        // decays in tick(), so it's the RATE of nudging that trips it.
+        this.tiltMeter += 1;
+        if ( this.tiltMeter >= 5 ) { this.doTilt(); return; }
+        if ( this.tiltMeter >= 3 ) this.flashBanner( 'Careful — TILT warning', 1000 );
+
         var vx = 0, vy = 0, sx = 0, sy = 0;
         if ( side === 'left'  ) { vx =  4.4; vy = -1.6; sx = -7; }
         if ( side === 'right' ) { vx = -4.4; vy = -1.6; sx =  7; }
@@ -759,6 +825,18 @@
             } );
         }
         this.shake = { x: sx, y: sy, until: now + 130 };
+    };
+
+    // TILT — too many nudges too fast. Flippers go dead until the ball
+    // drains (which clears it via spawnBall), like a real machine.
+    Pinball.prototype.doTilt = function () {
+        this.tilted = true;
+        this.tiltMeter = 0;
+        this.leftFlipperUp = false;
+        this.rightFlipperUp = false;
+        SFX.tilt();
+        this.flashBanner( 'TILT — flippers dead till next ball', 2600 );
+        this.shake = { x: 0, y: 13, until: performance.now() + 420 };
     };
 
     // ================================================================
@@ -792,6 +870,7 @@
 
     Pinball.prototype.handlePeg = function ( body ) {
         body.tcFlashUntil = performance.now() + 140;
+        SFX.peg();
         this.addScore( 25 );
         this.spawnSparks( body.position.x, body.position.y, COLORS.dropTarget );
         // Small nudge so the peg feels springy (lighter than a bumper).
@@ -807,6 +886,7 @@
         this.totalBumperHits++;
         var hits = this.bumperHits[ body.tcName ] = ( this.bumperHits[ body.tcName ] || 0 ) + 1;
         var gold = hits >= 12;
+        SFX.bumper( hits );
         // A gold post is worth 5× a normal one.
         this.addScore( gold ? 500 : 100 );
         // Apply a small extra impulse to the ball so the bumper feels alive.
@@ -821,9 +901,11 @@
         // locks it GOLD for good — gold posts score 5× AND speed the ball up.
         if ( hits === 12 ) {
             this.goldPosts++;
+            SFX.gold();
             this.flashBanner( body.tcName + ' is GOLD — 5× points + speed boost', 2400 );
             // All five posts gold → jackpot.
             if ( this.goldPosts === 5 ) {
+                SFX.jackpot();
                 this.score += 25000;
                 this.scoreEl.textContent = this.score.toLocaleString();
                 this.multiplier = Math.max( this.multiplier, 3 );
@@ -841,14 +923,15 @@
         }
     };
 
-    // Spawn a little burst of spark particles at a point.
+    // Spawn a burst of spark particles at a point. Bigger, faster bursts
+    // read as more electric.
     Pinball.prototype.spawnSparks = function ( x, y, color ) {
-        for ( var i = 0; i < 9; i++ ) {
-            var a = Math.random() * Math.PI * 2, sp = 1.8 + Math.random() * 3.2;
+        for ( var i = 0; i < 14; i++ ) {
+            var a = Math.random() * Math.PI * 2, sp = 2.2 + Math.random() * 4.0;
             this.sparks.push( {
                 x: x, y: y,
                 vx: Math.cos( a ) * sp,
-                vy: Math.sin( a ) * sp - 1.2,
+                vy: Math.sin( a ) * sp - 1.4,
                 life: 1, color: color,
             } );
         }
@@ -856,16 +939,19 @@
 
     Pinball.prototype.handleSlingshot = function ( body ) {
         body.tcFlashUntil = performance.now() + 140;
+        SFX.sling();
+        this.spawnSparks( body.position.x, body.position.y, COLORS.bumperBright );
         this.addScore( 50 );
     };
 
     Pinball.prototype.handleRamp = function ( body ) {
         body.tcFlashUntil = performance.now() + 220;
+        SFX.ramp();
         if ( body.label === 'ramp:ganon' ) {
             this.hcsThisBall++;
             this.addScore( 1000 );
             if ( this.hcsThisBall === 3 ) {
-                this.flashBanner( 'TILT — Ganon awakens! The Triforce trembles.', 3400 );
+                this.flashBanner( 'Ganon awakens! The Triforce trembles.', 3400 );
             }
         } else {
             this.addScore( 500 );
@@ -877,11 +963,13 @@
         body.tcDropped = true;
         body.isSensor = true; // ball passes through after it's "dropped"
         body.tcFlashUntil = performance.now() + 260;
+        SFX.peg();
         this.addScore( 250 );
 
         // Cleared all 3? Bonus multiplier + reset the row.
         var allDown = this.dropTargets.every( function ( d ) { return d.tcDropped; } );
         if ( allDown ) {
+            SFX.gold();
             this.multiplier = 5;
             this.multUntil = performance.now() + 10000;
             this.flashBanner( 'All Hyrule explored — ×5 for 10 seconds!', 2400 );
@@ -897,6 +985,7 @@
 
     Pinball.prototype.handleDrain = function () {
         if ( this.gameOver ) return;
+        SFX.drain();
         if ( this.ball < this.maxBalls ) {
             this.ball++;
             this.ballEl.textContent = this.ball;
@@ -1058,11 +1147,16 @@
         var dt = Math.min( 32, ts - this.lastTs );
         this.lastTs = ts;
 
+        // Tilt meter decays over time, so it's the RATE of nudging that
+        // trips a tilt, not the lifetime count.
+        if ( this.tiltMeter > 0 ) this.tiltMeter = Math.max( 0, this.tiltMeter - dt / 600 );
+
         // Kinematic flippers — step each toward its target, override
         // the body pose every frame. Must happen BEFORE Engine.update
-        // so the new pose is what collisions are resolved against.
-        this.driveFlipper( 'left',  this.leftFlipperUp,  dt );
-        this.driveFlipper( 'right', this.rightFlipperUp, dt );
+        // so the new pose is what collisions are resolved against. When
+        // tilted, both flippers are forced to rest (dead).
+        this.driveFlipper( 'left',  this.tilted ? false : this.leftFlipperUp,  dt );
+        this.driveFlipper( 'right', this.tilted ? false : this.rightFlipperUp, dt );
 
         // Charge plunger while held.
         if ( this.plungerActive ) {
@@ -1508,8 +1602,8 @@
         grad.addColorStop( 0, COLORS.flipperShine );
         grad.addColorStop( 1, COLORS.flipper );
         ctx.fillStyle = grad;
-        // Rounded rectangle 104×18 (matches the flipper body)
-        var w = 104, h = 18, r = 6;
+        // Rounded rectangle 104×14 (matches the thinner flipper body)
+        var w = 104, h = 14, r = 5;
         ctx.beginPath();
         ctx.moveTo( -w / 2 + r, -h / 2 );
         ctx.lineTo(  w / 2 - r, -h / 2 );
@@ -1547,20 +1641,20 @@
         return g;
     }
 
-    // A flipper: a neon energy bar (spacey) — cyan body, bright top
-    // highlight, crisp white edge. Centred on its origin so we can drive it
-    // by the Matter body's position/angle.
-    function makeFlipperGfx() {
+    // A flipper: a neon energy bar (spacey), thinner + wedge-shaped — full
+    // height at the hinge end, tapering to the tip. `s` is the tip direction
+    // (+1 = tip toward +x, -1 = toward -x). Centred on its origin so we can
+    // drive it by the Matter body's position/angle.
+    function makeFlipperGfx( s ) {
         var g = new PIXI.Graphics();
+        // hinge end (full ±7) at -52*s, tip (±3.5) at +52*s.
+        var pts = [ -52 * s, -7, 52 * s, -3.5, 52 * s, 3.5, -52 * s, 7 ];
         g.beginFill( colorToNum( SPACE.flipper ), 1 );
-        g.drawRoundedRect( -52, -9, 104, 18, 6 );
-        g.endFill();
-        g.beginFill( 0xffffff, 0.55 );
-        g.drawRoundedRect( -52, -9, 104, 7, 5 );
-        g.endFill();
+        g.drawPolygon( pts ); g.endFill();
+        g.beginFill( 0xffffff, 0.5 ); // top highlight band
+        g.drawPolygon( [ -52 * s, -7, 52 * s, -3.5, 52 * s, -0.5, -52 * s, -2 ] ); g.endFill();
         g.lineStyle( 1.5, 0xffffff, 0.65 );
-        g.drawRoundedRect( -52, -9, 104, 18, 6 );
-        g.lineStyle( 0 );
+        g.drawPolygon( pts ); g.lineStyle( 0 );
         return g;
     }
 
@@ -1731,8 +1825,8 @@
 
         // Labels — bigger, white, dark-outlined, 2× resolution for crispness.
         var rampLabelStyle = new P.TextStyle( {
-            fontFamily: 'Georgia, serif', fontSize: 13, fontWeight: 'bold',
-            fill: 0xffffff, stroke: 0x05030f, strokeThickness: 3,
+            fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 'bold',
+            fill: 0xffffff, stroke: 0x05030f, strokeThickness: 4,
         } );
         this.pixi.rampLabels = this.ramps.map( function ( r ) {
             var t = new P.Text( labelOfRamp( r.label ), rampLabelStyle );
@@ -1778,8 +1872,8 @@
         var dropsG = new P.Graphics();
         shakeRoot.addChild( dropsG ); this.pixi.dropsG = dropsG;
         var dropLabelStyle = new P.TextStyle( {
-            fontFamily: 'Georgia, serif', fontSize: 11, fontWeight: 'bold',
-            fill: 0x141019, stroke: 0xfff3d0, strokeThickness: 1,
+            fontFamily: 'Georgia, serif', fontSize: 13, fontWeight: 'bold',
+            fill: 0xffffff, stroke: 0x05030f, strokeThickness: 3,
         } );
         this.pixi.dropLabels = this.dropTargets.map( function ( d ) {
             var t = new P.Text( d.tcLabel, dropLabelStyle );
@@ -1794,7 +1888,9 @@
             distance: 10, outerStrength: 1.2, innerStrength: 0,
             color: colorToNum( SPACE.flipper ), quality: 0.25,
         } ) ];
-        this.pixi.flipperGfx = { left: makeFlipperGfx(), right: makeFlipperGfx() };
+        // Left flipper pivots at its -x end (hinge offset -52) so its tip is
+        // toward +x; the right is mirrored.
+        this.pixi.flipperGfx = { left: makeFlipperGfx( 1 ), right: makeFlipperGfx( -1 ) };
         flippersBox.addChild( this.pixi.flipperGfx.left, this.pixi.flipperGfx.right );
         shakeRoot.addChild( flippersBox );
 
@@ -1849,6 +1945,7 @@
             this.bgTier = tier;
             this.paintBackground( px.bgCtx, tier );
             px.bgTex.update();
+            SFX.sector();
             this.flashBanner( 'Sector ' + ( tier + 1 ) + ' — ' + SECTOR_NAMES[ tier ], 2200 );
         }
 
@@ -1884,14 +1981,25 @@
 
         // Bumpers — pop-bumpers (socket, ring, body, cap, pulsing core,
         // specular); glow spikes electric on impact.
+        var bonusRings = this.score >= 30000;
         this.bumpers.forEach( function ( bp, bi ) {
             var g = px.bumperGfx[ bi ]; g.clear();
             var flash = bp.tcFlashUntil > now;
             var hits = self.bumperHits[ bp.tcName ] || 0;
+            var gold = hits >= 12;
             var baseN = colorToNum( flash ? COLORS.bumperBright : bumperColor( hits ) );
             var brightN = colorToNum( bumperBrightColor( hits ) );
             var rad = bp.circleRadius, x = bp.position.x, y = bp.position.y;
             var pulse = 0.5 + 0.5 * Math.sin( now / 320 + bi * 1.7 );
+            // Bonus rings — gold posts ripple once you pass 30k.
+            if ( gold && bonusRings ) {
+                for ( var ri = 0; ri < 2; ri++ ) {
+                    var ph = ( ( now / 700 + ri * 0.5 ) % 1 );
+                    g.lineStyle( 2, 0xffe79a, ( 1 - ph ) * 0.85 );
+                    g.drawCircle( x, y, rad + 3 + ph * 16 );
+                }
+                g.lineStyle( 0 );
+            }
             g.beginFill( 0x05030f, 0.85 ); g.drawCircle( x, y, rad + 2.5 ); g.endFill();
             g.beginFill( brightN, 0.32 );  g.drawCircle( x, y, rad + 1 );   g.endFill();
             g.beginFill( baseN, 1 );       g.drawCircle( x, y, rad );        g.endFill();
@@ -1901,7 +2009,12 @@
             g.drawCircle( x, y, rad * ( 0.42 + 0.12 * pulse ) ); g.endFill();
             g.beginFill( 0xffffff, 0.8 );
             g.drawCircle( x - rad * 0.32, y - rad * 0.34, rad * 0.22 ); g.endFill();
-            setGlow( g, GLOW_SPIKE * impactAmt( bp.tcFlashUntil, now, 160 ) );
+            // Gold posts stay glowing (constant), spiking brighter on impact;
+            // their glow runs warm gold rather than electric cyan.
+            if ( g.tcGlow ) g.tcGlow.color = colorToNum( gold ? '#ffe79a' : '#bfefff' );
+            var amt = GLOW_SPIKE * impactAmt( bp.tcFlashUntil, now, 160 );
+            if ( gold ) amt = Math.max( amt, 2.2 );
+            setGlow( g, amt );
         } );
 
         // Pins — gold studs; glow spikes on impact.
@@ -1924,7 +2037,7 @@
         this.dropTargets.forEach( function ( d, i ) {
             var flash = d.tcFlashUntil > now, label = px.dropLabels[ i ];
             var fillN;
-            if ( d.tcDropped ) { fillN = colorToNum( COLORS.dropTargetOff ); if ( label ) label.alpha = 0.35; }
+            if ( d.tcDropped ) { fillN = colorToNum( COLORS.dropTargetOff ); if ( label ) label.alpha = 0.55; }
             else { fillN = colorToNum( flash ? '#ffffff' : COLORS.dropTarget ); if ( label ) label.alpha = 1; }
             dropsG.beginFill( fillN, 1 );
             dropsG.drawRoundedRect( d.position.x - 32, d.position.y - 7, 64, 14, 4 );
