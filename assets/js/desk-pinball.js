@@ -326,6 +326,7 @@
         this.bgTier = -1;     // current background "sector" (score/10k), Pixi
         this.tiltMeter = 0;   // nudge-aggression accumulator
         this.tilted = false;  // true → flippers dead until the next ball
+        this.gatesActive = false; // side-guards up (all pegs same on/off mode)
 
         // Prime the audio context within the boot click gesture so SFX are
         // allowed to play (autoplay policy).
@@ -510,7 +511,9 @@
         // and out of the x270–490 centre so the lower funnel to the flippers
         // stays clear — the ball must roll down to the flippers unobstructed.
         // r6 (vs the r10 ball) so they can't be tunnelled at the speed cap.
-        // Score 25 × mult.
+        // Score 25 × mult. Each peg is a TWO-STATE switch (tcOn): hitting it
+        // flips it; line them all to the same mode to raise the side-guards.
+        // Start alternating so they're not all-aligned at kickoff.
         this.pegs = [];
         var pegSpots = [
             { x: 380, y: 130 },                       // centre, in line between Ganon & Zelda
@@ -518,7 +521,7 @@
             { x: 150, y: 205 }, { x: 610, y: 205 },   // upper flanks
             { x: 95,  y: 260 }, { x: 650, y: 260 },   // outer edges
         ];
-        pegSpots.forEach( function ( spec ) {
+        pegSpots.forEach( function ( spec, i ) {
             var p = Bodies.circle( spec.x, spec.y, 6, {
                 isStatic: true,
                 restitution: 1.25,
@@ -526,9 +529,22 @@
                 render: { fillStyle: COLORS.dropTarget },
             } );
             p.tcFlashUntil = 0;
+            p.tcOn = ( i % 2 === 0 );
             World.add( w, p );
             pinball.pegs.push( p );
         } );
+
+        // ---- SIDE GUARDS — angled "kicker" walls at the bottom of each
+        // outlane gutter. Normally sensors (inert); when every peg is in the
+        // same mode they go solid and bat a side-draining ball back inward.
+        this.gates = [];
+        var gateOpts = { isStatic: true, isSensor: true, label: 'gate',
+                         restitution: 1.0, render: { fillStyle: COLORS.slingshot } };
+        this.gates.push( Bodies.rectangle( 27, 427, 40, 10,
+            Object.assign( {}, gateOpts, { angle: 0.76 } ) ) );  // left "\"
+        this.gates.push( Bodies.rectangle( 689, 427, 34, 10,
+            Object.assign( {}, gateOpts, { angle: -0.76 } ) ) ); // right "/"
+        World.add( w, this.gates );
 
         // ---- SLINGSHOTS — triangular bumpers above each flipper.
         // High restitution; score 50 × mult.
@@ -882,6 +898,7 @@
 
     Pinball.prototype.handlePeg = function ( body ) {
         body.tcFlashUntil = performance.now() + 140;
+        body.tcOn = ! body.tcOn;   // toggle this switch
         SFX.peg();
         this.addScore( 25 );
         this.spawnSparks( body.position.x, body.position.y, COLORS.dropTarget );
@@ -890,6 +907,24 @@
             var dir = Vector.normalise( Vector.sub( this.theBall.position, body.position ) );
             Body.applyForce( this.theBall, this.theBall.position,
                 { x: dir.x * 0.006, y: dir.y * 0.006 } );
+        }
+        this.updateGates();
+    };
+
+    // Raise the side-guards when every peg shares a mode (all on or all off);
+    // drop them otherwise. Solid ↔ sensor is the whole mechanism.
+    Pinball.prototype.updateGates = function () {
+        var on = 0;
+        this.pegs.forEach( function ( p ) { if ( p.tcOn ) on++; } );
+        var allSame = ( on === 0 || on === this.pegs.length );
+        if ( allSame === this.gatesActive ) return; // no change
+        this.gatesActive = allSame;
+        this.gates.forEach( function ( g ) { g.isSensor = ! allSame; } );
+        if ( allSame ) {
+            SFX.gold();
+            this.flashBanner( 'Pegs aligned — side guards UP!', 1800 );
+        } else {
+            this.flashBanner( 'Side guards down', 900 );
         }
     };
 
@@ -1161,6 +1196,10 @@
         this.sparks = [];
         this.stuckFrames = 0;
         this.dropTargets.forEach( function ( d ) { d.tcDropped = false; d.isSensor = false; } );
+        // Reset the peg puzzle (alternating) + drop the side-guards.
+        this.pegs.forEach( function ( p, i ) { p.tcOn = ( i % 2 === 0 ); } );
+        this.gatesActive = false;
+        this.gates.forEach( function ( g ) { g.isSensor = true; } );
         // Reset the background sector to 1 (quietly — no banner).
         if ( this.renderer === 'pixi' && this.pixi ) {
             this.bgTier = 0;
@@ -1407,26 +1446,43 @@
             ctx.fill();
         } );
 
-        // Pins — small gold studs.
+        // Pins — two-state studs (ON = bright gold, OFF = dark).
         this.pegs.forEach( function ( p ) {
-            var flash = p.tcFlashUntil > now;
+            var flash = p.tcFlashUntil > now, on = p.tcOn;
             var r = p.circleRadius, x = p.position.x, y = p.position.y;
             ctx.save();
             ctx.shadowColor = COLORS.dropTarget;
-            ctx.shadowBlur  = flash ? 8 : 3;
+            ctx.shadowBlur  = flash ? 8 : ( on ? 3 : 0 );
             var g = ctx.createRadialGradient( x - r * 0.3, y - r * 0.3, 1, x, y, r );
-            g.addColorStop( 0, '#fff3d0' );
-            g.addColorStop( 1, flash ? '#ffffff' : COLORS.dropTarget );
+            g.addColorStop( 0, on ? '#fff3d0' : '#5a4a2a' );
+            g.addColorStop( 1, flash ? '#ffffff' : ( on ? COLORS.dropTarget : '#3a2e18' ) );
             ctx.fillStyle = g;
             ctx.beginPath();
             ctx.arc( x, y, r, 0, Math.PI * 2 );
             ctx.fill();
             ctx.restore();
-            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.fillStyle = on ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.25)';
             ctx.beginPath();
             ctx.arc( x - r * 0.3, y - r * 0.3, r * 0.3, 0, Math.PI * 2 );
             ctx.fill();
         } );
+
+        // Side-guards — only when raised.
+        if ( this.gatesActive ) {
+            this.gates.forEach( function ( gt ) {
+                ctx.save();
+                ctx.shadowColor = COLORS.bumperBright;
+                ctx.shadowBlur = 8;
+                ctx.fillStyle = COLORS.slingshot;
+                ctx.beginPath();
+                gt.vertices.forEach( function ( v, i ) {
+                    if ( i === 0 ) ctx.moveTo( v.x, v.y ); else ctx.lineTo( v.x, v.y );
+                } );
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            } );
+        }
 
         // Drop targets — lit, rounded letter tiles; dimmed when dropped.
         this.dropTargets.forEach( function ( d ) {
@@ -1899,6 +1955,14 @@
         } );
         shakeRoot.addChild( pegsBox );
 
+        // Side-guards — drawn only when raised; constant cyan glow.
+        var gatesG = new P.Graphics();
+        if ( Glow ) gatesG.filters = [ new Glow( {
+            distance: 12, outerStrength: 1.7, innerStrength: 0,
+            color: colorToNum( COLORS.bumperBright ), quality: 0.3,
+        } ) ];
+        shakeRoot.addChild( gatesG ); this.pixi.gatesG = gatesG;
+
         // Drop targets + labels.
         var dropsG = new P.Graphics();
         shakeRoot.addChild( dropsG ); this.pixi.dropsG = dropsG;
@@ -2048,20 +2112,34 @@
             setGlow( g, amt );
         } );
 
-        // Pins — gold studs; glow spikes on impact.
+        // Pins — two-state switches: ON = bright lit gold (faint constant
+        // glow), OFF = dark stud. Glow spikes on impact.
         this.pegs.forEach( function ( p, i ) {
             var g = px.pegGfx[ i ]; g.clear();
-            var flash = p.tcFlashUntil > now;
+            var flash = p.tcFlashUntil > now, on = p.tcOn;
             var r = p.circleRadius, x = p.position.x, y = p.position.y;
+            var faceN = colorToNum( flash ? '#ffffff' : ( on ? COLORS.dropTarget : '#4a3c20' ) );
+            var rimN  = colorToNum( flash ? '#ffffff' : ( on ? '#fff3d0' : '#2c2412' ) );
             g.beginFill( 0x05030f, 0.85 ); g.drawCircle( x, y, r + 1.5 ); g.endFill();
-            g.beginFill( colorToNum( flash ? '#ffffff' : COLORS.dropTarget ), 1 );
-            g.drawCircle( x, y, r ); g.endFill();
-            g.lineStyle( 1.5, colorToNum( flash ? '#ffffff' : '#fff3d0' ), 1 );
-            g.drawCircle( x, y, r - 0.5 ); g.lineStyle( 0 );
-            g.beginFill( 0xffffff, 0.75 );
+            g.beginFill( faceN, 1 ); g.drawCircle( x, y, r ); g.endFill();
+            g.lineStyle( 1.5, rimN, 1 ); g.drawCircle( x, y, r - 0.5 ); g.lineStyle( 0 );
+            g.beginFill( 0xffffff, on ? 0.75 : 0.3 );
             g.drawCircle( x - r * 0.3, y - r * 0.3, r * 0.32 ); g.endFill();
-            setGlow( g, GLOW_SPIKE * impactAmt( p.tcFlashUntil, now, 140 ) );
+            var pamt = GLOW_SPIKE * impactAmt( p.tcFlashUntil, now, 140 );
+            if ( on ) pamt = Math.max( pamt, 0.9 ); // lit pegs keep a soft glow
+            setGlow( g, pamt );
         } );
+
+        // Side-guards — only drawn when raised (all pegs aligned).
+        var gatesG = px.gatesG; gatesG.clear();
+        if ( this.gatesActive ) {
+            this.gates.forEach( function ( gt ) {
+                var pts = []; gt.vertices.forEach( function ( v ) { pts.push( v.x, v.y ); } );
+                gatesG.beginFill( colorToNum( COLORS.bumperBright ), 0.9 );
+                gatesG.drawPolygon( pts ); gatesG.endFill();
+                gatesG.lineStyle( 2, 0xffffff, 1 ); gatesG.drawPolygon( pts ); gatesG.lineStyle( 0 );
+            } );
+        }
 
         // Drop targets — dim when dropped; bright flash on hit.
         var dropsG = px.dropsG; dropsG.clear();
