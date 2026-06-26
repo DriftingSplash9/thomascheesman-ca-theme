@@ -388,7 +388,7 @@
         ];
         var pinball = this;
         bumperLabels.forEach( function ( spec ) {
-            var b = Bodies.circle( spec.x, spec.y, 18, {
+            var b = Bodies.circle( spec.x, spec.y, 15, {
                 isStatic: true,
                 restitution: 1.7, // overspring so the ball pops
                 label: 'bumper:' + spec.name,
@@ -401,19 +401,20 @@
             pinball.bumpers.push( b );
         } );
 
-        // ---- PINS — small static studs scattered through the otherwise
-        // empty mid-field ("more pins"). Gold, to contrast the cyan bumpers
-        // and give the ball more to ping off. r8 (vs the r10 ball) so they
-        // can't be tunnelled at the speed cap. Score 25 × mult.
+        // ---- PINS — small static studs in the UPPER/mid-field ("more
+        // pins"). Gold, to contrast the cyan bumpers. Kept up high (y<=250)
+        // and out of the x270–490 centre so the lower funnel to the flippers
+        // stays clear — the ball must roll down to the flippers unobstructed.
+        // r6 (vs the r10 ball) so they can't be tunnelled at the speed cap.
+        // Score 25 × mult.
         this.pegs = [];
         var pegSpots = [
-            { x: 360, y: 175 },
-            { x: 240, y: 250 }, { x: 480, y: 250 },
-            { x: 320, y: 320 }, { x: 400, y: 320 },
-            { x: 200, y: 320 }, { x: 520, y: 320 },
+            { x: 300, y: 175 }, { x: 360, y: 168 }, { x: 420, y: 175 }, // top arc
+            { x: 240, y: 250 }, { x: 480, y: 250 },                     // mid flanks
+            { x: 160, y: 235 }, { x: 560, y: 235 },                     // outer
         ];
         pegSpots.forEach( function ( spec ) {
-            var p = Bodies.circle( spec.x, spec.y, 8, {
+            var p = Bodies.circle( spec.x, spec.y, 6, {
                 isStatic: true,
                 restitution: 1.25,
                 label: 'peg',
@@ -1732,10 +1733,10 @@
             var rad = bp.circleRadius, x = bp.position.x, y = bp.position.y;
             var pulse = 0.5 + 0.5 * Math.sin( now / 320 + bi * 1.7 );
             bumpersG.beginFill( 0x0a0814, 0.85 );           // dark socket
-            bumpersG.drawCircle( x, y, rad + 4 );
+            bumpersG.drawCircle( x, y, rad + 2.5 );
             bumpersG.endFill();
             bumpersG.beginFill( brightN, 0.32 );            // metallic ring
-            bumpersG.drawCircle( x, y, rad + 2 );
+            bumpersG.drawCircle( x, y, rad + 1 );
             bumpersG.endFill();
             bumpersG.beginFill( baseN, 1 );                 // body
             bumpersG.drawCircle( x, y, rad );
