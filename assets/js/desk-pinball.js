@@ -91,18 +91,6 @@
         hudDim:        '#057a2f',
     };
 
-    // GlowFilter tuning for the WebGL renderer — per bright element group.
-    // distance = glow reach (px), outerStrength = intensity. Kept modest so
-    // the table reads as "lit", not blown out; Thomas tunes the look live.
-    var GLOW = {
-        ramp:     { distance: 12, outerStrength: 1.5, innerStrength: 0, quality: 0.3 },
-        sling:    { distance: 10, outerStrength: 1.4, innerStrength: 0, quality: 0.3 },
-        bumper:   { distance: 16, outerStrength: 2.2, innerStrength: 0, quality: 0.35 },
-        peg:      { distance: 9,  outerStrength: 1.6, innerStrength: 0, quality: 0.3 },
-        ball:     { distance: 14, outerStrength: 2.0, innerStrength: 0, quality: 0.4 },
-        spark:    { distance: 8,  outerStrength: 2.2, innerStrength: 0, quality: 0.3 },
-    };
-
     // Is the Pixi WebGL renderer actually usable right now? True only when
     // the global loaded (it's lazy + non-fatal) and WebGL is supported.
     function pixiUsable() {
@@ -129,6 +117,58 @@
         var m = s.match( /\d+/g );
         return m ? ( ( +m[ 0 ] << 16 ) | ( +m[ 1 ] << 8 ) | +m[ 2 ] ) : 0xffffff;
     }
+
+    // An rgba() string from any CSS colour + alpha (for soft nebula fills).
+    function hexA( css, a ) {
+        var n = colorToNum( css );
+        return 'rgba(' + ( ( n >> 16 ) & 255 ) + ',' + ( ( n >> 8 ) & 255 ) +
+               ',' + ( n & 255 ) + ',' + a + ')';
+    }
+
+    // Impact intensity from a flash timer: 1 at the moment of contact,
+    // decaying linearly to 0 over `ms`. Drives the electric glow pulse.
+    function impactAmt( flashUntil, now, ms ) {
+        var t = flashUntil - now;
+        return t > 0 ? Math.min( 1, t / ms ) : 0;
+    }
+
+    // Apply an animated glow to an element's stored GlowFilter. Detaches the
+    // filter entirely when effectively off (glow is impact-triggered, so most
+    // elements sit dark most of the time — no wasted filter pass per frame).
+    function setGlow( obj, amt ) {
+        if ( ! obj.tcGlow ) return;
+        if ( amt > 0.05 ) {
+            obj.tcGlow.outerStrength = amt;
+            if ( ! obj.filters ) obj.filters = obj.tcGlowArr;
+        } else if ( obj.filters ) {
+            obj.filters = null;
+        }
+    }
+
+    // ---- SPACEY THEME (Pixi/WebGL renderer only — the desk-menu arcade's
+    // Canvas2D pinball keeps the original wood look).
+    var SPACE = {
+        wall0: '#2a3450', wall1: '#141a2c', wall2: '#0b0f1c', // metal rail body
+        wallEdge: 'rgba(120,214,255,0.55)',                   // neon rail edge
+        flipper: '#5fe6ff',                                   // neon flipper
+        slingBody: 0x1a2238, slingEdge: 0x3a4a66,
+    };
+    // Glow: near-off at rest, spikes electric on contact, then decays.
+    var GLOW_SPIKE = 4.5;
+
+    // Background "sectors" — felt + nebula shift every 10,000 points.
+    var FELT_TIERS = [
+        { inner: '#241a52', outer: '#05030f', nebula: '#4a2a8c' }, // violet
+        { inner: '#0e2b4e', outer: '#03070f', nebula: '#1f6fa6' }, // blue
+        { inner: '#073a33', outer: '#02100c', nebula: '#129a6a' }, // teal
+        { inner: '#451636', outer: '#10030c', nebula: '#b02a78' }, // magenta
+        { inner: '#46300f', outer: '#120a03', nebula: '#c98520' }, // amber
+        { inner: '#311046', outer: '#0c0312', nebula: '#8a2ad6' }, // deep purple
+    ];
+    var SECTOR_NAMES = [
+        'Hyrule Field', 'Lake Hylia', 'Lost Woods',
+        'Gerudo Sands', 'Death Mountain', 'The Dark World',
+    ];
 
     // ----------------------------------------------------------------
     // Public entry point. Boots a fresh game instance bound to the
@@ -241,6 +281,7 @@
         this.goldPosts = 0;   // how many of the 5 posts have hit gold
         this.overPanel = null;// game-over panel element while shown
         this.ballTrail = [];  // recent ball positions for a motion trail
+        this.bgTier = -1;     // current background "sector" (score/10k), Pixi
 
         // ---- engine
         this.engine = Engine.create();
@@ -379,12 +420,15 @@
         // Five of them, named after desk objects. Names propagate to
         // the story-credit easter egg at 10 cumulative hits each.
         this.bumpers = [];
+        // Spread wide toward the edges (two far flanks, two mid, one top)
+        // so the playfield doesn't feel crowded into the centre, while the
+        // lower-centre funnel to the flippers stays clear.
         var bumperLabels = [
-            { x: 200, y: 220, name: 'mug',    story: "Patience picked this Charlie Brown mug." },
-            { x: 280, y: 280, name: 'spider', story: "Daniel made this with a 3D pen." },
-            { x: 360, y: 220, name: 'sticker67', story: "67 — that's Faith's thing." },
-            { x: 440, y: 280, name: 'duck',   story: "Daniel started the rubber-duck collection." },
-            { x: 520, y: 220, name: 'marble', story: "Same marble that sits in the drawer." },
+            { x: 110, y: 225, name: 'mug',    story: "Patience picked this Charlie Brown mug." },
+            { x: 235, y: 295, name: 'spider', story: "Daniel made this with a 3D pen." },
+            { x: 380, y: 200, name: 'sticker67', story: "67 — that's Faith's thing." },
+            { x: 525, y: 295, name: 'duck',   story: "Daniel started the rubber-duck collection." },
+            { x: 650, y: 225, name: 'marble', story: "Same marble that sits in the drawer." },
         ];
         var pinball = this;
         bumperLabels.forEach( function ( spec ) {
@@ -409,9 +453,10 @@
         // Score 25 × mult.
         this.pegs = [];
         var pegSpots = [
-            { x: 300, y: 175 }, { x: 360, y: 168 }, { x: 420, y: 175 }, // top arc
-            { x: 240, y: 250 }, { x: 480, y: 250 },                     // mid flanks
-            { x: 160, y: 235 }, { x: 560, y: 235 },                     // outer
+            { x: 380, y: 150 },                       // top centre
+            { x: 290, y: 168 }, { x: 470, y: 168 },   // top inner arc
+            { x: 150, y: 205 }, { x: 610, y: 205 },   // upper flanks
+            { x: 95,  y: 260 }, { x: 650, y: 260 },   // outer edges
         ];
         pegSpots.forEach( function ( spec ) {
             var p = Bodies.circle( spec.x, spec.y, 6, {
@@ -459,11 +504,12 @@
         // We model each ramp as a short angled rectangle; on contact
         // the ball deflects and we award points.
         this.ramps = [];
+        // Spread the platforms wide toward the edges.
         var rampSpecs = [
-            { x: 110, y: 130, angle: -0.4, label: 'ramp:link',  color: '#4caf50' }, // green tunic
-            { x: 250, y: 110, angle: -0.2, label: 'ramp:ganon', color: '#e0452e' }, // special: double score
-            { x: 390, y: 110, angle:  0.2, label: 'ramp:zelda', color: '#e8b923' }, // royal gold
-            { x: 530, y: 130, angle:  0.4, label: 'ramp:impa',  color: '#7c6bd6' }, // Sheikah indigo
+            { x: 95,  y: 135, angle: -0.4, label: 'ramp:link',  color: '#4caf50' }, // green tunic
+            { x: 290, y: 112, angle: -0.2, label: 'ramp:ganon', color: '#e0452e' }, // special: double score
+            { x: 470, y: 112, angle:  0.2, label: 'ramp:zelda', color: '#e8b923' }, // royal gold
+            { x: 645, y: 135, angle:  0.4, label: 'ramp:impa',  color: '#7c6bd6' }, // Sheikah indigo
         ];
         rampSpecs.forEach( function ( spec ) {
             var r = Bodies.rectangle( spec.x, spec.y, 84, 10, {
@@ -485,8 +531,9 @@
         // they reset.
         this.dropTargets = [];
         var places = [ 'Hyrule', 'Kakariko', 'Gerudo' ];
+        var dropX = [ 190, 380, 570 ]; // spread across the top
         places.forEach( function ( place, i ) {
-            var x = 260 + i * 70;
+            var x = dropX[ i ];
             var d = Bodies.rectangle( x, 50, 64, 14, {
                 isStatic: true,
                 restitution: 0.6,
@@ -994,6 +1041,12 @@
         this.sparks = [];
         this.stuckFrames = 0;
         this.dropTargets.forEach( function ( d ) { d.tcDropped = false; d.isSensor = false; } );
+        // Reset the background sector to 1 (quietly — no banner).
+        if ( this.renderer === 'pixi' && this.pixi ) {
+            this.bgTier = 0;
+            this.paintBackground( this.pixi.bgCtx, 0 );
+            this.pixi.bgTex.update();
+        }
         this.spawnBall();
         this.flashBanner( 'Push Space to launch', 1800 );
     };
@@ -1494,16 +1547,20 @@
         return g;
     }
 
-    // A flipper: 104×18 rounded bar + a lighter top highlight, centred on
-    // its origin so we can drive it by the Matter body's position/angle.
+    // A flipper: a neon energy bar (spacey) — cyan body, bright top
+    // highlight, crisp white edge. Centred on its origin so we can drive it
+    // by the Matter body's position/angle.
     function makeFlipperGfx() {
         var g = new PIXI.Graphics();
-        g.beginFill( colorToNum( COLORS.flipper ), 1 );
+        g.beginFill( colorToNum( SPACE.flipper ), 1 );
         g.drawRoundedRect( -52, -9, 104, 18, 6 );
         g.endFill();
-        g.beginFill( colorToNum( COLORS.flipperShine ), 0.5 );
+        g.beginFill( 0xffffff, 0.55 );
         g.drawRoundedRect( -52, -9, 104, 7, 5 );
         g.endFill();
+        g.lineStyle( 1.5, 0xffffff, 0.65 );
+        g.drawRoundedRect( -52, -9, 104, 18, 6 );
+        g.lineStyle( 0 );
         return g;
     }
 
@@ -1523,30 +1580,83 @@
         return PIXI.Texture.from( c );
     }
 
-    // Paint the never-moving table chrome into a 2D context (reused to
-    // build the baked background texture). Identical math to render().
-    Pinball.prototype.paintStaticBackground = function ( ctx ) {
-        var bg = ctx.createRadialGradient( TABLE_W / 2, TABLE_H * 0.35, 50,
-                                           TABLE_W / 2, TABLE_H * 0.5, TABLE_W );
-        bg.addColorStop( 0, '#1a1228' );
-        bg.addColorStop( 1, COLORS.bg );
+    // Paint the spacey background into a 2D context (uploaded as the bg
+    // texture). `tier` (score / 10,000) shifts the felt + nebula colour, so
+    // the table changes "sector" as the score climbs. Walls are baked in too
+    // (they never move). Repainted only when the tier changes.
+    Pinball.prototype.paintBackground = function ( ctx, tier ) {
+        var T = FELT_TIERS[ tier ] || FELT_TIERS[ 0 ];
+        ctx.clearRect( 0, 0, TABLE_W, TABLE_H );
+
+        // Deep-space radial felt.
+        var bg = ctx.createRadialGradient( TABLE_W / 2, TABLE_H * 0.4, 40,
+                                           TABLE_W / 2, TABLE_H * 0.5, TABLE_W * 0.85 );
+        bg.addColorStop( 0, T.inner );
+        bg.addColorStop( 1, T.outer );
         ctx.fillStyle = bg; ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
 
-        var spot = ctx.createRadialGradient( TABLE_W / 2, 165, 30, TABLE_W / 2, 165, 350 );
-        spot.addColorStop( 0, 'rgba(122,112,225,0.13)' );
-        spot.addColorStop( 1, 'rgba(122,112,225,0)' );
-        ctx.fillStyle = spot; ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
+        // Two soft nebula clouds.
+        [ [ 0.34, 0.30, 380, 0.33 ], [ 0.72, 0.62, 300, 0.22 ] ].forEach( function ( c ) {
+            var g = ctx.createRadialGradient( TABLE_W * c[ 0 ], TABLE_H * c[ 1 ], 20,
+                                              TABLE_W * c[ 0 ], TABLE_H * c[ 1 ], c[ 2 ] );
+            g.addColorStop( 0, hexA( T.nebula, c[ 3 ] ) );
+            g.addColorStop( 1, hexA( T.nebula, 0 ) );
+            ctx.fillStyle = g; ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
+        } );
 
-        var vg = ctx.createRadialGradient( TABLE_W / 2, TABLE_H * 0.42, TABLE_H * 0.34,
+        // Starfield (fixed positions so it doesn't twinkle on repaint).
+        if ( this.stars ) {
+            this.stars.forEach( function ( s ) {
+                ctx.globalAlpha = s.a;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.arc( s.x, s.y, s.r, 0, Math.PI * 2 ); ctx.fill();
+            } );
+            ctx.globalAlpha = 1;
+        }
+
+        // Vignette.
+        var vg = ctx.createRadialGradient( TABLE_W / 2, TABLE_H * 0.45, TABLE_H * 0.34,
                                            TABLE_W / 2, TABLE_H * 0.5, TABLE_W * 0.62 );
         vg.addColorStop( 0, 'rgba(0,0,0,0)' );
-        vg.addColorStop( 1, 'rgba(0,0,0,0.5)' );
+        vg.addColorStop( 1, 'rgba(0,0,0,0.55)' );
         ctx.fillStyle = vg; ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
 
+        // Spacey metal rails (neon edge) instead of wood.
         var self = this;
         Composite.allBodies( this.engine.world ).forEach( function ( b ) {
-            if ( b.label === 'wall' ) self.drawWall( b, ctx );
+            if ( b.label === 'wall' ) self.drawSpaceWall( ctx, b );
         } );
+    };
+
+    // A wall as a dark metal rail with a neon edge (the spacey replacement
+    // for drawWall's wood). Same body-local extent math as drawWall.
+    Pinball.prototype.drawSpaceWall = function ( ctx, b ) {
+        var cosA = Math.cos( -b.angle ), sinA = Math.sin( -b.angle );
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        b.vertices.forEach( function ( v ) {
+            var dx = v.x - b.position.x, dy = v.y - b.position.y;
+            var lx = dx * cosA - dy * sinA, ly = dx * sinA + dy * cosA;
+            if ( lx < minX ) minX = lx;
+            if ( lx > maxX ) maxX = lx;
+            if ( ly < minY ) minY = ly;
+            if ( ly > maxY ) maxY = ly;
+        } );
+        var w = maxX - minX, h = maxY - minY;
+        ctx.save();
+        ctx.translate( b.position.x, b.position.y );
+        ctx.rotate( b.angle );
+        var grad = ctx.createLinearGradient( 0, -h / 2, 0, h / 2 );
+        grad.addColorStop( 0,   SPACE.wall0 );
+        grad.addColorStop( 0.5, SPACE.wall1 );
+        grad.addColorStop( 1,   SPACE.wall2 );
+        ctx.fillStyle = grad;
+        roundRectPath( ctx, -w / 2, -h / 2, w, h, Math.min( h / 2, 6 ) );
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = SPACE.wallEdge;
+        roundRectPath( ctx, -w / 2, -h / 2, w, h, Math.min( h / 2, 6 ) );
+        ctx.stroke();
+        ctx.restore();
     };
 
     Pinball.prototype.buildPixiScene = function () {
@@ -1558,7 +1668,7 @@
             width: TABLE_W,
             height: TABLE_H,
             antialias: true,
-            backgroundColor: colorToNum( COLORS.bg ),
+            backgroundColor: colorToNum( FELT_TIERS[ 0 ].outer ),
             backgroundAlpha: 1,
             resolution: Math.min( window.devicePixelRatio || 1, 2 ),
             autoDensity: false,   // CSS (.tc-pinball__canvas) controls display size
@@ -1568,85 +1678,127 @@
         this.app = app;
         var stage = app.stage;
 
-        // Baked static background (felt + spotlight + vignette + walls).
-        var bgCanvas = document.createElement( 'canvas' );
-        bgCanvas.width = TABLE_W; bgCanvas.height = TABLE_H;
-        this.paintStaticBackground( bgCanvas.getContext( '2d' ) );
-        stage.addChild( new P.Sprite( P.Texture.from( bgCanvas ) ) );
-
-        // Dynamic playfield lives under shakeRoot (nudge jitters this, not
-        // the felt — matches Canvas2D).
-        var shakeRoot = new P.Container();
-        stage.addChild( shakeRoot );
-        this.pixi = { app: app, shakeRoot: shakeRoot };
-
-        // GlowFilter factory — returns null when pixi-filters didn't load
-        // (Pixi treats `.filters = null` as "no filters"), so the scene
-        // still renders, just without the bloom.
         var Glow = P.filters && P.filters.GlowFilter;
-        function glow( cfg, colorCss ) {
-            if ( ! Glow ) return null;
-            var o = {}; for ( var k in cfg ) o[ k ] = cfg[ k ];
-            o.color = colorToNum( colorCss || '#ffffff' );
-            return [ new Glow( o ) ];
+        // Make a GlowFilter (or null if pixi-filters didn't load). Starts at
+        // strength 0 — it's impact-triggered, pulsed up in renderPixi.
+        function mkGlow( distance, colorCss ) {
+            return Glow ? new Glow( {
+                distance: distance, outerStrength: 0, innerStrength: 0,
+                color: colorToNum( colorCss ), quality: 0.25,
+            } ) : null;
         }
 
-        // Ramps — white rounded rects, tinted per frame; glow on the group.
+        // ---- Score-reactive starfield background. Fixed star positions so
+        // the field doesn't twinkle when the texture is repainted per sector.
+        this.stars = [];
+        for ( var si = 0; si < 90; si++ ) {
+            this.stars.push( {
+                x: Math.random() * TABLE_W, y: Math.random() * TABLE_H,
+                r: Math.random() * 1.3 + 0.3, a: Math.random() * 0.6 + 0.22,
+            } );
+        }
+        var bgCanvas = document.createElement( 'canvas' );
+        bgCanvas.width = TABLE_W; bgCanvas.height = TABLE_H;
+        var bgCtx = bgCanvas.getContext( '2d' );
+        this.bgTier = 0;
+        this.paintBackground( bgCtx, 0 );
+        var bgTex = P.Texture.from( bgCanvas );
+        var bgSprite = new P.Sprite( bgTex );
+        stage.addChild( bgSprite );
+
+        // Dynamic playfield under shakeRoot (nudge jitters this, not the felt).
+        var shakeRoot = new P.Container();
+        stage.addChild( shakeRoot );
+        this.pixi = {
+            app: app, shakeRoot: shakeRoot,
+            bgCtx: bgCtx, bgTex: bgTex,
+        };
+
+        // Ramps — white rounded rects, tinted per frame; each carries its own
+        // impact glow (so only a freshly-hit ramp lights up).
         var rampsBox = new P.Container();
-        rampsBox.filters = glow( GLOW.ramp, '#ffffff' );
         this.pixi.rampGfx = this.ramps.map( function ( r ) {
             var g = localRoundRect( 84, 10, 4, 0xffffff, 1 );
             g.position.set( r.position.x, r.position.y );
             g.rotation = r.angle;
             g.tint = colorToNum( r.tcColor );
+            g.tcGlow = mkGlow( 14, r.tcColor );
+            g.tcGlowArr = g.tcGlow ? [ g.tcGlow ] : null;
             rampsBox.addChild( g );
             return g;
         } );
         shakeRoot.addChild( rampsBox );
 
+        // Labels — bigger, white, dark-outlined, 2× resolution for crispness.
         var rampLabelStyle = new P.TextStyle( {
-            fontFamily: 'Georgia, serif', fontSize: 9, fontWeight: 'bold', fill: 0x0a0814,
+            fontFamily: 'Georgia, serif', fontSize: 13, fontWeight: 'bold',
+            fill: 0xffffff, stroke: 0x05030f, strokeThickness: 3,
         } );
         this.pixi.rampLabels = this.ramps.map( function ( r ) {
             var t = new P.Text( labelOfRamp( r.label ), rampLabelStyle );
-            t.anchor.set( 0.5 ); t.position.set( r.position.x, r.position.y ); t.rotation = r.angle;
+            t.resolution = 2; t.anchor.set( 0.5 );
+            t.position.set( r.position.x, r.position.y ); t.rotation = r.angle;
             shakeRoot.addChild( t ); return t;
         } );
 
-        // Slingshots — redrawn each frame (2 triangles).
-        var slingsG = new P.Graphics();
-        slingsG.filters = glow( GLOW.sling, COLORS.bumperBright );
-        shakeRoot.addChild( slingsG ); this.pixi.slingsG = slingsG;
+        // Slingshots — one Graphics each, own impact glow.
+        var slingsBox = new P.Container();
+        this.pixi.slingGfx = this.slingshots.map( function () {
+            var g = new P.Graphics();
+            g.tcGlow = mkGlow( 12, COLORS.bumperBright );
+            g.tcGlowArr = g.tcGlow ? [ g.tcGlow ] : null;
+            slingsBox.addChild( g );
+            return g;
+        } );
+        shakeRoot.addChild( slingsBox );
 
-        // Bumpers — redrawn each frame (5 glassy discs).
-        var bumpersG = new P.Graphics();
-        bumpersG.filters = glow( GLOW.bumper, '#ffffff' );
-        shakeRoot.addChild( bumpersG ); this.pixi.bumpersG = bumpersG;
+        // Bumpers — one Graphics each, own impact glow.
+        var bumpersBox = new P.Container();
+        this.pixi.bumperGfx = this.bumpers.map( function () {
+            var g = new P.Graphics();
+            g.tcGlow = mkGlow( 16, '#bfefff' );
+            g.tcGlowArr = g.tcGlow ? [ g.tcGlow ] : null;
+            bumpersBox.addChild( g );
+            return g;
+        } );
+        shakeRoot.addChild( bumpersBox );
 
-        // Pins — redrawn each frame (gold studs).
-        var pegsG = new P.Graphics();
-        pegsG.filters = glow( GLOW.peg, COLORS.dropTarget );
-        shakeRoot.addChild( pegsG ); this.pixi.pegsG = pegsG;
+        // Pins — one Graphics each, own impact glow.
+        var pegsBox = new P.Container();
+        this.pixi.pegGfx = this.pegs.map( function () {
+            var g = new P.Graphics();
+            g.tcGlow = mkGlow( 9, '#fff3d0' );
+            g.tcGlowArr = g.tcGlow ? [ g.tcGlow ] : null;
+            pegsBox.addChild( g );
+            return g;
+        } );
+        shakeRoot.addChild( pegsBox );
 
         // Drop targets + labels.
         var dropsG = new P.Graphics();
         shakeRoot.addChild( dropsG ); this.pixi.dropsG = dropsG;
         var dropLabelStyle = new P.TextStyle( {
-            fontFamily: 'Georgia, serif', fontSize: 10, fontWeight: 'bold', fill: 0x3a2616,
+            fontFamily: 'Georgia, serif', fontSize: 11, fontWeight: 'bold',
+            fill: 0x141019, stroke: 0xfff3d0, strokeThickness: 1,
         } );
         this.pixi.dropLabels = this.dropTargets.map( function ( d ) {
             var t = new P.Text( d.tcLabel, dropLabelStyle );
-            t.anchor.set( 0.5 ); t.position.set( d.position.x, d.position.y );
+            t.resolution = 2; t.anchor.set( 0.5 );
+            t.position.set( d.position.x, d.position.y );
             shakeRoot.addChild( t ); return t;
         } );
 
-        // Flippers — drawn once, transformed each frame.
+        // Flippers — neon energy bars with a constant gentle glow.
         var flippersBox = new P.Container();
+        if ( Glow ) flippersBox.filters = [ new Glow( {
+            distance: 10, outerStrength: 1.2, innerStrength: 0,
+            color: colorToNum( SPACE.flipper ), quality: 0.25,
+        } ) ];
         this.pixi.flipperGfx = { left: makeFlipperGfx(), right: makeFlipperGfx() };
         flippersBox.addChild( this.pixi.flipperGfx.left, this.pixi.flipperGfx.right );
         shakeRoot.addChild( flippersBox );
 
-        // Ball texture → trail pool + ball sprite.
+        // Ball texture → trail pool + ball sprite (constant energy glow).
         var ballTex = makeBallTexture();
         this.pixi.ballTex = ballTex;
         var trailBox = new P.Container();
@@ -1661,12 +1813,18 @@
         var ballSprite = new P.Sprite( ballTex );
         ballSprite.anchor.set( 0.5 );
         ballSprite.width = ballSprite.height = BALL_R * 2;
-        ballSprite.filters = glow( GLOW.ball, COLORS.ballShine );
+        if ( Glow ) ballSprite.filters = [ new Glow( {
+            distance: 16, outerStrength: 1.6, innerStrength: 0,
+            color: colorToNum( COLORS.ballShine ), quality: 0.3,
+        } ) ];
         shakeRoot.addChild( ballSprite ); this.pixi.ballSprite = ballSprite;
 
-        // Sparks + plunger meter (redrawn each frame).
+        // Sparks (own glow, always lit — they're impact bursts) + plunger.
         var sparksG = new P.Graphics();
-        sparksG.filters = glow( GLOW.spark, '#ffffff' );
+        if ( Glow ) sparksG.filters = [ new Glow( {
+            distance: 8, outerStrength: 2.0, innerStrength: 0,
+            color: 0xffffff, quality: 0.3,
+        } ) ];
         shakeRoot.addChild( sparksG ); this.pixi.sparksG = sparksG;
 
         var plungerG = new P.Graphics();
@@ -1684,6 +1842,16 @@
         var now = performance.now();
         var self = this;
 
+        // Score-reactive background — repaint the felt+nebula when the score
+        // crosses a 10k "sector" boundary.
+        var tier = Math.min( Math.floor( this.score / 10000 ), FELT_TIERS.length - 1 );
+        if ( tier !== this.bgTier ) {
+            this.bgTier = tier;
+            this.paintBackground( px.bgCtx, tier );
+            px.bgTex.update();
+            this.flashBanner( 'Sector ' + ( tier + 1 ) + ' — ' + SECTOR_NAMES[ tier ], 2200 );
+        }
+
         // Screen-shake (felt stays; shakeRoot jitters).
         var shx = 0, shy = 0;
         if ( this.shake && now < this.shake.until ) {
@@ -1693,82 +1861,62 @@
         }
         px.shakeRoot.position.set( shx, shy );
 
-        // Ramps — tint flips to bright on flash.
+        // Ramps — tint flips bright on flash; glow pulses on impact.
         this.ramps.forEach( function ( r, i ) {
-            px.rampGfx[ i ].tint = ( r.tcFlashUntil > now )
-                ? colorToNum( COLORS.bumperBright )
-                : colorToNum( r.tcColor );
+            var g = px.rampGfx[ i ];
+            g.tint = ( r.tcFlashUntil > now )
+                ? colorToNum( COLORS.bumperBright ) : colorToNum( r.tcColor );
+            setGlow( g, GLOW_SPIKE * impactAmt( r.tcFlashUntil, now, 220 ) );
         } );
 
-        // Slingshots — dark slate body with a glowing "rubber band" on the
-        // kicker face (verts[0]→verts[1], the top-sloped edge the ball hits).
-        var slingsG = px.slingsG; slingsG.clear();
-        this.slingshots.forEach( function ( s ) {
-            var flash = s.tcFlashUntil > now;
-            var v = s.tcVerts;
+        // Slingshots — slate body + a "rubber band" on the kicker face
+        // (tcVerts[0]→[1]); glow pulses on impact.
+        this.slingshots.forEach( function ( s, i ) {
+            var g = px.slingGfx[ i ]; g.clear();
+            var flash = s.tcFlashUntil > now, v = s.tcVerts;
             var pts = [ v[ 0 ].x, v[ 0 ].y, v[ 1 ].x, v[ 1 ].y, v[ 2 ].x, v[ 2 ].y ];
-            slingsG.lineStyle( 0 );
-            slingsG.beginFill( 0x232f44, 1 );           // slate body
-            slingsG.drawPolygon( pts );
-            slingsG.endFill();
-            // a thin lit edge around the whole shape for definition
-            slingsG.lineStyle( 1.5, 0x3a4a66, 1 );
-            slingsG.drawPolygon( pts );
-            slingsG.lineStyle( 0 );
-            // the bright rubber band on the active edge
-            slingsG.lineStyle( 4, colorToNum( flash ? '#ffffff' : COLORS.bumperBright ), 1 );
-            slingsG.moveTo( v[ 0 ].x, v[ 0 ].y );
-            slingsG.lineTo( v[ 1 ].x, v[ 1 ].y );
-            slingsG.lineStyle( 0 );
+            g.beginFill( SPACE.slingBody, 1 ); g.drawPolygon( pts ); g.endFill();
+            g.lineStyle( 1.5, SPACE.slingEdge, 1 ); g.drawPolygon( pts ); g.lineStyle( 0 );
+            g.lineStyle( 4, colorToNum( flash ? '#ffffff' : COLORS.bumperBright ), 1 );
+            g.moveTo( v[ 0 ].x, v[ 0 ].y ); g.lineTo( v[ 1 ].x, v[ 1 ].y ); g.lineStyle( 0 );
+            setGlow( g, GLOW_SPIKE * impactAmt( s.tcFlashUntil, now, 140 ) );
         } );
 
-        // Bumpers — dimensional pop-bumpers: dark socket, metallic ring,
-        // coloured body, cap rim, an idle-pulsing core, and a specular.
-        var bumpersG = px.bumpersG; bumpersG.clear();
+        // Bumpers — pop-bumpers (socket, ring, body, cap, pulsing core,
+        // specular); glow spikes electric on impact.
         this.bumpers.forEach( function ( bp, bi ) {
+            var g = px.bumperGfx[ bi ]; g.clear();
             var flash = bp.tcFlashUntil > now;
             var hits = self.bumperHits[ bp.tcName ] || 0;
             var baseN = colorToNum( flash ? COLORS.bumperBright : bumperColor( hits ) );
             var brightN = colorToNum( bumperBrightColor( hits ) );
             var rad = bp.circleRadius, x = bp.position.x, y = bp.position.y;
             var pulse = 0.5 + 0.5 * Math.sin( now / 320 + bi * 1.7 );
-            bumpersG.beginFill( 0x0a0814, 0.85 );           // dark socket
-            bumpersG.drawCircle( x, y, rad + 2.5 );
-            bumpersG.endFill();
-            bumpersG.beginFill( brightN, 0.32 );            // metallic ring
-            bumpersG.drawCircle( x, y, rad + 1 );
-            bumpersG.endFill();
-            bumpersG.beginFill( baseN, 1 );                 // body
-            bumpersG.drawCircle( x, y, rad );
-            bumpersG.endFill();
-            bumpersG.lineStyle( 2.5, flash ? 0xffffff : brightN, 1 );  // cap rim
-            bumpersG.drawCircle( x, y, rad - 1 );
-            bumpersG.lineStyle( 0 );
-            bumpersG.beginFill( brightN, flash ? 0.95 : ( 0.35 + 0.4 * pulse ) ); // pulsing core
-            bumpersG.drawCircle( x, y, rad * ( 0.42 + 0.12 * pulse ) );
-            bumpersG.endFill();
-            bumpersG.beginFill( 0xffffff, 0.8 );            // specular
-            bumpersG.drawCircle( x - rad * 0.32, y - rad * 0.34, rad * 0.22 );
-            bumpersG.endFill();
+            g.beginFill( 0x05030f, 0.85 ); g.drawCircle( x, y, rad + 2.5 ); g.endFill();
+            g.beginFill( brightN, 0.32 );  g.drawCircle( x, y, rad + 1 );   g.endFill();
+            g.beginFill( baseN, 1 );       g.drawCircle( x, y, rad );        g.endFill();
+            g.lineStyle( 2.5, flash ? 0xffffff : brightN, 1 );
+            g.drawCircle( x, y, rad - 1 ); g.lineStyle( 0 );
+            g.beginFill( brightN, flash ? 0.95 : ( 0.3 + 0.4 * pulse ) );
+            g.drawCircle( x, y, rad * ( 0.42 + 0.12 * pulse ) ); g.endFill();
+            g.beginFill( 0xffffff, 0.8 );
+            g.drawCircle( x - rad * 0.32, y - rad * 0.34, rad * 0.22 ); g.endFill();
+            setGlow( g, GLOW_SPIKE * impactAmt( bp.tcFlashUntil, now, 160 ) );
         } );
 
-        // Pins — small gold studs with a bright rim + specular.
-        var pegsG = px.pegsG; pegsG.clear();
-        this.pegs.forEach( function ( p ) {
+        // Pins — gold studs; glow spikes on impact.
+        this.pegs.forEach( function ( p, i ) {
+            var g = px.pegGfx[ i ]; g.clear();
             var flash = p.tcFlashUntil > now;
             var r = p.circleRadius, x = p.position.x, y = p.position.y;
-            pegsG.beginFill( 0x0a0814, 0.85 );              // socket
-            pegsG.drawCircle( x, y, r + 1.5 );
-            pegsG.endFill();
-            pegsG.beginFill( colorToNum( flash ? '#ffffff' : COLORS.dropTarget ), 1 );
-            pegsG.drawCircle( x, y, r );
-            pegsG.endFill();
-            pegsG.lineStyle( 1.5, colorToNum( flash ? '#ffffff' : '#fff3d0' ), 1 );
-            pegsG.drawCircle( x, y, r - 0.5 );
-            pegsG.lineStyle( 0 );
-            pegsG.beginFill( 0xffffff, 0.75 );
-            pegsG.drawCircle( x - r * 0.3, y - r * 0.3, r * 0.32 );
-            pegsG.endFill();
+            g.beginFill( 0x05030f, 0.85 ); g.drawCircle( x, y, r + 1.5 ); g.endFill();
+            g.beginFill( colorToNum( flash ? '#ffffff' : COLORS.dropTarget ), 1 );
+            g.drawCircle( x, y, r ); g.endFill();
+            g.lineStyle( 1.5, colorToNum( flash ? '#ffffff' : '#fff3d0' ), 1 );
+            g.drawCircle( x, y, r - 0.5 ); g.lineStyle( 0 );
+            g.beginFill( 0xffffff, 0.75 );
+            g.drawCircle( x - r * 0.3, y - r * 0.3, r * 0.32 ); g.endFill();
+            setGlow( g, GLOW_SPIKE * impactAmt( p.tcFlashUntil, now, 140 ) );
         } );
 
         // Drop targets — dim when dropped; bright flash on hit.
