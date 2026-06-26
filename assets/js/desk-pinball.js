@@ -153,7 +153,7 @@
     var SPACE = {
         wall0: '#2a3450', wall1: '#141a2c', wall2: '#0b0f1c', // metal rail body
         wallEdge: 'rgba(120,214,255,0.55)',                   // neon rail edge
-        flipper: '#5fe6ff',                                   // neon flipper
+        flipper: '#c6ff3a',                                   // electric lime flipper
         slingBody: 0x1a2238, slingEdge: 0x3a4a66,
     };
     // Glow: near-off at rest, spikes electric on contact, then decays.
@@ -604,9 +604,9 @@
         this.gates = [];
         var gateOpts = { isStatic: true, isSensor: true, label: 'gate',
                          restitution: 1.0, render: { fillStyle: COLORS.slingshot } };
-        this.gates.push( Bodies.rectangle( 27, 327, 40, 10,
+        this.gates.push( Bodies.rectangle( 27, 314, 40, 10,
             Object.assign( {}, gateOpts, { angle: 0.76 } ) ) );  // left "\"
-        this.gates.push( Bodies.rectangle( 689, 327, 34, 10,
+        this.gates.push( Bodies.rectangle( 689, 314, 34, 10,
             Object.assign( {}, gateOpts, { angle: -0.76 } ) ) ); // right "/"
         World.add( w, this.gates );
 
@@ -1912,8 +1912,8 @@
         bg.addColorStop( 1, T.outer );
         ctx.fillStyle = bg; ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
 
-        // Two soft nebula clouds.
-        [ [ 0.34, 0.30, 380, 0.33 ], [ 0.72, 0.62, 300, 0.22 ] ].forEach( function ( c ) {
+        // Three soft nebula clouds.
+        [ [ 0.34, 0.30, 380, 0.33 ], [ 0.72, 0.62, 300, 0.22 ], [ 0.5, 0.12, 260, 0.18 ] ].forEach( function ( c ) {
             var g = ctx.createRadialGradient( TABLE_W * c[ 0 ], TABLE_H * c[ 1 ], 20,
                                               TABLE_W * c[ 0 ], TABLE_H * c[ 1 ], c[ 2 ] );
             g.addColorStop( 0, hexA( T.nebula, c[ 3 ] ) );
@@ -1921,12 +1921,32 @@
             ctx.fillStyle = g; ctx.fillRect( 0, 0, TABLE_W, TABLE_H );
         } );
 
-        // Starfield (fixed positions so it doesn't twinkle on repaint).
+        // A distant ringed planet (sector-tinted, subtle — sits behind play).
+        var pcx = TABLE_W * 0.80, pcy = TABLE_H * 0.74, pr = 48;
+        var pg = ctx.createRadialGradient( pcx - pr * 0.4, pcy - pr * 0.4, 2, pcx, pcy, pr );
+        pg.addColorStop( 0, hexA( T.nebula, 0.5 ) );
+        pg.addColorStop( 0.7, hexA( T.nebula, 0.16 ) );
+        pg.addColorStop( 1, 'rgba(0,0,0,0.22)' );
+        ctx.fillStyle = pg;
+        ctx.beginPath(); ctx.arc( pcx, pcy, pr, 0, Math.PI * 2 ); ctx.fill();
+        ctx.save();
+        ctx.translate( pcx, pcy ); ctx.rotate( -0.45 ); ctx.scale( 1, 0.32 );
+        ctx.lineWidth = 4; ctx.strokeStyle = hexA( T.nebula, 0.3 );
+        ctx.beginPath(); ctx.arc( 0, 0, pr * 1.55, 0, Math.PI * 2 ); ctx.stroke();
+        ctx.restore();
+
+        // Starfield (fixed positions so it doesn't twinkle on repaint); the
+        // bigger stars get a soft 4-point glint.
         if ( this.stars ) {
             this.stars.forEach( function ( s ) {
                 ctx.globalAlpha = s.a;
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath(); ctx.arc( s.x, s.y, s.r, 0, Math.PI * 2 ); ctx.fill();
+                if ( s.r > 1.25 ) {
+                    ctx.globalAlpha = s.a * 0.5;
+                    ctx.fillRect( s.x - s.r * 3, s.y - 0.4, s.r * 6, 0.8 );
+                    ctx.fillRect( s.x - 0.4, s.y - s.r * 3, 0.8, s.r * 6 );
+                }
             } );
             ctx.globalAlpha = 1;
         }
@@ -2267,15 +2287,22 @@
                 }
                 g.lineStyle( 0 );
             }
-            g.beginFill( 0x05030f, 0.85 ); g.drawCircle( x, y, rad + 2.5 ); g.endFill();
-            g.beginFill( brightN, 0.32 );  g.drawCircle( x, y, rad + 1 );   g.endFill();
-            g.beginFill( baseN, 1 );       g.drawCircle( x, y, rad );        g.endFill();
-            g.lineStyle( 2.5, flash ? 0xffffff : brightN, 1 );
-            g.drawCircle( x, y, rad - 1 ); g.lineStyle( 0 );
-            g.beginFill( brightN, flash ? 0.95 : ( 0.3 + 0.4 * pulse ) );
-            g.drawCircle( x, y, rad * ( 0.42 + 0.12 * pulse ) ); g.endFill();
-            g.beginFill( 0xffffff, 0.8 );
-            g.drawCircle( x - rad * 0.32, y - rad * 0.34, rad * 0.22 ); g.endFill();
+            // Domed glass look: dark socket → chrome ring → base body, then
+            // upward-offset, progressively-lighter discs fake a lit sphere
+            // (dark at the bottom, bright toward the top-left), capped by a
+            // chrome rim + a hot specular.
+            g.beginFill( 0x05030f, 0.9 );  g.drawCircle( x, y + 1.5, rad + 2.5 ); g.endFill(); // socket (down)
+            g.beginFill( brightN, 0.30 );  g.drawCircle( x, y, rad + 1 );   g.endFill();        // chrome ring
+            g.beginFill( baseN, 1 );       g.drawCircle( x, y, rad );        g.endFill();        // body
+            g.beginFill( brightN, 0.34 );  g.drawCircle( x, y - rad * 0.10, rad * 0.84 ); g.endFill(); // dome 1
+            g.beginFill( brightN, flash ? 0.7 : 0.5 );
+            g.drawCircle( x - rad * 0.06, y - rad * 0.22, rad * 0.55 ); g.endFill();            // dome 2
+            g.beginFill( 0xffffff, flash ? 0.95 : ( 0.45 + 0.3 * pulse ) );
+            g.drawCircle( x - rad * 0.1, y - rad * 0.3, rad * ( 0.26 + 0.07 * pulse ) ); g.endFill(); // core
+            g.lineStyle( 2, flash ? 0xffffff : brightN, 0.9 );
+            g.drawCircle( x, y, rad - 1 ); g.lineStyle( 0 );                                    // cap rim
+            g.beginFill( 0xffffff, 0.9 );
+            g.drawCircle( x - rad * 0.34, y - rad * 0.38, rad * 0.16 ); g.endFill();            // specular
             // Gold posts stay glowing (constant), spiking brighter on impact;
             // their glow runs warm gold rather than electric cyan.
             if ( g.tcGlow ) g.tcGlow.color = colorToNum( gold ? '#ffe79a' : '#bfefff' );
