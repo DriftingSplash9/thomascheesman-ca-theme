@@ -604,9 +604,9 @@
         this.gates = [];
         var gateOpts = { isStatic: true, isSensor: true, label: 'gate',
                          restitution: 1.0, render: { fillStyle: COLORS.slingshot } };
-        this.gates.push( Bodies.rectangle( 27, 362, 40, 10,
+        this.gates.push( Bodies.rectangle( 27, 327, 40, 10,
             Object.assign( {}, gateOpts, { angle: 0.76 } ) ) );  // left "\"
-        this.gates.push( Bodies.rectangle( 689, 362, 34, 10,
+        this.gates.push( Bodies.rectangle( 689, 327, 34, 10,
             Object.assign( {}, gateOpts, { angle: -0.76 } ) ) ); // right "/"
         World.add( w, this.gates );
 
@@ -655,7 +655,7 @@
             var r = Bodies.rectangle( spec.x, spec.y, 84, 10, {
                 isStatic: true,
                 angle: spec.angle,
-                restitution: 0.7,
+                restitution: 1.2, // springy rubber band — real bounce off it
                 label: spec.label,
                 render: { fillStyle: spec.color },
             } );
@@ -1860,6 +1860,27 @@
         return g;
     }
 
+    // A ramp as a "rubber band stretched between two posts": a coloured
+    // capsule (top sheen + bottom shade → a 3D tube) slung between two metal
+    // knob posts. Centred on its origin (84 wide) so it's positioned/rotated
+    // from the Matter body. The per-ramp GlowFilter lights it on impact.
+    function makeRampGfx( colorCss ) {
+        var g = new PIXI.Graphics();
+        var c = colorToNum( colorCss ), half = 42;
+        g.beginFill( c, 1 );                         // band
+        g.drawRoundedRect( -half, -5, half * 2, 10, 5 ); g.endFill();
+        g.beginFill( 0xffffff, 0.34 );               // top sheen
+        g.drawRoundedRect( -half + 4, -4, half * 2 - 8, 3.2, 2 ); g.endFill();
+        g.beginFill( 0x000000, 0.22 );               // bottom shade
+        g.drawRoundedRect( -half + 4, 1.6, half * 2 - 8, 2.8, 2 ); g.endFill();
+        [ -half, half ].forEach( function ( pxp ) {  // end posts (metal knobs)
+            g.beginFill( 0x0a0f1c, 1 ); g.drawCircle( pxp, 0, 7 ); g.endFill();
+            g.beginFill( colorToNum( '#c8d4e6' ), 1 ); g.drawCircle( pxp, 0, 5.2 ); g.endFill();
+            g.beginFill( 0xffffff, 0.75 ); g.drawCircle( pxp - 1.8, -1.8, 1.8 ); g.endFill();
+        } );
+        return g;
+    }
+
     // The ball, baked once as a glassy radial-gradient sphere texture
     // (super-sampled 4× then downscaled for a smooth edge). Reused for
     // the motion-trail sprites too.
@@ -2021,10 +2042,9 @@
         // impact glow (so only a freshly-hit ramp lights up).
         var rampsBox = new P.Container();
         this.pixi.rampGfx = this.ramps.map( function ( r ) {
-            var g = localRoundRect( 84, 10, 4, 0xffffff, 1 );
+            var g = makeRampGfx( r.tcColor );
             g.position.set( r.position.x, r.position.y );
             g.rotation = r.angle;
-            g.tint = colorToNum( r.tcColor );
             g.tcGlow = mkGlow( 14, r.tcColor );
             g.tcGlowArr = g.tcGlow ? [ g.tcGlow ] : null;
             rampsBox.addChild( g );
@@ -2199,14 +2219,18 @@
         this.balls.forEach( function ( b ) {
             shadowG.drawEllipse( b.position.x + 5, b.position.y + 8, BALL_R, BALL_R * 0.72 );
         } );
+        // Ramps + slingshots: rotated polygon shadows from the body vertices.
+        function vshadow( verts ) {
+            var p = []; verts.forEach( function ( v ) { p.push( v.x + 4, v.y + 6 ); } );
+            shadowG.drawPolygon( p );
+        }
+        this.ramps.forEach( function ( r ) { vshadow( r.vertices ); } );
+        this.slingshots.forEach( function ( s ) { vshadow( s.vertices ); } );
         shadowG.endFill();
 
-        // Ramps — tint flips bright on flash; glow pulses on impact.
+        // Ramps (rubber bands) — glow pulses on impact.
         this.ramps.forEach( function ( r, i ) {
-            var g = px.rampGfx[ i ];
-            g.tint = ( r.tcFlashUntil > now )
-                ? colorToNum( COLORS.bumperBright ) : colorToNum( r.tcColor );
-            setGlow( g, GLOW_SPIKE * impactAmt( r.tcFlashUntil, now, 220 ) );
+            setGlow( px.rampGfx[ i ], GLOW_SPIKE * impactAmt( r.tcFlashUntil, now, 220 ) );
         } );
 
         // Slingshots — slate body + a "rubber band" on the kicker face
