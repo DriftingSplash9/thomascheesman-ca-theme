@@ -70,6 +70,9 @@
     // Ball is small relative to playfield so it doesn't tunnel.
     var BALL_R = 10;
 
+    // Multiball cap — the all-gold jackpot drops one extra ball.
+    var MAX_BALLS = 2;
+
     // Color palette — warm wood/brass on the table, CRT phosphor for HUD.
     var COLORS = {
         bg:            '#0a0814',
@@ -322,7 +325,7 @@
         this.stuckFrames = 0; // anti-stuck watchdog counter
         this.goldPosts = 0;   // how many of the 5 posts have hit gold
         this.overPanel = null;// game-over panel element while shown
-        this.ballTrail = [];  // recent ball positions for a motion trail
+        this.balls = [];      // active ball bodies (1 normally, up to MAX_BALLS)
         this.bgTier = -1;     // current background "sector" (score/10k), Pixi
         this.tiltMeter = 0;   // nudge-aggression accumulator
         this.tilted = false;  // true → flippers dead until the next ball
@@ -706,31 +709,42 @@
     };
 
     // ================================================================
-    // BALL — single ball, parked in the plunger chute until launched.
-    Pinball.prototype.spawnBall = function () {
-        var w = this.engine.world;
-        if ( this.theBall ) {
-            World.remove( w, this.theBall );
-        }
-        var x = TABLE_W - 36;
-        var y = TABLE_H - 30;
-        this.theBall = Bodies.circle( x, y, BALL_R, {
+    // BALL(S). makeBall() builds one body; spawnBall() resets to a single
+    // ball parked in the chute (start of a turn); addBall() drops an extra
+    // one for multiball.
+    Pinball.prototype.makeBall = function ( x, y, vx, vy ) {
+        var b = Bodies.circle( x, y, BALL_R, {
             density: 0.025,
             restitution: 0.88,
-            // Lower air friction so the ball doesn't bleed velocity
-            // climbing the chute; previously 0.005 left it arriving
-            // at the deflector with too little energy to escape.
+            // Lower air friction so the ball doesn't bleed velocity climbing
+            // the chute (0.005 left it too weak to escape the deflector).
             frictionAir: 0.002,
             friction: 0.01,
             label: 'ball',
             render: { fillStyle: COLORS.ball },
         } );
-        World.add( w, this.theBall );
+        b.tcTrail = [];   // per-ball motion trail
+        b.tcStuck = 0;    // per-ball anti-stuck counter
+        World.add( this.engine.world, b );
+        if ( vx || vy ) Body.setVelocity( b, { x: vx, y: vy } );
+        return b;
+    };
+
+    Pinball.prototype.spawnBall = function () {
+        var w = this.engine.world;
+        this.balls.forEach( function ( b ) { World.remove( w, b ); } );
+        this.balls = [ this.makeBall( TABLE_W - 36, TABLE_H - 30, 0, 0 ) ];
         this.plungerCharge = 0;
         this.plungerActive = false;
         this.hcsThisBall = 0;
         this.tilted = false;   // fresh ball is never tilted
         this.tiltMeter = 0;
+    };
+
+    // Drop an extra ball from the top centre (multiball).
+    Pinball.prototype.addBall = function () {
+        if ( this.balls.length >= MAX_BALLS ) return;
+        this.balls.push( this.makeBall( TABLE_W / 2, 120, ( Math.random() - 0.5 ) * 4, 3 ) );
     };
 
     // ================================================================
@@ -802,23 +816,19 @@
     };
 
     Pinball.prototype.releasePlunger = function () {
-        // Only fires if the ball is in the chute and plunger was charging.
-        if ( ! this.plungerActive || ! this.theBall ) {
-            this.plungerActive = false;
-            this.plungerCharge = 0;
-            return;
+        if ( ! this.plungerActive ) { this.plungerCharge = 0; return; }
+        // Launch whichever ball is sitting in the shooter lane (right side,
+        // lower half — on the chute floor).
+        var lane = null;
+        for ( var i = 0; i < this.balls.length; i++ ) {
+            var b = this.balls[ i ];
+            if ( b.position.x > TABLE_W - 60 && b.position.y > TABLE_H * 0.45 ) { lane = b; break; }
         }
-        var b = this.theBall;
-        // Only fire if ball is still in the shooter lane (right side,
-        // lower half — i.e. resting on the chute floor).
-        if ( b.position.x > TABLE_W - 60 && b.position.y > TABLE_H * 0.45 ) {
-            // Direct velocity set. Range -13 (tap) to -28 (full charge)
-            // px per step. Earlier -8/-18 had the ball arriving at
-            // the deflector with not enough energy to enter the
-            // playfield — it would flop back into the chute. Bumped
-            // to give the launch real authority.
+        if ( lane ) {
+            // -13 (tap) to -28 (full charge) px/step — enough authority to
+            // clear the deflector into the playfield.
             var vy = -13 - 15 * this.plungerCharge;
-            Body.setVelocity( b, { x: 0, y: vy } );
+            Body.setVelocity( lane, { x: 0, y: vy } );
             SFX.launch();
         }
         this.plungerActive = false;
@@ -846,12 +856,9 @@
         if ( side === 'left'  ) { vx =  4.4; vy = -1.6; sx = -7; }
         if ( side === 'right' ) { vx = -4.4; vy = -1.6; sx =  7; }
         if ( side === 'up'    ) { vy = -5.8; sy = -8; }
-        if ( this.theBall ) {
-            Body.setVelocity( this.theBall, {
-                x: this.theBall.velocity.x + vx,
-                y: this.theBall.velocity.y + vy,
-            } );
-        }
+        this.balls.forEach( function ( b ) {
+            Body.setVelocity( b, { x: b.velocity.x + vx, y: b.velocity.y + vy } );
+        } );
         this.shake = { x: sx, y: sy, until: now + 130 };
     };
 
@@ -880,33 +887,32 @@
 
                 var label = other.label || '';
                 if ( label === 'drain' ) {
-                    self.handleDrain();
+                    self.handleDrain( ball );
                 } else if ( label.indexOf( 'bumper:' ) === 0 ) {
-                    self.handleBumper( other );
+                    self.handleBumper( other, ball );
                 } else if ( label.indexOf( 'slingshot:' ) === 0 ) {
-                    self.handleSlingshot( other );
+                    self.handleSlingshot( other, ball );
                 } else if ( label.indexOf( 'ramp:' ) === 0 ) {
                     self.handleRamp( other );
                 } else if ( label.indexOf( 'drop:' ) === 0 ) {
                     self.handleDrop( other );
                 } else if ( label === 'peg' ) {
-                    self.handlePeg( other );
+                    self.handlePeg( other, ball );
                 }
             } );
         } );
     };
 
-    Pinball.prototype.handlePeg = function ( body ) {
+    Pinball.prototype.handlePeg = function ( body, ball ) {
         body.tcFlashUntil = performance.now() + 140;
         body.tcOn = ! body.tcOn;   // toggle this switch
         SFX.peg();
         this.addScore( 25 );
         this.spawnSparks( body.position.x, body.position.y, COLORS.dropTarget );
         // Small nudge so the peg feels springy (lighter than a bumper).
-        if ( this.theBall ) {
-            var dir = Vector.normalise( Vector.sub( this.theBall.position, body.position ) );
-            Body.applyForce( this.theBall, this.theBall.position,
-                { x: dir.x * 0.006, y: dir.y * 0.006 } );
+        if ( ball ) {
+            var dir = Vector.normalise( Vector.sub( ball.position, body.position ) );
+            Body.applyForce( ball, ball.position, { x: dir.x * 0.006, y: dir.y * 0.006 } );
         }
         this.updateGates();
     };
@@ -928,7 +934,7 @@
         }
     };
 
-    Pinball.prototype.handleBumper = function ( body ) {
+    Pinball.prototype.handleBumper = function ( body, ball ) {
         body.tcFlashUntil = performance.now() + 160;
         this.totalBumperHits++;
         var hits = this.bumperHits[ body.tcName ] = ( this.bumperHits[ body.tcName ] || 0 ) + 1;
@@ -937,10 +943,9 @@
         // A gold post is worth 5× a normal one.
         this.addScore( gold ? 500 : 100 );
         // Apply a small extra impulse to the ball so the bumper feels alive.
-        if ( this.theBall ) {
-            var dir = Vector.normalise( Vector.sub( this.theBall.position, body.position ) );
-            Body.applyForce( this.theBall, this.theBall.position,
-                { x: dir.x * 0.012, y: dir.y * 0.012 } );
+        if ( ball ) {
+            var dir = Vector.normalise( Vector.sub( ball.position, body.position ) );
+            Body.applyForce( ball, ball.position, { x: dir.x * 0.012, y: dir.y * 0.012 } );
         }
         // Sparks fly off on every hit, tinted to the post's current colour.
         this.spawnSparks( body.position.x, body.position.y, bumperBrightColor( hits ) );
@@ -950,19 +955,20 @@
             this.goldPosts++;
             SFX.gold();
             this.flashBanner( body.tcName + ' is GOLD — 5× points + speed boost', 2400 );
-            // All five posts gold → jackpot.
+            // All five posts gold → JACKPOT: ×20 + MULTIBALL.
             if ( this.goldPosts === 5 ) {
                 SFX.jackpot();
                 this.score += 25000;
                 this.scoreEl.textContent = this.score.toLocaleString();
-                this.multiplier = Math.max( this.multiplier, 3 );
+                this.multiplier = 20;
                 this.multUntil = performance.now() + 20000;
-                this.flashBanner( 'ALL FIVE POSTS GOLD — 25,000 + 3× for 20s!', 3600 );
+                this.addBall();
+                this.flashBanner( 'ALL POSTS GOLD — ×20 & MULTIBALL!', 3600 );
             }
         }
-        if ( gold && this.theBall ) {
-            var v = this.theBall.velocity;
-            Body.setVelocity( this.theBall, { x: v.x * 1.16, y: v.y * 1.16 } );
+        if ( gold && ball ) {
+            var v = ball.velocity;
+            Body.setVelocity( ball, { x: v.x * 1.16, y: v.y * 1.16 } );
         }
         // Story-credit easter egg at 10 cumulative hits per object.
         if ( hits === 10 ) {
@@ -984,14 +990,14 @@
         }
     };
 
-    Pinball.prototype.handleSlingshot = function ( body ) {
+    Pinball.prototype.handleSlingshot = function ( body, ball ) {
         body.tcFlashUntil = performance.now() + 140;
         SFX.sling();
         this.spawnSparks( body.position.x, body.position.y, COLORS.bumperBright );
         this.addScore( 50 );
         // Chaotic kick — the slingshots randomly REVERSE the ball or give it
         // a speed BOOST (or just a normal bounce). Keeps play unpredictable.
-        var b = this.theBall;
+        var b = ball;
         if ( ! b ) return;
         var v = b.velocity, roll = Math.random();
         if ( roll < 0.30 ) {
@@ -1042,8 +1048,14 @@
         }
     };
 
-    Pinball.prototype.handleDrain = function () {
+    Pinball.prototype.handleDrain = function ( ball ) {
         if ( this.gameOver ) return;
+        // Remove just the ball that drained. Guard against a double-fire
+        // (sub-stepping) draining the same ball twice in one frame.
+        var idx = this.balls.indexOf( ball );
+        if ( idx < 0 ) return;
+        World.remove( this.engine.world, ball );
+        this.balls.splice( idx, 1 );
         SFX.drain();
         // Draining costs you: the multiplier drops to ×1 and the gold posts
         // reset (back to cyan/zero hits), so a long gold run is real progress.
@@ -1052,6 +1064,12 @@
         if ( this.multEl ) this.multEl.textContent = '';
         this.goldPosts = 0;
         this.bumperHits = {};
+        // Other balls still live → multiball continues, no turn lost.
+        if ( this.balls.length > 0 ) {
+            this.flashBanner( 'Ball lost — ×1, gold reset', 1400 );
+            return;
+        }
+        // Last ball gone → lose a turn (or end the game).
         if ( this.ball < this.maxBalls ) {
             this.ball++;
             this.ballEl.textContent = this.ball;
@@ -1240,14 +1258,35 @@
         for ( var ss = 0; ss < subSteps; ss++ ) {
             Engine.update( this.engine, dt / subSteps );
         }
-        if ( this.theBall ) {
-            var bv = this.theBall.velocity, bs = Math.hypot( bv.x, bv.y ), BMAX = 26;
-            if ( bs > BMAX ) {
-                Body.setVelocity( this.theBall, { x: bv.x / bs * BMAX, y: bv.y / bs * BMAX } );
+        // Per-ball upkeep: speed cap, motion trail, fly-out + anti-stuck.
+        var BMAX = 26;
+        for ( var bi = 0; bi < this.balls.length; bi++ ) {
+            var bb = this.balls[ bi ];
+            var bv = bb.velocity, bs = Math.hypot( bv.x, bv.y );
+            if ( bs > BMAX ) Body.setVelocity( bb, { x: bv.x / bs * BMAX, y: bv.y / bs * BMAX } );
+            // Motion trail — a short per-ball history.
+            bb.tcTrail.push( { x: bb.position.x, y: bb.position.y } );
+            if ( bb.tcTrail.length > 9 ) bb.tcTrail.shift();
+            // Flew out the top → bat it back down rather than losing it.
+            if ( bb.position.y < -30 ) {
+                Body.setPosition( bb, { x: bb.position.x, y: 0 } );
+                Body.setVelocity( bb, { x: bv.x, y: Math.abs( bv.y ) + 1 } );
             }
-            // Motion trail — a short history of recent spots.
-            this.ballTrail.push( { x: this.theBall.position.x, y: this.theBall.position.y } );
-            if ( this.ballTrail.length > 9 ) this.ballTrail.shift();
+            // Anti-stuck watchdog (per ball) — a motionless ball outside the
+            // shooter lane for ~3s gets a small random nudge so it can't wedge.
+            if ( ! this.gameOver ) {
+                var inLane = bb.position.x > TABLE_W - 60 && bb.position.y > TABLE_H * 0.45;
+                var spd = Math.hypot( bb.velocity.x, bb.velocity.y );
+                if ( ! inLane && spd < 0.35 ) {
+                    bb.tcStuck = ( bb.tcStuck || 0 ) + 1;
+                    if ( bb.tcStuck > 170 ) {
+                        Body.setVelocity( bb, { x: ( Math.random() - 0.5 ) * 5, y: -3 - Math.random() * 3 } );
+                        bb.tcStuck = 0;
+                    }
+                } else {
+                    bb.tcStuck = 0;
+                }
+            }
         }
 
         // Spark particles (bumper hits) — integrate + age out.
@@ -1255,35 +1294,6 @@
             var sp = this.sparks[ si ];
             sp.x += sp.vx; sp.y += sp.vy; sp.vy += 0.16; sp.life -= 0.045;
             if ( sp.life <= 0 ) this.sparks.splice( si, 1 );
-        }
-
-        // Edge cases — ball flew out the top, or is stuck in the trough?
-        if ( this.theBall && this.theBall.position.y < -30 ) {
-            // Re-spawn in the shooter lane.
-            Body.setPosition( this.theBall, { x: TABLE_W - 36, y: TABLE_H - 30 } );
-            Body.setVelocity( this.theBall, { x: 0, y: 0 } );
-        }
-
-        // Anti-stuck watchdog — if the ball sits nearly motionless in the
-        // playfield (not the shooter lane, where it waits for the plunger)
-        // for ~3s, give it a small random nudge so it can never wedge for
-        // good. Cheap insurance for any geometry corner I haven't tuned.
-        if ( this.theBall && ! this.gameOver ) {
-            var inLane = this.theBall.position.x > TABLE_W - 60 &&
-                         this.theBall.position.y > TABLE_H * 0.45;
-            var spd = Math.hypot( this.theBall.velocity.x, this.theBall.velocity.y );
-            if ( ! inLane && spd < 0.35 ) {
-                this.stuckFrames++;
-                if ( this.stuckFrames > 170 ) {
-                    Body.setVelocity( this.theBall, {
-                        x: ( Math.random() - 0.5 ) * 5,
-                        y: -3 - Math.random() * 3,
-                    } );
-                    this.stuckFrames = 0;
-                }
-            } else {
-                this.stuckFrames = 0;
-            }
         }
 
         this.updateMultiplier();
@@ -1515,11 +1525,11 @@
         this.drawFlipper( this.leftFlipper );
         this.drawFlipper( this.rightFlipper );
 
-        // Ball trail — fading afterimages so fast shots streak.
-        if ( this.theBall && this.ballTrail.length > 1 ) {
-            for ( var ti = 0; ti < this.ballTrail.length - 1; ti++ ) {
-                var tp = this.ballTrail[ ti ];
-                var tf = ti / this.ballTrail.length;     // 0 oldest .. 1 newest
+        // Balls + their fading motion trails.
+        this.balls.forEach( function ( b ) {
+            var trail = b.tcTrail;
+            for ( var ti = 0; ti < trail.length - 1; ti++ ) {
+                var tp = trail[ ti ], tf = ti / trail.length;
                 ctx.globalAlpha = tf * 0.35;
                 ctx.fillStyle = COLORS.ball;
                 ctx.beginPath();
@@ -1527,11 +1537,6 @@
                 ctx.fill();
             }
             ctx.globalAlpha = 1;
-        }
-
-        // Ball — glassy sphere with a soft glow so it reads as it moves.
-        if ( this.theBall ) {
-            var b = this.theBall;
             ctx.save();
             ctx.shadowColor = COLORS.ballShine;
             ctx.shadowBlur  = 3;
@@ -1547,7 +1552,7 @@
             ctx.arc( b.position.x, b.position.y, BALL_R, 0, Math.PI * 2 );
             ctx.fill();
             ctx.restore();
-        }
+        } );
 
         // Sparks — bumper-hit particles, fading as they fly.
         this.sparks.forEach( function ( sp ) {
@@ -1989,26 +1994,37 @@
         flippersBox.addChild( this.pixi.flipperGfx.left, this.pixi.flipperGfx.right );
         shakeRoot.addChild( flippersBox );
 
-        // Ball texture → trail pool + ball sprite (constant energy glow).
+        // Ball texture → per-ball trail pools + ball sprites (one set per
+        // possible ball, for multiball). All start hidden; renderPixi shows
+        // the ones in use.
         var ballTex = makeBallTexture();
         this.pixi.ballTex = ballTex;
-        var trailBox = new P.Container();
-        this.pixi.trailSprites = [];
-        for ( var i = 0; i < 9; i++ ) {
-            var ts = new P.Sprite( ballTex );
-            ts.anchor.set( 0.5 ); ts.visible = false;
-            trailBox.addChild( ts ); this.pixi.trailSprites.push( ts );
-        }
-        shakeRoot.addChild( trailBox );
+        var trailsC = new P.Container(), ballsC = new P.Container();
+        this.pixi.trailPools = [];
+        this.pixi.ballSprites = [];
+        for ( var mb = 0; mb < MAX_BALLS; mb++ ) {
+            var trailBox = new P.Container(), pool = [];
+            for ( var i = 0; i < 9; i++ ) {
+                var ts = new P.Sprite( ballTex );
+                ts.anchor.set( 0.5 ); ts.visible = false;
+                trailBox.addChild( ts ); pool.push( ts );
+            }
+            trailsC.addChild( trailBox );
+            this.pixi.trailPools.push( pool );
 
-        var ballSprite = new P.Sprite( ballTex );
-        ballSprite.anchor.set( 0.5 );
-        ballSprite.width = ballSprite.height = BALL_R * 2;
-        if ( Glow ) ballSprite.filters = [ new Glow( {
-            distance: 16, outerStrength: 1.6, innerStrength: 0,
-            color: colorToNum( COLORS.ballShine ), quality: 0.3,
-        } ) ];
-        shakeRoot.addChild( ballSprite ); this.pixi.ballSprite = ballSprite;
+            var bspr = new P.Sprite( ballTex );
+            bspr.anchor.set( 0.5 );
+            bspr.width = bspr.height = BALL_R * 2;
+            bspr.visible = false;
+            if ( Glow ) bspr.filters = [ new Glow( {
+                distance: 16, outerStrength: 1.6, innerStrength: 0,
+                color: colorToNum( COLORS.ballShine ), quality: 0.3,
+            } ) ];
+            ballsC.addChild( bspr );
+            this.pixi.ballSprites.push( bspr );
+        }
+        shakeRoot.addChild( trailsC );
+        shakeRoot.addChild( ballsC );
 
         // Sparks (own glow, always lit — they're impact bursts) + plunger.
         var sparksG = new P.Graphics();
@@ -2160,27 +2176,30 @@
         px.flipperGfx.right.position.set( rf.position.x, rf.position.y );
         px.flipperGfx.right.rotation = rf.angle;
 
-        // Ball trail — fading afterimages.
-        var trail = this.ballTrail, tlen = trail.length;
-        for ( var ti = 0; ti < px.trailSprites.length; ti++ ) {
-            var spr = px.trailSprites[ ti ];
-            if ( ti < tlen - 1 ) {
-                var tp = trail[ ti ], tf = ti / tlen;
-                spr.visible = true;
-                spr.position.set( tp.x, tp.y );
-                spr.alpha = tf * 0.35;
-                spr.width = spr.height = BALL_R * ( 0.35 + 0.55 * tf ) * 2;
+        // Balls + their fading trails (one sprite/pool slot per possible ball).
+        for ( var mbi = 0; mbi < px.ballSprites.length; mbi++ ) {
+            var bspr = px.ballSprites[ mbi ], pool = px.trailPools[ mbi ];
+            var ball = this.balls[ mbi ];
+            if ( ball ) {
+                bspr.visible = true;
+                bspr.position.set( ball.position.x, ball.position.y );
+                var trail = ball.tcTrail, tlen = trail.length;
+                for ( var ti = 0; ti < pool.length; ti++ ) {
+                    var spr = pool[ ti ];
+                    if ( ti < tlen - 1 ) {
+                        var tp = trail[ ti ], tf = ti / tlen;
+                        spr.visible = true;
+                        spr.position.set( tp.x, tp.y );
+                        spr.alpha = tf * 0.35;
+                        spr.width = spr.height = BALL_R * ( 0.35 + 0.55 * tf ) * 2;
+                    } else {
+                        spr.visible = false;
+                    }
+                }
             } else {
-                spr.visible = false;
+                bspr.visible = false;
+                for ( var ti2 = 0; ti2 < pool.length; ti2++ ) pool[ ti2 ].visible = false;
             }
-        }
-
-        // Ball.
-        if ( this.theBall ) {
-            px.ballSprite.visible = true;
-            px.ballSprite.position.set( this.theBall.position.x, this.theBall.position.y );
-        } else {
-            px.ballSprite.visible = false;
         }
 
         // Sparks.
