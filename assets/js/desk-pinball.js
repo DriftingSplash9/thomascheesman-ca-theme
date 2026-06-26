@@ -418,6 +418,18 @@
             Bodies.rectangle( ( 711 + 746 ) / 2, TABLE_H - 8, 36, 8, wallOpts ),
         ] );
 
+        // ---- TOP-LEFT CHUTE CURVE — chamfer the top-left corner so a ball
+        // skimming the top "follows around" and rolls down the left side
+        // instead of dead-bouncing in the corner. Gentle restitution (0.5) —
+        // it guides, it doesn't kick. Labelled 'wall' so both renderers draw
+        // it. (The top-right corner is left to the shooter mechanism.)
+        World.add( w, [
+            // from ~(14,74) up to ~(74,14).
+            Bodies.rectangle( 44, 44, 84, 14, Object.assign( {}, wallOpts, {
+                angle: -Math.PI / 4, restitution: 0.5,
+            } ) ),
+        ] );
+
         // ---- FUNNEL WALLS — the fix for "the ball drains down the sides
         // before I can hit it." The table is landscape (760 wide) with the
         // flippers at the centre, so the outlanes used to be ~115px of open
@@ -942,6 +954,18 @@
         SFX.sling();
         this.spawnSparks( body.position.x, body.position.y, COLORS.bumperBright );
         this.addScore( 50 );
+        // Chaotic kick — the slingshots randomly REVERSE the ball or give it
+        // a speed BOOST (or just a normal bounce). Keeps play unpredictable.
+        var b = this.theBall;
+        if ( ! b ) return;
+        var v = b.velocity, roll = Math.random();
+        if ( roll < 0.30 ) {
+            // Reverse: send it back the way it came, with a little lift.
+            Body.setVelocity( b, { x: -v.x * 1.05, y: -Math.abs( v.y ) * 0.7 - 2 } );
+        } else if ( roll < 0.62 ) {
+            // Boost (the speed cap in tick() keeps it sane).
+            Body.setVelocity( b, { x: v.x * 1.5, y: v.y * 1.5 } );
+        }
     };
 
     Pinball.prototype.handleRamp = function ( body ) {
@@ -986,6 +1010,13 @@
     Pinball.prototype.handleDrain = function () {
         if ( this.gameOver ) return;
         SFX.drain();
+        // Draining costs you: the multiplier drops to ×1 and the gold posts
+        // reset (back to cyan/zero hits), so a long gold run is real progress.
+        this.multiplier = 1;
+        this.multUntil = 0;
+        if ( this.multEl ) this.multEl.textContent = '';
+        this.goldPosts = 0;
+        this.bumperHits = {};
         if ( this.ball < this.maxBalls ) {
             this.ball++;
             this.ballEl.textContent = this.ball;
