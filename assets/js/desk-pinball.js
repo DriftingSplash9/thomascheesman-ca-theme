@@ -732,7 +732,7 @@
         // before, so the pair covers more of the bottom and the centre
         // drain gap between the tips is smaller (harder to drain, easier
         // to cradle). Funnel walls deliver the ball to the base at ~265.
-        this.leftFlipper = Bodies.rectangle( 0, 0, 104, 14,
+        this.leftFlipper = Bodies.rectangle( 0, 0, 104, 16,
             Object.assign( {}, flipperOpts, { label: 'flipper:left' } ) );
         this.leftPivot        = { x: 270, y: 412 };
         this.leftHingeOffset  = { x: -52, y: 0 };
@@ -744,7 +744,7 @@
         World.add( w, this.leftFlipper );
 
         // RIGHT — pivots around world (490, 412). Hinge at body-local (+45, 0).
-        this.rightFlipper = Bodies.rectangle( 0, 0, 104, 14,
+        this.rightFlipper = Bodies.rectangle( 0, 0, 104, 16,
             Object.assign( {}, flipperOpts, { label: 'flipper:right' } ) );
         this.rightPivot        = { x: 490, y: 412 };
         this.rightHingeOffset  = { x: 52, y: 0 };
@@ -1349,23 +1349,22 @@
         // trips a tilt, not the lifetime count.
         if ( this.tiltMeter > 0 ) this.tiltMeter = Math.max( 0, this.tiltMeter - dt / 600 );
 
-        // Kinematic flippers — step each toward its target, override
-        // the body pose every frame. Must happen BEFORE Engine.update
-        // so the new pose is what collisions are resolved against. When
-        // tilted, both flippers are forced to rest (dead).
-        this.driveFlipper( 'left',  this.tilted ? false : this.leftFlipperUp,  dt );
-        this.driveFlipper( 'right', this.tilted ? false : this.rightFlipperUp, dt );
-
         // Charge plunger while held.
         if ( this.plungerActive ) {
             this.plungerCharge = Math.min( 1, this.plungerCharge + dt / 800 );
         }
 
-        // Sub-step the physics so a fast ball can't tunnel through the thin
-        // flippers/walls in one big step. Then cap the ball's speed (the
-        // gold-post boosts can otherwise compound into a tunnelling missile).
-        var subSteps = 2;
+        // Sub-step BOTH the flipper motion AND the physics. Driving the
+        // flippers inside the loop (in the same small increments the solver
+        // integrates) stops a fast-swinging tip teleporting past the ball
+        // between frames — the cause of balls slipping through near the tips.
+        // When tilted, both flippers are forced to rest (dead).
+        var subSteps = 3;
+        var leftUp  = this.tilted ? false : this.leftFlipperUp;
+        var rightUp = this.tilted ? false : this.rightFlipperUp;
         for ( var ss = 0; ss < subSteps; ss++ ) {
+            this.driveFlipper( 'left',  leftUp,  dt / subSteps );
+            this.driveFlipper( 'right', rightUp, dt / subSteps );
             Engine.update( this.engine, dt / subSteps );
         }
         // Per-ball upkeep: speed cap, motion trail, fly-out + anti-stuck.
@@ -1804,8 +1803,8 @@
         grad.addColorStop( 0, COLORS.flipperShine );
         grad.addColorStop( 1, COLORS.flipper );
         ctx.fillStyle = grad;
-        // Rounded rectangle 104×14 (matches the thinner flipper body)
-        var w = 104, h = 14, r = 5;
+        // Rounded rectangle 104×16 (matches the flipper body)
+        var w = 104, h = 16, r = 6;
         ctx.beginPath();
         ctx.moveTo( -w / 2 + r, -h / 2 );
         ctx.lineTo(  w / 2 - r, -h / 2 );
@@ -1849,12 +1848,13 @@
     // drive it by the Matter body's position/angle.
     function makeFlipperGfx( s ) {
         var g = new PIXI.Graphics();
-        // hinge end (full ±7) at -52*s, tip (±3.5) at +52*s.
-        var pts = [ -52 * s, -7, 52 * s, -3.5, 52 * s, 3.5, -52 * s, 7 ];
+        // hinge end (full ±8) at -52*s, tip (±5) at +52*s — a gentle wedge
+        // (the tip isn't so thin it reads as flimsy / lets the ball through).
+        var pts = [ -52 * s, -8, 52 * s, -5, 52 * s, 5, -52 * s, 8 ];
         g.beginFill( colorToNum( SPACE.flipper ), 1 );
         g.drawPolygon( pts ); g.endFill();
         g.beginFill( 0xffffff, 0.5 ); // top highlight band
-        g.drawPolygon( [ -52 * s, -7, 52 * s, -3.5, 52 * s, -0.5, -52 * s, -2 ] ); g.endFill();
+        g.drawPolygon( [ -52 * s, -8, 52 * s, -5, 52 * s, -1, -52 * s, -3 ] ); g.endFill();
         g.lineStyle( 1.5, 0xffffff, 0.65 );
         g.drawPolygon( pts ); g.lineStyle( 0 );
         return g;
