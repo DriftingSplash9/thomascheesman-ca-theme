@@ -572,9 +572,11 @@
         // and out of the x270–490 centre so the lower funnel to the flippers
         // stays clear — the ball must roll down to the flippers unobstructed.
         // r6 (vs the r10 ball) so they can't be tunnelled at the speed cap.
-        // Score 25 × mult. Each peg is a TWO-STATE switch (tcOn): hitting it
-        // flips it; line them all to the same mode to raise the side-guards.
-        // Start alternating so they're not all-aligned at kickoff.
+        // Score 25 × mult. Each peg LIGHTS UP (one-way) when hit. They all
+        // start UNLIT — all-same → the side-guards start CLOSED. The first
+        // peg the ball hits lights it (breaks the alignment → guards open);
+        // light EVERY peg to bring the guards back up. (One-way, so it's easy
+        // to get them all the same — you can't accidentally unlight one.)
         this.pegs = [];
         var pegSpots = [
             { x: 380, y: 130 },                       // centre, in line between Ganon & Zelda
@@ -582,7 +584,7 @@
             { x: 150, y: 205 }, { x: 610, y: 205 },   // upper flanks
             { x: 95,  y: 260 }, { x: 650, y: 260 },   // outer edges
         ];
-        pegSpots.forEach( function ( spec, i ) {
+        pegSpots.forEach( function ( spec ) {
             var p = Bodies.circle( spec.x, spec.y, 6, {
                 isStatic: true,
                 restitution: 1.25,
@@ -590,14 +592,15 @@
                 render: { fillStyle: COLORS.dropTarget },
             } );
             p.tcFlashUntil = 0;
-            p.tcOn = ( i % 2 === 0 );
+            p.tcOn = false;
             World.add( w, p );
             pinball.pegs.push( p );
         } );
 
         // ---- SIDE GUARDS — angled "kicker" walls at the bottom of each
-        // outlane gutter. Normally sensors (inert); when every peg is in the
-        // same mode they go solid and bat a side-draining ball back inward.
+        // outlane gutter. They start CLOSED (solid) and bat side-draining
+        // balls back inward; they open when the pegs aren't all in the same
+        // state, and close again when every peg is lit (or all unlit).
         this.gates = [];
         var gateOpts = { isStatic: true, isSensor: true, label: 'gate',
                          restitution: 1.0, render: { fillStyle: COLORS.slingshot } };
@@ -797,6 +800,13 @@
         this.hcsThisBall = 0;
         this.tilted = false;   // fresh ball is never tilted
         this.tiltMeter = 0;
+        // Each ball starts with the pegs unlit and the side-guards CLOSED —
+        // they open the moment the ball first lights a peg.
+        if ( this.pegs ) this.pegs.forEach( function ( p ) { p.tcOn = false; } );
+        if ( this.gates ) {
+            this.gatesActive = true;
+            this.gates.forEach( function ( g ) { g.isSensor = false; } );
+        }
     };
 
     // Drop an extra ball from the top centre (multiball).
@@ -963,7 +973,7 @@
 
     Pinball.prototype.handlePeg = function ( body, ball ) {
         body.tcFlashUntil = performance.now() + 140;
-        body.tcOn = ! body.tcOn;   // toggle this switch
+        body.tcOn = true;          // light it (one-way — easy to align all)
         SFX.peg();
         this.addScore( 25 );
         this.spawnSparks( body.position.x, body.position.y, COLORS.dropTarget );
@@ -1317,10 +1327,7 @@
         this.sparks = [];
         this.stuckFrames = 0;
         this.dropTargets.forEach( function ( d ) { d.tcDropped = false; d.isSensor = false; } );
-        // Reset the peg puzzle (alternating) + drop the side-guards.
-        this.pegs.forEach( function ( p, i ) { p.tcOn = ( i % 2 === 0 ); } );
-        this.gatesActive = false;
-        this.gates.forEach( function ( g ) { g.isSensor = true; } );
+        // (The peg puzzle + side-guards reset in spawnBall, called below.)
         // Reset the background sector to 1 (quietly — no banner).
         if ( this.renderer === 'pixi' && this.pixi ) {
             this.bgTier = 0;
@@ -2003,6 +2010,13 @@
             bgCtx: bgCtx, bgTex: bgTex,
         };
 
+        // 3D depth — a soft blurred shadow layer beneath the round elements
+        // (ball, bumpers, pins). Offset down-right so the light reads as
+        // top-left (matching the speculars). Drawn first so it sits lowest.
+        var shadowG = new P.Graphics();
+        shadowG.filters = [ new P.BlurFilter( 4 ) ];
+        shakeRoot.addChild( shadowG ); this.pixi.shadowG = shadowG;
+
         // Ramps — white rounded rects, tinted per frame; each carries its own
         // impact glow (so only a freshly-hit ramp lights up).
         var rampsBox = new P.Container();
@@ -2171,6 +2185,21 @@
             shy = this.shake.y * sk * ( 0.4 + Math.random() * 0.6 );
         }
         px.shakeRoot.position.set( shx, shy );
+
+        // 3D drop-shadows — soft dark ellipses offset down-right beneath the
+        // round elements so they float above the felt. (Blurred by the layer.)
+        var shadowG = px.shadowG; shadowG.clear();
+        shadowG.beginFill( 0x000000, 0.34 );
+        this.bumpers.forEach( function ( bp ) {
+            shadowG.drawEllipse( bp.position.x + 5, bp.position.y + 7, bp.circleRadius, bp.circleRadius * 0.72 );
+        } );
+        this.pegs.forEach( function ( p ) {
+            shadowG.drawEllipse( p.position.x + 3, p.position.y + 5, p.circleRadius + 1, ( p.circleRadius + 1 ) * 0.72 );
+        } );
+        this.balls.forEach( function ( b ) {
+            shadowG.drawEllipse( b.position.x + 5, b.position.y + 8, BALL_R, BALL_R * 0.72 );
+        } );
+        shadowG.endFill();
 
         // Ramps — tint flips bright on flash; glow pulses on impact.
         this.ramps.forEach( function ( r, i ) {
