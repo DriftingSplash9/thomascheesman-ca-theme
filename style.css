@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.661
+Version: 1.0.662
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -232,14 +232,22 @@ body {
 /* --- The pass surface (overrides the generic navy hero background) --- */
 .hero-section--pass {
     text-align: left;
+    /* trim the top padding so the cards sit higher and the wood frame's
+       bottom edge isn't pushed below the fold. */
+    padding: clamp(44px, 7vw, 96px) 20px clamp(60px, 9vw, 120px);
+    /* Layered, very-gradual lighting so the steel reads as a deep room
+       rather than one flat sheen: a warm heat-lamp pool, a second wider
+       dim haze offset off-centre (breaks the symmetry), a cool wash from
+       below, a faint cool pool low-right, and a soft edge vignette that
+       darkens gradually toward the corners. All low-alpha on purpose. */
     background:
-        /* heat-lamp pool — warm amber spilling down from the top centre */
-        radial-gradient(60% 44% at 50% -8%, rgba(255, 170, 76, 0.26), rgba(255, 150, 60, 0.05) 46%, transparent 72%),
-        /* cool fluorescent wash from the bottom — ties to the cyan horizon */
-        radial-gradient(ellipse at 50% 114%, rgba(34, 211, 238, 0.12), transparent 60%),
-        /* brushed-steel diagonal sheen */
+        radial-gradient(58% 46% at 50% -10%, rgba(255, 170, 76, 0.28), rgba(255, 150, 60, 0.06) 44%, transparent 72%),
+        radial-gradient(72% 62% at 30% 6%, rgba(255, 196, 120, 0.07), transparent 60%),
+        radial-gradient(ellipse at 50% 116%, rgba(34, 211, 238, 0.13), transparent 58%),
+        radial-gradient(52% 52% at 88% 92%, rgba(34, 160, 238, 0.06), transparent 65%),
+        radial-gradient(132% 120% at 50% 38%, transparent 54%, rgba(0, 0, 0, 0.48) 100%),
         linear-gradient(104deg, #0f1216 0%, #181d23 36%, #232932 50%, #171c22 64%, #0d1014 100%);
-    background-size: auto, auto, 100% 100%;
+    background-size: auto, auto, auto, auto, auto, 100% 100%;
     animation: none; /* a still room — the pass doesn't drift */
 }
 
@@ -455,11 +463,13 @@ body {
 .hero-section--pass .hero-portrait {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     border-radius: 1px;
-    background: #0c0f17;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+    /* cream paper, NOT dark — so any letterbox from object-fit:contain
+       reads as the polaroid matte instead of black bands. */
+    background: #ece7d6;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
 }
 .hero-portrait__img {
     position: absolute;
