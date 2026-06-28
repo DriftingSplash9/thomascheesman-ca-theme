@@ -32,6 +32,7 @@ get_header(); ?>
     <section class="hero-section hero-section--split">
         <div class="container hero-grid">
             <div class="hero-copy">
+                <p class="hero-eyebrow kinetic-fade">Thomas Cheesman</p>
                 <h1 class="hero-title kinetic-text" aria-label="Chef until my hands retired me.">
                     Chef until my hands retired me.
                 </h1>
