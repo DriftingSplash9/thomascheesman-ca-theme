@@ -37,17 +37,19 @@ get_header(); ?>
         ),
     );
     ?>
-    <section class="hero-section hero-section--split">
-        <div class="container hero-grid">
-            <div class="hero-copy">
-                <p class="hero-eyebrow kinetic-fade">Thomas Cheesman</p>
+    <section class="hero-section hero-section--pass">
+        <div class="container hero-pass">
+
+            <!-- LEFT: the menu, chalked on the board -->
+            <div class="hero-board">
+                <p class="hero-board__name kinetic-fade">Thomas Cheesman</p>
                 <h1 class="hero-title kinetic-text" aria-label="Chef until my hands retired me.">
                     Chef until my hands retired me.
                 </h1>
                 <p class="hero-subtitle kinetic-fade">
                     Dad of three. One of fewer than fifty people alive with Hajdu-Cheney syndrome. This is what I'm leaving behind &mdash; written while I can.
                 </p>
-                <ul class="hero-tags kinetic-fade" aria-label="About Thomas">
+                <ul class="hero-menu kinetic-fade" aria-label="About Thomas">
                     <li>Chef</li>
                     <li>Dad of 3</li>
                     <li>1 of &lt;50 with Hajdu-Cheney</li>
@@ -58,16 +60,25 @@ get_header(); ?>
                     <a class="hero-cta__btn" href="<?php echo home_url('/family'); ?>">Meet the family &rarr;</a>
                 </div>
             </div>
-            <div class="hero-portrait kinetic-fade">
-                <?php foreach ( $tc_hero_imgs as $i => $img ) : ?>
-                    <img class="hero-portrait__img<?php echo $i === 0 ? ' is-active' : ''; ?>"
-                         src="<?php echo esc_url( $img['src'] ); ?>"
-                         alt="<?php echo esc_attr( $img['alt'] ); ?>"
-                         data-from="<?php echo esc_attr( $img['from'] ); ?>"
-                         data-until="<?php echo esc_attr( $img['until'] ); ?>"
-                         loading="<?php echo $i === 0 ? 'eager' : 'lazy'; ?>" decoding="async" />
-                <?php endforeach; ?>
+
+            <!-- RIGHT: the last order of the night, clipped to the ticket rail -->
+            <div class="hero-rail kinetic-fade">
+                <figure class="hero-ticket">
+                    <span class="hero-ticket__clip" aria-hidden="true"></span>
+                    <div class="hero-portrait">
+                        <?php foreach ( $tc_hero_imgs as $i => $img ) : ?>
+                            <img class="hero-portrait__img<?php echo $i === 0 ? ' is-active' : ''; ?>"
+                                 src="<?php echo esc_url( $img['src'] ); ?>"
+                                 alt="<?php echo esc_attr( $img['alt'] ); ?>"
+                                 data-from="<?php echo esc_attr( $img['from'] ); ?>"
+                                 data-until="<?php echo esc_attr( $img['until'] ); ?>"
+                                 loading="<?php echo $i === 0 ? 'eager' : 'lazy'; ?>" decoding="async" />
+                        <?php endforeach; ?>
+                    </div>
+                    <figcaption class="hero-ticket__cap">table one &mdash; the family</figcaption>
+                </figure>
             </div>
+
         </div>
     </section>
 

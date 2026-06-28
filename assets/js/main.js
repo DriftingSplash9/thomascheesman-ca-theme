@@ -118,7 +118,11 @@ function initKineticHero() {
     // .kinetic-text and .kinetic-fade are what carry the actual
     // animation contract; the wrapper class names are cosmetic.
     const heroTitle = document.querySelector('.kinetic-text');
-    const heroSubtitle = document.querySelector('.kinetic-fade');
+    // ALL .kinetic-fade elements, not just the first — the Chef's Pass hero
+    // has several (name, deck, menu, CTA, the clipped ticket). The old
+    // single-querySelector revealed only the eyebrow and left everything
+    // else stuck at opacity:0 (the empty-right-column bug).
+    const heroFades = document.querySelectorAll('.kinetic-fade');
 
     if (!heroTitle) return;
 
@@ -144,11 +148,12 @@ function initKineticHero() {
         ease: 'power3.out',
     });
 
-    if (heroSubtitle) {
-        tl.to(heroSubtitle, {
+    if (heroFades.length) {
+        tl.to(heroFades, {
             opacity: 1,
             y: 0,
             duration: 0.8,
+            stagger: 0.12, // each fade element trails the last
             ease: 'power2.out',
         }, '-=0.5'); // start 0.5s before the title finishes
     }
