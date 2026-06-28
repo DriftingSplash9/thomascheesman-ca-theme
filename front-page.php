@@ -22,7 +22,7 @@ get_header(); ?>
     $tc_hero_imgs = array(
         // Solo selfie — current, until the December swap.
         array(
-            'src'   => 'https://thomascheesman.ca/wp-content/uploads/2026/06/nEzwm.jpg',
+            'src'   => 'https://thomascheesman.ca/wp-content/uploads/2026/05/100_0716-scaled.jpg',
             'alt'   => 'Thomas Cheesman',
             'from'  => '',
             'until' => '2026-12-01',
