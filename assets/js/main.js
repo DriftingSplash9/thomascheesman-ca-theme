@@ -3229,3 +3229,43 @@ function initHeritagePage() {
         });
     }
 }
+
+/* ============================================================
+ * HERO PORTRAIT — date-windowed image rotation on the homepage.
+ * Each .hero-portrait__img may carry data-from / data-until
+ * (YYYY-MM-DD). We show the images whose window covers "today"
+ * (the visitor's local date — resolved in JS so an exact-date swap,
+ * e.g. the Dec 1 change, fires no matter when LiteSpeed cached the
+ * page) and crossfade between the active ones every 10s. Fewer than
+ * two active images, or prefers-reduced-motion → no rotation. Never
+ * leaves the hero empty (falls back to the first image).
+ * ========================================================== */
+document.addEventListener('DOMContentLoaded', function () {
+    var box = document.querySelector('.hero-portrait');
+    if (!box) return;
+    var all = Array.prototype.slice.call(box.querySelectorAll('.hero-portrait__img'));
+    if (!all.length) return;
+    var d = new Date();
+    var today = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+    var active = all.filter(function (im) {
+        var f = im.getAttribute('data-from') || '';
+        var u = im.getAttribute('data-until') || '';
+        return (!f || today >= f) && (!u || today < u);
+    });
+    if (!active.length) active = all.slice(0, 1);
+    all.forEach(function (im) {
+        var on = active.indexOf(im) !== -1;
+        im.style.display = on ? '' : 'none';
+        im.classList.toggle('is-active', on && active.indexOf(im) === 0);
+    });
+    if (active.length < 2) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var i = 0;
+    setInterval(function () {
+        active[i].classList.remove('is-active');
+        i = (i + 1) % active.length;
+        active[i].classList.add('is-active');
+    }, 10000);
+});

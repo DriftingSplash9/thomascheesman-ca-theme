@@ -9,17 +9,56 @@ get_header(); ?>
 <main id="primary" class="site-main">
     
     <!-- HERO SECTION -->
-    <section class="hero-section">
-        <div class="container">
-            <h1 class="hero-title kinetic-text" aria-label="I'm Thomas Cheesman">
-                I'm Thomas Cheesman
-            </h1>
-            <p class="hero-subtitle kinetic-fade">
-                Chef until my hands retired me, dad of three, one of fewer than fifty people alive with Hajdu-Cheney syndrome. This is what I'm leaving behind, written while I can.
-            </p>
-            <p class="hero-subtitle hero-subtitle--thesis kinetic-fade">
-                Eight family lines, a handful of stories, and the things I want my kids to be able to find later if they go looking.
-            </p>
+    <?php
+    // Rotating hero portraits. Selection + crossfade are done client-side
+    // (assets/js/main.js → initHeroPortrait) so an exact-date swap fires
+    // regardless of the LiteSpeed page cache. Each image carries an optional
+    // from/until window (YYYY-MM-DD); JS shows the ones whose window covers
+    // "today" and crossfades between them.
+    //
+    // To add the December shot: drop it in with 'from' => '2026-12-01', and
+    // (if you want a clean swap rather than both rotating) set the solo
+    // photo's 'until' => '2026-12-01'.
+    $tc_hero_imgs = array(
+        array(
+            'src'   => 'https://thomascheesman.ca/wp-content/uploads/2026/06/nEzwm.jpg',
+            'alt'   => 'Thomas Cheesman',
+            'from'  => '',
+            'until' => '',
+        ),
+        // array( 'src' => '…/december.jpg', 'alt' => 'Thomas Cheesman', 'from' => '2026-12-01', 'until' => '' ),
+    );
+    ?>
+    <section class="hero-section hero-section--split">
+        <div class="container hero-grid">
+            <div class="hero-copy">
+                <h1 class="hero-title kinetic-text" aria-label="Chef until my hands retired me.">
+                    Chef until my hands retired me.
+                </h1>
+                <p class="hero-subtitle kinetic-fade">
+                    Dad of three. One of fewer than fifty people alive with Hajdu-Cheney syndrome. This is what I'm leaving behind &mdash; written while I can.
+                </p>
+                <ul class="hero-tags kinetic-fade" aria-label="About Thomas">
+                    <li>Chef</li>
+                    <li>Dad of 3</li>
+                    <li>1 of &lt;50 with Hajdu-Cheney</li>
+                    <li>8 family lines</li>
+                    <li>Grande Prairie</li>
+                </ul>
+                <div class="hero-cta kinetic-fade">
+                    <a class="hero-cta__btn" href="<?php echo home_url('/family'); ?>">Meet the family &rarr;</a>
+                </div>
+            </div>
+            <div class="hero-portrait kinetic-fade">
+                <?php foreach ( $tc_hero_imgs as $i => $img ) : ?>
+                    <img class="hero-portrait__img<?php echo $i === 0 ? ' is-active' : ''; ?>"
+                         src="<?php echo esc_url( $img['src'] ); ?>"
+                         alt="<?php echo esc_attr( $img['alt'] ); ?>"
+                         data-from="<?php echo esc_attr( $img['from'] ); ?>"
+                         data-until="<?php echo esc_attr( $img['until'] ); ?>"
+                         loading="<?php echo $i === 0 ? 'eager' : 'lazy'; ?>" decoding="async" />
+                <?php endforeach; ?>
+            </div>
         </div>
     </section>
 
