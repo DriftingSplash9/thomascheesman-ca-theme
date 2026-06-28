@@ -20,13 +20,21 @@ get_header(); ?>
     // (if you want a clean swap rather than both rotating) set the solo
     // photo's 'until' => '2026-12-01'.
     $tc_hero_imgs = array(
+        // Solo selfie — current, until the December swap.
         array(
             'src'   => 'https://thomascheesman.ca/wp-content/uploads/2026/06/nEzwm.jpg',
             'alt'   => 'Thomas Cheesman',
             'from'  => '',
+            'until' => '2026-12-01',
+        ),
+        // Cozy reading shot — auto-swaps in for December. Thomas okayed this
+        // one for the public hero (2026-06-27), a deliberate OD-1 exception.
+        array(
+            'src'   => 'https://thomascheesman.ca/wp-content/uploads/2026/06/SCbHS.jpg',
+            'alt'   => 'Thomas Cheesman reading with his son',
+            'from'  => '2026-12-01',
             'until' => '',
         ),
-        // array( 'src' => '…/december.jpg', 'alt' => 'Thomas Cheesman', 'from' => '2026-12-01', 'until' => '' ),
     );
     ?>
     <section class="hero-section hero-section--split">
