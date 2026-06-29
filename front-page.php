@@ -22,7 +22,7 @@ get_header(); ?>
     $tc_hero_imgs = array(
         // Solo selfie — current, until the December swap.
         array(
-            'src'   => 'https://thomascheesman.ca/wp-content/uploads/2026/05/100_0716-scaled.jpg',
+            'src'   => 'https://thomascheesman.ca/wp-content/uploads/2026/06/100_0716-nodate.jpg',
             'alt'   => 'Thomas Cheesman',
             'from'  => '',
             'until' => '2026-12-01',
@@ -38,7 +38,12 @@ get_header(); ?>
     );
     ?>
     <section class="hero-section hero-section--pass">
+        <!-- the heat lamp still on over the empty pass -->
+        <span class="hero-lamp" aria-hidden="true"></span>
         <div class="container hero-pass">
+
+            <!-- the steel ticket rail, spanning the whole pass -->
+            <span class="hero-toprail" aria-hidden="true"></span>
 
             <!-- LEFT: the menu, chalked on the board -->
             <div class="hero-board">

@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.663
+Version: 1.0.664
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -241,14 +241,38 @@ body {
        below, a faint cool pool low-right, and a soft edge vignette that
        darkens gradually toward the corners. All low-alpha on purpose. */
     background:
-        radial-gradient(58% 46% at 50% -10%, rgba(255, 170, 76, 0.28), rgba(255, 150, 60, 0.06) 44%, transparent 72%),
-        radial-gradient(72% 62% at 30% 6%, rgba(255, 196, 120, 0.07), transparent 60%),
-        radial-gradient(ellipse at 50% 116%, rgba(34, 211, 238, 0.13), transparent 58%),
-        radial-gradient(52% 52% at 88% 92%, rgba(34, 160, 238, 0.06), transparent 65%),
-        radial-gradient(132% 120% at 50% 38%, transparent 54%, rgba(0, 0, 0, 0.48) 100%),
-        linear-gradient(104deg, #0f1216 0%, #181d23 36%, #232932 50%, #171c22 64%, #0d1014 100%);
+        /* heat-lamp warm wash spilling down from the source at the top */
+        radial-gradient(70% 52% at 50% -6%, rgba(255, 176, 86, 0.30), rgba(255, 150, 60, 0.05) 50%, transparent 78%),
+        /* a wider, dimmer secondary warm haze, off-centre — breaks symmetry */
+        radial-gradient(62% 70% at 22% 2%, rgba(255, 196, 120, 0.06), transparent 60%),
+        /* cool fluorescent wash from below — ties to the cyan front edge */
+        radial-gradient(ellipse at 50% 118%, rgba(34, 211, 238, 0.12), transparent 56%),
+        /* a diagonal sheen streak sweeping across the polished steel */
+        linear-gradient(104deg, transparent 30%, rgba(255, 255, 255, 0.05) 48%, transparent 63%),
+        /* soft corner vignette — gradual darkening to the edges */
+        radial-gradient(135% 125% at 50% 36%, transparent 52%, rgba(0, 0, 0, 0.5) 100%),
+        /* brushed-steel luminance: a broad reflected band brighter across the
+           middle, darker top and bottom — the surface catching the room */
+        linear-gradient(178deg, #0c0f13 0%, #171c22 25%, #283038 50%, #1a2027 72%, #0b0e12 100%);
     background-size: auto, auto, auto, auto, auto, 100% 100%;
     animation: none; /* a still room — the pass doesn't drift */
+}
+
+/* the heat lamp itself — the visible warm source the wash pours from */
+.hero-lamp {
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(72%, 780px);
+    height: 6px;
+    border-radius: 0 0 7px 7px;
+    background: linear-gradient(90deg, transparent, #ffd9a0 12%, #ffb65e 50%, #ffd9a0 88%, transparent);
+    box-shadow:
+        0 0 26px 6px rgba(255, 170, 80, 0.55),
+        0 0 72px 22px rgba(255, 150, 60, 0.26);
+    z-index: 1;
+    pointer-events: none;
 }
 
 /* Fine vertical brush grain across the steel. Re-uses the base hero's
@@ -276,9 +300,39 @@ body {
 .hero-pass {
     display: grid;
     grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-    gap: clamp(30px, 5vw, 70px);
-    align-items: center;
+    column-gap: clamp(30px, 5vw, 70px);
+    row-gap: 0;
+    align-items: start;
+    padding-top: 12px; /* a little air under the lamp */
 }
+
+/* the steel ticket rail — one bar spanning the whole pass, with bracket
+   ends, that the order ticket hangs from. */
+.hero-toprail {
+    grid-column: 1 / -1;
+    position: relative;
+    height: 8px;
+    margin-bottom: clamp(20px, 3vw, 36px);
+    border-radius: 5px;
+    background: linear-gradient(180deg, #c2c9d1, #79828c 42%, #3a4047);
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.55),
+        0 0 16px rgba(34, 211, 238, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.hero-toprail::before,
+.hero-toprail::after { /* end brackets bolting the rail to the wall */
+    content: '';
+    position: absolute;
+    top: -4px;
+    width: 11px;
+    height: 19px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #aeb6bf, #4a5158);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.hero-toprail::before { left: -3px; }
+.hero-toprail::after { right: -3px; }
 
 /* --- The chalkboard menu (left column) --- */
 .hero-board {
@@ -393,19 +447,8 @@ body {
     position: relative;
     display: flex;
     justify-content: center;
-    padding-top: 28px; /* room for the rail + clip above the ticket */
-}
-/* the steel ticket rail the order is clipped to */
-.hero-rail::before {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 6%;
-    right: 6%;
-    height: 4px;
-    border-radius: 4px;
-    background: linear-gradient(180deg, #aeb6bf, #5b636c 45%, #2c3138);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 14px rgba(34, 211, 238, 0.10);
+    /* the ticket hangs just below the full-width rail above it (.hero-toprail) */
+    padding-top: 6px;
 }
 
 /* the order ticket / polaroid — cream paper, tilted, straightens on hover */
@@ -496,11 +539,12 @@ body {
 @media (max-width: 820px) {
     .hero-pass {
         grid-template-columns: 1fr;
-        gap: 34px;
+        row-gap: 26px;
     }
-    .hero-rail {
-        order: -1; /* the ticket leads on mobile */
-    }
+    /* rail on top, the ticket hanging beneath it, then the board */
+    .hero-toprail { order: 1; margin-bottom: 4px; }
+    .hero-rail { order: 2; }
+    .hero-board { order: 3; }
     .hero-ticket {
         width: min(86%, 360px);
     }
