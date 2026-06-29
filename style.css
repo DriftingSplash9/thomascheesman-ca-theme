@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.665
+Version: 1.0.666
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -513,11 +513,14 @@ body {
        reads as the polaroid matte instead of black bands. */
     background: #ece7d6;
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+    perspective: 1200px; /* depth for the photos' 3D turn-swap */
 }
-/* Carousel of order tickets. The active photo settles flat; the next one
-   swings in from the clip (lifted + tilted) and the outgoing one drops
-   away — like orders being changed out on the rail. JS (initHeroPortrait)
-   toggles .is-active / .is-leaving. */
+/* Carousel of order tickets, swapped with a 3D TURN: the active photo
+   faces you flat; on swap it rotates away edge-on while the next photo
+   turns in to face you — like flipping the ticket over on the rail. The
+   incoming card's turn is delayed so it starts as the outgoing one
+   reaches edge-on (no double-image). JS toggles .is-active/.is-leaving;
+   perspective lives on .hero-portrait below. */
 .hero-portrait__img {
     position: absolute;
     inset: 0;
@@ -526,20 +529,25 @@ body {
     object-fit: contain;
     opacity: 0;
     z-index: 1;
-    /* resting state = "incoming": lifted toward the clip and tilted */
-    transform: translateY(-16px) rotate(-4deg) scale(0.985);
-    transform-origin: 50% -12%; /* pivot from the clip hanging above */
-    transition: opacity 0.55s ease, transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: rotateY(96deg); /* resting "incoming": turned edge-on, hidden */
+    transform-origin: 50% 50%;
+    backface-visibility: hidden;
+    transition: transform 0.6s cubic-bezier(0.45, 0, 0.25, 1), opacity 0.4s ease;
 }
 .hero-portrait__img.is-active {
     opacity: 1;
-    transform: none;
+    transform: rotateY(0deg); /* turned in to face the viewer */
     z-index: 2;
+    /* wait for the leaving card to clear edge-on before turning in */
+    transition: transform 0.6s cubic-bezier(0.45, 0, 0.25, 1) 0.32s,
+                opacity 0.4s ease 0.32s;
 }
 .hero-portrait__img.is-leaving {
     opacity: 0;
     z-index: 1;
-    transform: translateY(16px) rotate(3.5deg) scale(0.985); /* drop away */
+    transform: rotateY(-96deg); /* turn away edge-on */
+    transition: transform 0.55s cubic-bezier(0.45, 0, 0.25, 1),
+                opacity 0.4s ease 0.18s;
 }
 
 /* handwritten order caption under the photo — fades with each swap */

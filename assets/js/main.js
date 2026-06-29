@@ -3262,9 +3262,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         cur.classList.remove('is-active');
         cur.classList.add('is-leaving');
-        // drop the leaving class after the transition so it resets off-screen
+        // drop the leaving class after the full turn so it resets edge-on
         (function (el) {
-            setTimeout(function () { el.classList.remove('is-leaving'); }, 720);
+            setTimeout(function () { el.classList.remove('is-leaving'); }, 1000);
         })(cur);
 
         nx.classList.add('is-active');
@@ -3272,10 +3272,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (cap) {
             var c = nx.getAttribute('data-cap') || '';
             cap.style.opacity = '0';
+            // change the caption while the card is edge-on (mid-turn)
             setTimeout(function () {
                 cap.textContent = c;
                 cap.style.opacity = '';
-            }, 260);
+            }, 420);
         }
         i = next;
     }
