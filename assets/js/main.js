@@ -3236,41 +3236,59 @@ function initHeritagePage() {
 }
 
 /* ============================================================
- * HERO PORTRAIT — date-windowed image rotation on the homepage.
- * Each .hero-portrait__img may carry data-from / data-until
- * (YYYY-MM-DD). We show the images whose window covers "today"
- * (the visitor's local date — resolved in JS so an exact-date swap,
- * e.g. the Dec 1 change, fires no matter when LiteSpeed cached the
- * page) and crossfade between the active ones every 10s. Fewer than
- * two active images, or prefers-reduced-motion → no rotation. Never
- * leaves the hero empty (falls back to the first image).
+ * HERO PORTRAIT CAROUSEL — the order ticket cycles through the
+ * photos one at a time. Each swap: the current photo gets .is-leaving
+ * (drops away), the next gets .is-active (swings in from the clip), and
+ * the handwritten caption (data-cap) fades over to match. Rotation
+ * dwells ~5.5s and PAUSES on hover/focus so a visitor can linger.
+ * Fewer than two photos → nothing to do. Under prefers-reduced-motion
+ * the CSS flattens the swing to a plain crossfade (it still rotates).
  * ========================================================== */
 document.addEventListener('DOMContentLoaded', function () {
     var box = document.querySelector('.hero-portrait');
     if (!box) return;
-    var all = Array.prototype.slice.call(box.querySelectorAll('.hero-portrait__img'));
-    if (!all.length) return;
-    var d = new Date();
-    var today = d.getFullYear() + '-' +
-        String(d.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d.getDate()).padStart(2, '0');
-    var active = all.filter(function (im) {
-        var f = im.getAttribute('data-from') || '';
-        var u = im.getAttribute('data-until') || '';
-        return (!f || today >= f) && (!u || today < u);
-    });
-    if (!active.length) active = all.slice(0, 1);
-    all.forEach(function (im) {
-        var on = active.indexOf(im) !== -1;
-        im.style.display = on ? '' : 'none';
-        im.classList.toggle('is-active', on && active.indexOf(im) === 0);
-    });
-    if (active.length < 2) return;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var imgs = Array.prototype.slice.call(box.querySelectorAll('.hero-portrait__img'));
+    if (imgs.length < 2) return;
+
+    var cap = document.querySelector('.hero-ticket__cap');
     var i = 0;
-    setInterval(function () {
-        active[i].classList.remove('is-active');
-        i = (i + 1) % active.length;
-        active[i].classList.add('is-active');
-    }, 10000);
+    var timer = null;
+    var DWELL = 5500;
+
+    function show(next) {
+        if (next === i) return;
+        var cur = imgs[i];
+        var nx = imgs[next];
+
+        cur.classList.remove('is-active');
+        cur.classList.add('is-leaving');
+        // drop the leaving class after the transition so it resets off-screen
+        (function (el) {
+            setTimeout(function () { el.classList.remove('is-leaving'); }, 720);
+        })(cur);
+
+        nx.classList.add('is-active');
+
+        if (cap) {
+            var c = nx.getAttribute('data-cap') || '';
+            cap.style.opacity = '0';
+            setTimeout(function () {
+                cap.textContent = c;
+                cap.style.opacity = '';
+            }, 260);
+        }
+        i = next;
+    }
+
+    function advance() { show((i + 1) % imgs.length); }
+    function start() { if (!timer) timer = setInterval(advance, DWELL); }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+    var ticket = document.querySelector('.hero-ticket') || box;
+    ticket.addEventListener('mouseenter', stop);
+    ticket.addEventListener('mouseleave', start);
+    ticket.addEventListener('focusin', stop);
+    ticket.addEventListener('focusout', start);
+
+    start();
 });

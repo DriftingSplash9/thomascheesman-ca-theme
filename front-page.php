@@ -10,30 +10,44 @@ get_header(); ?>
     
     <!-- HERO SECTION -->
     <?php
-    // Rotating hero portraits. Selection + crossfade are done client-side
-    // (assets/js/main.js → initHeroPortrait) so an exact-date swap fires
-    // regardless of the LiteSpeed page cache. Each image carries an optional
-    // from/until window (YYYY-MM-DD); JS shows the ones whose window covers
-    // "today" and crossfades between them.
+    // The hero "order ticket" cycles through these photos one at a time —
+    // each one swaps in on the clip (lift + tilt + settle) via
+    // assets/js/main.js → initHeroPortrait. Rotation pauses on hover.
     //
-    // To add the December shot: drop it in with 'from' => '2026-12-01', and
-    // (if you want a clean swap rather than both rotating) set the solo
-    // photo's 'until' => '2026-12-01'.
+    // To reorder: rearrange this array. To change a caption: edit 'cap'
+    // (handwritten line under the photo). 'alt' is the accessible text.
+    // Captions are intentionally non-identifying (no kids' names on the
+    // public, indexed homepage); reword freely.
     $tc_hero_imgs = array(
-        // Solo selfie — current, until the December swap.
         array(
-            'src'   => 'https://thomascheesman.ca/wp-content/uploads/2026/06/100_0716-nodate.jpg',
-            'alt'   => 'Thomas Cheesman',
-            'from'  => '',
-            'until' => '2026-12-01',
+            'src' => 'https://thomascheesman.ca/wp-content/uploads/2026/06/100_0716-nodate.jpg',
+            'alt' => 'Thomas Cheesman holding his newborn',
+            'cap' => 'day one',
         ),
-        // Cozy reading shot — auto-swaps in for December. Thomas okayed this
-        // one for the public hero (2026-06-27), a deliberate OD-1 exception.
         array(
-            'src'   => 'https://thomascheesman.ca/wp-content/uploads/2026/06/SCbHS.jpg',
-            'alt'   => 'Thomas Cheesman reading with his son',
-            'from'  => '2026-12-01',
-            'until' => '',
+            'src' => 'https://thomascheesman.ca/wp-content/uploads/2026/05/20180319_075220-scaled.jpg',
+            'alt' => 'Thomas Cheesman with his children',
+            'cap' => 'the whole crew',
+        ),
+        array(
+            'src' => 'https://thomascheesman.ca/wp-content/uploads/2026/05/faith-and-daddy.jpg',
+            'alt' => 'Thomas Cheesman camping with his child',
+            'cap' => 'first campout',
+        ),
+        array(
+            'src' => 'https://thomascheesman.ca/wp-content/uploads/2026/05/DSC_1108-scaled.jpg',
+            'alt' => 'Thomas Cheesman with his child by the water',
+            'cap' => 'down by the water',
+        ),
+        array(
+            'src' => 'https://thomascheesman.ca/wp-content/uploads/2026/05/IMG_1895-scaled.jpg',
+            'alt' => 'Thomas Cheesman with his child in a field',
+            'cap' => 'out in the long grass',
+        ),
+        array(
+            'src' => 'https://thomascheesman.ca/wp-content/uploads/2024/08/img_2534-2-scaled.jpg',
+            'alt' => 'Thomas Cheesman',
+            'cap' => 'table for one',
         ),
     );
     ?>
@@ -75,12 +89,11 @@ get_header(); ?>
                             <img class="hero-portrait__img<?php echo $i === 0 ? ' is-active' : ''; ?>"
                                  src="<?php echo esc_url( $img['src'] ); ?>"
                                  alt="<?php echo esc_attr( $img['alt'] ); ?>"
-                                 data-from="<?php echo esc_attr( $img['from'] ); ?>"
-                                 data-until="<?php echo esc_attr( $img['until'] ); ?>"
+                                 data-cap="<?php echo esc_attr( $img['cap'] ); ?>"
                                  loading="<?php echo $i === 0 ? 'eager' : 'lazy'; ?>" decoding="async" />
                         <?php endforeach; ?>
                     </div>
-                    <figcaption class="hero-ticket__cap">table one &mdash; the family</figcaption>
+                    <figcaption class="hero-ticket__cap"><?php echo esc_html( $tc_hero_imgs[0]['cap'] ); ?></figcaption>
                 </figure>
             </div>
 
