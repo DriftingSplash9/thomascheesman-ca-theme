@@ -1,7 +1,8 @@
-# QUARTER-SECTION-SPEC.md — the build spec for "The Quarter Section" homepage
+# QUARTER-SECTION-SPEC.md — the build spec for **"The Back Quarter"** homepage
 
-> **Status:** Vision / draft for Thomas's sign-off. Written 2026-07-01 (theme at
-> 1.0.666). **No code has been written against this spec yet.**
+> **Status:** APPROVED — all open decisions resolved by Thomas 2026-07-01
+> (see §7). Build may begin at P0. (Filename keeps the working title;
+> the shipped name is **The Back Quarter**.)
 >
 > Precedent for this kind of doc: [`docs/SECRET-DRAWER-VISION.md`](SECRET-DRAWER-VISION.md),
 > [`docs/CONVERGING-MAP-SPEC.md`](CONVERGING-MAP-SPEC.md).
@@ -179,13 +180,13 @@ freeze rAF/WebGL — I can verify clean boot + zero console errors, but the
 
 ---
 
-## 7. Open decisions (Thomas's)
+## 7. Decisions — RESOLVED by Thomas, 2026-07-01
 
-| # | Decision | Recommendation |
+| # | Decision | Resolution |
 |---|---|---|
-| D1 | **Name.** "The Quarter Section" (working title). | Keep — it's prairie-true and nobody else's. |
-| D2 | **Art direction sample.** I draft image prompts; Thomas generates/approves the painting before P1. | Painted/storybook-realist, nocturnal-capable, matching the heritage pastels' warmth. |
-| D3 | **Hero position** — compact above the map, or shrunk to a "gate sign" inside the world later? | Compact above for now (SEO/LCP safety); revisit after P2. |
-| D4 | **Sound** default | Off by default, one obvious toggle, persisted (pinball precedent). |
-| D5 | **Landmark cut for v1** | All of §2 except optional #11 (map table) if the field gets crowded. |
-| D6 | **December hero photo** — the retired date-scheduled reading-photo swap: fold back into the ticket carousel? | Re-add as a 7th ticket with a Dec window when December nears. |
+| D1 | Name | **"The Back Quarter."** |
+| D2 | Art pipeline | Claude drafts image prompts → Thomas runs them through **Grok Imagine** (optionally regenerated/adapted by Grok), grades/crops in **CapCut**, delivers a static image at the spec'd ratio. Thomas approves the sample before P1 integration. |
+| D3 | Hero position | **Compact above the map.** |
+| D4 | Sound default | **Off** + persisted toggle. (Trivial one-line default to flip later.) |
+| D5 | Landmark cut | All of §2; #11 (map table) optional if crowded. |
+| D6 | (superseded) | Thomas redirected this to a hero enhancement instead: a **faded black-and-white ghost image** behind the chalkboard + ticket (shipped 1.0.667). December reading-photo re-add deferred to ~November. |
