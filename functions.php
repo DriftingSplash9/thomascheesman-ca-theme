@@ -223,11 +223,41 @@ function tc_ventures_enqueue_scripts() {
         )
     );
 
+    // "The Back Quarter" — the homepage drivable-overworld BHAG
+    // (docs/QUARTER-SECTION-SPEC.md). This file is only the boot shim +
+    // engine; the heavy vendors (Matter + Pixi, self-hosted) lazy-load on
+    // first engagement, so the homepage pays ~nothing until the visitor
+    // starts driving. Front page only — no other template has the stage.
+    // Depends on main.js for window.tcVentures (themeUrl / siteUrl).
+    if ( is_front_page() ) {
+        wp_enqueue_script(
+            'tc-back-quarter',
+            get_stylesheet_directory_uri() . '/assets/js/back-quarter.js',
+            array( 'tc-ventures-main' ),
+            wp_get_theme()->get( 'Version' ),
+            array( 'in_footer' => true, 'strategy' => 'defer' )
+        );
+    }
+
     // Desk-games arcade. The canvas games (Snake / Pong / Pac-Man /
-    // Asteroids / Brickles / Solitaire) tucked behind the toad
-    // hotspot. Depends on desk-menu.js for the drawer's open/close
-    // wiring; this file owns picker→play view switching, the game
-    // loops, and the REST-backed leaderboard wiring.
+    // Asteroids / Brickles /
+    // The Back Quarter — the homepage drivable-overworld BHAG (P0).
+    // Front page ONLY (stage markup lives in front-page.php). This shim is
+    // a cheap deferred file; Matter + Pixi (self-hosted in
+    // assets/js/vendor/) lazy-load only when the visitor engages, so the
+    // homepage carries near-zero extra weight on first paint. Uses the
+    // existing window.tcVentures (themeUrl + siteUrl) — no new localize.
+    // Spec: docs/QUARTER-SECTION-SPEC.md
+    if ( is_front_page() ) {
+        wp_enqueue_script(
+            'tc-back-quarter',
+            get_stylesheet_directory_uri() . '/assets/js/back-quarter.js',
+            array( 'tc-ventures-main' ),
+            wp_get_theme()->get( 'Version' ),
+            array( 'in_footer' => true, 'strategy' => 'defer' )
+        );
+    }
+
     wp_enqueue_script(
         'tc-desk-games',
         get_stylesheet_directory_uri() . '/assets/js/desk-games.js',

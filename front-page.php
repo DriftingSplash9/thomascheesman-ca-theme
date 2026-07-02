@@ -102,6 +102,30 @@ get_header(); ?>
         </div>
     </section>
 
+    <!-- THE BACK QUARTER — drivable-overworld BHAG, P0 walking skeleton.
+         Spec: docs/QUARTER-SECTION-SPEC.md. The stage is decorative
+         (role=application, canvas aria-hidden); every destination stays
+         reachable through the normal nav. Engine: assets/js/back-quarter.js
+         (front-page-only enqueue; Matter+Pixi lazy-load on engagement). -->
+    <section class="bq-section" aria-label="The Back Quarter">
+        <div class="container">
+            <div class="bq-stage" id="bq-stage" tabindex="0" role="application"
+                 aria-roledescription="driving mini-game"
+                 aria-label="The Back Quarter: drive a buggy around a map of this site. Decorative — every destination is also in the site menu.">
+                <div class="bq-preview">
+                    <p class="bq-preview__eyebrow">out past the yard light</p>
+                    <h2 class="bq-preview__title">The Back Quarter</h2>
+                    <p class="bq-preview__deck">A quarter section of everything on this site. Hop in the buggy and drive it.</p>
+                    <button type="button" class="tc-btn bq-preview__go">Start driving</button>
+                    <p class="bq-preview__hint">W&thinsp;A&thinsp;S&thinsp;D or arrows &middot; Enter steps inside &middot; Esc hops out</p>
+                    <p class="bq-preview__note">early build &mdash; placeholder land, real physics; the painted world is coming</p>
+                </div>
+                <div class="bq-chip" hidden></div>
+                <div class="bq-hud" hidden>Esc hops out &middot; early build</div>
+            </div>
+        </div>
+    </section>
+
     <!-- THREE PILLARS SECTION -->
     <section class="pillars-section">
         <div class="container">
