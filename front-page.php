@@ -52,6 +52,8 @@ get_header(); ?>
     );
     ?>
     <section class="hero-section hero-section--pass">
+        <!-- faded B&W ghost photo, watermarked into the steel behind the cards -->
+        <span class="hero-ghost" aria-hidden="true"></span>
         <!-- the heat lamp still on over the empty pass -->
         <span class="hero-lamp" aria-hidden="true"></span>
         <div class="container hero-pass">
