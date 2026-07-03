@@ -30,7 +30,7 @@
 		// hub-and-spoke dirt routes (grip bonus + drift cues). Approximate the
 		// painted paths; the buggy grips on these and drifts off them.
 		hub: { x: 610, y: 470 },
-		pathHalfWidth: 46,
+		pathHalfWidth: 58,
 		landmarks: [
 			{ id: 'farmhouse', name: 'the farmhouse', x: 346, y: 168, w: 150, h: 96,
 			  href: '/thomas', prompt: 'The farmhouse — step inside, this is me' },
@@ -62,8 +62,9 @@
 	var app, cam, engine, buggyBody, buggyGfx, headlights;
 	var Matter, keys = {}, engaged = false, booted = false;
 	var accMS = 0, pointerDrive = null, nearLandmark = null;
-	var camScale = 1, camOffX = 0, camOffY = 0;
-	var markers = []; // {lm, label, ring, baseAlpha}
+	var ZOOM = 2.3; // how far in the follow-camera sits over the board
+	var camScale = 1, camPivX = 0, camPivY = 0;
+	var markers = []; // {lm, label, ring, isLive, phase}
 
 	document.addEventListener( 'DOMContentLoaded', function () {
 		stage = document.getElementById( 'bq-stage' );
@@ -166,6 +167,9 @@
 		buggyGfx = drawBuggy( PIXI );
 		cam.addChild( buggyGfx );
 
+		camPivX = WORLD.spawn.x;
+		camPivY = WORLD.spawn.y;
+
 		// input
 		window.addEventListener( 'keydown', onKey, true );
 		window.addEventListener( 'keyup', onKey, true );
@@ -199,8 +203,8 @@
 		if ( e.type === 'pointermove' && ! pointerDrive ) return;
 		var r = app.view.getBoundingClientRect();
 		pointerDrive = {
-			x: ( e.clientX - r.left - camOffX ) / camScale,
-			y: ( e.clientY - r.top - camOffY ) / camScale
+			x: ( e.clientX - r.left - r.width / 2 ) / camScale + camPivX,
+			y: ( e.clientY - r.top - r.height / 2 ) / camScale + camPivY
 		};
 		stage.focus();
 	}
@@ -240,6 +244,11 @@
 		var heading = { x: Math.cos( b.angle ), y: Math.sin( b.angle ) };
 		var onPath = distToHubSpokes( b.position ) < WORLD.pathHalfWidth;
 
+		// The dirt road really matters: on the path the buggy is quick and
+		// grippy; off it (grass/stubble) it bogs down with heavy rolling
+		// resistance and slides more, so staying on the road is worth it.
+		b.frictionAir = onPath ? 0.085 : 0.20;
+
 		var throttle = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.6 : 0 );
 		var steer = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
 
@@ -252,7 +261,7 @@
 			}
 		}
 
-		var power = 0.0022 * ( onPath ? 1 : 0.8 );
+		var power = onPath ? 0.0030 : 0.0015; // grass saps the drive
 		if ( throttle ) {
 			Matter.Body.applyForce( b, b.position,
 				{ x: heading.x * power * throttle * b.mass, y: heading.y * power * throttle * b.mass } );
@@ -265,13 +274,13 @@
 
 		var lat = { x: -heading.y, y: heading.x };
 		var latSpeed = v.x * lat.x + v.y * lat.y;
-		var grip = onPath ? 0.80 : 0.90; // grass keeps more slide → drift
+		var grip = onPath ? 0.78 : 0.94; // road bites, grass lets it drift
 		Matter.Body.setVelocity( b, {
 			x: heading.x * fwd + lat.x * latSpeed * grip,
 			y: heading.y * fwd + lat.y * latSpeed * grip
 		} );
 
-		var cap = onPath ? 6 : 4.6;
+		var cap = onPath ? 7.2 : 3.6; // top speed roughly doubles on the road
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		if ( sp > cap ) Matter.Body.setVelocity( b, { x: b.velocity.x * cap / sp, y: b.velocity.y * cap / sp } );
 	}
@@ -283,13 +292,19 @@
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		headlights.alpha = 0.10 + Math.min( 0.10, sp * 0.02 );
 
-		// fit the whole board into the viewport (contain, centred) — no panning
+		// zoom in and follow the buggy; pivot clamped so we never show past
+		// the fence line. camScale = contain-fit × ZOOM.
 		var vw = app.screen.width, vh = app.screen.height;
-		camScale = Math.min( vw / WORLD.w, vh / WORLD.h );
-		camOffX = ( vw - WORLD.w * camScale ) / 2;
-		camOffY = ( vh - WORLD.h * camScale ) / 2;
+		var fit = Math.min( vw / WORLD.w, vh / WORLD.h );
+		camScale = fit * ZOOM;
+		var halfW = ( vw / 2 ) / camScale, halfH = ( vh / 2 ) / camScale;
+		var tx = clampPivot( b.position.x, halfW, WORLD.w );
+		var ty = clampPivot( b.position.y, halfH, WORLD.h );
+		camPivX += ( tx - camPivX ) * 0.10;
+		camPivY += ( ty - camPivY ) * 0.10;
 		cam.scale.set( camScale );
-		cam.position.set( camOffX, camOffY );
+		cam.pivot.set( camPivX, camPivY );
+		cam.position.set( vw / 2, vh / 2 );
 
 		// marker pulse + proximity highlight
 		var t = app.ticker.lastTime / 1000;
@@ -299,8 +314,9 @@
 			var close = d < 150;
 			if ( close && ( ! near || d < Math.hypot( b.position.x - near.x, b.position.y - near.y ) ) ) near = m.lm;
 			var pulse = 0.5 + 0.5 * Math.sin( t * 2.2 + m.phase );
-			m.ring.alpha = ( close ? 0.9 : 0.28 ) * ( 0.6 + 0.4 * pulse );
-			m.label.alpha = close ? 1 : m.baseAlpha;
+			var rest = m.isLive ? 0.42 : 0.22;
+			m.ring.alpha = ( close ? 0.95 : rest ) * ( 0.6 + 0.4 * pulse );
+			m.label.alpha = close ? 1 : ( m.isLive ? 0.6 : 0.42 );
 			m.ring.scale.set( close ? 1.15 : 1 );
 		} );
 
@@ -311,6 +327,11 @@
 				if ( near ) chipEl.textContent = near.prompt + ( near.href ? '  · Enter ↵' : '' );
 			}
 		}
+	}
+
+	function clampPivot( c, half, worldSize ) {
+		if ( half * 2 >= worldSize ) return worldSize / 2;
+		return Math.max( half, Math.min( worldSize - half, c ) );
 	}
 
 	function wrapAngle( a ) {
@@ -352,13 +373,15 @@
 	}
 
 	function drawMarker( PIXI, lm ) {
-		// a soft warm ring + a downward pin above each landmark, plus a label
+		var live = !! lm.href; // cyan = you can go here; amber = flavour stub
+		// a soft ring + a downward pin above each landmark, plus a label
 		var ring = new PIXI.Graphics();
-		ring.lineStyle( 2.5, lm.href ? 0x8be9ff : 0xffcf8a, 0.9 );
-		ring.drawCircle( 0, 0, 15 );
-		ring.moveTo( 0, 15 ); ring.lineTo( 0, 26 ); // little stem toward the roof
+		if ( live ) { ring.beginFill( 0x8be9ff, 0.12 ); ring.drawCircle( 0, 0, 16 ); ring.endFill(); }
+		ring.lineStyle( live ? 3 : 2, live ? 0x9bf0ff : 0xffcf8a, 0.95 );
+		ring.drawCircle( 0, 0, 16 );
+		ring.moveTo( 0, 16 ); ring.lineTo( 0, 27 ); // little stem toward the roof
 		ring.position.set( lm.x, lm.y - lm.h / 2 - 24 );
-		ring.alpha = 0.28;
+		ring.alpha = live ? 0.42 : 0.22;
 		cam.addChild( ring );
 
 		var label = new PIXI.Text( lm.name, {
@@ -381,7 +404,7 @@
 		hit.on( 'pointerover', function () { nearLandmark = lm; label.alpha = 1; if ( chipEl ) { chipEl.hidden = false; chipEl.textContent = lm.prompt + ( lm.href ? '  · click' : '' ); } } );
 		cam.addChild( hit );
 
-		markers.push( { lm: lm, label: label, ring: ring, baseAlpha: 0.5, phase: Math.random() * 6.28 } );
+		markers.push( { lm: lm, label: label, ring: ring, isLive: live, phase: Math.random() * 6.28 } );
 	}
 
 	function drawBuggy( PIXI ) {
