@@ -165,8 +165,8 @@ entire map.
 
 | Phase | Ships | Definition of done |
 |---|---|---|
-| **P0 — walking skeleton** | Canvas boots on engagement; buggy drives with real physics on a placeholder-painted ground; camera follows; ONE landmark links out; static preview + fallback intact. | Feels good to drive. Thomas taste-checks *feel* before any art money is spent. |
-| **P1 — the world** | Authored painting integrated; all landmarks + paths + collision from JSON; enter-prompts work; day/night tint. | Every destination reachable by driving or clicking. |
+| **P0 — walking skeleton** ✅ 1.0.668 | Canvas boots on engagement; buggy drives with real physics on a placeholder-painted ground; camera follows; ONE landmark links out; static preview + fallback intact. | Feels good to drive. Thomas taste-checks *feel* before any art money is spent. |
+| **P1 — the world** ✅ 1.0.669 | Authored painting (`…/2026/07/6255f323-…jpg`) is the ground; whole board fits the stage (no pan); 11 landmarks with collision + pulsing markers + labels + hotspots; 8 live destinations + 3 stubs (barn/shed/mailbox); painting doubles as the pre-engagement preview. Landmark coords in painting px space (1280×720) live in `back-quarter.js` `WORLD`. Day/night tint deferred (art is already night). | Every destination reachable by driving or clicking. |
 | **P2 — the ledger + signs** | Mailbox + flag logic; the Ledger HTML strip; billboards with the real quote pool; pillars section retired. | #2/#5 satisfied for all visitors; emojis gone. |
 | **P3 — life** | Bridge-out gating; smoke/neon/lantern ambient animation; honk; small SFX (reuse pinball's WebAudio synth patterns, mute persisted); locked-shed wink. | The world feels tended, not static. |
 | **P4 — mobile + polish** | Joystick/tap-to-drive after real-phone testing; reduced-motion audit; perf pass (PSI before/after); a11y verification. | MOB-1-grade phone experience; budgets hold. |

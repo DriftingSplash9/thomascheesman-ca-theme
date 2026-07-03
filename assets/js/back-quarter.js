@@ -1,71 +1,80 @@
 /**
  * THE BACK QUARTER — the homepage drivable-overworld BHAG.
- * P0 walking skeleton (docs/QUARTER-SECTION-SPEC.md).
- *
- * What P0 is: real buggy physics (Matter) on a placeholder-painted world
- * (Pixi), camera follow, ONE landmark (the farmhouse → /about), lazy boot.
- * What P0 is NOT: the authored painting, the full landmark set, the ledger,
- * gating, sound — those are P1–P3. Landmark/path data is inlined here for
- * P0 and externalizes to inc/data/quarter-section.json in P1.
+ * P1 (docs/QUARTER-SECTION-SPEC.md): the authored painting is the ground,
+ * the full landmark set is wired to real destinations, and the whole board
+ * fits the stage (no panning — you see the entire farm and drive around it).
  *
  * Boot contract (mirrors desk-drawer.js → pinball):
- * - This file is a cheap, deferred shim on the front page only.
- * - Matter + Pixi (both self-hosted in assets/js/vendor/) load ONLY when
- *   the visitor engages (Start button / W / ArrowUp on the focused stage).
- * - Every failure is non-fatal: the preview card stays, the site's normal
- *   nav is always the real path to every destination.
+ * - Front page only; a cheap deferred shim until the visitor engages.
+ * - Matter + Pixi (self-hosted in assets/js/vendor/) load ONLY on engage.
+ * - Every failure is non-fatal: the painted preview stays and the site's
+ *   normal nav is always the real path to every destination.
+ *
+ * The painting URL comes from #bq-stage[data-bg] (PHP-owned; one place to
+ * swap the art). Landmark coordinates below are in the painting's own pixel
+ * space (1280×720) — measured against the delivered image; nudge here if the
+ * art is ever re-generated.
  *
  * ⭐ Verification limit (carried from the pinball): background/automation
- * tabs freeze rAF/WebGL — smoke-test = boots clean, zero console errors;
- * the FEEL check is Thomas driving it in a foreground tab.
+ * tabs freeze rAF/WebGL — smoke-test = boots clean, zero console errors; the
+ * FEEL check is Thomas driving it in a foreground tab.
  */
 ( function () {
 	'use strict';
 
-	/* ------------------------------------------------------------------ *
-	 *  P0 world data (→ inc/data/quarter-section.json in P1)
-	 * ------------------------------------------------------------------ */
 	var WORLD = {
-		w: 2600,
-		h: 1950,
-		spawn: { x: 1300, y: 1650, angle: -Math.PI / 2 }, // facing "north"
-		// dirt path: spawn → a bend → the farmhouse yard
-		path: [
-			{ x: 1300, y: 1700 },
-			{ x: 1280, y: 1350 },
-			{ x: 1050, y: 1050 },
-			{ x: 820, y: 760 },
-			{ x: 760, y: 580 }
-		],
-		pathHalfWidth: 55,
+		w: 1280,
+		h: 720,
+		bg: '', // filled from #bq-stage[data-bg]
+		spawn: { x: 614, y: 628, angle: -Math.PI / 2 }, // just inside the gate, facing north
+		// hub-and-spoke dirt routes (grip bonus + drift cues). Approximate the
+		// painted paths; the buggy grips on these and drifts off them.
+		hub: { x: 610, y: 470 },
+		pathHalfWidth: 46,
 		landmarks: [
-			{
-				id: 'farmhouse',
-				name: 'the farmhouse',
-				x: 700, y: 430, w: 230, h: 180,
-				href: '/about',
-				prompt: 'Step inside the farmhouse'
-			}
+			{ id: 'farmhouse', name: 'the farmhouse', x: 346, y: 168, w: 150, h: 96,
+			  href: '/thomas', prompt: 'The farmhouse — step inside, this is me' },
+			{ id: 'cookshack', name: 'the cookshack', x: 640, y: 132, w: 92, h: 66,
+			  href: '/about', prompt: 'The cookshack — my life on the line' },
+			{ id: 'elevator', name: 'the grain elevator', x: 896, y: 196, w: 96, h: 140,
+			  href: '/hcs', prompt: 'The grain elevator — one of fewer than fifty' },
+			{ id: 'church', name: 'the church', x: 198, y: 372, w: 92, h: 96,
+			  href: '/heritage', prompt: 'The church on the hill — eight family lines' },
+			{ id: 'th1', name: 'a treehouse', x: 410, y: 296, w: 46, h: 46,
+			  href: '/patience', prompt: 'A treehouse — needs the family key' },
+			{ id: 'th2', name: 'a treehouse', x: 454, y: 360, w: 46, h: 46,
+			  href: '/daniel', prompt: 'A treehouse — needs the family key' },
+			{ id: 'th3', name: 'a treehouse', x: 563, y: 436, w: 46, h: 46,
+			  href: '/faith', prompt: 'A treehouse — needs the family key' },
+			{ id: 'radio', name: 'the radio mast', x: 1184, y: 360, w: 40, h: 150,
+			  href: 'https://bareyourrare.org', external: true,
+			  prompt: 'The radio mast — broadcasting beyond the fence' },
+			{ id: 'barn', name: 'the arcade barn', x: 1011, y: 410, w: 150, h: 92,
+			  href: null, prompt: 'The arcade barn — the games are moving in here soon' },
+			{ id: 'shed', name: 'the old shed', x: 186, y: 552, w: 78, h: 58,
+			  href: null, prompt: 'The shed is padlocked… but a drawer in the house opens' },
+			{ id: 'mailbox', name: 'the mailbox', x: 560, y: 664, w: 44, h: 40,
+			  href: null, prompt: 'Fresh mail soon — “recently added” lands here' }
 		]
 	};
 
 	var stage, previewNote, chipEl, hudEl, goBtn;
 	var app, cam, engine, buggyBody, buggyGfx, headlights;
 	var Matter, keys = {}, engaged = false, booted = false;
-	var camX, camY, accMS = 0;
-	var pointerDrive = null; // {x,y} world-space target while touch held
-	var nearLandmark = null;
+	var accMS = 0, pointerDrive = null, nearLandmark = null;
+	var camScale = 1, camOffX = 0, camOffY = 0;
+	var markers = []; // {lm, label, ring, baseAlpha}
 
 	document.addEventListener( 'DOMContentLoaded', function () {
 		stage = document.getElementById( 'bq-stage' );
 		if ( ! stage ) return;
+		WORLD.bg = stage.getAttribute( 'data-bg' ) || '';
 		previewNote = stage.querySelector( '.bq-preview__note' );
 		chipEl = stage.querySelector( '.bq-chip' );
 		hudEl = stage.querySelector( '.bq-hud' );
 		goBtn = stage.querySelector( '.bq-preview__go' );
 
 		if ( goBtn ) goBtn.addEventListener( 'click', engage );
-		// W / ArrowUp on the focused stage also engages (spec §4).
 		stage.addEventListener( 'keydown', function ( e ) {
 			if ( engaged ) return;
 			if ( e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp' ) {
@@ -84,13 +93,9 @@
 		if ( previewNote ) previewNote.textContent = 'starting the buggy…';
 		var base = ( window.tcVentures && window.tcVentures.themeUrl ) || '';
 		loadScript( base + '/assets/js/vendor/matter-0.20.0.min.js' )
+			.then( function () { return loadScript( base + '/assets/js/vendor/pixi-7.4.2.min.js' ); } )
 			.then( function () {
-				return loadScript( base + '/assets/js/vendor/pixi-7.4.2.min.js' );
-			} )
-			.then( function () {
-				if ( ! window.Matter || ! window.PIXI ) {
-					throw new Error( 'engine globals missing' );
-				}
+				if ( ! window.Matter || ! window.PIXI ) throw new Error( 'engine globals missing' );
 				start();
 			} )
 			.catch( function ( err ) {
@@ -106,8 +111,7 @@
 	function loadScript( src ) {
 		return new Promise( function ( resolve, reject ) {
 			var s = document.createElement( 'script' );
-			s.src = src;
-			s.async = true;
+			s.src = src; s.async = true;
 			s.onload = resolve;
 			s.onerror = function () { reject( new Error( 'Script failed: ' + src ) ); };
 			document.head.appendChild( s );
@@ -134,44 +138,35 @@
 		app.view.setAttribute( 'aria-hidden', 'true' );
 		stage.appendChild( app.view );
 
-		// -------- physics --------
+		// physics
 		engine = Matter.Engine.create();
-		engine.gravity.x = 0;
-		engine.gravity.y = 0;
-
-		buggyBody = Matter.Bodies.rectangle(
-			WORLD.spawn.x, WORLD.spawn.y, 46, 30,
-			{ frictionAir: 0.12, density: 0.002 }
-		);
+		engine.gravity.x = 0; engine.gravity.y = 0;
+		buggyBody = Matter.Bodies.rectangle( WORLD.spawn.x, WORLD.spawn.y, 40, 26,
+			{ frictionAir: 0.12, density: 0.002 } );
 		Matter.Body.setAngle( buggyBody, WORLD.spawn.angle );
 
 		var statics = [];
-		// world border fences
-		var T = 60;
-		statics.push( Matter.Bodies.rectangle( WORLD.w / 2, -T / 2 + 20, WORLD.w, T, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( WORLD.w / 2, WORLD.h + T / 2 - 20, WORLD.w, T, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( -T / 2 + 20, WORLD.h / 2, T, WORLD.h, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( WORLD.w + T / 2 - 20, WORLD.h / 2, T, WORLD.h, { isStatic: true } ) );
-		// landmark footprints
+		var T = 40;
+		statics.push( Matter.Bodies.rectangle( WORLD.w / 2, 14, WORLD.w, T, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( WORLD.w / 2, WORLD.h - 14, WORLD.w, T, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( 14, WORLD.h / 2, T, WORLD.h, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( WORLD.w - 14, WORLD.h / 2, T, WORLD.h, { isStatic: true } ) );
 		WORLD.landmarks.forEach( function ( lm ) {
-			statics.push( Matter.Bodies.rectangle(
-				lm.x + lm.w / 2, lm.y + lm.h / 2, lm.w, lm.h, { isStatic: true }
-			) );
+			// treehouses stay drivable-around; only solid buildings collide
+			if ( lm.id.indexOf( 'th' ) === 0 || lm.id === 'mailbox' ) return;
+			statics.push( Matter.Bodies.rectangle( lm.x, lm.y, lm.w * 0.8, lm.h * 0.7, { isStatic: true } ) );
 		} );
 		Matter.Composite.add( engine.world, [ buggyBody ].concat( statics ) );
 
-		// -------- render world --------
+		// render tree
 		cam = new PIXI.Container();
 		app.stage.addChild( cam );
 		drawGround( PIXI );
-		WORLD.landmarks.forEach( function ( lm ) { drawFarmhouse( PIXI, lm ); } );
+		WORLD.landmarks.forEach( function ( lm ) { drawMarker( PIXI, lm ); } );
 		buggyGfx = drawBuggy( PIXI );
 		cam.addChild( buggyGfx );
 
-		camX = buggyBody.position.x;
-		camY = buggyBody.position.y;
-
-		// -------- input --------
+		// input
 		window.addEventListener( 'keydown', onKey, true );
 		window.addEventListener( 'keyup', onKey, true );
 		app.view.addEventListener( 'pointerdown', onPointer );
@@ -182,45 +177,48 @@
 		stage.classList.add( 'is-live' );
 		if ( hudEl ) hudEl.hidden = false;
 		stage.focus();
-
 		app.ticker.add( tick );
 	}
 
 	function onKey( e ) {
 		if ( document.activeElement !== stage ) return;
 		var k = e.key.toLowerCase();
-		var map = {
-			w: 'up', arrowup: 'up',
-			s: 'down', arrowdown: 'down',
-			a: 'left', arrowleft: 'left',
-			d: 'right', arrowright: 'right',
-			enter: 'enter', escape: 'esc'
-		};
+		var map = { w: 'up', arrowup: 'up', s: 'down', arrowdown: 'down',
+			a: 'left', arrowleft: 'left', d: 'right', arrowright: 'right',
+			enter: 'enter', escape: 'esc' };
 		if ( ! ( k in map ) ) return;
-		e.preventDefault(); // driving keys must not scroll the page
+		e.preventDefault();
 		var down = ( e.type === 'keydown' );
 		keys[ map[ k ] ] = down;
 		if ( down && map[ k ] === 'esc' ) stage.blur();
-		if ( down && map[ k ] === 'enter' && nearLandmark ) {
-			enterLandmark( nearLandmark );
-		}
+		if ( down && map[ k ] === 'enter' && nearLandmark ) enterLandmark( nearLandmark );
 	}
 
 	function onPointer( e ) {
 		if ( e.pointerType === 'mouse' && e.type === 'pointermove' ) return;
 		if ( e.type === 'pointermove' && ! pointerDrive ) return;
 		var r = app.view.getBoundingClientRect();
-		// screen → world (cam is centered on pivot)
 		pointerDrive = {
-			x: ( e.clientX - r.left ) - app.screen.width / 2 + cam.pivot.x,
-			y: ( e.clientY - r.top ) - app.screen.height / 2 + cam.pivot.y
+			x: ( e.clientX - r.left - camOffX ) / camScale,
+			y: ( e.clientY - r.top - camOffY ) / camScale
 		};
 		stage.focus();
 	}
 
 	function enterLandmark( lm ) {
+		if ( ! lm.href ) { flashChip( lm.prompt ); return; }
+		if ( lm.external ) { window.open( lm.href, '_blank', 'noopener' ); return; }
 		var root = ( window.tcVentures && window.tcVentures.siteUrl ) || '';
 		window.location.href = root + lm.href;
+	}
+
+	var flashT = null;
+	function flashChip( msg ) {
+		if ( ! chipEl ) return;
+		chipEl.textContent = msg;
+		chipEl.hidden = false;
+		clearTimeout( flashT );
+		flashT = setTimeout( function () { if ( ! nearLandmark ) chipEl.hidden = true; }, 2200 );
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -228,7 +226,7 @@
 	 * ------------------------------------------------------------------ */
 	function tick() {
 		if ( document.hidden ) return;
-		accMS = Math.min( accMS + app.ticker.deltaMS, 100 ); // clamp long tab-away gaps
+		accMS = Math.min( accMS + app.ticker.deltaMS, 100 );
 		while ( accMS >= 16.666 ) {
 			control();
 			Matter.Engine.update( engine, 16.666 );
@@ -240,89 +238,79 @@
 	function control() {
 		var b = buggyBody;
 		var heading = { x: Math.cos( b.angle ), y: Math.sin( b.angle ) };
-		var onPath = distToPath( b.position ) < WORLD.pathHalfWidth;
+		var onPath = distToHubSpokes( b.position ) < WORLD.pathHalfWidth;
 
-		// --- desired inputs (keys or touch drive-toward) ---
 		var throttle = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.6 : 0 );
 		var steer = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
 
 		if ( pointerDrive ) {
-			var dx = pointerDrive.x - b.position.x;
-			var dy = pointerDrive.y - b.position.y;
-			if ( dx * dx + dy * dy > 60 * 60 ) {
-				var want = Math.atan2( dy, dx );
-				var diff = wrapAngle( want - b.angle );
+			var dx = pointerDrive.x - b.position.x, dy = pointerDrive.y - b.position.y;
+			if ( dx * dx + dy * dy > 46 * 46 ) {
+				var diff = wrapAngle( Math.atan2( dy, dx ) - b.angle );
 				steer = Math.max( -1, Math.min( 1, diff * 2.2 ) );
 				throttle = 0.85;
 			}
 		}
 
-		// --- forward force (grass is slower going) ---
-		var power = 0.0026 * ( onPath ? 1 : 0.8 );
+		var power = 0.0022 * ( onPath ? 1 : 0.8 );
 		if ( throttle ) {
-			Matter.Body.applyForce( b, b.position, {
-				x: heading.x * power * throttle * b.mass,
-				y: heading.y * power * throttle * b.mass
-			} );
+			Matter.Body.applyForce( b, b.position,
+				{ x: heading.x * power * throttle * b.mass, y: heading.y * power * throttle * b.mass } );
 		}
 
-		// --- steering, scaled by signed speed so it feels like wheels ---
 		var v = b.velocity;
-		var fwdSpeed = v.x * heading.x + v.y * heading.y;
-		var steerScale = Math.max( -1, Math.min( 1, fwdSpeed / 4 ) );
+		var fwd = v.x * heading.x + v.y * heading.y;
+		var steerScale = Math.max( -1, Math.min( 1, fwd / 3.5 ) );
 		Matter.Body.setAngularVelocity( b, steer * 0.055 * steerScale );
 
-		// --- grip: bleed lateral velocity; grass keeps more slide (drift) ---
 		var lat = { x: -heading.y, y: heading.x };
 		var latSpeed = v.x * lat.x + v.y * lat.y;
-		var grip = onPath ? 0.80 : 0.90;
+		var grip = onPath ? 0.80 : 0.90; // grass keeps more slide → drift
 		Matter.Body.setVelocity( b, {
-			x: heading.x * fwdSpeed + lat.x * latSpeed * grip,
-			y: heading.y * fwdSpeed + lat.y * latSpeed * grip
+			x: heading.x * fwd + lat.x * latSpeed * grip,
+			y: heading.y * fwd + lat.y * latSpeed * grip
 		} );
 
-		// --- speed cap ---
-		var cap = onPath ? 9 : 7;
+		var cap = onPath ? 6 : 4.6;
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
-		if ( sp > cap ) {
-			Matter.Body.setVelocity( b, {
-				x: b.velocity.x * cap / sp,
-				y: b.velocity.y * cap / sp
-			} );
-		}
+		if ( sp > cap ) Matter.Body.setVelocity( b, { x: b.velocity.x * cap / sp, y: b.velocity.y * cap / sp } );
 	}
 
 	function render() {
 		var b = buggyBody;
 		buggyGfx.position.set( b.position.x, b.position.y );
 		buggyGfx.rotation = b.angle;
-		headlights.alpha = 0.10 + Math.min( 0.06, Math.hypot( b.velocity.x, b.velocity.y ) * 0.008 );
+		var sp = Math.hypot( b.velocity.x, b.velocity.y );
+		headlights.alpha = 0.10 + Math.min( 0.10, sp * 0.02 );
 
-		// camera lerp + clamp to world (letterbox-centre if viewport > world)
-		camX += ( b.position.x - camX ) * 0.08;
-		camY += ( b.position.y - camY ) * 0.08;
+		// fit the whole board into the viewport (contain, centred) — no panning
 		var vw = app.screen.width, vh = app.screen.height;
-		cam.pivot.set( clampCam( camX, vw, WORLD.w ), clampCam( camY, vh, WORLD.h ) );
-		cam.position.set( vw / 2, vh / 2 );
+		camScale = Math.min( vw / WORLD.w, vh / WORLD.h );
+		camOffX = ( vw - WORLD.w * camScale ) / 2;
+		camOffY = ( vh - WORLD.h * camScale ) / 2;
+		cam.scale.set( camScale );
+		cam.position.set( camOffX, camOffY );
 
-		// landmark proximity → prompt chip
+		// marker pulse + proximity highlight
+		var t = app.ticker.lastTime / 1000;
 		var near = null;
-		WORLD.landmarks.forEach( function ( lm ) {
-			var cx = lm.x + lm.w / 2, cy = lm.y + lm.h / 2;
-			if ( Math.hypot( b.position.x - cx, b.position.y - cy ) < 190 ) near = lm;
+		markers.forEach( function ( m ) {
+			var d = Math.hypot( b.position.x - m.lm.x, b.position.y - m.lm.y );
+			var close = d < 150;
+			if ( close && ( ! near || d < Math.hypot( b.position.x - near.x, b.position.y - near.y ) ) ) near = m.lm;
+			var pulse = 0.5 + 0.5 * Math.sin( t * 2.2 + m.phase );
+			m.ring.alpha = ( close ? 0.9 : 0.28 ) * ( 0.6 + 0.4 * pulse );
+			m.label.alpha = close ? 1 : m.baseAlpha;
+			m.ring.scale.set( close ? 1.15 : 1 );
 		} );
+
 		if ( near !== nearLandmark ) {
 			nearLandmark = near;
 			if ( chipEl ) {
 				chipEl.hidden = ! near;
-				if ( near ) chipEl.textContent = near.prompt + ' — Enter ↵';
+				if ( near ) chipEl.textContent = near.prompt + ( near.href ? '  · Enter ↵' : '' );
 			}
 		}
-	}
-
-	function clampCam( c, view, world ) {
-		if ( view >= world ) return world / 2;
-		return Math.max( view / 2, Math.min( world - view / 2, c ) );
 	}
 
 	function wrapAngle( a ) {
@@ -331,10 +319,10 @@
 		return a;
 	}
 
-	function distToPath( p ) {
-		var best = Infinity;
-		for ( var i = 0; i < WORLD.path.length - 1; i++ ) {
-			best = Math.min( best, distToSeg( p, WORLD.path[ i ], WORLD.path[ i + 1 ] ) );
+	function distToHubSpokes( p ) {
+		var best = distToSeg( p, WORLD.spawn, WORLD.hub );
+		for ( var i = 0; i < WORLD.landmarks.length; i++ ) {
+			best = Math.min( best, distToSeg( p, WORLD.hub, WORLD.landmarks[ i ] ) );
 		}
 		return best;
 	}
@@ -347,130 +335,74 @@
 	}
 
 	/* ------------------------------------------------------------------ *
-	 *  Placeholder art (all procedural — replaced by the painting in P1)
+	 *  Rendering — the painting is the ground; we only draw the buggy +
+	 *  interactive markers on top (buildings live IN the painting).
 	 * ------------------------------------------------------------------ */
 	function drawGround( PIXI ) {
-		var g = new PIXI.Graphics();
-		// night field
-		g.beginFill( 0x141c12 );
-		g.drawRect( 0, 0, WORLD.w, WORLD.h );
-		g.endFill();
-		// mowed-strip banding so motion is readable
-		g.beginFill( 0x182115, 0.6 );
-		for ( var y = 0; y < WORLD.h; y += 220 ) g.drawRect( 0, y, WORLD.w, 110 );
-		g.endFill();
-		// scattered grass tufts
-		g.beginFill( 0x223022, 0.5 );
-		for ( var i = 0; i < 420; i++ ) {
-			g.drawCircle( Math.random() * WORLD.w, Math.random() * WORLD.h, 1.5 + Math.random() * 2.5 );
+		// dark base so a slow/failed texture load never flashes empty
+		var base = new PIXI.Graphics();
+		base.beginFill( 0x0a120b ); base.drawRect( 0, 0, WORLD.w, WORLD.h ); base.endFill();
+		cam.addChild( base );
+
+		if ( WORLD.bg ) {
+			var sprite = PIXI.Sprite.from( WORLD.bg );
+			sprite.width = WORLD.w; sprite.height = WORLD.h;
+			cam.addChild( sprite );
 		}
-		g.endFill();
-		// the dirt path (wide base + darker wheel ruts)
-		g.lineStyle( { width: WORLD.pathHalfWidth * 2, color: 0x4a3b28, alpha: 0.95, join: 'round', cap: 'round' } );
-		tracePath( g );
-		g.lineStyle( { width: 10, color: 0x362a1b, alpha: 0.9, join: 'round', cap: 'round' } );
-		tracePathOffset( g, -14 );
-		tracePathOffset( g, 14 );
-		g.lineStyle( 0 );
-		// border fence posts
-		g.beginFill( 0x3a3227 );
-		for ( var x = 40; x < WORLD.w; x += 130 ) {
-			g.drawRect( x, 16, 6, 18 );
-			g.drawRect( x, WORLD.h - 34, 6, 18 );
-		}
-		for ( var fy = 40; fy < WORLD.h; fy += 130 ) {
-			g.drawRect( 16, fy, 18, 6 );
-			g.drawRect( WORLD.w - 34, fy, 18, 6 );
-		}
-		g.endFill();
-		cam.addChild( g );
 	}
 
-	function tracePath( g ) {
-		g.moveTo( WORLD.path[ 0 ].x, WORLD.path[ 0 ].y );
-		for ( var i = 1; i < WORLD.path.length; i++ ) g.lineTo( WORLD.path[ i ].x, WORLD.path[ i ].y );
-	}
+	function drawMarker( PIXI, lm ) {
+		// a soft warm ring + a downward pin above each landmark, plus a label
+		var ring = new PIXI.Graphics();
+		ring.lineStyle( 2.5, lm.href ? 0x8be9ff : 0xffcf8a, 0.9 );
+		ring.drawCircle( 0, 0, 15 );
+		ring.moveTo( 0, 15 ); ring.lineTo( 0, 26 ); // little stem toward the roof
+		ring.position.set( lm.x, lm.y - lm.h / 2 - 24 );
+		ring.alpha = 0.28;
+		cam.addChild( ring );
 
-	function tracePathOffset( g, off ) {
-		g.moveTo( WORLD.path[ 0 ].x + off, WORLD.path[ 0 ].y );
-		for ( var i = 1; i < WORLD.path.length; i++ ) g.lineTo( WORLD.path[ i ].x + off, WORLD.path[ i ].y );
-	}
-
-	function drawFarmhouse( PIXI, lm ) {
-		var c = new PIXI.Container();
-		c.position.set( lm.x, lm.y );
-		var g = new PIXI.Graphics();
-		// warm spill on the grass around the house
-		g.beginFill( 0xffb65e, 0.05 );
-		g.drawEllipse( lm.w / 2, lm.h / 2, lm.w * 1.1, lm.h * 1.0 );
-		g.endFill();
-		// walls + roof ridge (top-down)
-		g.beginFill( 0x241c14 );
-		g.drawRoundedRect( 0, 0, lm.w, lm.h, 6 );
-		g.endFill();
-		g.lineStyle( 3, 0x120d08 );
-		g.moveTo( 10, lm.h / 2 );
-		g.lineTo( lm.w - 10, lm.h / 2 );
-		g.lineStyle( 0 );
-		// lit windows
-		g.beginFill( 0xffb65e, 0.9 );
-		g.drawRect( 26, 18, 20, 14 );
-		g.drawRect( lm.w - 48, 22, 20, 14 );
-		g.drawRect( 30, lm.h - 34, 20, 14 );
-		g.endFill();
-		c.addChild( g );
-
-		var label = new PIXI.Text( lm.name + '  →', {
-			fontFamily: 'Georgia, serif',
-			fontSize: 22,
-			fill: 0xe7ead7,
-			dropShadow: true,
-			dropShadowDistance: 1,
-			dropShadowAlpha: 0.7
+		var label = new PIXI.Text( lm.name, {
+			fontFamily: 'Georgia, serif', fontSize: 17, fill: 0xeef0e4,
+			dropShadow: true, dropShadowDistance: 1, dropShadowAlpha: 0.8, dropShadowBlur: 2
 		} );
 		label.anchor.set( 0.5, 1 );
-		label.position.set( lm.w / 2, -12 );
-		c.addChild( label );
+		label.position.set( lm.x, lm.y - lm.h / 2 - 44 );
+		label.alpha = 0.5;
+		cam.addChild( label );
 
-		c.eventMode = 'static';
-		c.cursor = 'pointer';
-		c.on( 'pointertap', function () { enterLandmark( lm ); } );
-		cam.addChild( c );
+		// clickable hotspot over the whole building footprint
+		var hit = new PIXI.Graphics();
+		hit.beginFill( 0xffffff, 0.001 ); // ~invisible but hittable
+		hit.drawRect( lm.x - lm.w / 2, lm.y - lm.h / 2, lm.w, lm.h );
+		hit.endFill();
+		hit.eventMode = 'static';
+		hit.cursor = 'pointer';
+		hit.on( 'pointertap', function () { enterLandmark( lm ); } );
+		hit.on( 'pointerover', function () { nearLandmark = lm; label.alpha = 1; if ( chipEl ) { chipEl.hidden = false; chipEl.textContent = lm.prompt + ( lm.href ? '  · click' : '' ); } } );
+		cam.addChild( hit );
+
+		markers.push( { lm: lm, label: label, ring: ring, baseAlpha: 0.5, phase: Math.random() * 6.28 } );
 	}
 
 	function drawBuggy( PIXI ) {
 		var c = new PIXI.Container();
-		// headlight cones (drawn first, under the chassis; buggy faces +x)
 		headlights = new PIXI.Graphics();
 		headlights.beginFill( 0xffd9a0, 1 );
-		headlights.moveTo( 20, -9 ); headlights.lineTo( 150, -46 ); headlights.lineTo( 150, -2 ); headlights.closePath();
-		headlights.moveTo( 20, 9 ); headlights.lineTo( 150, 2 ); headlights.lineTo( 150, 46 ); headlights.closePath();
+		headlights.moveTo( 18, -8 ); headlights.lineTo( 120, -38 ); headlights.lineTo( 120, -2 ); headlights.closePath();
+		headlights.moveTo( 18, 8 ); headlights.lineTo( 120, 2 ); headlights.lineTo( 120, 38 ); headlights.closePath();
 		headlights.endFill();
-		headlights.alpha = 0.10;
+		headlights.alpha = 0.1;
 		c.addChild( headlights );
 
 		var g = new PIXI.Graphics();
-		// wheels
-		g.beginFill( 0x14181c );
-		g.drawRoundedRect( -20, -19, 13, 8, 3 );
-		g.drawRoundedRect( 7, -19, 13, 8, 3 );
-		g.drawRoundedRect( -20, 11, 13, 8, 3 );
-		g.drawRoundedRect( 7, 11, 13, 8, 3 );
+		g.beginFill( 0x14181c ); // wheels
+		g.drawRoundedRect( -17, -17, 12, 7, 3 ); g.drawRoundedRect( 6, -17, 12, 7, 3 );
+		g.drawRoundedRect( -17, 10, 12, 7, 3 ); g.drawRoundedRect( 6, 10, 12, 7, 3 );
 		g.endFill();
-		// chassis — rust-red with a roll cage
-		g.beginFill( 0x8a3a22 );
-		g.drawRoundedRect( -23, -13, 46, 26, 7 );
-		g.endFill();
-		g.beginFill( 0x5f2716 );
-		g.drawRoundedRect( -23, -13, 14, 26, 7 ); // engine hump at the back
-		g.endFill();
-		g.lineStyle( 3, 0x1c1512 );
-		g.drawRoundedRect( -6, -11, 22, 22, 5 ); // roll cage
-		g.lineStyle( 0 );
-		g.beginFill( 0xffe9c9 );
-		g.drawRect( 19, -8, 4, 5 ); // headlamps
-		g.drawRect( 19, 3, 4, 5 );
-		g.endFill();
+		g.beginFill( 0x8a3a22 ); g.drawRoundedRect( -20, -12, 40, 24, 6 ); g.endFill(); // chassis
+		g.beginFill( 0x5f2716 ); g.drawRoundedRect( -20, -12, 12, 24, 6 ); g.endFill(); // engine hump
+		g.lineStyle( 3, 0x1c1512 ); g.drawRoundedRect( -5, -10, 20, 20, 5 ); g.lineStyle( 0 ); // roll cage
+		g.beginFill( 0xffe9c9 ); g.drawRect( 16, -7, 4, 4 ); g.drawRect( 16, 3, 4, 4 ); g.endFill(); // lamps
 		c.addChild( g );
 		return c;
 	}

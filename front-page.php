@@ -107,9 +107,16 @@ get_header(); ?>
          (role=application, canvas aria-hidden); every destination stays
          reachable through the normal nav. Engine: assets/js/back-quarter.js
          (front-page-only enqueue; Matter+Pixi lazy-load on engagement). -->
+    <?php
+    // The painted world (Grok Imagine → CapCut). One place to swap the art;
+    // JS reads it from data-bg, and it doubles as the pre-engagement preview.
+    $tc_bq_bg = 'https://thomascheesman.ca/wp-content/uploads/2026/07/6255f323-30c4-4d20-895f-c74230ed3231.jpg';
+    ?>
     <section class="bq-section" aria-label="The Back Quarter">
         <div class="container">
             <div class="bq-stage" id="bq-stage" tabindex="0" role="application"
+                 data-bg="<?php echo esc_url( $tc_bq_bg ); ?>"
+                 style="background-image:url('<?php echo esc_url( $tc_bq_bg ); ?>');"
                  aria-roledescription="driving mini-game"
                  aria-label="The Back Quarter: drive a buggy around a map of this site. Decorative — every destination is also in the site menu.">
                 <div class="bq-preview">
@@ -118,10 +125,10 @@ get_header(); ?>
                     <p class="bq-preview__deck">A quarter section of everything on this site. Hop in the buggy and drive it.</p>
                     <button type="button" class="tc-btn bq-preview__go">Start driving</button>
                     <p class="bq-preview__hint">W&thinsp;A&thinsp;S&thinsp;D or arrows &middot; Enter steps inside &middot; Esc hops out</p>
-                    <p class="bq-preview__note">early build &mdash; placeholder land, real physics; the painted world is coming</p>
+                    <p class="bq-preview__note">drive up to any building to visit that corner of the site</p>
                 </div>
                 <div class="bq-chip" hidden></div>
-                <div class="bq-hud" hidden>Esc hops out &middot; early build</div>
+                <div class="bq-hud" hidden>Esc hops out</div>
             </div>
         </div>
     </section>
