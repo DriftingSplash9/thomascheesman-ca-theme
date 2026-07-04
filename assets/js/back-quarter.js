@@ -29,8 +29,6 @@
 		spawn: { x: 614, y: 628, angle: -Math.PI / 2 }, // just inside the gate, facing north
 		// hub-and-spoke dirt routes (grip bonus + drift cues). Approximate the
 		// painted paths; the buggy grips on these and drifts off them.
-		hub: { x: 610, y: 470 },
-		pathHalfWidth: 58,
 		landmarks: [
 			{ id: 'farmhouse', name: 'the farmhouse', x: 346, y: 168, w: 150, h: 96,
 			  href: '/thomas', prompt: 'The farmhouse — step inside, this is me' },
@@ -83,7 +81,30 @@
 				engage();
 			}
 		} );
+
+		var fsBtn = stage.querySelector( '.bq-fs' );
+		if ( fsBtn ) fsBtn.addEventListener( 'click', toggleFullscreen );
+		document.addEventListener( 'fullscreenchange', updateFsLabel );
+		document.addEventListener( 'webkitfullscreenchange', updateFsLabel );
 	} );
+
+	function fsElement() {
+		return document.fullscreenElement || document.webkitFullscreenElement || null;
+	}
+	function toggleFullscreen() {
+		if ( fsElement() ) {
+			( document.exitFullscreen || document.webkitExitFullscreen ).call( document );
+		} else {
+			( stage.requestFullscreen || stage.webkitRequestFullscreen ).call( stage );
+		}
+	}
+	function updateFsLabel() {
+		var fsBtn = stage.querySelector( '.bq-fs' );
+		if ( ! fsBtn ) return;
+		var on = fsElement() === stage;
+		fsBtn.textContent = on ? '⤡ Exit' : '⛶ Fullscreen';
+		fsBtn.setAttribute( 'aria-label', on ? 'Exit fullscreen' : 'Enter fullscreen' );
+	}
 
 	/* ------------------------------------------------------------------ *
 	 *  Boot
@@ -242,14 +263,11 @@
 	function control() {
 		var b = buggyBody;
 		var heading = { x: Math.cos( b.angle ), y: Math.sin( b.angle ) };
-		var onPath = distToHubSpokes( b.position ) < WORLD.pathHalfWidth;
+		// Uniform handling across the whole quarter — same feel on grass or
+		// road, so the buggy never rips out of control crossing a boundary.
+		b.frictionAir = 0.14;
 
-		// The dirt road really matters: on the path the buggy is quick and
-		// grippy; off it (grass/stubble) it bogs down with heavy rolling
-		// resistance and slides more, so staying on the road is worth it.
-		b.frictionAir = onPath ? 0.085 : 0.20;
-
-		var throttle = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.6 : 0 );
+		var throttle = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.65 : 0 );
 		var steer = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
 
 		if ( pointerDrive ) {
@@ -261,26 +279,28 @@
 			}
 		}
 
-		var power = onPath ? 0.0030 : 0.0015; // grass saps the drive
+		// Tank-style steering: left/right rotate the buggy in place, whether
+		// or not it's moving. Up/down drive along the facing.
+		Matter.Body.setAngularVelocity( b, steer * 0.048 );
+
+		var power = 0.0026;
 		if ( throttle ) {
 			Matter.Body.applyForce( b, b.position,
 				{ x: heading.x * power * throttle * b.mass, y: heading.y * power * throttle * b.mass } );
 		}
 
+		// grip: bleed sideways velocity so it tracks its heading (light drift)
 		var v = b.velocity;
 		var fwd = v.x * heading.x + v.y * heading.y;
-		var steerScale = Math.max( -1, Math.min( 1, fwd / 3.5 ) );
-		Matter.Body.setAngularVelocity( b, steer * 0.055 * steerScale );
-
 		var lat = { x: -heading.y, y: heading.x };
 		var latSpeed = v.x * lat.x + v.y * lat.y;
-		var grip = onPath ? 0.78 : 0.94; // road bites, grass lets it drift
+		var grip = 0.85;
 		Matter.Body.setVelocity( b, {
 			x: heading.x * fwd + lat.x * latSpeed * grip,
 			y: heading.y * fwd + lat.y * latSpeed * grip
 		} );
 
-		var cap = onPath ? 7.2 : 3.6; // top speed roughly doubles on the road
+		var cap = 5.6;
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		if ( sp > cap ) Matter.Body.setVelocity( b, { x: b.velocity.x * cap / sp, y: b.velocity.y * cap / sp } );
 	}
@@ -306,18 +326,14 @@
 		cam.pivot.set( camPivX, camPivY );
 		cam.position.set( vw / 2, vh / 2 );
 
-		// marker pulse + proximity highlight
-		var t = app.ticker.lastTime / 1000;
+		// labels brighten + grow slightly as the buggy comes near
 		var near = null;
 		markers.forEach( function ( m ) {
 			var d = Math.hypot( b.position.x - m.lm.x, b.position.y - m.lm.y );
 			var close = d < 150;
 			if ( close && ( ! near || d < Math.hypot( b.position.x - near.x, b.position.y - near.y ) ) ) near = m.lm;
-			var pulse = 0.5 + 0.5 * Math.sin( t * 2.2 + m.phase );
-			var rest = m.isLive ? 0.42 : 0.22;
-			m.ring.alpha = ( close ? 0.95 : rest ) * ( 0.6 + 0.4 * pulse );
-			m.label.alpha = close ? 1 : ( m.isLive ? 0.6 : 0.42 );
-			m.ring.scale.set( close ? 1.15 : 1 );
+			m.label.alpha = close ? 1 : ( m.isLive ? 0.5 : 0.4 );
+			m.label.scale.set( close ? 1.12 : 1 );
 		} );
 
 		if ( near !== nearLandmark ) {
@@ -340,21 +356,6 @@
 		return a;
 	}
 
-	function distToHubSpokes( p ) {
-		var best = distToSeg( p, WORLD.spawn, WORLD.hub );
-		for ( var i = 0; i < WORLD.landmarks.length; i++ ) {
-			best = Math.min( best, distToSeg( p, WORLD.hub, WORLD.landmarks[ i ] ) );
-		}
-		return best;
-	}
-
-	function distToSeg( p, a, b ) {
-		var abx = b.x - a.x, aby = b.y - a.y;
-		var t = ( ( p.x - a.x ) * abx + ( p.y - a.y ) * aby ) / ( abx * abx + aby * aby );
-		t = Math.max( 0, Math.min( 1, t ) );
-		return Math.hypot( p.x - ( a.x + abx * t ), p.y - ( a.y + aby * t ) );
-	}
-
 	/* ------------------------------------------------------------------ *
 	 *  Rendering — the painting is the ground; we only draw the buggy +
 	 *  interactive markers on top (buildings live IN the painting).
@@ -373,24 +374,16 @@
 	}
 
 	function drawMarker( PIXI, lm ) {
-		var live = !! lm.href; // cyan = you can go here; amber = flavour stub
-		// a soft ring + a downward pin above each landmark, plus a label
-		var ring = new PIXI.Graphics();
-		if ( live ) { ring.beginFill( 0x8be9ff, 0.12 ); ring.drawCircle( 0, 0, 16 ); ring.endFill(); }
-		ring.lineStyle( live ? 3 : 2, live ? 0x9bf0ff : 0xffcf8a, 0.95 );
-		ring.drawCircle( 0, 0, 16 );
-		ring.moveTo( 0, 16 ); ring.lineTo( 0, 27 ); // little stem toward the roof
-		ring.position.set( lm.x, lm.y - lm.h / 2 - 24 );
-		ring.alpha = live ? 0.42 : 0.22;
-		cam.addChild( ring );
-
+		var live = !! lm.href; // live = you can go here; stub = flavour only
+		// no rings — the label IS the marker; it brightens as the buggy nears
 		var label = new PIXI.Text( lm.name, {
-			fontFamily: 'Georgia, serif', fontSize: 17, fill: 0xeef0e4,
-			dropShadow: true, dropShadowDistance: 1, dropShadowAlpha: 0.8, dropShadowBlur: 2
+			fontFamily: 'Georgia, serif', fontSize: 16,
+			fill: live ? 0xeef0e4 : 0xe6ddca,
+			dropShadow: true, dropShadowDistance: 1, dropShadowAlpha: 0.85, dropShadowBlur: 3
 		} );
 		label.anchor.set( 0.5, 1 );
-		label.position.set( lm.x, lm.y - lm.h / 2 - 44 );
-		label.alpha = 0.5;
+		label.position.set( lm.x, lm.y - lm.h / 2 - 14 );
+		label.alpha = live ? 0.5 : 0.4;
 		cam.addChild( label );
 
 		// clickable hotspot over the whole building footprint
@@ -404,7 +397,7 @@
 		hit.on( 'pointerover', function () { nearLandmark = lm; label.alpha = 1; if ( chipEl ) { chipEl.hidden = false; chipEl.textContent = lm.prompt + ( lm.href ? '  · click' : '' ); } } );
 		cam.addChild( hit );
 
-		markers.push( { lm: lm, label: label, ring: ring, isLive: live, phase: Math.random() * 6.28 } );
+		markers.push( { lm: lm, label: label, isLive: live } );
 	}
 
 	function drawBuggy( PIXI ) {

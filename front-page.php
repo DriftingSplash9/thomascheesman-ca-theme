@@ -127,6 +127,7 @@ get_header(); ?>
                     <p class="bq-preview__hint">W&thinsp;A&thinsp;S&thinsp;D or arrows &middot; Enter steps inside &middot; Esc hops out</p>
                     <p class="bq-preview__note">drive up to any building to visit that corner of the site</p>
                 </div>
+                <button type="button" class="bq-fs" aria-label="Enter fullscreen">&#9974; Fullscreen</button>
                 <div class="bq-chip" hidden></div>
                 <div class="bq-hud" hidden>Esc hops out</div>
             </div>
