@@ -124,6 +124,7 @@ get_header(); ?>
                     <h2 class="bq-preview__title">The Back Quarter</h2>
                     <p class="bq-preview__deck">A quarter section of everything on this site. Hop in the buggy and drive it.</p>
                     <button type="button" class="tc-btn bq-preview__go">Start driving</button>
+                    <button type="button" class="tc-btn bq-3d" hidden>Try the 3D build (beta)</button>
                     <p class="bq-preview__hint">W&thinsp;A&thinsp;S&thinsp;D or arrows &middot; Enter steps inside &middot; Esc hops out</p>
                     <p class="bq-preview__note">drive up to any building to visit that corner of the site</p>
                 </div>

@@ -190,3 +190,35 @@ freeze rAF/WebGL — I can verify clean boot + zero console errors, but the
 | D4 | Sound default | **Off** + persisted toggle. (Trivial one-line default to flip later.) |
 | D5 | Landmark cut | All of §2; #11 (map table) optional if crowded. |
 | D6 | (superseded) | Thomas redirected this to a hero enhancement instead: a **faded black-and-white ghost image** behind the chalkboard + ticket (shipped 1.0.667). December reading-photo re-add deferred to ~November. |
+
+---
+
+## 8. PATH C — "Back Quarter 3D" (approved 2026-07-02)
+
+After driving the 2D board, Thomas pointed at **bruno-simon.com** as the true
+north star and approved **Path C**: a low-poly 3D rebuild. Clarified for the
+record: Hostinger/WP was never a blocker — Bruno's site is all client-side
+(Three.js + physics + static assets); the real cost is 3D art, which we cover
+with **procedural low-poly built in code** (Monument-Valley/Crossy-Road
+aesthetic), optionally AI-generated GLBs (Meshy/Tripo) later.
+
+**Architecture (deliberate):**
+- **Physics stays Matter, 2D top-down** — the tuned handling (turn 0.072,
+  grip 0.76, cap 5.6, frictionAir 0.14) carries 1:1. Matter (x,y) → Three
+  (x,z); `rotation.y = -body.angle`. cannon-es only if ramps/vertical play
+  arrive later.
+- **Render is the already-vendored Three r128** (`tcVentures.threeUrl`).
+- **The 2D board STAYS the public homepage** until 3D earns the swap; then 2D
+  becomes the weak-device/fallback experience. During the build the 3D is
+  hash-gated: visit `/#bq3d` → a "Try the 3D build (beta)" button appears in
+  the stage preview. Engine: `assets/js/back-quarter-3d.js` (cache-busted
+  `?cb=Date.now()` while in beta).
+
+**3D phases:**
+
+| Phase | Ships | Status |
+|---|---|---|
+| **3D-P0 — feel check** | Low-poly night sandbox: ground, moon, fog, fence, poplars, knockable hay bales; chunky buggy (spinning wheels, headlight spotlights, faked suspension lean, blob shadow); chase camera; WASD + fullscreen. | ✅ 1.0.673 |
+| **3D-P1 — raise the farm** | All §2 landmarks as procedural low-poly buildings (warm window lights), enter-prompts + navigation wired, paths as ground meshes. | |
+| **3D-P2 — life & juice** | Dust particles, tire tracks, honk + engine hum (WebAudio, muted default), chimney smoke, mailbox flag, billboard quotes in 3D. | |
+| **3D-P3 — the swap** | Mobile joystick, perf pass (device-capability gate), reduced-motion audit; 3D becomes the homepage default, 2D board demoted to fallback. | |

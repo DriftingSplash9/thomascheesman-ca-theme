@@ -86,7 +86,41 @@
 		if ( fsBtn ) fsBtn.addEventListener( 'click', toggleFullscreen );
 		document.addEventListener( 'fullscreenchange', updateFsLabel );
 		document.addEventListener( 'webkitfullscreenchange', updateFsLabel );
+
+		// Path C beta door — visit /#bq3d to see the 3D build button.
+		// The 2D board stays the public experience until 3D earns the swap.
+		var btn3d = stage.querySelector( '.bq-3d' );
+		if ( btn3d ) {
+			if ( /bq3d/.test( window.location.hash ) ) btn3d.hidden = false;
+			btn3d.addEventListener( 'click', engage3d );
+		}
 	} );
+
+	// Boot the 3D beta: Matter (physics) + the site's vendored Three r128
+	// (render) + the 3D module. Cache-busted with Date.now() while in beta.
+	function engage3d() {
+		if ( engaged ) return;
+		engaged = true;
+		if ( previewNote ) previewNote.textContent = 'raising the 3D world…';
+		var base = ( window.tcVentures && window.tcVentures.themeUrl ) || '';
+		var threeUrl = ( window.tcVentures && window.tcVentures.threeUrl ) ||
+			( base + '/assets/js/vendor/three-r128.min.js' );
+		loadScript( base + '/assets/js/vendor/matter-0.20.0.min.js' )
+			.then( function () { return window.THREE ? null : loadScript( threeUrl ); } )
+			.then( function () { return loadScript( base + '/assets/js/back-quarter-3d.js?cb=' + Date.now() ); } )
+			.then( function () {
+				if ( ! window.Matter || ! window.THREE || ! window.TCBackQuarter3D ) {
+					throw new Error( '3D globals missing' );
+				}
+				stage.classList.add( 'is-live' );
+				window.TCBackQuarter3D.boot( stage );
+			} )
+			.catch( function ( err ) {
+				console.warn( 'Back Quarter 3D failed to load.', err );
+				engaged = false;
+				if ( previewNote ) previewNote.textContent = '3D wouldn’t start — the 2D board still drives.';
+			} );
+	}
 
 	function fsElement() {
 		return document.fullscreenElement || document.webkitFullscreenElement || null;
