@@ -178,6 +178,10 @@ function tc_ventures_enqueue_scripts() {
     wp_localize_script( 'tc-ventures-main', 'tcVentures', array(
         'siteUrl'  => home_url(),
         'themeUrl' => get_stylesheet_directory_uri(),
+        // The Back Quarter's family gate: 1 lifts the barrier arm at the
+        // treehouse compound. Logged-in family bypass the LiteSpeed page
+        // cache, so this is accurate for them; the public cached page is 0.
+        'bqFamily' => ( function_exists( 'tc_user_is_family' ) && tc_user_is_family() ) ? 1 : 0,
         'threeUrl' => get_stylesheet_directory_uri() . '/assets/js/vendor/three-r128.min.js',
         // PhotoSwipe v5 ESM — SELF-HOSTED (PERF-1). main.js dynamically
         // imports the lightbox + core from the theme; no unpkg request.
