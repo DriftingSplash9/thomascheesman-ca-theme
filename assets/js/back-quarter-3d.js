@@ -408,30 +408,36 @@
 		ctx.fillStyle = '#ffe3b0';
 		ctx.fillText( text, 22, 45 );
 
-		var bw = Math.max( 26, Math.min( 62, wpx * 0.2 ) );
+		// Ranch-driveway archway: two tall posts, an overhead crossbeam sign
+		// you could drive under, DOUBLE-SIDED so it reads from any approach.
+		var bw = Math.max( 34, Math.min( 88, wpx * 0.24 ) );
 		var g = new THREE.Group();
 		var wood = mat( THREE, 0x3a2c1c );
 		[ -1, 1 ].forEach( function ( s ) {
-			var post = new THREE.Mesh( new THREE.BoxGeometry( 2.6, 15, 2.6 ), wood );
-			post.position.set( s * ( bw / 2 - 3 ), 7.5, 0 );
+			var post = new THREE.Mesh( new THREE.BoxGeometry( 3.2, 32, 3.2 ), wood );
+			post.position.set( s * ( bw / 2 + 4 ), 16, 0 );
 			g.add( post );
 		} );
-		var frame = new THREE.Mesh( new THREE.BoxGeometry( bw + 2, 12.5, 1.6 ), wood );
-		frame.position.y = 19;
+		var frame = new THREE.Mesh( new THREE.BoxGeometry( bw + 12, 12.5, 2 ), wood );
+		frame.position.y = 33;
 		g.add( frame );
-		var face = new THREE.Mesh(
-			new THREE.PlaneGeometry( bw, 10.5 ),
-			new THREE.MeshBasicMaterial( { map: new THREE.CanvasTexture( c ) } )
-		);
-		face.position.set( 0, 19, 0.95 );
-		g.add( face );
-		// the lantern on top
-		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 3.2, 3.6, 3.2 ),
+		var tex = new THREE.CanvasTexture( c );
+		[ 1, -1 ].forEach( function ( side ) {
+			var face = new THREE.Mesh(
+				new THREE.PlaneGeometry( bw, 10.5 ),
+				new THREE.MeshBasicMaterial( { map: tex } )
+			);
+			face.position.set( 0, 33, side * 1.15 );
+			if ( side < 0 ) face.rotation.y = Math.PI; // back face, unmirrored
+			g.add( face );
+		} );
+		// the lantern on the ridge
+		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 3.8, 3.4 ),
 			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
-		lantern.position.y = 27.4;
+		lantern.position.y = 41.2;
 		g.add( lantern );
-		var cap = new THREE.Mesh( new THREE.ConeGeometry( 3, 2.6, 4 ), mat( THREE, 0x1c1512 ) );
-		cap.position.y = 30.4;
+		var cap = new THREE.Mesh( new THREE.ConeGeometry( 3.2, 2.8, 4 ), mat( THREE, 0x1c1512 ) );
+		cap.position.y = 44.4;
 		cap.rotation.y = Math.PI / 4;
 		g.add( cap );
 
