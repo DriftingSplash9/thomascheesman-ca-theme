@@ -395,51 +395,77 @@
 	 *  Lantern-lit signposts — eye-level wayfinding (replaces sprites)
 	 * ------------------------------------------------------------------ */
 	function buildSign( THREE, text, px, pz, faceX, faceZ ) {
+		// Long names wrap onto TWO lines (split at the most balanced space),
+		// which keeps the board narrow instead of stretching across the yard.
+		var lines = [ text ];
+		if ( text.length > 14 ) {
+			var words = text.split( ' ' );
+			if ( words.length > 1 ) {
+				var best = 1, bestDiff = 1e9;
+				for ( var s = 1; s < words.length; s++ ) {
+					var l = words.slice( 0, s ).join( ' ' ).length;
+					var r = words.slice( s ).join( ' ' ).length;
+					if ( Math.abs( l - r ) < bestDiff ) { bestDiff = Math.abs( l - r ); best = s; }
+				}
+				lines = [ words.slice( 0, best ).join( ' ' ), words.slice( best ).join( ' ' ) ];
+			}
+		}
+
 		var c = document.createElement( 'canvas' );
 		var ctx = c.getContext( '2d' );
 		ctx.font = '600 40px Georgia, serif';
-		var wpx = Math.ceil( ctx.measureText( text ).width ) + 44;
-		c.width = wpx; c.height = 64;
+		var wpx = 0;
+		lines.forEach( function ( ln ) {
+			wpx = Math.max( wpx, Math.ceil( ctx.measureText( ln ).width ) );
+		} );
+		wpx += 44;
+		var lineH = 52;
+		c.width = wpx; c.height = 18 + lines.length * lineH;
 		ctx = c.getContext( '2d' );
 		ctx.fillStyle = '#2a1f14'; // lantern-lit dark wood
-		ctx.fillRect( 0, 0, wpx, 64 );
+		ctx.fillRect( 0, 0, c.width, c.height );
 		ctx.strokeStyle = 'rgba(255, 205, 140, 0.55)';
 		ctx.lineWidth = 4;
-		ctx.strokeRect( 4, 4, wpx - 8, 56 );
+		ctx.strokeRect( 4, 4, c.width - 8, c.height - 8 );
 		ctx.font = '600 40px Georgia, serif';
 		ctx.fillStyle = '#ffe3b0';
-		ctx.fillText( text, 22, 45 );
+		ctx.textAlign = 'center';
+		lines.forEach( function ( ln, i ) {
+			ctx.fillText( ln, c.width / 2, 48 + i * lineH );
+		} );
 
-		// Ranch-driveway archway: two tall posts, an overhead crossbeam sign
-		// you could drive under, DOUBLE-SIDED so it reads from any approach.
-		var bw = Math.max( 34, Math.min( 88, wpx * 0.24 ) );
+		// Ranch-driveway archway: two tall posts, a HIGH overhead crossbeam
+		// sign (drive right under it), DOUBLE-SIDED so it reads either way.
+		var bw = Math.max( 26, Math.min( 58, wpx * 0.17 ) );
+		var bh = bw * c.height / c.width; // keep the plate's aspect
+		var beamY = 43;
 		var g = new THREE.Group();
 		var wood = mat( THREE, 0x3a2c1c );
 		[ -1, 1 ].forEach( function ( s ) {
-			var post = new THREE.Mesh( new THREE.BoxGeometry( 3.2, 32, 3.2 ), wood );
-			post.position.set( s * ( bw / 2 + 4 ), 16, 0 );
+			var post = new THREE.Mesh( new THREE.BoxGeometry( 3.2, 42, 3.2 ), wood );
+			post.position.set( s * ( bw / 2 + 4 ), 21, 0 );
 			g.add( post );
 		} );
-		var frame = new THREE.Mesh( new THREE.BoxGeometry( bw + 12, 12.5, 2 ), wood );
-		frame.position.y = 33;
+		var frame = new THREE.Mesh( new THREE.BoxGeometry( bw + 10, bh + 2.5, 2 ), wood );
+		frame.position.y = beamY;
 		g.add( frame );
 		var tex = new THREE.CanvasTexture( c );
 		[ 1, -1 ].forEach( function ( side ) {
 			var face = new THREE.Mesh(
-				new THREE.PlaneGeometry( bw, 10.5 ),
+				new THREE.PlaneGeometry( bw, bh ),
 				new THREE.MeshBasicMaterial( { map: tex } )
 			);
-			face.position.set( 0, 33, side * 1.15 );
+			face.position.set( 0, beamY, side * 1.15 );
 			if ( side < 0 ) face.rotation.y = Math.PI; // back face, unmirrored
 			g.add( face );
 		} );
 		// the lantern on the ridge
 		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 3.8, 3.4 ),
 			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
-		lantern.position.y = 41.2;
+		lantern.position.y = beamY + bh / 2 + 3.4;
 		g.add( lantern );
 		var cap = new THREE.Mesh( new THREE.ConeGeometry( 3.2, 2.8, 4 ), mat( THREE, 0x1c1512 ) );
-		cap.position.y = 44.4;
+		cap.position.y = beamY + bh / 2 + 6.6;
 		cap.rotation.y = Math.PI / 4;
 		g.add( cap );
 
