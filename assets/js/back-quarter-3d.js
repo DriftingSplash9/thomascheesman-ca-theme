@@ -44,15 +44,17 @@
 		{ id: 'church', name: 'the church', x: 198, y: 372, w: 70, h: 90,
 		  href: '/heritage', build: 'church', signTo: { x: 330, y: 480 },
 		  prompt: 'The church on the hill — eight family lines' },
-		{ id: 'th1', name: 'a treehouse', x: 410, y: 296, w: 26, h: 26,
-		  href: '/patience', build: 'treehouse',
-		  prompt: 'A treehouse — needs the family key' },
-		{ id: 'th2', name: 'a treehouse', x: 466, y: 366, w: 26, h: 26,
-		  href: '/daniel', build: 'treehouse',
-		  prompt: 'A treehouse — needs the family key' },
-		{ id: 'th3', name: 'a treehouse', x: 535, y: 430, w: 26, h: 26,
-		  href: '/faith', build: 'treehouse',
-		  prompt: 'A treehouse — needs the family key' },
+		// Each kid's treehouse carries their signature color (roof, ladder,
+		// nameplate text). First names only — same as the public site nav.
+		{ id: 'th1', name: 'Patience', x: 410, y: 296, w: 26, h: 26,
+		  href: '/patience', build: 'treehouse', kidColor: 0xe86ba7, kidCss: '#ff9ecb',
+		  prompt: 'Patience’s treehouse — the family key opens it' },
+		{ id: 'th2', name: 'Daniel', x: 466, y: 366, w: 26, h: 26,
+		  href: '/daniel', build: 'treehouse', kidColor: 0x4f9fd8, kidCss: '#8fd0ff',
+		  prompt: 'Daniel’s treehouse — the family key opens it' },
+		{ id: 'th3', name: 'Faith', x: 535, y: 430, w: 26, h: 26,
+		  href: '/faith', build: 'treehouse', kidColor: 0x9a7fd8, kidCss: '#cbb2ff',
+		  prompt: 'Faith’s treehouse — the family key opens it' },
 		{ id: 'radio', name: 'the radio mast', x: 1170, y: 360, w: 30, h: 30,
 		  href: 'https://bareyourrare.org', external: true, build: 'mast', signTo: { x: 1135, y: 375 },
 		  prompt: 'The radio mast — broadcasting beyond the fence' },
@@ -455,7 +457,7 @@
 			case 'cookshack': g = buildCookshack( THREE ); break;
 			case 'elevator': g = buildElevator( THREE ); break;
 			case 'church': g = buildChurch( THREE ); break;
-			case 'treehouse': g = buildTreehouse( THREE ); break;
+			case 'treehouse': g = buildTreehouse( THREE, lm ); break;
 			case 'mast': g = buildMast( THREE ); break;
 			case 'barn': g = buildBarnHouse( THREE ); break;
 			case 'shed': g = buildShed( THREE ); break;
@@ -628,7 +630,7 @@
 		return g;
 	}
 
-	function buildTreehouse( THREE ) {
+	function buildTreehouse( THREE, lm ) {
 		var g = new THREE.Group();
 		[ [ -10, -6 ], [ 12, 4 ], [ -2, 10 ] ].forEach( function ( p ) {
 			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 2.5, 3.5, 44, 6 ), mat( THREE, 0x2c2418 ) );
@@ -641,13 +643,39 @@
 		var cabin = new THREE.Mesh( new THREE.BoxGeometry( 22, 16, 18 ), mat( THREE, 0x4a3a28 ) );
 		cabin.position.y = 40;
 		g.add( cabin );
-		var roof = gableRoof( THREE, 26, 13, 0x33261a );
+		// the kid's signature color: roof + ladder + nameplate text
+		var kidColor = ( lm && lm.kidColor ) || 0x33261a;
+		var roof = gableRoof( THREE, 26, 13, kidColor );
 		roof.position.y = 52;
 		g.add( roof );
-		var ladder = new THREE.Mesh( new THREE.BoxGeometry( 2, 34, 6 ), mat( THREE, 0x3a2e22 ) );
+		var ladder = new THREE.Mesh( new THREE.BoxGeometry( 2, 34, 6 ), mat( THREE, kidColor ) );
 		ladder.position.set( 12, 17, 0 );
 		g.add( ladder );
 		addWindow( THREE, g, 8, 7, 0, 40, 9.2 );
+		if ( lm && lm.name ) {
+			// painted nameplate under the window, in their color
+			var c = document.createElement( 'canvas' );
+			var ctx = c.getContext( '2d' );
+			ctx.font = '600 44px Georgia, serif';
+			var wpx = Math.ceil( ctx.measureText( lm.name ).width ) + 36;
+			c.width = wpx; c.height = 64;
+			ctx = c.getContext( '2d' );
+			ctx.fillStyle = '#241a10';
+			ctx.fillRect( 0, 0, wpx, 64 );
+			ctx.strokeStyle = 'rgba(255, 225, 180, 0.35)';
+			ctx.lineWidth = 4;
+			ctx.strokeRect( 3, 3, wpx - 6, 58 );
+			ctx.font = '600 44px Georgia, serif';
+			ctx.fillStyle = lm.kidCss || '#ffe3b0';
+			ctx.fillText( lm.name, 18, 47 );
+			var bw = Math.max( 12, Math.min( 20, wpx * 0.075 ) );
+			var plate = new THREE.Mesh(
+				new THREE.PlaneGeometry( bw, bw * 64 / wpx ),
+				new THREE.MeshBasicMaterial( { map: new THREE.CanvasTexture( c ) } )
+			);
+			plate.position.set( 0, 31.5, 9.3 );
+			g.add( plate );
+		}
 		return g;
 	}
 
