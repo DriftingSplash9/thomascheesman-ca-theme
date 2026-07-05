@@ -220,8 +220,9 @@
 	}
 
 	function onPointer( e ) {
-		if ( e.pointerType === 'mouse' && e.type === 'pointermove' ) return;
-		if ( e.type === 'pointermove' && ! pointerDrive ) return;
+		// follow the pointer only while it's actually held down — a drag,
+		// not a hover. (buttons===0 on move means the button was released.)
+		if ( e.type === 'pointermove' && ( ! pointerDrive || e.buttons === 0 ) ) return;
 		var r = app.view.getBoundingClientRect();
 		pointerDrive = {
 			x: ( e.clientX - r.left - r.width / 2 ) / camScale + camPivX,
@@ -281,7 +282,7 @@
 
 		// Tank-style steering: left/right rotate the buggy in place, whether
 		// or not it's moving. Up/down drive along the facing.
-		Matter.Body.setAngularVelocity( b, steer * 0.048 );
+		Matter.Body.setAngularVelocity( b, steer * 0.072 );
 
 		var power = 0.0026;
 		if ( throttle ) {
@@ -294,7 +295,7 @@
 		var fwd = v.x * heading.x + v.y * heading.y;
 		var lat = { x: -heading.y, y: heading.x };
 		var latSpeed = v.x * lat.x + v.y * lat.y;
-		var grip = 0.85;
+		var grip = 0.76; // tires bite — the buggy carves with its nose, no wide sweeps
 		Matter.Body.setVelocity( b, {
 			x: heading.x * fwd + lat.x * latSpeed * grip,
 			y: heading.y * fwd + lat.y * latSpeed * grip
