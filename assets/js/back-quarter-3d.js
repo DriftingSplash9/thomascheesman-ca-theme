@@ -95,6 +95,10 @@
 	var PROMPTS = [];
 	var keys = {}, accMS = 0, nearLandmark = null;
 	var camPos = null, raycaster = null, pointerNDC = null;
+	// P2 juice: particle pools, tracks, smoke, synthesized audio
+	var dustPool = [], smokeEmitters = [], trackPool = [], trackIdx = 0, distMark = 0;
+	var audio = { ctx: null, on: false, master: null, engGain: null, engOsc1: null, engOsc2: null };
+	var soundBtn = null;
 
 	function boot( stageEl ) {
 		stage = stageEl;
@@ -177,6 +181,12 @@
 		scene.add( buggyGroup );
 		camPos = new THREE.Vector3( SPAWN.x, 60, SPAWN.y + 130 );
 
+		// P2 juice
+		initDust( THREE );
+		initTracks( THREE );
+		initSmoke( THREE );
+		buildSoundToggle();
+
 		// proximity prompts: all landmarks + the family gate itself
 		PROMPTS = LANDMARKS.slice();
 		PROMPTS.push( {
@@ -194,7 +204,7 @@
 		pointerNDC = new THREE.Vector2();
 		renderer.domElement.addEventListener( 'pointerdown', onClick );
 
-		if ( hudEl ) { hudEl.hidden = false; hudEl.textContent = '3D beta · WASD drives · Enter steps inside · Esc hops out'; }
+		if ( hudEl ) { hudEl.hidden = false; hudEl.textContent = '3D beta · WASD drives · H honks · Enter steps inside · Esc hops out'; }
 		stage.focus();
 
 		if ( window.ResizeObserver ) {
@@ -216,13 +226,14 @@
 		var k = e.key.toLowerCase();
 		var map = { w: 'up', arrowup: 'up', s: 'down', arrowdown: 'down',
 			a: 'left', arrowleft: 'left', d: 'right', arrowright: 'right',
-			enter: 'enter', escape: 'esc' };
+			enter: 'enter', escape: 'esc', h: 'honk' };
 		if ( ! ( k in map ) ) return;
 		e.preventDefault();
 		var down = ( e.type === 'keydown' );
 		keys[ map[ k ] ] = down;
 		if ( down && map[ k ] === 'esc' ) stage.blur();
 		if ( down && map[ k ] === 'enter' && nearLandmark ) enterLandmark( nearLandmark );
+		if ( down && map[ k ] === 'honk' ) honk();
 	}
 
 	function onClick( e ) {
@@ -261,13 +272,14 @@
 	 * ------------------------------------------------------------------ */
 	function tick() {
 		if ( document.hidden ) return;
-		accMS = Math.min( accMS + clock.getDelta() * 1000, 100 );
+		var dms = Math.min( clock.getDelta() * 1000, 100 );
+		accMS += dms;
 		while ( accMS >= 16.666 ) {
 			control();
 			Matter.Engine.update( engine, 16.666 );
 			accMS -= 16.666;
 		}
-		render();
+		render( dms );
 	}
 
 	var steerInput = 0, throttleInput = 0;
@@ -302,7 +314,8 @@
 		if ( sp > cap ) Matter.Body.setVelocity( b, { x: b.velocity.x * cap / sp, y: b.velocity.y * cap / sp } );
 	}
 
-	function render() {
+	function render( dms ) {
+		dms = dms || 16.666;
 		var b = buggyBody;
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		var t = clock.elapsedTime;
@@ -320,6 +333,23 @@
 		}
 
 		if ( mastLamp ) mastLamp.visible = ( Math.floor( t * 1.4 ) % 2 ) === 0;
+
+		// ---- P2 juice ----
+		// dust kicks off the rear wheels, harder when moving/steering
+		if ( sp > 1.6 && Math.random() < Math.min( 0.55, 0.1 + sp * 0.06 + Math.abs( steerInput ) * 0.2 ) ) {
+			spawnDust( wheelWorld( -16, steerInput >= 0 ? 13 : -13 ), sp );
+		}
+		updateDust( dms );
+		// tire tracks laid down every few units of travel
+		distMark += sp * ( dms / 16.666 );
+		if ( sp > 1.2 && distMark > 9 ) {
+			distMark = 0;
+			dropTrack( wheelWorld( -15, 13 ) );
+			dropTrack( wheelWorld( -15, -13 ) );
+		}
+		updateTracks( dms );
+		updateSmoke( dms );
+		updateAudio( sp );
 
 		// the family gate: lifts for family as they approach; stays down otherwise
 		if ( gateArm ) {
@@ -761,6 +791,13 @@
 		var box = new THREE.Mesh( new THREE.BoxGeometry( 12, 8, 8 ), mat( THREE, 0x39424c ) );
 		box.position.y = 24;
 		g.add( box );
+		// the flag — raised (wired to real "recently added" data with the ledger)
+		var arm = new THREE.Mesh( new THREE.BoxGeometry( 1.1, 7, 1.1 ), mat( THREE, 0xb8352c ) );
+		arm.position.set( 6.6, 29, 0 );
+		g.add( arm );
+		var paddle = new THREE.Mesh( new THREE.BoxGeometry( 4.2, 3.4, 0.9 ), mat( THREE, 0xb8352c ) );
+		paddle.position.set( 6.6, 33.6, 0 );
+		g.add( paddle );
 		return g;
 	}
 
@@ -811,13 +848,20 @@
 	}
 
 	function buildPonds( THREE ) {
-		var pondMat = new THREE.MeshLambertMaterial( { color: 0x274c6e, emissive: 0x0c1f30 } );
+		// nocturnal water: near-black teal with a soft moon glint, not cartoon blue
+		var pondMat = new THREE.MeshLambertMaterial( { color: 0x152c3e, emissive: 0x060f16 } );
+		var glintMat = new THREE.MeshBasicMaterial( { color: 0xbcd6ea, transparent: true, opacity: 0.16 } );
 		[ [ 1055, 295, 40 ], [ 1145, 590, 34 ], [ 950, 555, 30 ] ].forEach( function ( p ) {
 			var pond = new THREE.Mesh( new THREE.CircleGeometry( p[ 2 ], 18 ), pondMat );
 			pond.rotation.x = -Math.PI / 2;
 			pond.position.set( p[ 0 ], 0.35, p[ 1 ] );
 			pond.scale.x = 1.35;
 			scene.add( pond );
+			var glint = new THREE.Mesh( new THREE.CircleGeometry( p[ 2 ] * 0.32, 12 ), glintMat );
+			glint.rotation.x = -Math.PI / 2;
+			glint.position.set( p[ 0 ] - p[ 2 ] * 0.3, 0.45, p[ 1 ] - p[ 2 ] * 0.2 );
+			glint.scale.x = 1.8;
+			scene.add( glint );
 		} );
 	}
 
@@ -919,6 +963,228 @@
 			bales.push( { body: body, mesh: mesh } );
 			placed++;
 		}
+	}
+
+	/* ------------------------------------------------------------------ *
+	 *  P2 juice — dust, tracks, smoke, synthesized sound
+	 * ------------------------------------------------------------------ */
+	function wheelWorld( lx, lz ) {
+		var a = buggyBody.angle, p = buggyBody.position;
+		return {
+			x: p.x + lx * Math.cos( a ) - lz * Math.sin( a ),
+			y: p.y + lx * Math.sin( a ) + lz * Math.cos( a )
+		};
+	}
+
+	// soft radial puff texture, tinted per use
+	function makePuffTexture( THREE, r, g2, b2 ) {
+		var c = document.createElement( 'canvas' );
+		c.width = c.height = 64;
+		var ctx = c.getContext( '2d' );
+		var grad = ctx.createRadialGradient( 32, 32, 4, 32, 32, 30 );
+		grad.addColorStop( 0, 'rgba(' + r + ',' + g2 + ',' + b2 + ',0.85)' );
+		grad.addColorStop( 1, 'rgba(' + r + ',' + g2 + ',' + b2 + ',0)' );
+		ctx.fillStyle = grad;
+		ctx.fillRect( 0, 0, 64, 64 );
+		return new THREE.CanvasTexture( c );
+	}
+
+	function initDust( THREE ) {
+		var tex = makePuffTexture( THREE, 158, 138, 106 );
+		for ( var i = 0; i < 28; i++ ) {
+			var spr = new THREE.Sprite( new THREE.SpriteMaterial( {
+				map: tex, transparent: true, opacity: 0, depthWrite: false
+			} ) );
+			spr.scale.set( 8, 8, 1 );
+			scene.add( spr );
+			dustPool.push( { spr: spr, life: 0, max: 0 } );
+		}
+	}
+
+	function spawnDust( at, sp ) {
+		for ( var i = 0; i < dustPool.length; i++ ) {
+			if ( dustPool[ i ].life <= 0 ) {
+				var p = dustPool[ i ];
+				p.max = p.life = 550 + Math.random() * 450;
+				p.spr.position.set( at.x + ( Math.random() - 0.5 ) * 8, 3, at.y + ( Math.random() - 0.5 ) * 8 );
+				p.vy = 8 + Math.random() * 8;
+				p.grow = 10 + sp * 2.4;
+				return;
+			}
+		}
+	}
+
+	function updateDust( dms ) {
+		for ( var i = 0; i < dustPool.length; i++ ) {
+			var p = dustPool[ i ];
+			if ( p.life <= 0 ) continue;
+			p.life -= dms;
+			var f = Math.max( 0, p.life / p.max );
+			p.spr.material.opacity = 0.34 * f;
+			p.spr.position.y += p.vy * ( dms / 1000 );
+			var s = 8 + ( 1 - f ) * p.grow;
+			p.spr.scale.set( s, s, 1 );
+		}
+	}
+
+	function initTracks( THREE ) {
+		var geo = new THREE.PlaneGeometry( 3.4, 8 );
+		for ( var i = 0; i < 90; i++ ) {
+			var m = new THREE.Mesh( geo, new THREE.MeshBasicMaterial( {
+				color: 0x0e130d, transparent: true, opacity: 0, depthWrite: false
+			} ) );
+			m.rotation.x = -Math.PI / 2;
+			m.position.y = 0.55;
+			scene.add( m );
+			trackPool.push( { mesh: m, life: 0 } );
+		}
+	}
+
+	function dropTrack( at ) {
+		var tr = trackPool[ trackIdx ];
+		trackIdx = ( trackIdx + 1 ) % trackPool.length;
+		tr.life = 6000;
+		tr.mesh.position.set( at.x, 0.55, at.y );
+		tr.mesh.rotation.z = -buggyBody.angle + Math.PI / 2;
+		tr.mesh.material.opacity = 0.30;
+	}
+
+	function updateTracks( dms ) {
+		for ( var i = 0; i < trackPool.length; i++ ) {
+			var tr = trackPool[ i ];
+			if ( tr.life <= 0 ) continue;
+			tr.life -= dms;
+			tr.mesh.material.opacity = 0.30 * Math.max( 0, tr.life / 6000 );
+		}
+	}
+
+	function initSmoke( THREE ) {
+		var tex = makePuffTexture( THREE, 186, 188, 198 );
+		// chimney mouths in world space: farmhouse + cookshack
+		[ { x: 380, y: 72, z: 160 }, { x: 658, y: 53, z: 138 } ].forEach( function ( at ) {
+			var em = { at: at, parts: [], timer: Math.random() * 600 };
+			for ( var i = 0; i < 7; i++ ) {
+				var spr = new THREE.Sprite( new THREE.SpriteMaterial( {
+					map: tex, transparent: true, opacity: 0, depthWrite: false
+				} ) );
+				spr.scale.set( 7, 7, 1 );
+				scene.add( spr );
+				em.parts.push( { spr: spr, life: 0, max: 0 } );
+			}
+			smokeEmitters.push( em );
+		} );
+	}
+
+	function updateSmoke( dms ) {
+		for ( var e = 0; e < smokeEmitters.length; e++ ) {
+			var em = smokeEmitters[ e ];
+			em.timer -= dms;
+			if ( em.timer <= 0 ) {
+				em.timer = 520 + Math.random() * 320;
+				for ( var s = 0; s < em.parts.length; s++ ) {
+					if ( em.parts[ s ].life <= 0 ) {
+						var p = em.parts[ s ];
+						p.max = p.life = 2600 + Math.random() * 1200;
+						p.spr.position.set( em.at.x, em.at.y, em.at.z );
+						p.drift = ( Math.random() - 0.5 ) * 3.5;
+						break;
+					}
+				}
+			}
+			for ( var i = 0; i < em.parts.length; i++ ) {
+				var q = em.parts[ i ];
+				if ( q.life <= 0 ) continue;
+				q.life -= dms;
+				var f = Math.max( 0, q.life / q.max );
+				q.spr.material.opacity = 0.20 * Math.sin( Math.min( 1, 1 - f + 0.15 ) * Math.PI ) ;
+				q.spr.position.y += 7.5 * ( dms / 1000 );
+				q.spr.position.x += q.drift * ( dms / 1000 );
+				var sc = 7 + ( 1 - f ) * 14;
+				q.spr.scale.set( sc, sc, 1 );
+			}
+		}
+	}
+
+	/* ---- sound: synthesized engine hum + honk; OFF by default (D4) ---- */
+	function buildSoundToggle() {
+		soundBtn = document.createElement( 'button' );
+		soundBtn.type = 'button';
+		soundBtn.className = 'bq-fs'; // reuse the pill styling
+		soundBtn.style.right = 'auto';
+		soundBtn.style.left = '10px';
+		stage.appendChild( soundBtn );
+		var want = false;
+		try { want = window.localStorage.getItem( 'tcBqSound' ) === 'on'; } catch ( err ) {}
+		setSound( want );
+		soundBtn.addEventListener( 'click', function () { setSound( ! audio.on ); stage.focus(); } );
+	}
+
+	function setSound( on ) {
+		audio.on = on;
+		try { window.localStorage.setItem( 'tcBqSound', on ? 'on' : 'off' ); } catch ( err ) {}
+		if ( soundBtn ) soundBtn.textContent = on ? '🔊 Sound on' : '🔇 Sound off';
+		if ( on ) {
+			ensureAudio();
+			if ( audio.ctx && audio.ctx.state === 'suspended' ) audio.ctx.resume();
+		} else if ( audio.engGain ) {
+			audio.engGain.gain.value = 0;
+		}
+	}
+
+	function ensureAudio() {
+		if ( audio.ctx ) return;
+		var AC = window.AudioContext || window.webkitAudioContext;
+		if ( ! AC ) return;
+		audio.ctx = new AC();
+		audio.master = audio.ctx.createGain();
+		audio.master.gain.value = 0.6;
+		audio.master.connect( audio.ctx.destination );
+		// the idling engine: two detuned oscillators through a lowpass
+		var lp = audio.ctx.createBiquadFilter();
+		lp.type = 'lowpass';
+		lp.frequency.value = 420;
+		audio.engGain = audio.ctx.createGain();
+		audio.engGain.gain.value = 0;
+		audio.engOsc1 = audio.ctx.createOscillator();
+		audio.engOsc1.type = 'sawtooth';
+		audio.engOsc1.frequency.value = 54;
+		audio.engOsc2 = audio.ctx.createOscillator();
+		audio.engOsc2.type = 'square';
+		audio.engOsc2.frequency.value = 109;
+		audio.engOsc1.connect( lp );
+		audio.engOsc2.connect( lp );
+		lp.connect( audio.engGain );
+		audio.engGain.connect( audio.master );
+		audio.engOsc1.start();
+		audio.engOsc2.start();
+	}
+
+	function updateAudio( sp ) {
+		if ( ! audio.on || ! audio.ctx || ! audio.engGain ) return;
+		var rev = Math.min( 1, sp / 5.6 ) + Math.abs( throttleInput ) * 0.25;
+		audio.engOsc1.frequency.value = 52 + rev * 74;
+		audio.engOsc2.frequency.value = ( 52 + rev * 74 ) * 2.02;
+		audio.engGain.gain.value = 0.012 + rev * 0.05;
+	}
+
+	function honk() {
+		if ( ! audio.on ) return;
+		ensureAudio();
+		if ( ! audio.ctx ) return;
+		var t0 = audio.ctx.currentTime;
+		[ 392, 494 ].forEach( function ( f ) {
+			var o = audio.ctx.createOscillator();
+			o.type = 'triangle';
+			o.frequency.value = f;
+			var g = audio.ctx.createGain();
+			g.gain.setValueAtTime( 0.0001, t0 );
+			g.gain.exponentialRampToValueAtTime( 0.16, t0 + 0.02 );
+			g.gain.exponentialRampToValueAtTime( 0.0001, t0 + 0.32 );
+			o.connect( g );
+			g.connect( audio.master );
+			o.start( t0 );
+			o.stop( t0 + 0.36 );
+		} );
 	}
 
 	/* ------------------------------------------------------------------ *
