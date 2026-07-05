@@ -219,6 +219,6 @@ aesthetic), optionally AI-generated GLBs (Meshy/Tripo) later.
 | Phase | Ships | Status |
 |---|---|---|
 | **3D-P0 — feel check** | Low-poly night sandbox: ground, moon, fog, fence, poplars, knockable hay bales; chunky buggy (spinning wheels, headlight spotlights, faked suspension lean, blob shadow); chase camera; WASD + fullscreen. | ✅ 1.0.673 |
-| **3D-P1 — raise the farm** | All §2 landmarks as procedural low-poly buildings (warm window lights), enter-prompts + navigation wired, paths as ground meshes. | |
+| **3D-P1 — raise the farm** | All 11 landmarks as procedural low-poly buildings (self-lit windows + fake glow pools, no per-building lights), floating label sprites that brighten on approach, dirt-path strips, 3 ponds, the farm gate + lantern, the treehouse windbreak; navigation wired (proximity + Enter, click via raycaster; blinking mast beacon). Same 1280×720 coords as the 2D board. | ✅ 1.0.674 |
 | **3D-P2 — life & juice** | Dust particles, tire tracks, honk + engine hum (WebAudio, muted default), chimney smoke, mailbox flag, billboard quotes in 3D. | |
 | **3D-P3 — the swap** | Mobile joystick, perf pass (device-capability gate), reduced-motion audit; 3D becomes the homepage default, 2D board demoted to fallback. | |
