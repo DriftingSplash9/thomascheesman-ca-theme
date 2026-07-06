@@ -2,24 +2,25 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
- * 3D-P2.5 — THE PLAYGROUND: the world grows 4× (2560×1440), the roads
- * widen (60 > the buggy's 46) and twist through many more bends, and the
- * flatness dies:
- * - ROLLING HILLS: a gaussian heightfield displaces the ground mesh; the
- *   buggy rides it, downhill runs free, uphill costs. (Physics stays
- *   Matter 2D — height is sampled, not simulated.)
- * - DIRT JUMPS: narrow steep mounds on the roads (brown domes). Crest one
- *   with speed and the buggy goes BALLISTIC — real air, gravity, landing
- *   dust. Two tokens can only be grabbed mid-air.
- * - TURBO PADS: glowing chevrons; cross one for a ~1s speed burst (FOV
- *   kicks wider while boosting).
- * - BALE STACKS: pyramids that TOPPLE when you ram them, plus a wooden
- *   RESTACK PAD — park on it a moment and the farm tidies itself.
- * - TOKEN HUNT: 20 gold tokens hidden across the quarter (HUD counter,
- *   persisted in localStorage; find-all fanfare).
+ * 3D-P2.6 — MONSTER QUARTER: the world triples again (4480×2520 — 12× the
+ * original board), the whole quarter sits on a tilted grade with hills
+ * ~50% stronger, and the toys grow up:
+ * - MONSTER-TRUCK AIR: Space bunny-hops (stronger with speed), the dirt
+ *   mounds are proper ramps, and while airborne LEFT/RIGHT SHIFT pitch
+ *   the buggy nose-down/nose-up — full front/back FLIPS. Land a clean
+ *   full flip → turbo reward. Botch the rotation → you eat dirt (speed
+ *   cut + dust). The buggy pitches on its own axis via a YZX euler.
+ * - PONDS ARE DIMPLES: negative-gaussian bowls in the terrain with real
+ *   water sitting in them — drive through and you wade: splash puffs,
+ *   heavy drag, dip and out the far side.
+ * - HERITAGE DRIVE-INS: eight drive-in-movie screens along the perimeter
+ *   fence, marquee-lit, one per family line (Cheesmans, Dochertys,
+ *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
+ *   clickable/Enter-able straight into that line's long-read.
  *
- * Carried: tuned Matter handling, vendored Three r128, hash-gated beta
- * (/#bq3d), signs/compound/family gate/juice from P1–P2.
+ * Carried: interpolated 60Hz physics (no jitter), painted-in roads that
+ * ride the terrain, wandering livestock + tractor, token hunt, bale
+ * stacks + restack pad, family-gated compound, lantern archway signs.
  *
  * ⭐ Verification limit: background/automation tabs freeze rAF/WebGL —
  * smoke-test = boots clean, zero console errors; feel is Thomas's drive.
@@ -27,173 +28,179 @@
 ( function () {
 	'use strict';
 
-	var W = 2560, H = 1440; // 4× the old quarter
-	var SPAWN = { x: 1280, y: 1350, angle: -Math.PI / 2 };
-	var HUB = { x: 1220, y: 940 };
+	var W = 4480, H = 2520; // 12x the original board
+	var SPAWN = { x: 2240, y: 2360, angle: -Math.PI / 2 };
+	var HUB = { x: 2135, y: 1645 };
 
-	// The treehouse compound (the family yard) + its gated entry.
-	var COMPOUND = { x0: 744, z0: 516, x1: 1192, z1: 952, gateZ0: 856, gateZ1: 944 };
-	var GATE = { x: 1192, z: 900 };
+	var COMPOUND = { x0: 1302, z0: 903, x1: 2086, z1: 1666, gateZ0: 1498, gateZ1: 1652 };
+	var GATE = { x: 2086, z: 1575 };
 
 	var LANDMARKS = [
-		{ id: 'farmhouse', name: 'the farmhouse', x: 692, y: 336, w: 130, h: 80,
-		  href: '/thomas', build: 'farmhouse', signTo: { x: 820, y: 400 },
+		{ id: 'farmhouse', name: 'the farmhouse', x: 1211, y: 588, w: 130, h: 80,
+		  href: '/thomas', build: 'farmhouse', signTo: { x: 1435, y: 700 },
 		  prompt: 'The farmhouse — step inside, this is me' },
-		{ id: 'cookshack', name: 'the cookshack', x: 1280, y: 264, w: 70, h: 50,
-		  href: '/about', build: 'cookshack', signTo: { x: 1260, y: 330 },
+		{ id: 'cookshack', name: 'the cookshack', x: 2240, y: 462, w: 70, h: 50,
+		  href: '/about', build: 'cookshack', signTo: { x: 2205, y: 578 },
 		  prompt: 'The cookshack — my life on the line' },
-		{ id: 'elevator', name: 'the grain elevator', x: 1792, y: 392, w: 70, h: 70,
-		  href: '/hcs', build: 'elevator', signTo: { x: 1740, y: 430 },
+		{ id: 'elevator', name: 'the grain elevator', x: 3136, y: 686, w: 70, h: 70,
+		  href: '/hcs', build: 'elevator', signTo: { x: 3045, y: 753 },
 		  prompt: 'The grain elevator — one of fewer than fifty' },
-		{ id: 'church', name: 'the church', x: 396, y: 744, w: 70, h: 90,
-		  href: '/heritage', build: 'church', signTo: { x: 500, y: 790 },
+		{ id: 'church', name: 'the church', x: 693, y: 1302, w: 70, h: 90,
+		  href: '/heritage', build: 'church', signTo: { x: 875, y: 1383 },
 		  prompt: 'The church on the hill — eight family lines' },
-		{ id: 'th1', name: 'Patience', x: 820, y: 592, w: 26, h: 26,
+		{ id: 'th1', name: 'Patience', x: 1435, y: 1036, w: 26, h: 26,
 		  href: '/patience', build: 'treehouse', kidColor: 0xe86ba7, kidCss: '#ff9ecb',
 		  prompt: 'Patience’s treehouse — the family key opens it' },
-		{ id: 'th2', name: 'Daniel', x: 932, y: 732, w: 26, h: 26,
+		{ id: 'th2', name: 'Daniel', x: 1631, y: 1281, w: 26, h: 26,
 		  href: '/daniel', build: 'treehouse', kidColor: 0x4f9fd8, kidCss: '#8fd0ff',
 		  prompt: 'Daniel’s treehouse — the family key opens it' },
-		{ id: 'th3', name: 'Faith', x: 1070, y: 860, w: 26, h: 26,
+		{ id: 'th3', name: 'Faith', x: 1873, y: 1505, w: 26, h: 26,
 		  href: '/faith', build: 'treehouse', kidColor: 0x9a7fd8, kidCss: '#cbb2ff',
 		  prompt: 'Faith’s treehouse — the family key opens it' },
-		{ id: 'radio', name: 'the radio mast', x: 2340, y: 720, w: 30, h: 30,
-		  href: 'https://bareyourrare.org', external: true, build: 'mast', signTo: { x: 2260, y: 740 },
+		{ id: 'radio', name: 'the radio mast', x: 4095, y: 1260, w: 30, h: 30,
+		  href: 'https://bareyourrare.org', external: true, build: 'mast', signTo: { x: 3955, y: 1295 },
 		  prompt: 'The radio mast — broadcasting beyond the fence' },
-		{ id: 'barn', name: 'the arcade barn', x: 2022, y: 820, w: 120, h: 80,
-		  href: null, build: 'barn', signTo: { x: 1900, y: 860 },
+		{ id: 'barn', name: 'the arcade barn', x: 3539, y: 1435, w: 120, h: 80,
+		  href: null, build: 'barn', signTo: { x: 3325, y: 1505 },
 		  prompt: 'The arcade barn — the games are moving in here soon' },
-		{ id: 'shed', name: 'the old shed', x: 372, y: 1104, w: 60, h: 44,
-		  href: null, build: 'shed', signTo: { x: 430, y: 1050 },
+		{ id: 'shed', name: 'the old shed', x: 651, y: 1932, w: 60, h: 44,
+		  href: null, build: 'shed', signTo: { x: 753, y: 1838 },
 		  prompt: 'The shed is padlocked… but a drawer in the house opens' },
-		{ id: 'mailbox', name: 'the mailbox', x: 1190, y: 1400, w: 10, h: 10,
+		{ id: 'mailbox', name: 'the mailbox', x: 2083, y: 2450, w: 10, h: 10,
 		  href: null, build: 'mailbox',
 		  prompt: 'Fresh mail soon — “recently added” lands here' }
 	];
 
-	// The road net — wide (60) and full of bends. Nothing cuts the grove.
-	var PATHS = [
-		[ { x: 1280, y: 1420 }, { x: 1268, y: 1300 } ],
-		[ { x: 1268, y: 1300 }, { x: 1240, y: 1080 } ],
-		[ { x: 1240, y: 1080 }, HUB ],
-		// west loop, twisting to the church
-		[ HUB, { x: 1000, y: 1020 } ],
-		[ { x: 1000, y: 1020 }, { x: 800, y: 1010 } ],
-		[ { x: 800, y: 1010 }, { x: 620, y: 930 } ],
-		[ { x: 620, y: 930 }, { x: 500, y: 790 } ],
-		[ { x: 500, y: 790 }, { x: 430, y: 1050 } ],  // church down to the shed
-		// north road, east of the grove, with a kink
-		[ HUB, { x: 1300, y: 760 } ],
-		[ { x: 1300, y: 760 }, { x: 1260, y: 560 } ],
-		[ { x: 1260, y: 560 }, { x: 1260, y: 330 } ],
-		// the top road: farmhouse ← cookshack → elevator
-		[ { x: 1260, y: 330 }, { x: 1040, y: 280 } ],
-		[ { x: 1040, y: 280 }, { x: 820, y: 400 } ],
-		[ { x: 1260, y: 330 }, { x: 1500, y: 270 } ],
-		[ { x: 1500, y: 270 }, { x: 1740, y: 430 } ],
-		[ { x: 1740, y: 430 }, { x: 1860, y: 600 } ],
-		[ { x: 1860, y: 600 }, { x: 1900, y: 860 } ],
-		// hub out east to the barn
-		[ HUB, { x: 1420, y: 1010 } ],
-		[ { x: 1420, y: 1010 }, { x: 1650, y: 960 } ],
-		[ { x: 1650, y: 960 }, { x: 1900, y: 860 } ],
-		[ { x: 1900, y: 860 }, { x: 2260, y: 740 } ],
-		// the big south-east joyride loop
-		[ { x: 1420, y: 1010 }, { x: 1500, y: 1180 } ],
-		[ { x: 1500, y: 1180 }, { x: 1750, y: 1240 } ],
-		[ { x: 1750, y: 1240 }, { x: 2050, y: 1150 } ],
-		[ { x: 2050, y: 1150 }, { x: 2200, y: 980 } ],
-		[ { x: 2200, y: 980 }, { x: 2260, y: 740 } ],
-		// the family-gate spur
-		[ HUB, { x: 1198, y: 902 } ]
+	// The eight family lines, shown as drive-in movie screens on the fence.
+	var LINES = [
+		{ name: 'The Cheesmans', href: '/cheesmans', x: 700, z: 130, face: 1 },
+		{ name: 'The Dochertys', href: '/dochertys', x: 1700, z: 130, face: 1 },
+		{ name: 'The Haistes', href: '/haistes', x: 2700, z: 130, face: 1 },
+		{ name: 'The Lakemans', href: '/lakemans', x: 3700, z: 130, face: 1 },
+		{ name: 'The Rycrofts', href: '/rycrofts', x: 130, z: 800, face: 2 },
+		{ name: 'The McIvers', href: '/mcivers', x: 130, z: 1700, face: 2 },
+		{ name: 'The Verbooms', href: '/verbooms', x: 4350, z: 800, face: 3 },
+		{ name: 'The Steinkes', href: '/steinkes', x: 4350, z: 1700, face: 3 }
 	];
-	var ROAD_W = 60;
 
-	// Rolling terrain: sharp hills + broad gentle swells. Roads are painted
-	// INTO the ground mesh (vertex colors) so they ride the undulation.
+	// The road net — wide, and full of bends. Nothing cuts the grove.
+	var PATHS = [
+		[ { x: 2240, y: 2485 }, { x: 2219, y: 2275 } ],
+		[ { x: 2219, y: 2275 }, { x: 2170, y: 1890 } ],
+		[ { x: 2170, y: 1890 }, HUB ],
+		[ HUB, { x: 1750, y: 1785 } ],
+		[ { x: 1750, y: 1785 }, { x: 1400, y: 1768 } ],
+		[ { x: 1400, y: 1768 }, { x: 1085, y: 1628 } ],
+		[ { x: 1085, y: 1628 }, { x: 875, y: 1383 } ],
+		[ { x: 875, y: 1383 }, { x: 753, y: 1838 } ],
+		[ HUB, { x: 2275, y: 1330 } ],
+		[ { x: 2275, y: 1330 }, { x: 2205, y: 980 } ],
+		[ { x: 2205, y: 980 }, { x: 2205, y: 578 } ],
+		[ { x: 2205, y: 578 }, { x: 1820, y: 490 } ],
+		[ { x: 1820, y: 490 }, { x: 1435, y: 700 } ],
+		[ { x: 2205, y: 578 }, { x: 2625, y: 473 } ],
+		[ { x: 2625, y: 473 }, { x: 3045, y: 753 } ],
+		[ { x: 3045, y: 753 }, { x: 3255, y: 1050 } ],
+		[ { x: 3255, y: 1050 }, { x: 3325, y: 1505 } ],
+		[ HUB, { x: 2485, y: 1768 } ],
+		[ { x: 2485, y: 1768 }, { x: 2888, y: 1680 } ],
+		[ { x: 2888, y: 1680 }, { x: 3325, y: 1505 } ],
+		[ { x: 3325, y: 1505 }, { x: 3955, y: 1295 } ],
+		[ { x: 2485, y: 1768 }, { x: 2625, y: 2065 } ],
+		[ { x: 2625, y: 2065 }, { x: 3063, y: 2170 } ],
+		[ { x: 3063, y: 2170 }, { x: 3588, y: 2013 } ],
+		[ { x: 3588, y: 2013 }, { x: 3850, y: 1715 } ],
+		[ { x: 3850, y: 1715 }, { x: 3955, y: 1295 } ],
+		[ HUB, { x: 2097, y: 1579 } ]
+	];
+	var ROAD_W = 62;
+
+	// Terrain: a tilted grade + strong hills + broad swells + POND BOWLS
+	// (negative gaussians — the dimples the water sits in).
+	var TILT_Z = 0.016, TILT_X = 0.005; // climbs to the north, leans a little east
 	var HILLS = [
-		{ x: 300, z: 300, a: 24, r: 150 },
-		{ x: 2300, z: 300, a: 27, r: 170 },
-		{ x: 700, z: 700, a: 15, r: 120 },
-		{ x: 1600, z: 650, a: 18, r: 140 },
-		{ x: 2350, z: 1250, a: 21, r: 150 },
-		{ x: 350, z: 1300, a: 18, r: 130 },
-		{ x: 1900, z: 420, a: 14, r: 150 },
-		{ x: 1100, z: 1250, a: 13, r: 140 },
-		// broad swells — the whole quarter breathes
-		{ x: 1280, z: 720, a: 10, r: 520 },
-		{ x: 620, z: 420, a: 8, r: 420 },
-		{ x: 2000, z: 1100, a: 9, r: 460 }
+		{ x: 525, z: 525, a: 36, r: 240 },
+		{ x: 4025, z: 525, a: 40, r: 270 },
+		{ x: 1225, z: 1225, a: 22, r: 190 },
+		{ x: 2800, z: 1138, a: 27, r: 225 },
+		{ x: 4113, z: 2188, a: 32, r: 240 },
+		{ x: 613, z: 2275, a: 27, r: 210 },
+		{ x: 3325, z: 735, a: 21, r: 240 },
+		{ x: 1925, z: 2188, a: 20, r: 225 },
+		{ x: 2240, z: 1260, a: 15, r: 900 },
+		{ x: 1085, z: 735, a: 12, r: 700 },
+		{ x: 3500, z: 1925, a: 14, r: 800 },
+		// pond bowls
+		{ x: 3690, z: 980, a: -11, r: 260 },
+		{ x: 4000, z: 2065, a: -10, r: 230 },
+		{ x: 1260, z: 2065, a: -10, r: 220 },
+		{ x: 2940, z: 315, a: -9, r: 200 }
 	];
-	// Yards flatten so buildings sit level: blend terrain toward the yard's
-	// own height inside ri, feathered out to ro. (Ponds get flat dishes too.)
+	var PONDS = [
+		{ x: 3690, z: 980, waterR: 100 },
+		{ x: 4000, z: 2065, waterR: 88 },
+		{ x: 1260, z: 2065, waterR: 84 },
+		{ x: 2940, z: 315, waterR: 74 }
+	];
 	var FLAT = [
-		{ x: 692, z: 336, ri: 90, ro: 180 },   // farmhouse
-		{ x: 1280, z: 264, ri: 70, ro: 150 },  // cookshack
-		{ x: 1792, z: 392, ri: 80, ro: 170 },  // elevator
-		{ x: 396, z: 744, ri: 100, ro: 190 },  // church
-		{ x: 2022, z: 820, ri: 90, ro: 180 },  // barn
-		{ x: 372, z: 1104, ri: 60, ro: 140 },  // shed
-		{ x: 2340, z: 720, ri: 50, ro: 130 },  // mast
-		{ x: 1280, z: 1390, ri: 140, ro: 260 },// gate + spawn + mailbox
-		{ x: 968, z: 734, ri: 320, ro: 430 },  // the family compound
-		{ x: 2200, z: 1030, ri: 50, ro: 120 }, // restack pad
-		{ x: 2110, z: 560, ri: 70, ro: 150 },  // ponds…
-		{ x: 2290, z: 1180, ri: 60, ro: 140 },
-		{ x: 720, z: 1180, ri: 55, ro: 140 },
-		{ x: 1680, z: 180, ri: 50, ro: 130 }
+		{ x: 1211, z: 588, ri: 160, ro: 315 },
+		{ x: 2240, z: 462, ri: 122, ro: 262 },
+		{ x: 3136, z: 686, ri: 140, ro: 300 },
+		{ x: 693, z: 1302, ri: 175, ro: 332 },
+		{ x: 3539, z: 1435, ri: 158, ro: 315 },
+		{ x: 651, z: 1932, ri: 105, ro: 245 },
+		{ x: 4095, z: 1260, ri: 88, ro: 228 },
+		{ x: 2240, z: 2432, ri: 245, ro: 455 },
+		{ x: 1694, z: 1284, ri: 560, ro: 750 },
+		{ x: 3850, z: 1802, ri: 88, ro: 210 },
+		{ x: 2730, z: 630, ri: 70, ro: 160 } // the tractor's pull-off
 	];
-	// Dirt-jump mounds ON the roads (visual brown domes, not in the mesh).
+	// Monster ramps ON the roads — big enough to launch a flip from.
 	var MOUNDS = [
-		{ x: 1540, z: 985, a: 12, r: 40 },
-		{ x: 1260, z: 450, a: 11, r: 36 },
-		{ x: 1900, z: 1200, a: 13, r: 44 }
+		{ x: 2695, z: 1724, a: 20, r: 60 },
+		{ x: 2205, z: 788, a: 18, r: 54 },
+		{ x: 3325, z: 2100, a: 22, r: 66 }
 	];
-	// Turbo pads (glowing chevrons on straights).
 	var PADS = [
-		{ x: 1250, z: 1180 }, { x: 1290, z: 660 },
-		{ x: 1500, z: 1000 }, { x: 2110, z: 1120 }
+		{ x: 2188, z: 2065 }, { x: 2258, z: 1155 },
+		{ x: 2625, z: 1750 }, { x: 3693, z: 1960 }
 	];
-	// The 20 hidden tokens. 'air' tokens hover above jump mounds —
-	// you can only grab them mid-flight.
 	var TOKENS = [
-		{ x: 200, z: 200 }, { x: 2400, z: 180 }, { x: 180, z: 1250 },
-		{ x: 2380, z: 1320 }, { x: 1280, z: 120 }, { x: 640, z: 120 },
-		{ x: 1900, z: 150 }, { x: 2450, z: 700 }, { x: 100, z: 700 },
-		{ x: 700, z: 1350 }, { x: 1650, z: 1350 }, { x: 450, z: 950 },
-		{ x: 900, z: 180 }, { x: 1500, z: 700 }, { x: 2150, z: 500 },
-		{ x: 350, z: 550 }, { x: 1540, z: 985, air: true }, { x: 1260, z: 450, air: true },
-		{ x: 300, z: 1180 }, { x: 2330, z: 650 }
+		{ x: 350, z: 350 }, { x: 4200, z: 315 }, { x: 315, z: 2188 },
+		{ x: 4165, z: 2310 }, { x: 2240, z: 210 }, { x: 1120, z: 210 },
+		{ x: 3325, z: 263 }, { x: 4288, z: 1225 }, { x: 175, z: 1225 },
+		{ x: 1225, z: 2363 }, { x: 2888, z: 2363 }, { x: 788, z: 1663 },
+		{ x: 1575, z: 315 }, { x: 2625, z: 1225 }, { x: 3763, z: 875 },
+		{ x: 613, z: 963 }, { x: 2695, z: 1724, air: true }, { x: 2205, z: 788, air: true },
+		{ x: 525, z: 2065 }, { x: 4078, z: 1138 }
 	];
 
 	var stage, hudEl, chipEl;
 	var renderer, scene, camera, clock;
 	var Matter, engine, buggyBody;
 	var buggyGroup, chassisGroup, wheels = [], blobShadow;
-	var bales = [];      // loose + stack-bottoms: {body, mesh, hx, hz, fall}
-	var stacks = [];     // {toppled, bottoms:[idx into bales], uppers:[{mesh,hx,hz,hy,body,fallT}]}
-	var restackPad = { x: 2200, z: 1030, r: 34, holdMS: 0 };
+	var bales = [];
+	var stacks = [];
+	var restackPad = { x: 3850, z: 1802, r: 40, holdMS: 0 };
 	var clickables = [];
 	var mastLamp = null;
 	var gateArm = null, gateBody = null, gateOpen = false, isFamily = false;
 	var PROMPTS = [];
 	var keys = {}, accMS = 0, nearLandmark = null;
 	var camPos = null, raycaster = null, pointerNDC = null;
-	// P2 juice
-	var dustPool = [], smokeEmitters = [], trackPool = [], trackIdx = 0, distMark = 0;
+	var dustPool = [], splashPool = [], smokeEmitters = [], trackPool = [], trackIdx = 0, distMark = 0;
 	var audio = { ctx: null, on: false, master: null, engGain: null, engOsc1: null, engOsc2: null };
 	var soundBtn = null;
-	// P2.5 playground state
 	var tokens = [], tokenCount = 0, tokenFound = 0;
 	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0;
+	var airPitch = 0, jumpCooldown = 0;
 	var boostT = 0, padCooldown = [];
+	var inWater = false;
 	var baseFov = 55;
-	// physics-step interpolation (kills the drive jitter): render draws the
-	// buggy between the last two fixed steps instead of snapping to steps
-	var pX = 0, pY = 0, pA = 0;
+	var pX = 0, pY = 0, pA = 0; // physics-step interpolation
 
 	/* ------------------------------------------------------------------ *
-	 *  Heightfield
+	 *  Terrain
 	 * ------------------------------------------------------------------ */
 	function gauss( x, z, g ) {
 		var dx = x - g.x, dz = z - g.z;
@@ -201,7 +208,7 @@
 		return g.a * Math.exp( -( dx * dx + dz * dz ) / s2 );
 	}
 	function rawHills( x, z ) {
-		var y = 0;
+		var y = ( H - z ) * TILT_Z + ( x - W / 2 ) * TILT_X; // the grade
 		for ( var i = 0; i < HILLS.length; i++ ) y += gauss( x, z, HILLS[ i ] );
 		return y;
 	}
@@ -212,18 +219,13 @@
 			var d = Math.hypot( x - f.x, z - f.z );
 			if ( d >= f.ro ) continue;
 			var w = d <= f.ri ? 1 : 1 - ( d - f.ri ) / ( f.ro - f.ri );
-			w = w * w * ( 3 - 2 * w ); // smoothstep
+			w = w * w * ( 3 - 2 * w );
 			if ( f.h === undefined ) f.h = rawHills( f.x, f.z );
 			y = y * ( 1 - w ) + f.h * w;
 		}
 		return y;
 	}
-	function wrapAngle( a ) {
-		while ( a > Math.PI ) a -= 2 * Math.PI;
-		while ( a < -Math.PI ) a += 2 * Math.PI;
-		return a;
-	}
-	function heightAt( x, z ) { // hills + jump mounds (what the buggy rides)
+	function heightAt( x, z ) {
 		var y = hillsAt( x, z );
 		for ( var i = 0; i < MOUNDS.length; i++ ) y += gauss( x, z, MOUNDS[ i ] );
 		return y;
@@ -234,6 +236,11 @@
 			z: ( heightAt( x, z + 6 ) - heightAt( x, z - 6 ) ) / 12
 		};
 	}
+	function wrapAngle( a ) {
+		while ( a > Math.PI ) a -= 2 * Math.PI;
+		while ( a < -Math.PI ) a += 2 * Math.PI;
+		return a;
+	}
 
 	function boot( stageEl ) {
 		stage = stageEl;
@@ -243,7 +250,6 @@
 		var THREE = window.THREE;
 		isFamily = !! ( window.tcVentures && Number( window.tcVentures.bqFamily ) );
 
-		// ---------- renderer / scene ----------
 		renderer = new THREE.WebGLRenderer( { antialias: true } );
 		renderer.setPixelRatio( Math.min( window.devicePixelRatio || 1, 2 ) );
 		renderer.setSize( stage.clientWidth, stage.clientHeight );
@@ -253,47 +259,41 @@
 
 		scene = new THREE.Scene();
 		scene.background = new THREE.Color( 0x0a1220 );
-		scene.fog = new THREE.Fog( 0x0a1220, 480, 2100 );
+		scene.fog = new THREE.Fog( 0x0a1220, 560, 2700 );
 
-		camera = new THREE.PerspectiveCamera( baseFov, stage.clientWidth / stage.clientHeight, 1, 5200 );
+		camera = new THREE.PerspectiveCamera( baseFov, stage.clientWidth / stage.clientHeight, 1, 8000 );
 
-		// ---------- light ----------
 		scene.add( new THREE.AmbientLight( 0x24324a, 0.85 ) );
 		scene.add( new THREE.HemisphereLight( 0x39506e, 0x141d14, 0.5 ) );
 		var moon = new THREE.DirectionalLight( 0x9ec2e8, 0.75 );
-		moon.position.set( -500, 700, -400 );
+		moon.position.set( -700, 900, -600 );
 		scene.add( moon );
 		var moonBall = new THREE.Mesh(
-			new THREE.SphereGeometry( 80, 20, 20 ),
+			new THREE.SphereGeometry( 110, 20, 20 ),
 			new THREE.MeshBasicMaterial( { color: 0xdfe9f5, fog: false } )
 		);
-		moonBall.position.set( -1000, 640, -1400 );
+		moonBall.position.set( -1400, 900, -2000 );
 		scene.add( moonBall );
 
-		// ---------- ground: displaced by the terrain, roads PAINTED in ----
-		// Vertex colors bake the dirt roads (and field-tone variation) into
-		// the mesh itself, so the roads ride every hill and swell instead of
-		// clipping through them as flat strips.
-		var groundGeo = new THREE.PlaneGeometry( 4200, 3200, 210, 150 );
+		// ---------- ground: displaced terrain with roads painted in ----------
+		var groundGeo = new THREE.PlaneGeometry( 7200, 5200, 260, 180 );
 		groundGeo.rotateX( -Math.PI / 2 );
 		groundGeo.translate( W / 2, 0, H / 2 );
 		var pos = groundGeo.attributes.position;
 		var colors = new Float32Array( pos.count * 3 );
+		var core = ROAD_W / 2, feather = ROAD_W / 2 + 18;
 		for ( var vi = 0; vi < pos.count; vi++ ) {
 			var vx = pos.getX( vi ), vz = pos.getZ( vi );
 			var vy = hillsAt( vx, vz );
 			pos.setY( vi, vy );
-			// nearest-road blend: dirt core -> feathered edge -> field
-			var core = ROAD_W / 2, feather = ROAD_W / 2 + 16;
 			var dR = 1e9;
 			for ( var pi = 0; pi < PATHS.length; pi++ ) {
 				dR = Math.min( dR, distToSeg( vx, vz, PATHS[ pi ][ 0 ], PATHS[ pi ][ 1 ] ) );
 				if ( dR < core ) break;
 			}
 			var road = dR <= core ? 1 : ( dR >= feather ? 0 : 1 - ( dR - core ) / ( feather - core ) );
-			// field greens vary softly; moonlight favours the high ground
 			var n = 0.5 + 0.5 * Math.sin( vx * 0.013 ) * Math.sin( vz * 0.017 );
-			var lift = 1 + vy * 0.012;
+			var lift = 1 + ( vy - 20 ) * 0.006;
 			var fr = ( 0.085 + n * 0.02 ) * lift, fg = ( 0.14 + n * 0.03 ) * lift, fb = ( 0.10 + n * 0.02 ) * lift;
 			var rr = 0.30 * lift, rg = 0.24 * lift, rb = 0.165 * lift;
 			colors[ vi * 3 ] = fr + ( rr - fr ) * road;
@@ -302,9 +302,8 @@
 		}
 		groundGeo.setAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 		groundGeo.computeVertexNormals();
-		var ground = new THREE.Mesh( groundGeo,
-			new THREE.MeshLambertMaterial( { vertexColors: true } ) );
-		scene.add( ground );
+		scene.add( new THREE.Mesh( groundGeo,
+			new THREE.MeshLambertMaterial( { vertexColors: true } ) ) );
 
 		buildPonds( THREE );
 		buildMounds( THREE );
@@ -339,6 +338,7 @@
 		buildWindbreak( THREE );
 		buildFence( THREE );
 		buildGateway( THREE );
+		buildDriveIns( THREE );
 		buildAnimals( THREE );
 		buildTractor( THREE );
 		buildBales( THREE );
@@ -347,19 +347,18 @@
 		buildTokens( THREE );
 
 		buggyGroup = buildBuggy( THREE );
+		buggyGroup.rotation.order = 'YZX'; // yaw, then pitch about the axles
 		scene.add( buggyGroup );
-		camPos = new THREE.Vector3( SPAWN.x, 70, SPAWN.y + 140 );
+		camPos = new THREE.Vector3( SPAWN.x, 90, SPAWN.y + 160 );
 		prevGy = heightAt( SPAWN.x, SPAWN.y );
 		worldY = prevGy;
 
-		// P2 juice
 		initDust( THREE );
+		initSplash( THREE );
 		initTracks( THREE );
 		initSmoke( THREE );
 		buildSoundToggle();
 
-		// proximity prompts: all landmarks + the family gate + the restack
-		// pad. APPEND (never reassign) — the tractor already pushed itself in.
 		LANDMARKS.forEach( function ( lm ) { PROMPTS.push( lm ); } );
 		PROMPTS.push( {
 			id: 'familygate', name: 'the family gate', x: GATE.x + 6, y: GATE.z,
@@ -373,7 +372,6 @@
 			href: null, prompt: 'Park here a moment and the bales restack'
 		} );
 
-		// ---------- input ----------
 		window.addEventListener( 'keydown', onKey, true );
 		window.addEventListener( 'keyup', onKey, true );
 		raycaster = new THREE.Raycaster();
@@ -400,23 +398,30 @@
 	function updateHud() {
 		if ( ! hudEl ) return;
 		hudEl.hidden = false;
-		hudEl.textContent = '3D beta · WASD drives · H honks · Enter steps inside · Esc hops out · ⛁ '
-			+ tokenFound + '/' + tokenCount + ' tokens';
+		hudEl.textContent = '3D beta · WASD drives · Space jumps · L/R Shift flips · H honks · Enter steps inside · ⛁ '
+			+ tokenFound + '/' + tokenCount;
 	}
 
 	function onKey( e ) {
 		if ( document.activeElement !== stage ) return;
-		var k = e.key.toLowerCase();
-		var map = { w: 'up', arrowup: 'up', s: 'down', arrowdown: 'down',
-			a: 'left', arrowleft: 'left', d: 'right', arrowright: 'right',
-			enter: 'enter', escape: 'esc', h: 'honk' };
-		if ( ! ( k in map ) ) return;
+		var act = null;
+		if ( e.code === 'Space' ) act = 'jump';
+		else if ( e.code === 'ShiftLeft' ) act = 'tiltF';
+		else if ( e.code === 'ShiftRight' ) act = 'tiltB';
+		else {
+			var k = e.key.toLowerCase();
+			var map = { w: 'up', arrowup: 'up', s: 'down', arrowdown: 'down',
+				a: 'left', arrowleft: 'left', d: 'right', arrowright: 'right',
+				enter: 'enter', escape: 'esc', h: 'honk' };
+			if ( k in map ) act = map[ k ];
+		}
+		if ( ! act ) return;
 		e.preventDefault();
 		var down = ( e.type === 'keydown' );
-		keys[ map[ k ] ] = down;
-		if ( down && map[ k ] === 'esc' ) stage.blur();
-		if ( down && map[ k ] === 'enter' && nearLandmark ) enterLandmark( nearLandmark );
-		if ( down && map[ k ] === 'honk' ) honk();
+		keys[ act ] = down;
+		if ( down && act === 'esc' ) stage.blur();
+		if ( down && act === 'enter' && nearLandmark ) enterLandmark( nearLandmark );
+		if ( down && act === 'honk' ) honk();
 	}
 
 	function onClick( e ) {
@@ -472,16 +477,27 @@
 	function control() {
 		var b = buggyBody;
 		var heading = { x: Math.cos( b.angle ), y: Math.sin( b.angle ) };
-		b.frictionAir = airborne ? 0.02 : 0.14;
+
+		// water check (the pond dimples)
+		inWater = false;
+		if ( ! airborne ) {
+			for ( var pw = 0; pw < PONDS.length; pw++ ) {
+				if ( Math.hypot( b.position.x - PONDS[ pw ].x, b.position.y - PONDS[ pw ].z ) < PONDS[ pw ].waterR ) {
+					inWater = true;
+					break;
+				}
+			}
+		}
+		b.frictionAir = airborne ? 0.02 : ( inWater ? 0.26 : 0.14 );
 
 		throttleInput = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.65 : 0 );
 		steerInput = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
 
-		// tank steering; muted in the air
 		Matter.Body.setAngularVelocity( b, steerInput * ( airborne ? 0.03 : 0.072 ) );
 
-		var power = boostT > 0 ? 0.0062 : 0.0032;
+		var power = boostT > 0 ? 0.0078 : 0.0042;
 		if ( airborne ) power *= 0.25;
+		if ( inWater ) power *= 0.7;
 		if ( throttleInput ) {
 			Matter.Body.applyForce( b, b.position,
 				{ x: heading.x * power * throttleInput * b.mass, y: heading.y * power * throttleInput * b.mass } );
@@ -495,7 +511,6 @@
 		var nvx = heading.x * fwd + lat.x * latSpeed * grip;
 		var nvy = heading.y * fwd + lat.y * latSpeed * grip;
 
-		// hills push back: downhill runs free, uphill costs
 		if ( ! airborne ) {
 			var g = slopeAt( b.position.x, b.position.y );
 			var along = g.x * heading.x + g.z * heading.y;
@@ -504,11 +519,20 @@
 		}
 		Matter.Body.setVelocity( b, { x: nvx, y: nvy } );
 
-		var cap = boostT > 0 ? 10.2 : 7.0;
+		var cap = boostT > 0 ? 13 : 9;
+		if ( inWater ) cap *= 0.6;
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		if ( sp > cap ) Matter.Body.setVelocity( b, { x: b.velocity.x * cap / sp, y: b.velocity.y * cap / sp } );
 
 		if ( boostT > 0 ) boostT -= 16.666;
+		if ( jumpCooldown > 0 ) jumpCooldown -= 16.666;
+
+		// SPACE: bunny hop (bigger with speed)
+		if ( keys.jump && ! airborne && jumpCooldown <= 0 ) {
+			jumpCooldown = 300;
+			airborne = true;
+			vAlt = 95 + sp * 5;
+		}
 	}
 
 	function render( dms, alpha ) {
@@ -519,18 +543,17 @@
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		var t = clock.elapsedTime;
 
-		// interpolated pose — smooth at any refresh rate
 		var rx = pX + ( b.position.x - pX ) * alpha;
 		var rz = pY + ( b.position.y - pY ) * alpha;
 		var ra = pA + wrapAngle( b.angle - pA ) * alpha;
 
-		// ---- vertical: ride the terrain; go ballistic off the mound lips ----
+		// ---- vertical: terrain, ramps, Space-jumps, mid-air FLIPS ----
 		var gy = heightAt( rx, rz );
 		if ( ! airborne ) {
 			var groundRate = ( gy - prevGy ) / Math.max( dt, 0.001 );
-			if ( groundRate < -55 && sp > 4.4 ) {
+			if ( groundRate < -60 && sp > 4.6 ) {
 				airborne = true;
-				vAlt = Math.min( 120, -groundRate * 0.85 );
+				vAlt = Math.min( 150, -groundRate * 0.9 );
 				worldY = prevGy;
 			} else {
 				worldY = gy;
@@ -539,25 +562,42 @@
 		if ( airborne ) {
 			worldY += vAlt * dt;
 			vAlt -= 320 * dt;
+			// L/R Shift pitch the buggy for flips
+			var pitchVel = ( keys.tiltF ? -6.8 : 0 ) + ( keys.tiltB ? 6.8 : 0 );
+			airPitch += pitchVel * dt;
 			if ( worldY <= gy ) {
 				airborne = false;
 				worldY = gy;
 				vAlt = 0;
-				for ( var ld = 0; ld < 6; ld++ ) spawnDust( wheelWorld( -8 + Math.random() * 16, -12 + Math.random() * 24 ), sp );
+				var n = wrapAngle( airPitch );
+				if ( Math.abs( n ) > 0.75 ) {
+					// crashed the rotation — eat dirt
+					Matter.Body.setVelocity( b, { x: b.velocity.x * 0.3, y: b.velocity.y * 0.3 } );
+					for ( var cd = 0; cd < 10; cd++ ) spawnDust( wheelWorld( -10 + Math.random() * 20, -14 + Math.random() * 28 ), 6 );
+					flashChip( 'Ate dirt — square the landing next time' );
+				} else {
+					if ( Math.abs( airPitch ) > 5.5 ) { // stuck a full flip
+						boostT = 800;
+						flashChip( 'FLIP! — have some boost 🛞' );
+						if ( audio.on ) whoosh();
+					}
+					for ( var ld = 0; ld < 6; ld++ ) spawnDust( wheelWorld( -8 + Math.random() * 16, -12 + Math.random() * 24 ), sp );
+				}
+				airPitch = 0;
 			}
 		}
 		prevGy = gy;
 
 		buggyGroup.position.set( rx, worldY, rz );
 		buggyGroup.rotation.y = -ra;
+		buggyGroup.rotation.z = airPitch;
 		chassisGroup.rotation.x += ( ( steerInput * -0.08 * Math.min( 1, sp / 3 ) ) - chassisGroup.rotation.x ) * 0.15;
-		chassisGroup.rotation.z += ( ( ( airborne ? -0.14 : throttleInput * -0.05 ) ) - chassisGroup.rotation.z ) * 0.12;
+		chassisGroup.rotation.z += ( ( ( airborne ? -0.1 : throttleInput * -0.05 ) ) - chassisGroup.rotation.z ) * 0.12;
 		for ( var i = 0; i < wheels.length; i++ ) wheels[ i ].rotation.z -= sp * 0.09;
 		var hover = worldY - gy;
 		blobShadow.position.set( rx, gy + 0.6, rz );
-		blobShadow.material.opacity = Math.max( 0.08, 0.32 - hover * 0.01 );
+		blobShadow.material.opacity = Math.max( 0.06, 0.32 - hover * 0.008 );
 
-		// bales follow their bodies (and the terrain)
 		for ( var j = 0; j < bales.length; j++ ) {
 			var bl = bales[ j ];
 			var by = heightAt( bl.body.position.x, bl.body.position.y ) + 9;
@@ -571,19 +611,14 @@
 		checkStacks();
 		checkRestack( dms, sp );
 		updateAnimals( dms );
-
-		// tokens spin, bob, get collected
 		updateTokens( dms, t );
-
-		// turbo pads
 		checkPads( t );
 
 		if ( mastLamp ) mastLamp.visible = ( Math.floor( t * 1.4 ) % 2 ) === 0;
 
-		// the family gate
 		if ( gateArm ) {
 			var gd = Math.hypot( b.position.x - GATE.x, b.position.y - GATE.z );
-			if ( isFamily && ! gateOpen && gd < 120 ) {
+			if ( isFamily && ! gateOpen && gd < 140 ) {
 				gateOpen = true;
 				if ( gateBody ) Matter.Composite.remove( engine.world, gateBody );
 			}
@@ -591,13 +626,16 @@
 			gateArm.rotation.x += ( target - gateArm.rotation.x ) * 0.06;
 		}
 
-		// ---- P2 juice ----
-		if ( ! airborne && sp > 1.6 && Math.random() < Math.min( 0.55, 0.1 + sp * 0.05 + Math.abs( steerInput ) * 0.2 ) ) {
+		// juice
+		if ( inWater && sp > 1.4 ) {
+			spawnSplash( wheelWorld( 10, 12 ), sp );
+			spawnSplash( wheelWorld( 10, -12 ), sp );
+		} else if ( ! airborne && sp > 1.6 && Math.random() < Math.min( 0.55, 0.1 + sp * 0.04 + Math.abs( steerInput ) * 0.2 ) ) {
 			spawnDust( wheelWorld( -16, steerInput >= 0 ? 13 : -13 ), sp );
 		}
 		updateDust( dms );
 		distMark += sp * ( dms / 16.666 );
-		if ( ! airborne && sp > 1.2 && distMark > 9 ) {
+		if ( ! airborne && ! inWater && sp > 1.2 && distMark > 9 ) {
 			distMark = 0;
 			dropTrack( wheelWorld( -15, 13 ) );
 			dropTrack( wheelWorld( -15, -13 ) );
@@ -606,12 +644,11 @@
 		updateSmoke( dms );
 		updateAudio( sp );
 
-		// nearest in-range prompt drives the chip
 		var near = null, nearD = 1e9;
 		for ( var p = 0; p < PROMPTS.length; p++ ) {
 			var lm = PROMPTS[ p ];
 			var d = Math.hypot( b.position.x - lm.x, b.position.y - lm.y );
-			var range = ( lm.id === 'familygate' || lm.id === 'restack' ) ? 120 : 170;
+			var range = ( lm.id === 'familygate' || lm.id === 'restack' ) ? 130 : 180;
 			if ( d < range && d < nearD ) { near = lm; nearD = d; }
 		}
 		if ( near !== nearLandmark ) {
@@ -622,15 +659,14 @@
 			}
 		}
 
-		// chase camera (rides the terrain, kicks wide on boost) — tracks the
-		// INTERPOLATED pose so the follow is glass-smooth
+		// chase camera
 		var hx = Math.cos( ra ), hy = Math.sin( ra );
-		var tx = rx - hx * 130, tz = rz - hy * 130;
+		var tx = rx - hx * 150, tz = rz - hy * 150;
 		camPos.x += ( tx - camPos.x ) * 0.06;
 		camPos.z += ( tz - camPos.z ) * 0.06;
-		camPos.y += ( ( worldY + 66 + sp * 3 ) - camPos.y ) * 0.06;
+		camPos.y += ( ( worldY + 76 + sp * 3 ) - camPos.y ) * 0.06;
 		camera.position.copy( camPos );
-		camera.lookAt( rx + hx * 44, worldY + 6, rz + hy * 44 );
+		camera.lookAt( rx + hx * 48, worldY + 6, rz + hy * 48 );
 		var wantFov = boostT > 0 ? 63 : baseFov;
 		if ( Math.abs( camera.fov - wantFov ) > 0.1 ) {
 			camera.fov += ( wantFov - camera.fov ) * 0.1;
@@ -644,7 +680,6 @@
 	 *  Playground systems
 	 * ------------------------------------------------------------------ */
 	function buildMounds( THREE ) {
-		// brown dirt domes matching the math bumps the buggy rides
 		var dirt = new THREE.MeshLambertMaterial( { color: 0x4a3826 } );
 		MOUNDS.forEach( function ( m ) {
 			var dome = new THREE.Mesh( new THREE.SphereGeometry( m.r, 18, 12,
@@ -684,7 +719,7 @@
 				padCooldown[ i ] = t + 1.6;
 				boostT = 950;
 				var a = b.angle;
-				var sp = Math.max( Math.hypot( b.velocity.x, b.velocity.y ), 7.4 );
+				var sp = Math.max( Math.hypot( b.velocity.x, b.velocity.y ), 9.4 );
 				Matter.Body.setVelocity( b, { x: Math.cos( a ) * sp, y: Math.sin( a ) * sp } );
 				if ( audio.on && audio.ctx ) whoosh();
 			}
@@ -695,13 +730,13 @@
 		var found = [];
 		try { found = JSON.parse( window.localStorage.getItem( 'tcBqTok_v1' ) || '[]' ); } catch ( err ) {}
 		var geo = new THREE.CylinderGeometry( 6, 6, 1.8, 16 );
-		geo.rotateZ( Math.PI / 2 ); // coin standing upright
+		geo.rotateZ( Math.PI / 2 );
 		var gold = new THREE.MeshBasicMaterial( { color: 0xffd76a } );
 		tokenCount = TOKENS.length;
 		TOKENS.forEach( function ( tk, i ) {
 			var got = found.indexOf( i ) !== -1;
 			var mesh = new THREE.Mesh( geo, gold );
-			var baseY = heightAt( tk.x, tk.z ) + ( tk.air ? 26 : 11 );
+			var baseY = heightAt( tk.x, tk.z ) + ( tk.air ? 30 : 11 );
 			mesh.position.set( tk.x, baseY, tk.z );
 			mesh.visible = ! got;
 			scene.add( mesh );
@@ -720,7 +755,6 @@
 			tk.mesh.position.y = tk.baseY + Math.sin( t * 2.4 + i ) * 2.2;
 			var d2 = Math.hypot( b.position.x - tk.x, b.position.y - tk.z );
 			var dy = Math.abs( ( worldY + 10 ) - tk.mesh.position.y );
-			// air tokens get a fatter capture window — jump arcs vary
 			if ( d2 < ( tk.air ? 34 : 24 ) && dy < ( tk.air ? 26 : 17 ) ) {
 				tk.got = true;
 				tk.mesh.visible = false;
@@ -743,12 +777,10 @@
 	}
 
 	function buildStacks( THREE ) {
-		// pyramids of bales: 3 on the ground (real bodies), 2 + 1 stacked on
-		// top (visual until toppled). Ram the bottoms and the top comes down.
-		[ { x: 2140, z: 950 }, { x: 560, z: 470 } ].forEach( function ( at ) {
+		[ { x: 3745, z: 1663 }, { x: 980, z: 823 } ].forEach( function ( at ) {
 			var stack = { toppled: false, bottoms: [], uppers: [] };
 			[ -22, 0, 22 ].forEach( function ( off ) {
-				var idx = addBale( THREE, at.x + off, at.z, true );
+				var idx = addBale( THREE, at.x + off, at.z );
 				stack.bottoms.push( idx );
 			} );
 			[ { ox: -11, y: 27 }, { ox: 11, y: 27 }, { ox: 0, y: 45 } ].forEach( function ( u ) {
@@ -794,7 +826,7 @@
 		if ( d < restackPad.r && sp < 0.6 ) {
 			restackPad.holdMS += dms;
 			if ( restackPad.holdMS > 900 ) {
-				restackPad.holdMS = -2500; // debounce
+				restackPad.holdMS = -2500;
 				restackAll();
 				flashChip( 'Bales restacked — go wreck ’em again' );
 			}
@@ -806,11 +838,9 @@
 	}
 
 	function restackAll() {
-		// loose + bottom bales roll home
 		for ( var i = bales.length - 1; i >= 0; i-- ) {
 			var bl = bales[ i ];
 			if ( bl.upperOf ) {
-				// uppers: remove their temp bodies, restore the visual stack
 				Matter.Composite.remove( engine.world, bl.body );
 				bl.mesh.position.set( bl.hx, heightAt( bl.hx, bl.hz ) + bl.fall.fromY, bl.hz );
 				bl.mesh.rotation.y = 0;
@@ -845,8 +875,68 @@
 		ring.position.copy( pad.position );
 		ring.position.y += 0.6;
 		scene.add( ring );
-		buildSign( THREE, 'restack the bales', restackPad.x + 46, restackPad.z,
+		buildSign( THREE, 'restack the bales', restackPad.x + 52, restackPad.z,
 			restackPad.x, restackPad.z );
+	}
+
+	/* ------------------------------------------------------------------ *
+	 *  Heritage drive-in screens (one per family line)
+	 * ------------------------------------------------------------------ */
+	function buildDriveIns( THREE ) {
+		LINES.forEach( function ( line ) {
+			var c = document.createElement( 'canvas' );
+			c.width = 560; c.height = 320;
+			var ctx = c.getContext( '2d' );
+			// the dark screen
+			ctx.fillStyle = '#171310';
+			ctx.fillRect( 0, 0, 560, 320 );
+			ctx.fillStyle = '#0d0b09';
+			ctx.fillRect( 22, 22, 516, 276 );
+			// marquee bulbs around the border
+			for ( var bx = 34; bx < 560; bx += 44 ) {
+				ctx.fillStyle = ( bx / 44 ) % 2 < 1 ? '#ffd9a0' : '#7a5a34';
+				ctx.beginPath(); ctx.arc( bx, 11, 6, 0, 7 ); ctx.fill();
+				ctx.beginPath(); ctx.arc( bx, 309, 6, 0, 7 ); ctx.fill();
+			}
+			ctx.textAlign = 'center';
+			ctx.font = '600 58px Georgia, serif';
+			ctx.fillStyle = '#ffe3b0';
+			ctx.fillText( line.name, 280, 150 );
+			ctx.font = 'italic 30px Georgia, serif';
+			ctx.fillStyle = 'rgba(255, 227, 176, 0.6)';
+			ctx.fillText( 'a family line · drive in', 280, 215 );
+
+			var g = new THREE.Group();
+			var wood = mat( THREE, 0x3a2c1c );
+			[ -52, 52 ].forEach( function ( ox ) {
+				var leg = new THREE.Mesh( new THREE.BoxGeometry( 5, 34, 5 ), wood );
+				leg.position.set( ox, 17, 0 );
+				g.add( leg );
+			} );
+			var panel = new THREE.Mesh( new THREE.BoxGeometry( 124, 70, 3 ), mat( THREE, 0x241c14 ) );
+			panel.position.y = 66;
+			g.add( panel );
+			var face = new THREE.Mesh(
+				new THREE.PlaneGeometry( 118, 66 ),
+				new THREE.MeshBasicMaterial( { map: new THREE.CanvasTexture( c ) } )
+			);
+			face.position.set( 0, 66, 2 );
+			g.add( face );
+
+			var lm = { id: 'line-' + line.href, name: line.name, x: line.x, y: line.z,
+				href: line.href, prompt: line.name + ' — a family line, projected on the night' };
+			g.position.set( line.x, hillsAt( line.x, line.z ), line.z );
+			// face into the field: 1 = north fence (face south), 2 = west
+			// fence (face east), 3 = east fence (face west)
+			g.rotation.y = line.face === 1 ? 0 : ( line.face === 2 ? Math.PI / 2 : -Math.PI / 2 );
+			g.userData.lm = lm;
+			scene.add( g );
+			clickables.push( g );
+			PROMPTS.push( lm );
+			Matter.Composite.add( engine.world,
+				Matter.Bodies.rectangle( line.x, line.z,
+					line.face === 1 ? 124 : 12, line.face === 1 ? 12 : 124, { isStatic: true } ) );
+		} );
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -923,9 +1013,9 @@
 		var beamY = 43;
 		var g = new THREE.Group();
 		var wood = mat( THREE, 0x3a2c1c );
-		[ -1, 1 ].forEach( function ( s ) {
+		[ -1, 1 ].forEach( function ( sd ) {
 			var post = new THREE.Mesh( new THREE.BoxGeometry( 3.2, 42, 3.2 ), wood );
-			post.position.set( s * ( bw / 2 + 4 ), 21, 0 );
+			post.position.set( sd * ( bw / 2 + 4 ), 21, 0 );
 			g.add( post );
 		} );
 		var frame = new THREE.Mesh( new THREE.BoxGeometry( bw + 10, bh + 2.5, 2 ), wood );
@@ -970,9 +1060,7 @@
 			case 'shed': g = buildShed( THREE ); break;
 			case 'mailbox': g = buildMailboxPost( THREE ); break;
 		}
-		// yards are flattened but not at zero — sit each building on its ground
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
-		// treehouses read too small against the buggy at 1:1 — scale them up
 		if ( lm.build === 'treehouse' ) g.scale.set( 1.75, 1.75, 1.75 );
 		g.userData.lm = lm;
 		scene.add( g );
@@ -1002,14 +1090,13 @@
 		var cx = ( COMPOUND.x0 + COMPOUND.x1 ) / 2;
 		var cz = ( COMPOUND.z0 + COMPOUND.z1 ) / 2;
 		var wReg = COMPOUND.x1 - COMPOUND.x0, hReg = COMPOUND.z1 - COMPOUND.z0;
-		var walls = [
+		Matter.Composite.add( engine.world, [
 			Matter.Bodies.rectangle( cx, COMPOUND.z0, wReg, 6, { isStatic: true } ),
 			Matter.Bodies.rectangle( cx, COMPOUND.z1, wReg, 6, { isStatic: true } ),
 			Matter.Bodies.rectangle( COMPOUND.x0, cz, 6, hReg, { isStatic: true } ),
 			Matter.Bodies.rectangle( COMPOUND.x1, ( COMPOUND.z0 + COMPOUND.gateZ0 ) / 2, 6,
 				COMPOUND.gateZ0 - COMPOUND.z0, { isStatic: true } )
-		];
-		Matter.Composite.add( engine.world, walls );
+		] );
 
 		var gateH = hillsAt( GATE.x, GATE.z );
 		var postMat = mat( THREE, 0x59554c );
@@ -1029,7 +1116,7 @@
 		Matter.Composite.add( engine.world, gateBody );
 
 		buildSign( THREE, 'the treehouses · family only',
-			COMPOUND.x1 + 22, COMPOUND.gateZ0 - 12, HUB.x + 30, HUB.y );
+			COMPOUND.x1 + 26, COMPOUND.gateZ0 - 14, HUB.x + 40, HUB.y );
 
 		var lamp = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 4, 3.4 ),
 			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
@@ -1276,98 +1363,31 @@
 	}
 
 	function buildPonds( THREE ) {
+		// water sits in the dimples: a disc at each bowl's level. Driving in
+		// is a wade — splash + drag (see control()/render()).
 		var pondMat = new THREE.MeshLambertMaterial( { color: 0x152c3e, emissive: 0x060f16 } );
 		var glintMat = new THREE.MeshBasicMaterial( { color: 0xbcd6ea, transparent: true, opacity: 0.16 } );
-		[ [ 2110, 560, 55 ], [ 2290, 1180, 48 ], [ 720, 1180, 44 ], [ 1680, 180, 40 ] ].forEach( function ( p ) {
-			var pond = new THREE.Mesh( new THREE.CircleGeometry( p[ 2 ], 18 ), pondMat );
+		PONDS.forEach( function ( p ) {
+			p.waterY = hillsAt( p.x, p.z ) + 3;
+			var pond = new THREE.Mesh( new THREE.CircleGeometry( p.waterR, 22 ), pondMat );
 			pond.rotation.x = -Math.PI / 2;
-			pond.position.set( p[ 0 ], hillsAt( p[ 0 ], p[ 1 ] ) + 0.35, p[ 1 ] );
-			pond.scale.x = 1.35;
+			pond.position.set( p.x, p.waterY, p.z );
+			pond.scale.x = 1.25;
 			scene.add( pond );
-			var glint = new THREE.Mesh( new THREE.CircleGeometry( p[ 2 ] * 0.32, 12 ), glintMat );
+			var glint = new THREE.Mesh( new THREE.CircleGeometry( p.waterR * 0.3, 12 ), glintMat );
 			glint.rotation.x = -Math.PI / 2;
-			glint.position.set( p[ 0 ] - p[ 2 ] * 0.3, hillsAt( p[ 0 ], p[ 1 ] ) + 0.45, p[ 1 ] - p[ 2 ] * 0.2 );
+			glint.position.set( p.x - p.waterR * 0.3, p.waterY + 0.15, p.z - p.waterR * 0.2 );
 			glint.scale.x = 1.8;
 			scene.add( glint );
 		} );
 	}
 
-	function buildWindbreak( THREE ) {
-		var trunkMat = mat( THREE, 0x2c2418 );
-		var leafMat = mat( THREE, 0x1d3a26 );
-		for ( var i = 0; i < 14; i++ ) {
-			var f = i / 13;
-			var x = 790 + f * 350 + ( Math.random() - 0.5 ) * 30;
-			var z = 560 + f * 340 + ( Math.random() - 0.5 ) * 30;
-			var gy = hillsAt( x, z );
-			// big mature poplars — sized against the buggy, not the old board
-			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 4.2, 6, 28, 6 ), trunkMat );
-			trunk.position.set( x, gy + 14, z );
-			scene.add( trunk );
-			var h = 75 + Math.random() * 40;
-			var cone = new THREE.Mesh( new THREE.ConeGeometry( 17 + Math.random() * 7, h, 7 ), leafMat );
-			cone.position.set( x, gy + 28 + h / 2, z );
-			scene.add( cone );
-			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 11, { isStatic: true } ) );
-		}
-	}
-
-	function fenceRun( THREE, x0, z0, x1, z1 ) {
-		var postMat = mat( THREE, 0x4a4034 );
-		var dx = x1 - x0, dz = z1 - z0;
-		var len = Math.hypot( dx, dz ), n = Math.max( 1, Math.floor( len / 60 ) );
-		for ( var i = 0; i <= n; i++ ) {
-			var px = x0 + dx * ( i / n ), pz = z0 + dz * ( i / n );
-			var p = new THREE.Mesh( new THREE.BoxGeometry( 3, 16, 3 ), postMat );
-			p.position.set( px, hillsAt( px, pz ) + 8, pz );
-			scene.add( p );
-		}
-		var midY = hillsAt( ( x0 + x1 ) / 2, ( z0 + z1 ) / 2 );
-		[ 12, 6 ].forEach( function ( y ) {
-			var rail = new THREE.Mesh( new THREE.BoxGeometry( len, 2, 2 ), postMat );
-			rail.position.set( ( x0 + x1 ) / 2, midY + y, ( z0 + z1 ) / 2 );
-			rail.rotation.y = -Math.atan2( dz, dx );
-			scene.add( rail );
-		} );
-	}
-
-	function buildFence( THREE ) {
-		// border runs in shorter chunks so posts + rails follow the hills
-		var step = 320;
-		for ( var x = 0; x < W; x += step ) {
-			fenceRun( THREE, x, 0, Math.min( x + step, W ), 0 );
-			fenceRun( THREE, x, H, Math.min( x + step, W ), H );
-		}
-		for ( var z = 0; z < H; z += step ) {
-			fenceRun( THREE, 0, z, 0, Math.min( z + step, H ) );
-			fenceRun( THREE, W, z, W, Math.min( z + step, H ) );
-		}
-	}
-
-	function buildGateway( THREE ) {
-		var gh = hillsAt( 1280, H - 6 );
-		var stone = mat( THREE, 0x59554c );
-		[ 1220, 1340 ].forEach( function ( x ) {
-			var pillar = new THREE.Mesh( new THREE.BoxGeometry( 10, 26, 10 ), stone );
-			pillar.position.set( x, gh + 13, H - 6 );
-			scene.add( pillar );
-		} );
-		var bar = new THREE.Mesh( new THREE.BoxGeometry( 124, 3, 3 ), mat( THREE, 0x4a4034 ) );
-		bar.position.set( 1280, gh + 27, H - 6 );
-		scene.add( bar );
-		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 4, 5, 4 ),
-			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
-		lantern.position.set( 1280, gh + 31, H - 6 );
-		scene.add( lantern );
-		addGlowDisc( THREE, 1280, H - 30, 34, 0.08 );
-	}
-
-	/* ---- livestock: wandering cows + sheep (real bodies — shove-able) ---- */
+	/* ---- livestock ---- */
 	var animals = [];
 
 	function buildAnimals( THREE ) {
-		var cows = [ [ 1750, 780 ], [ 900, 1150 ], [ 1550, 520 ], [ 2150, 880 ] ];
-		var sheep = [ [ 500, 600 ], [ 1450, 1250 ], [ 1050, 350 ], [ 2250, 420 ], [ 700, 1000 ] ];
+		var cows = [ [ 3063, 1365 ], [ 1575, 2013 ], [ 2713, 910 ], [ 3763, 1540 ] ];
+		var sheep = [ [ 875, 1050 ], [ 2538, 2188 ], [ 1838, 613 ], [ 3938, 735 ], [ 1225, 1750 ] ];
 		cows.forEach( function ( p ) { addAnimal( THREE, 'cow', p[ 0 ], p[ 1 ] ); } );
 		sheep.forEach( function ( p ) { addAnimal( THREE, 'sheep', p[ 0 ], p[ 1 ] ); } );
 	}
@@ -1405,7 +1425,7 @@
 			a.wanderT -= dms;
 			if ( a.wanderT <= 0 ) {
 				a.wanderT = 1800 + Math.random() * 2800;
-				if ( Math.random() < 0.7 ) { // graze sometimes, wander sometimes
+				if ( Math.random() < 0.7 ) {
 					var dir = Math.random() * Math.PI * 2;
 					var spd = a.cow ? 0.5 : 0.7;
 					Matter.Body.setVelocity( a.body, { x: Math.cos( dir ) * spd, y: Math.sin( dir ) * spd } );
@@ -1420,7 +1440,7 @@
 		}
 	}
 
-	/* ---- the old tractor, parked off the top road ---- */
+	/* ---- the old tractor ---- */
 	function buildTractor( THREE ) {
 		var g = new THREE.Group();
 		var red = mat( THREE, 0x9a3f2e );
@@ -1450,7 +1470,7 @@
 		pipe.position.set( 15, 29, 4 );
 		g.add( pipe );
 
-		var lm = { id: 'tractor', name: 'the old tractor', x: 1560, y: 360, href: null,
+		var lm = { id: 'tractor', name: 'the old tractor', x: 2730, y: 630, href: null,
 			prompt: 'The old girl still runs — she just needs a reason' };
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
 		g.rotation.y = 0.6;
@@ -1462,13 +1482,81 @@
 			Matter.Bodies.rectangle( lm.x, lm.y, 42, 26, { isStatic: true } ) );
 	}
 
+	function buildWindbreak( THREE ) {
+		var trunkMat = mat( THREE, 0x2c2418 );
+		var leafMat = mat( THREE, 0x1d3a26 );
+		for ( var i = 0; i < 14; i++ ) {
+			var f = i / 13;
+			var x = 1383 + f * 615 + ( Math.random() - 0.5 ) * 40;
+			var z = 980 + f * 595 + ( Math.random() - 0.5 ) * 40;
+			var gy = hillsAt( x, z );
+			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 4.2, 6, 28, 6 ), trunkMat );
+			trunk.position.set( x, gy + 14, z );
+			scene.add( trunk );
+			var h = 75 + Math.random() * 40;
+			var cone = new THREE.Mesh( new THREE.ConeGeometry( 17 + Math.random() * 7, h, 7 ), leafMat );
+			cone.position.set( x, gy + 28 + h / 2, z );
+			scene.add( cone );
+			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 11, { isStatic: true } ) );
+		}
+	}
+
+	function fenceRun( THREE, x0, z0, x1, z1 ) {
+		var postMat = mat( THREE, 0x4a4034 );
+		var dx = x1 - x0, dz = z1 - z0;
+		var len = Math.hypot( dx, dz ), n = Math.max( 1, Math.floor( len / 60 ) );
+		for ( var i = 0; i <= n; i++ ) {
+			var px = x0 + dx * ( i / n ), pz = z0 + dz * ( i / n );
+			var p = new THREE.Mesh( new THREE.BoxGeometry( 3, 16, 3 ), postMat );
+			p.position.set( px, hillsAt( px, pz ) + 8, pz );
+			scene.add( p );
+		}
+		var midY = hillsAt( ( x0 + x1 ) / 2, ( z0 + z1 ) / 2 );
+		[ 12, 6 ].forEach( function ( y ) {
+			var rail = new THREE.Mesh( new THREE.BoxGeometry( len, 2, 2 ), postMat );
+			rail.position.set( ( x0 + x1 ) / 2, midY + y, ( z0 + z1 ) / 2 );
+			rail.rotation.y = -Math.atan2( dz, dx );
+			scene.add( rail );
+		} );
+	}
+
+	function buildFence( THREE ) {
+		var step = 300;
+		for ( var x = 0; x < W; x += step ) {
+			fenceRun( THREE, x, 0, Math.min( x + step, W ), 0 );
+			fenceRun( THREE, x, H, Math.min( x + step, W ), H );
+		}
+		for ( var z = 0; z < H; z += step ) {
+			fenceRun( THREE, 0, z, 0, Math.min( z + step, H ) );
+			fenceRun( THREE, W, z, W, Math.min( z + step, H ) );
+		}
+	}
+
+	function buildGateway( THREE ) {
+		var gh = hillsAt( 2240, H - 6 );
+		var stone = mat( THREE, 0x59554c );
+		[ 2180, 2300 ].forEach( function ( x ) {
+			var pillar = new THREE.Mesh( new THREE.BoxGeometry( 10, 26, 10 ), stone );
+			pillar.position.set( x, gh + 13, H - 6 );
+			scene.add( pillar );
+		} );
+		var bar = new THREE.Mesh( new THREE.BoxGeometry( 124, 3, 3 ), mat( THREE, 0x4a4034 ) );
+		bar.position.set( 2240, gh + 27, H - 6 );
+		scene.add( bar );
+		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 4, 5, 4 ),
+			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
+		lantern.position.set( 2240, gh + 31, H - 6 );
+		scene.add( lantern );
+		addGlowDisc( THREE, 2240, H - 30, 34, 0.08 );
+	}
+
 	function makeBaleMesh( THREE ) {
 		var baleGeo = new THREE.CylinderGeometry( 9, 9, 16, 12 );
 		baleGeo.rotateZ( Math.PI / 2 );
 		return new THREE.Mesh( baleGeo, mat( THREE, 0x8f7a3e ) );
 	}
 
-	function addBale( THREE, x, z, still ) {
+	function addBale( THREE, x, z ) {
 		var mesh = makeBaleMesh( THREE );
 		mesh.position.set( x, heightAt( x, z ) + 9, z );
 		scene.add( mesh );
@@ -1480,18 +1568,18 @@
 
 	function buildBales( THREE ) {
 		var placed = 0, guard = 0;
-		while ( placed < 9 && guard++ < 120 ) {
-			var x = 260 + Math.random() * ( W - 520 );
-			var z = 180 + Math.random() * ( H - 360 );
-			if ( Math.hypot( x - SPAWN.x, z - SPAWN.y ) < 130 ) continue;
-			if ( ! farFromLandmarks( x, z, 120 ) || inCompound( x, z, 30 ) || ! farFromRoads( x, z, 60 ) ) continue;
+		while ( placed < 12 && guard++ < 160 ) {
+			var x = 350 + Math.random() * ( W - 700 );
+			var z = 260 + Math.random() * ( H - 520 );
+			if ( Math.hypot( x - SPAWN.x, z - SPAWN.y ) < 160 ) continue;
+			if ( ! farFromLandmarks( x, z, 130 ) || inCompound( x, z, 30 ) || ! farFromRoads( x, z, 60 ) ) continue;
 			addBale( THREE, x, z );
 			placed++;
 		}
 	}
 
 	/* ------------------------------------------------------------------ *
-	 *  P2 juice — dust, tracks, smoke, sound
+	 *  P2 juice — dust, splash, tracks, smoke, sound
 	 * ------------------------------------------------------------------ */
 	function wheelWorld( lx, lz ) {
 		var a = buggyBody.angle, p = buggyBody.position;
@@ -1513,22 +1601,24 @@
 		return new THREE.CanvasTexture( c );
 	}
 
-	function initDust( THREE ) {
-		var tex = makePuffTexture( THREE, 158, 138, 106 );
-		for ( var i = 0; i < 32; i++ ) {
+	function initPool( THREE, pool, count, tex ) {
+		for ( var i = 0; i < count; i++ ) {
 			var spr = new THREE.Sprite( new THREE.SpriteMaterial( {
 				map: tex, transparent: true, opacity: 0, depthWrite: false
 			} ) );
 			spr.scale.set( 8, 8, 1 );
 			scene.add( spr );
-			dustPool.push( { spr: spr, life: 0, max: 0 } );
+			pool.push( { spr: spr, life: 0, max: 0 } );
 		}
 	}
 
-	function spawnDust( at, sp ) {
-		for ( var i = 0; i < dustPool.length; i++ ) {
-			if ( dustPool[ i ].life <= 0 ) {
-				var p = dustPool[ i ];
+	function initDust( THREE ) { initPool( THREE, dustPool, 32, makePuffTexture( THREE, 158, 138, 106 ) ); }
+	function initSplash( THREE ) { initPool( THREE, splashPool, 20, makePuffTexture( THREE, 140, 180, 214 ) ); }
+
+	function spawnFrom( pool, at, sp ) {
+		for ( var i = 0; i < pool.length; i++ ) {
+			if ( pool[ i ].life <= 0 ) {
+				var p = pool[ i ];
 				p.max = p.life = 550 + Math.random() * 450;
 				p.spr.position.set(
 					at.x + ( Math.random() - 0.5 ) * 8,
@@ -1540,18 +1630,24 @@
 			}
 		}
 	}
+	function spawnDust( at, sp ) { spawnFrom( dustPool, at, sp ); }
+	function spawnSplash( at, sp ) { spawnFrom( splashPool, at, sp * 0.8 ); }
 
-	function updateDust( dms ) {
-		for ( var i = 0; i < dustPool.length; i++ ) {
-			var p = dustPool[ i ];
+	function updatePool( pool, dms, baseOpacity ) {
+		for ( var i = 0; i < pool.length; i++ ) {
+			var p = pool[ i ];
 			if ( p.life <= 0 ) continue;
 			p.life -= dms;
 			var f = Math.max( 0, p.life / p.max );
-			p.spr.material.opacity = 0.34 * f;
+			p.spr.material.opacity = baseOpacity * f;
 			p.spr.position.y += p.vy * ( dms / 1000 );
 			var s = 8 + ( 1 - f ) * p.grow;
 			p.spr.scale.set( s, s, 1 );
 		}
+	}
+	function updateDust( dms ) {
+		updatePool( dustPool, dms, 0.34 );
+		updatePool( splashPool, dms, 0.4 );
 	}
 
 	function initTracks( THREE ) {
@@ -1586,9 +1682,8 @@
 
 	function initSmoke( THREE ) {
 		var tex = makePuffTexture( THREE, 186, 188, 198 );
-		// chimney mouths: farmhouse + cookshack (local height + yard terrain)
-		[ { x: 726, y: hillsAt( 692, 336 ) + 72, z: 328 },
-		  { x: 1298, y: hillsAt( 1280, 264 ) + 53, z: 270 } ].forEach( function ( at ) {
+		[ { x: 1245, y: hillsAt( 1211, 588 ) + 72, z: 580 },
+		  { x: 2258, y: hillsAt( 2240, 462 ) + 53, z: 468 } ].forEach( function ( at ) {
 			var em = { at: at, parts: [], timer: Math.random() * 600 };
 			for ( var i = 0; i < 7; i++ ) {
 				var spr = new THREE.Sprite( new THREE.SpriteMaterial( {
@@ -1687,7 +1782,7 @@
 
 	function updateAudio( sp ) {
 		if ( ! audio.on || ! audio.ctx || ! audio.engGain ) return;
-		var rev = Math.min( 1, sp / 7 ) + Math.abs( throttleInput ) * 0.25 + ( boostT > 0 ? 0.3 : 0 );
+		var rev = Math.min( 1, sp / 9 ) + Math.abs( throttleInput ) * 0.25 + ( boostT > 0 ? 0.3 : 0 );
 		audio.engOsc1.frequency.value = 52 + rev * 80;
 		audio.engOsc2.frequency.value = ( 52 + rev * 80 ) * 2.02;
 		audio.engGain.gain.value = 0.012 + rev * 0.05;
@@ -1787,9 +1882,9 @@
 			var lamp = new THREE.Mesh( new THREE.BoxGeometry( 2.5, 3, 4 ), lampMat );
 			lamp.position.set( 22, 10, z );
 			g.add( lamp );
-			var spot = new THREE.SpotLight( 0xffd9a0, 1.1, 460, 0.5, 0.55, 1.2 );
+			var spot = new THREE.SpotLight( 0xffd9a0, 1.1, 500, 0.5, 0.55, 1.2 );
 			spot.position.set( 22, 12, z );
-			spot.target.position.set( 280, -4, z * 3 );
+			spot.target.position.set( 300, -4, z * 3 );
 			g.add( spot );
 			g.add( spot.target );
 		} );
