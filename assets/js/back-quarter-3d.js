@@ -18,6 +18,13 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * 3D-P2.8 — THE SLOUGH + THE ROUNDS: air toned to half (Thomas flew
+ * across the quarter); the four puddles become ONE deep irregular
+ * slough — the buggy FLOATS on it (splash-down landings, bobbing,
+ * heavy paddle-drag); the old tractor now putters her own rounds
+ * autonomously (steers off fences, the pond and the compound); and a
+ * dense wind-row grove fills the northwest corner.
+ *
  * 3D-P2.7 — TO SCALE + REAL AIR: every farm building scales up to sit
  * honestly beside the buggy (mesh AND Matter footprint together, via a
  * per-landmark `scale` in LANDMARKS), and the air stops being polite:
@@ -141,18 +148,22 @@
 		{ x: 2240, z: 1260, a: 15, r: 900 },
 		{ x: 1085, z: 735, a: 12, r: 700 },
 		{ x: 3500, z: 1925, a: 14, r: 800 },
-		// pond bowls
-		{ x: 3690, z: 980, a: -11, r: 260 },
-		{ x: 4000, z: 2065, a: -10, r: 230 },
-		{ x: 1260, z: 2065, a: -10, r: 220 },
-		{ x: 2940, z: 315, a: -9, r: 200 }
+		// the slough basin — one deep bowl under the big pond
+		{ x: 3730, z: 1000, a: -26, r: 420 },
+		{ x: 3880, z: 1090, a: -14, r: 240 },
+		{ x: 3600, z: 900, a: -12, r: 240 }
 	];
-	var PONDS = [
-		{ x: 3690, z: 980, waterR: 100 },
-		{ x: 4000, z: 2065, waterR: 88 },
-		{ x: 1260, z: 2065, waterR: 84 },
-		{ x: 2940, z: 315, waterR: 74 }
-	];
+	// ONE pond now — an irregular slough, deep enough that the buggy floats
+	// (see control()/render()). The blob outline is pondR(θ).
+	var POND = { x: 3730, z: 1000, depth: 20, waterY: 0 };
+	function pondR( th ) {
+		return 210 + 55 * Math.sin( 2 * th + 1.3 ) + 35 * Math.sin( 3 * th + 0.6 ) + 20 * Math.sin( 5 * th + 2.1 );
+	}
+	function inPond( x, z ) {
+		var dx = x - POND.x, dz = z - POND.z;
+		if ( dx * dx + dz * dz > 108900 ) return false; // beyond the widest lobe
+		return Math.hypot( dx, dz ) < pondR( Math.atan2( dz, dx ) ) - 3;
+	}
 	var FLAT = [
 		{ x: 1211, z: 588, ri: 160, ro: 315 },
 		{ x: 2240, z: 462, ri: 122, ro: 262 },
@@ -164,7 +175,7 @@
 		{ x: 2240, z: 2432, ri: 245, ro: 455 },
 		{ x: 1694, z: 1284, ri: 560, ro: 750 },
 		{ x: 3850, z: 1802, ri: 88, ro: 210 },
-		{ x: 2730, z: 630, ri: 70, ro: 160 } // the tractor's pull-off
+		{ x: 2730, z: 630, ri: 70, ro: 160 } // the old pull-off (tractor spawn)
 	];
 	// Tabletop mounds ON the roads — smooth launches that scale with speed.
 	var MOUNDS = [
@@ -180,7 +191,7 @@
 		{ x: 2835, z: 613, dir: { x: 420, z: 280 }, w: 70, l: 120, h: 34 },    // cookshack → elevator run
 		{ x: 3640, z: 1400, dir: { x: 630, z: -90 }, w: 70, l: 120, h: 36 },   // barn → radio mast run
 		{ x: 1242, z: 1698, dir: { x: -315, z: -140 }, w: 70, l: 110, h: 30 }, // west run below the compound
-		{ x: 3780, z: 2065, dir: { x: 1, z: 0 }, w: 76, l: 100, h: 12 }        // the pond hop — splash landing
+		{ x: 3390, z: 990, dir: { x: 1, z: 0 }, w: 76, l: 100, h: 14 }         // the slough jump — splash-down
 	];
 	RAMPS.forEach( function ( r ) {
 		var dl = Math.hypot( r.dir.x, r.dir.z ) || 1;
@@ -196,13 +207,13 @@
 		{ x: 4165, z: 2310 }, { x: 2240, z: 210 }, { x: 1120, z: 210 },
 		{ x: 3325, z: 263 }, { x: 4288, z: 1225 }, { x: 175, z: 1225 },
 		{ x: 1225, z: 2363 }, { x: 2888, z: 2363 }, { x: 788, z: 1663 },
-		{ x: 1575, z: 315 }, { x: 2625, z: 1225 }, { x: 3763, z: 875 },
+		{ x: 1575, z: 315 }, { x: 2625, z: 1225 }, { x: 3763, z: 660 },
 		{ x: 613, z: 963 }, { x: 2695, z: 1724, air: true }, { x: 2205, z: 788, air: true },
 		{ x: 525, z: 2065 }, { x: 4078, z: 1138 },
 		// sky tokens on the ramp arcs — APPEND ONLY (saved indices must hold)
 		{ x: 2198, z: 1780, air: true, y: 70 },
 		{ x: 3868, z: 1370, air: true, y: 75 },
-		{ x: 4050, z: 2065, air: true, y: 40 }
+		{ x: 3565, z: 990, air: true, y: 26 }
 	];
 
 	var stage, hudEl, chipEl;
@@ -384,6 +395,7 @@
 		LANDMARKS.forEach( function ( lm ) { raiseLandmark( THREE, lm ); } );
 		buildCompound( THREE );
 		buildWindbreak( THREE );
+		buildGrove( THREE );
 		buildFence( THREE );
 		buildGateway( THREE );
 		buildDriveIns( THREE );
@@ -526,17 +538,9 @@
 		var b = buggyBody;
 		var heading = { x: Math.cos( b.angle ), y: Math.sin( b.angle ) };
 
-		// water check (the pond dimples)
-		inWater = false;
-		if ( ! airborne ) {
-			for ( var pw = 0; pw < PONDS.length; pw++ ) {
-				if ( Math.hypot( b.position.x - PONDS[ pw ].x, b.position.y - PONDS[ pw ].z ) < PONDS[ pw ].waterR ) {
-					inWater = true;
-					break;
-				}
-			}
-		}
-		b.frictionAir = airborne ? 0.02 : ( inWater ? 0.26 : 0.14 );
+		// water check (the slough — floating, not wading)
+		inWater = ! airborne && inPond( b.position.x, b.position.y );
+		b.frictionAir = airborne ? 0.02 : ( inWater ? 0.3 : 0.14 );
 
 		throttleInput = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.65 : 0 );
 		steerInput = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
@@ -545,7 +549,7 @@
 
 		var power = boostT > 0 ? 0.0078 : 0.0042;
 		if ( airborne ) power *= 0.25;
-		if ( inWater ) power *= 0.7;
+		if ( inWater ) power *= 0.5;
 		if ( throttleInput ) {
 			Matter.Body.applyForce( b, b.position,
 				{ x: heading.x * power * throttleInput * b.mass, y: heading.y * power * throttleInput * b.mass } );
@@ -568,7 +572,7 @@
 		Matter.Body.setVelocity( b, { x: nvx, y: nvy } );
 
 		var cap = boostT > 0 ? 13 : 9;
-		if ( inWater ) cap *= 0.6;
+		if ( inWater ) cap *= 0.5;
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		if ( sp > cap ) Matter.Body.setVelocity( b, { x: b.velocity.x * cap / sp, y: b.velocity.y * cap / sp } );
 
@@ -579,7 +583,30 @@
 		if ( keys.jump && ! airborne && jumpCooldown <= 0 ) {
 			jumpCooldown = 300;
 			airborne = true;
-			vAlt = 110 + sp * 7;
+			vAlt = 85 + sp * 5;
+		}
+
+		// the tractor putters her own rounds — steer off the fences,
+		// the slough and the compound; otherwise wander gently
+		if ( tractor ) {
+			var tb = tractor.body;
+			tractor.turnT -= 16.666;
+			if ( tractor.turnT <= 0 ) {
+				tractor.turnT = 2400 + Math.random() * 3600;
+				tractor.turn = ( Math.random() - 0.5 ) * 0.016;
+			}
+			var ax = tb.position.x + Math.cos( tractor.angle ) * 160;
+			var az = tb.position.y + Math.sin( tractor.angle ) * 160;
+			if ( ax < 130 || ax > W - 130 || az < 130 || az > H - 130 ||
+			     inPond( ax, az ) || inCompound( ax, az, 60 ) ) {
+				var homeA = Math.atan2( H / 2 - tb.position.y, W / 2 - tb.position.x );
+				tractor.turn = wrapAngle( homeA - tractor.angle ) > 0 ? 0.02 : -0.02;
+			}
+			tractor.angle = wrapAngle( tractor.angle + tractor.turn );
+			Matter.Body.applyForce( tb, tb.position, {
+				x: Math.cos( tractor.angle ) * 0.0016 * tb.mass,
+				y: Math.sin( tractor.angle ) * 0.0016 * tb.mass
+			} );
 		}
 	}
 
@@ -601,28 +628,38 @@
 			var groundRate = ( gy - prevGy ) / Math.max( dt, 0.001 );
 			// remember how hard we were climbing — that's the honest launch
 			climb = groundRate > 0 ? Math.max( climb * 0.85, groundRate ) : climb * 0.85;
-			if ( groundRate < -60 && sp > 4.6 ) {
+			if ( groundRate < -60 && sp > 4.6 && ! inWater ) {
 				airborne = true;
 				// the lip drop alone launches modestly; carried climb rate
-				// (slope × speed) is what buys monster air off ramps/mounds
-				vAlt = Math.min( 300, Math.max( Math.min( -groundRate * 1.15, 170 ), climb * 1.1 ) );
+				// (slope × speed) is what buys big air off ramps/mounds
+				vAlt = Math.min( 200, Math.max( Math.min( -groundRate * 0.85, 115 ), climb * 0.75 ) );
 				worldY = prevGy;
 			} else {
-				worldY = gy;
+				// afloat on the slough: ride the water line, bobbing
+				worldY = inWater
+					? Math.max( gy, POND.waterY - 5 + Math.sin( t * 2.3 ) * 0.9 )
+					: gy;
 			}
 		}
 		if ( airborne ) {
 			worldY += vAlt * dt;
-			vAlt -= ( boostT > 0 ? 245 : 300 ) * dt; // boost = hang-time
+			vAlt -= ( boostT > 0 ? 270 : 300 ) * dt; // boost = hang-time
 			// L/R Shift pitch the buggy for flips
 			var pitchVel = ( keys.tiltF ? -7.5 : 0 ) + ( keys.tiltB ? 7.5 : 0 );
 			airPitch += pitchVel * dt;
-			if ( worldY <= gy ) {
+			var splash = inPond( rx, rz );
+			var landY = splash ? Math.max( gy, POND.waterY - 5 ) : gy;
+			if ( worldY <= landY ) {
 				airborne = false;
-				worldY = gy;
+				worldY = landY;
 				vAlt = 0;
 				var n = wrapAngle( airPitch );
-				if ( Math.abs( n ) > 0.75 ) {
+				if ( splash ) {
+					// splash-down — she floats
+					Matter.Body.setVelocity( b, { x: b.velocity.x * 0.45, y: b.velocity.y * 0.45 } );
+					for ( var sd2 = 0; sd2 < 12; sd2++ ) spawnSplash( wheelWorld( -14 + Math.random() * 28, -16 + Math.random() * 32 ), 7 );
+					flashChip( 'SPLASH DOWN — she floats!' );
+				} else if ( Math.abs( n ) > 0.75 ) {
 					// crashed the rotation — eat dirt
 					Matter.Body.setVelocity( b, { x: b.velocity.x * 0.3, y: b.velocity.y * 0.3 } );
 					for ( var cd = 0; cd < 10; cd++ ) spawnDust( wheelWorld( -10 + Math.random() * 20, -14 + Math.random() * 28 ), 6 );
@@ -667,6 +704,7 @@
 		checkStacks();
 		checkRestack( dms, sp );
 		updateAnimals( dms );
+		updateTractor();
 		updateTokens( dms, t );
 		checkPads( t );
 
@@ -1464,21 +1502,29 @@
 	}
 
 	function buildPonds( THREE ) {
-		// water sits in the dimples: a disc at each bowl's level. Driving in
-		// is a wade — splash + drag (see control()/render()).
-		var pondMat = new THREE.MeshLambertMaterial( { color: 0x152c3e, emissive: 0x060f16 } );
-		var glintMat = new THREE.MeshBasicMaterial( { color: 0xbcd6ea, transparent: true, opacity: 0.16 } );
-		PONDS.forEach( function ( p ) {
-			p.waterY = hillsAt( p.x, p.z ) + 3;
-			var pond = new THREE.Mesh( new THREE.CircleGeometry( p.waterR, 22 ), pondMat );
-			pond.rotation.x = -Math.PI / 2;
-			pond.position.set( p.x, p.waterY, p.z );
-			pond.scale.x = 1.25;
-			scene.add( pond );
-			var glint = new THREE.Mesh( new THREE.CircleGeometry( p.waterR * 0.3, 12 ), glintMat );
+		// ONE irregular slough: dark, deep water filling a real basin. The
+		// buggy floats on it (control()/render()) — no more wading puddles.
+		POND.waterY = hillsAt( POND.x, POND.z ) + POND.depth;
+		var shape = new THREE.Shape();
+		for ( var i = 0; i <= 72; i++ ) {
+			var th = ( i / 72 ) * Math.PI * 2;
+			var r = pondR( th );
+			// -sin: the shape lies in XY and rotateX(-90°) maps y → -z
+			var sx = Math.cos( th ) * r, sy = -Math.sin( th ) * r;
+			if ( i === 0 ) shape.moveTo( sx, sy ); else shape.lineTo( sx, sy );
+		}
+		var geo = new THREE.ShapeGeometry( shape );
+		geo.rotateX( -Math.PI / 2 );
+		var water = new THREE.Mesh( geo,
+			new THREE.MeshLambertMaterial( { color: 0x0c2232, emissive: 0x050f18 } ) );
+		water.position.set( POND.x, POND.waterY, POND.z );
+		scene.add( water );
+		var glintMat = new THREE.MeshBasicMaterial( { color: 0xbcd6ea, transparent: true, opacity: 0.14 } );
+		[ { x: -70, z: -55, r: 34 }, { x: 60, z: 40, r: 26 }, { x: -10, z: 90, r: 20 } ].forEach( function ( gl ) {
+			var glint = new THREE.Mesh( new THREE.CircleGeometry( gl.r, 12 ), glintMat );
 			glint.rotation.x = -Math.PI / 2;
-			glint.position.set( p.x - p.waterR * 0.3, p.waterY + 0.15, p.z - p.waterR * 0.2 );
-			glint.scale.x = 1.8;
+			glint.position.set( POND.x + gl.x, POND.waterY + 0.2, POND.z + gl.z );
+			glint.scale.x = 1.9;
 			scene.add( glint );
 		} );
 	}
@@ -1533,7 +1579,14 @@
 				}
 			}
 			var px = a.body.position.x, pz = a.body.position.y;
-			a.g.position.set( px, heightAt( px, pz ), pz );
+			if ( inPond( px, pz ) ) {
+				// swim for shore — heads above water
+				var away = Math.atan2( pz - POND.z, px - POND.x );
+				Matter.Body.setVelocity( a.body, { x: Math.cos( away ) * 0.8, y: Math.sin( away ) * 0.8 } );
+				a.g.position.set( px, Math.max( heightAt( px, pz ), POND.waterY - 7 ), pz );
+			} else {
+				a.g.position.set( px, heightAt( px, pz ), pz );
+			}
 			var v = a.body.velocity;
 			if ( Math.hypot( v.x, v.y ) > 0.15 ) {
 				a.g.rotation.y = -Math.atan2( v.y, v.x );
@@ -1541,11 +1594,14 @@
 		}
 	}
 
-	/* ---- the old tractor ---- */
+	/* ---- the old tractor — she does her own rounds now ---- */
+	var tractor = null;
+
 	function buildTractor( THREE ) {
 		var g = new THREE.Group();
 		var red = mat( THREE, 0x9a3f2e );
 		var darkMat = mat( THREE, 0x1c1512 );
+		var tWheels = [];
 		var rearGeo = new THREE.CylinderGeometry( 11, 11, 5, 12 );
 		rearGeo.rotateX( Math.PI / 2 );
 		var frontGeo = new THREE.CylinderGeometry( 6.5, 6.5, 4, 10 );
@@ -1554,9 +1610,11 @@
 			var rw = new THREE.Mesh( rearGeo, darkMat );
 			rw.position.set( -10, 11, z );
 			g.add( rw );
+			tWheels.push( rw );
 			var fw = new THREE.Mesh( frontGeo, darkMat );
 			fw.position.set( 14, 6.5, z * 0.8 );
 			g.add( fw );
+			tWheels.push( fw );
 		} );
 		var chassis = new THREE.Mesh( new THREE.BoxGeometry( 34, 8, 18 ), red );
 		chassis.position.set( 2, 14, 0 );
@@ -1572,15 +1630,30 @@
 		g.add( pipe );
 
 		var lm = { id: 'tractor', name: 'the old tractor', x: 2730, y: 630, href: null,
-			prompt: 'The old girl still runs — she just needs a reason' };
+			prompt: 'The old girl still runs — she does her own rounds now' };
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
-		g.rotation.y = 0.6;
 		g.userData.lm = lm;
 		scene.add( g );
 		clickables.push( g );
 		PROMPTS.push( lm );
-		Matter.Composite.add( engine.world,
-			Matter.Bodies.rectangle( lm.x, lm.y, 42, 26, { isStatic: true } ) );
+		var body = Matter.Bodies.circle( lm.x, lm.y, 20, { frictionAir: 0.12, density: 0.004 } );
+		Matter.Composite.add( engine.world, body );
+		tractor = { g: g, body: body, lm: lm, wheels: tWheels, angle: -0.6, turn: 0, turnT: 1500 };
+	}
+
+	function updateTractor() {
+		if ( ! tractor ) return;
+		var tp = tractor.body.position;
+		tractor.g.position.set( tp.x,
+			Math.max( heightAt( tp.x, tp.y ), inPond( tp.x, tp.y ) ? POND.waterY - 8 : -1e9 ), tp.y );
+		tractor.g.rotation.y = -tractor.angle;
+		tractor.lm.x = tp.x;
+		tractor.lm.y = tp.y;
+		var tsp = Math.hypot( tractor.body.velocity.x, tractor.body.velocity.y );
+		for ( var tw = 0; tw < tractor.wheels.length; tw++ ) tractor.wheels[ tw ].rotation.z -= tsp * 0.07;
+		if ( tsp > 0.8 && Math.random() < 0.04 ) {
+			spawnDust( { x: tp.x - Math.cos( tractor.angle ) * 20, y: tp.y - Math.sin( tractor.angle ) * 20 }, 2 );
+		}
 	}
 
 	function buildWindbreak( THREE ) {
@@ -1599,6 +1672,36 @@
 			cone.position.set( x, gy + 28 + h / 2, z );
 			scene.add( cone );
 			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 11, { isStatic: true } ) );
+		}
+	}
+
+	function buildGrove( THREE ) {
+		// wind-rows: a dense shelterbelt grove packed into the northwest
+		// corner — tight enough to weave a buggy through, barely
+		var trunkMat = mat( THREE, 0x2c2418 );
+		var leafMat = mat( THREE, 0x22422c );
+		var spots = [], guard = 0;
+		while ( spots.length < 40 && guard++ < 500 ) {
+			var x = 130 + Math.random() * 500;
+			var z = 150 + Math.random() * 500;
+			if ( ( x - 130 ) + ( z - 150 ) > 860 ) continue; // hug the corner
+			if ( Math.hypot( x - 350, z - 350 ) < 32 ) continue; // token clearing
+			if ( Math.hypot( x - 130, z - 800 ) < 150 ) continue; // Rycroft screen approach
+			var ok = true;
+			for ( var i = 0; i < spots.length; i++ ) {
+				if ( Math.hypot( x - spots[ i ].x, z - spots[ i ].z ) < 46 ) { ok = false; break; }
+			}
+			if ( ! ok ) continue;
+			spots.push( { x: x, z: z } );
+			var gy = hillsAt( x, z );
+			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 3.6, 5.2, 24, 6 ), trunkMat );
+			trunk.position.set( x, gy + 12, z );
+			scene.add( trunk );
+			var h = 55 + Math.random() * 55;
+			var cone = new THREE.Mesh( new THREE.ConeGeometry( 14 + Math.random() * 8, h, 7 ), leafMat );
+			cone.position.set( x, gy + 24 + h / 2, z );
+			scene.add( cone );
+			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 10, { isStatic: true } ) );
 		}
 	}
 
@@ -1673,7 +1776,7 @@
 			var x = 350 + Math.random() * ( W - 700 );
 			var z = 260 + Math.random() * ( H - 520 );
 			if ( Math.hypot( x - SPAWN.x, z - SPAWN.y ) < 160 ) continue;
-			if ( ! farFromLandmarks( x, z, 170 ) || inCompound( x, z, 30 ) || ! farFromRoads( x, z, 60 ) ) continue;
+			if ( ! farFromLandmarks( x, z, 170 ) || inCompound( x, z, 30 ) || ! farFromRoads( x, z, 60 ) || inPond( x, z ) ) continue;
 			addBale( THREE, x, z );
 			placed++;
 		}
@@ -1721,9 +1824,10 @@
 			if ( pool[ i ].life <= 0 ) {
 				var p = pool[ i ];
 				p.max = p.life = 550 + Math.random() * 450;
+				var py = inPond( at.x, at.y ) ? POND.waterY : heightAt( at.x, at.y );
 				p.spr.position.set(
 					at.x + ( Math.random() - 0.5 ) * 8,
-					heightAt( at.x, at.y ) + 3,
+					py + 3,
 					at.y + ( Math.random() - 0.5 ) * 8 );
 				p.vy = 8 + Math.random() * 8;
 				p.grow = 10 + sp * 2.4;
