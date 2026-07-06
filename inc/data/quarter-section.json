@@ -1,0 +1,18 @@
+{
+  "_readme": "The Back Quarter ledger (spec §5). Hand-maintained: add a row to `recent` (newest first) as part of any content push — same discipline as version bumps. The mailbox flag on both boards raises while the newest date is under 21 days old. `quotes` feed the drive-in screens (matched by href) and the ledger's rotating pull-quote; every text must be a VERBATIM sentence from that line's long-read.",
+  "recent": [
+    { "label": "The Back Quarter — the homepage is now a farm you can drive", "href": "/", "date": "2026-07-05" },
+    { "label": "Comments opened on the eight heritage long-reads", "href": "/heritage", "date": "2026-06-18" },
+    { "label": "The family key — sign in for the kids' photo galleries", "href": "/family-login", "date": "2026-06-17" }
+  ],
+  "quotes": [
+    { "line": "The Cheesmans", "href": "/cheesmans", "text": "Mine is the one stretch that was dug by hand: a canal, not a river." },
+    { "line": "The Dochertys", "href": "/dochertys", "text": "It is the truest word for this family, because the Dochertys were never the loud kind of survivors." },
+    { "line": "The Haistes", "href": "/haistes", "text": "Every long family has a moment when the line nearly ends." },
+    { "line": "The Lakemans", "href": "/lakemans", "text": "They say doorkomen — to come through." },
+    { "line": "The Rycrofts", "href": "/rycrofts", "text": "The family word, if the family had one, is the plainest in the language: reach." },
+    { "line": "The McIvers", "href": "/mcivers", "text": "A’ dol thar a’ chuain, the crossing of the water." },
+    { "line": "The Verbooms", "href": "/verbooms", "text": "This is that line, told as far as the records honestly carry it, and tagged plainly where they run out." },
+    { "line": "The Steinkes", "href": "/steinkes", "text": "Then a single evening of records work dropped the floor of the story." }
+  ]
+}

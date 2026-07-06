@@ -323,6 +323,15 @@
 		var THREE = window.THREE;
 		isFamily = !! ( window.tcVentures && Number( window.tcVentures.bqFamily ) );
 
+		// fresh mail: the mailbox prompt + flag follow the ledger
+		if ( Number( ledgerData().mailNew ) ) {
+			LANDMARKS.forEach( function ( lm ) {
+				if ( lm.id === 'mailbox' ) {
+					lm.prompt = 'The flag’s up — fresh mail · Enter reads the ledger';
+				}
+			} );
+		}
+
 		renderer = new THREE.WebGLRenderer( { antialias: true } );
 		renderer.setPixelRatio( Math.min( window.devicePixelRatio || 1, 2 ) );
 		renderer.setSize( stage.clientWidth, stage.clientHeight );
@@ -519,7 +528,21 @@
 		if ( obj ) enterLandmark( obj.userData.lm );
 	}
 
+	function ledgerData() {
+		return ( window.tcVentures && window.tcVentures.bqLedger ) || { mailNew: 0, quotes: [] };
+	}
+
+	function openLedger() {
+		var el = document.getElementById( 'bq-ledger' );
+		if ( ! el ) return;
+		var fs = document.fullscreenElement || document.webkitFullscreenElement;
+		if ( fs ) ( document.exitFullscreen || document.webkitExitFullscreen ).call( document );
+		stage.blur();
+		el.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+	}
+
 	function enterLandmark( lm ) {
+		if ( lm.id === 'mailbox' ) { openLedger(); return; }
 		if ( ! lm.href ) { flashChip( lm.prompt ); return; }
 		if ( lm.external ) { window.open( lm.href, '_blank', 'noopener' ); return; }
 		var root = ( window.tcVentures && window.tcVentures.siteUrl ) || '';
@@ -1051,6 +1074,12 @@
 	 *  Heritage drive-in screens (one per family line)
 	 * ------------------------------------------------------------------ */
 	function buildDriveIns( THREE ) {
+		// "now showing": each screen carries a VERBATIM sentence from that
+		// line's long-read (spec §2 billboards) — pool lives in
+		// inc/data/quarter-section.json, localized as tcVentures.bqLedger.
+		var quotes = {};
+		( ledgerData().quotes || [] ).forEach( function ( q ) { quotes[ q.href ] = q.text; } );
+
 		LINES.forEach( function ( line ) {
 			var c = document.createElement( 'canvas' );
 			c.width = 560; c.height = 320;
@@ -1067,12 +1096,35 @@
 				ctx.beginPath(); ctx.arc( bx, 309, 6, 0, 7 ); ctx.fill();
 			}
 			ctx.textAlign = 'center';
-			ctx.font = '600 58px Georgia, serif';
+			ctx.font = '600 46px Georgia, serif';
 			ctx.fillStyle = '#ffe3b0';
-			ctx.fillText( line.name, 280, 150 );
-			ctx.font = 'italic 30px Georgia, serif';
-			ctx.fillStyle = 'rgba(255, 227, 176, 0.6)';
-			ctx.fillText( 'a family line · drive in', 280, 215 );
+			ctx.fillText( line.name, 280, 92 );
+			var quote = quotes[ line.href ];
+			if ( quote ) {
+				ctx.font = '20px Georgia, serif';
+				ctx.fillStyle = 'rgba(255, 227, 176, 0.45)';
+				ctx.fillText( 'NOW SHOWING', 280, 128 );
+				ctx.font = 'italic 25px Georgia, serif';
+				ctx.fillStyle = 'rgba(255, 227, 176, 0.85)';
+				var words = ( '“' + quote + '”' ).split( ' ' );
+				var lines = [], cur = '';
+				words.forEach( function ( w ) {
+					var t = cur ? cur + ' ' + w : w;
+					if ( ctx.measureText( t ).width > 470 && cur ) { lines.push( cur ); cur = w; }
+					else cur = t;
+				} );
+				if ( cur ) lines.push( cur );
+				lines.slice( 0, 4 ).forEach( function ( ln, li ) {
+					ctx.fillText( ln, 280, 168 + li * 32 );
+				} );
+				ctx.font = '22px Georgia, serif';
+				ctx.fillStyle = 'rgba(255, 227, 176, 0.55)';
+				ctx.fillText( 'drive in →', 280, 293 );
+			} else {
+				ctx.font = 'italic 30px Georgia, serif';
+				ctx.fillStyle = 'rgba(255, 227, 176, 0.6)';
+				ctx.fillText( 'a family line · drive in', 280, 200 );
+			}
 
 			var g = new THREE.Group();
 			var wood = mat( THREE, 0x3a2c1c );
@@ -1493,12 +1545,17 @@
 		var box = new THREE.Mesh( new THREE.BoxGeometry( 12, 8, 8 ), mat( THREE, 0x39424c ) );
 		box.position.y = 24;
 		g.add( box );
+		// the flag pivots at its hinge: up while the ledger has fresh mail
+		var flag = new THREE.Group();
+		flag.position.set( 6.6, 25.5, 0 );
 		var arm = new THREE.Mesh( new THREE.BoxGeometry( 1.1, 7, 1.1 ), mat( THREE, 0xb8352c ) );
-		arm.position.set( 6.6, 29, 0 );
-		g.add( arm );
+		arm.position.y = 3.5;
+		flag.add( arm );
 		var paddle = new THREE.Mesh( new THREE.BoxGeometry( 4.2, 3.4, 0.9 ), mat( THREE, 0xb8352c ) );
-		paddle.position.set( 6.6, 33.6, 0 );
-		g.add( paddle );
+		paddle.position.y = 8.1;
+		flag.add( paddle );
+		if ( ! Number( ledgerData().mailNew ) ) flag.rotation.z = -1.35; // dropped
+		g.add( flag );
 		return g;
 	}
 

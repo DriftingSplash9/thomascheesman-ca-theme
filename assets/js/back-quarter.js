@@ -52,9 +52,25 @@
 			{ id: 'shed', name: 'the old shed', x: 186, y: 552, w: 78, h: 58,
 			  href: null, prompt: 'The shed is padlocked… but a drawer in the house opens' },
 			{ id: 'mailbox', name: 'the mailbox', x: 560, y: 664, w: 44, h: 40,
-			  href: null, prompt: 'Fresh mail soon — “recently added” lands here' }
+			  href: null, prompt: 'The mailbox — “recently added” lands here' }
 		]
 	};
+
+	// The ledger (spec §5): tcVentures.bqLedger is localized on the front
+	// page only — mailNew drives the flag; the mailbox scrolls to the strip.
+	function ledgerData() {
+		return ( window.tcVentures && window.tcVentures.bqLedger ) || { mailNew: 0 };
+	}
+
+	function openLedger() {
+		var el = document.getElementById( 'bq-ledger' );
+		if ( ! el ) return;
+		if ( fsElement() ) {
+			( document.exitFullscreen || document.webkitExitFullscreen ).call( document );
+		}
+		stage.blur();
+		el.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+	}
 
 	var stage, previewNote, chipEl, hudEl, goBtn;
 	var app, cam, engine, buggyBody, buggyGfx, headlights;
@@ -72,6 +88,15 @@
 		chipEl = stage.querySelector( '.bq-chip' );
 		hudEl = stage.querySelector( '.bq-hud' );
 		goBtn = stage.querySelector( '.bq-preview__go' );
+
+		// fresh mail: the mailbox prompt says so on both boards
+		if ( ledgerData().mailNew ) {
+			WORLD.landmarks.forEach( function ( lm ) {
+				if ( lm.id === 'mailbox' ) {
+					lm.prompt = 'The flag’s up — fresh mail · Enter reads the ledger';
+				}
+			} );
+		}
 
 		if ( goBtn ) goBtn.addEventListener( 'click', engage );
 		stage.addEventListener( 'keydown', function ( e ) {
@@ -266,6 +291,7 @@
 	}
 
 	function enterLandmark( lm ) {
+		if ( lm.id === 'mailbox' ) { openLedger(); return; }
 		if ( ! lm.href ) { flashChip( lm.prompt ); return; }
 		if ( lm.external ) { window.open( lm.href, '_blank', 'noopener' ); return; }
 		var root = ( window.tcVentures && window.tcVentures.siteUrl ) || '';
@@ -431,6 +457,20 @@
 		hit.on( 'pointertap', function () { enterLandmark( lm ); } );
 		hit.on( 'pointerover', function () { nearLandmark = lm; label.alpha = 1; if ( chipEl ) { chipEl.hidden = false; chipEl.textContent = lm.prompt + ( lm.href ? '  · click' : '' ); } } );
 		cam.addChild( hit );
+
+		// the mailbox flag, raised while the ledger has fresh mail
+		if ( lm.id === 'mailbox' && ledgerData().mailNew ) {
+			var flag = new PIXI.Graphics();
+			flag.lineStyle( 2, 0x8a7a5e );
+			flag.moveTo( 0, 0 ); flag.lineTo( 0, -22 );
+			flag.lineStyle( 0 );
+			flag.beginFill( 0xd84a3a );
+			flag.moveTo( 0, -22 ); flag.lineTo( 14, -17 ); flag.lineTo( 0, -12 );
+			flag.closePath();
+			flag.endFill();
+			flag.position.set( lm.x + lm.w / 2 - 4, lm.y - lm.h / 2 );
+			cam.addChild( flag );
+		}
 
 		markers.push( { lm: lm, label: label, isLive: live } );
 	}

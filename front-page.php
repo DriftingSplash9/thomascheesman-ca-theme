@@ -135,49 +135,55 @@ get_header(); ?>
         </div>
     </section>
 
-    <!-- THREE PILLARS SECTION -->
-    <section class="pillars-section">
+    <!-- THE FARM LEDGER — spec §5 (2D-P2). Replaced the three-pillars
+         section 2026-07-06: "recently added" + a rotating pull-quote from
+         the heritage corpus, hand-maintained in inc/data/quarter-section.json
+         (update it as part of any content push). The mailbox on BOTH boards
+         scrolls here, and its flag is up while the newest entry is under
+         21 days old. This strip is also the text-equivalent of the map for
+         visitors who never drive. -->
+    <?php
+    $tc_ledger = function_exists( 'tc_bq_ledger_data' )
+        ? tc_bq_ledger_data()
+        : array( 'recent' => array(), 'quotes' => array(), 'mailNew' => 0 );
+    // Rotate the pull-quote by day-of-year: stable inside a page-cache
+    // window, different on the next visit-day.
+    $tc_lq = null;
+    if ( ! empty( $tc_ledger['quotes'] ) ) {
+        $tc_lq = $tc_ledger['quotes'][ (int) date_i18n( 'z' ) % count( $tc_ledger['quotes'] ) ];
+    }
+    ?>
+    <section class="ledger-section" id="bq-ledger" aria-label="The farm ledger — recently added">
         <div class="container">
-            <h2 class="pillars-heading kinetic-text-scroll" aria-label="What Defines TC 'ventures">What Defines TC 'ventures</h2>
-
-            <div class="pillars-grid">
-
-                <!-- PILLAR 1: FAMILY -->
-                <div class="pillar-card">
-                    <div class="pillar-icon" aria-hidden="true">
-                        <span>👨‍👩‍👧‍👦</span>
-                    </div>
-                    <h3>Family &amp; Stories</h3>
-                    <p>
-                        Patience, Daniel, and Faith — and the eight family lines that took four hundred years and five countries to arrive in one Alberta house. If you're new here, start with them.
+            <div class="ledger-page">
+                <header class="ledger-head">
+                    <p class="ledger-eyebrow">
+                        the farm ledger
+                        <?php if ( ! empty( $tc_ledger['mailNew'] ) ) : ?>
+                            <span class="ledger-flag">⚑ fresh mail</span>
+                        <?php endif; ?>
                     </p>
-                    <a href="<?php echo home_url('/family'); ?>">Meet the family &rarr;</a>
+                    <h2 class="ledger-title">Recently added</h2>
+                </header>
+                <div class="ledger-body">
+                    <ol class="ledger-rows">
+                        <?php foreach ( (array) $tc_ledger['recent'] as $tc_row ) : ?>
+                            <li class="ledger-row">
+                                <span class="ledger-date"><?php echo esc_html( date_i18n( 'M j', strtotime( $tc_row['date'] ) ) ); ?></span>
+                                <a class="ledger-link" href="<?php echo esc_url( home_url( $tc_row['href'] ) ); ?>"><?php echo esc_html( $tc_row['label'] ); ?></a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ol>
+                    <?php if ( $tc_lq ) : ?>
+                        <figure class="ledger-quote">
+                            <blockquote>&ldquo;<?php echo esc_html( $tc_lq['text'] ); ?>&rdquo;</blockquote>
+                            <figcaption>
+                                &mdash; <?php echo esc_html( $tc_lq['line'] ); ?> &middot;
+                                <a href="<?php echo esc_url( home_url( $tc_lq['href'] ) ); ?>">read the whole story &rarr;</a>
+                            </figcaption>
+                        </figure>
+                    <?php endif; ?>
                 </div>
-
-                <!-- PILLAR 2: RARE DISEASE & BYR -->
-                <div class="pillar-card">
-                    <div class="pillar-icon" aria-hidden="true">
-                        <span>🔬</span>
-                    </div>
-                    <h3>Rare Disease &amp; BYR</h3>
-                    <p>
-                        I'm one of fewer than fifty people alive with Hajdu-Cheney syndrome. It taught me what 'rare' actually costs — so I built Bare Your Rare, where people with ultra-rare diseases tell their own stories. The deeper writing lives there.
-                    </p>
-                    <a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Visit Bare Your Rare &rarr;</a>
-                </div>
-
-                <!-- PILLAR 3: COMMUNITY -->
-                <div class="pillar-card">
-                    <div class="pillar-icon" aria-hidden="true">
-                        <span>🤝</span>
-                    </div>
-                    <h3>Community &amp; Service</h3>
-                    <p>
-                        When your own body teaches you what an accessible home is worth, you don't forget it. I volunteer with the Grande Prairie Residential Society to help build them — and yes, I made their website too.
-                    </p>
-                    <a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">Visit GPRS (I created this website too!) &rarr;</a>
-                </div>
-
             </div>
         </div>
     </section>

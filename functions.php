@@ -32,6 +32,46 @@ require_once get_stylesheet_directory() . '/inc/hcs-faq.php';
  * which declares dependencies. WordPress guarantees a handle's dependencies
  * are output before the handle itself.
  */
+/**
+ * The Back Quarter ledger data (spec §5) — one hand-maintained JSON
+ * (inc/data/quarter-section.json) feeds three surfaces:
+ *   1. the homepage ledger strip (front-page.php),
+ *   2. the mailbox "fresh mail" flag on both the 2D and 3D boards,
+ *   3. the drive-in "now showing" pull-quotes in the 3D build.
+ * The flag raises while the newest `recent` entry is under 21 days old.
+ * Update the JSON as part of any content push — same discipline as the
+ * style.css version bump. (LiteSpeed caches the flag with the page; the
+ * post-push purge keeps it honest.)
+ */
+function tc_bq_ledger_data() {
+    static $data = null;
+    if ( null !== $data ) {
+        return $data;
+    }
+    $data = array( 'recent' => array(), 'quotes' => array(), 'mailNew' => 0 );
+    $file = get_stylesheet_directory() . '/inc/data/quarter-section.json';
+    if ( ! file_exists( $file ) ) {
+        return $data;
+    }
+    $json = json_decode( (string) file_get_contents( $file ), true );
+    if ( ! is_array( $json ) ) {
+        return $data;
+    }
+    $data['recent'] = isset( $json['recent'] ) && is_array( $json['recent'] ) ? $json['recent'] : array();
+    $data['quotes'] = isset( $json['quotes'] ) && is_array( $json['quotes'] ) ? $json['quotes'] : array();
+    $newest = 0;
+    foreach ( $data['recent'] as $row ) {
+        $t = isset( $row['date'] ) ? strtotime( $row['date'] ) : 0;
+        if ( $t > $newest ) {
+            $newest = $t;
+        }
+    }
+    if ( $newest && ( time() - $newest ) < 21 * DAY_IN_SECONDS ) {
+        $data['mailNew'] = 1;
+    }
+    return $data;
+}
+
 function tc_ventures_enqueue_scripts() {
 
     // Parent theme (Astra) stylesheet.
@@ -175,7 +215,7 @@ function tc_ventures_enqueue_scripts() {
     );
 
     // Expose a small data object from PHP to main.js as window.tcVentures.
-    wp_localize_script( 'tc-ventures-main', 'tcVentures', array(
+    $tc_ventures_data = array(
         'siteUrl'  => home_url(),
         'themeUrl' => get_stylesheet_directory_uri(),
         // The Back Quarter's family gate: 1 lifts the barrier arm at the
@@ -187,7 +227,13 @@ function tc_ventures_enqueue_scripts() {
         // imports the lightbox + core from the theme; no unpkg request.
         'pswpLightboxUrl' => get_stylesheet_directory_uri() . '/assets/js/vendor/photoswipe-5.4.4/photoswipe-lightbox.esm.js',
         'pswpUrl'         => get_stylesheet_directory_uri() . '/assets/js/vendor/photoswipe-5.4.4/photoswipe.esm.js',
-    ));
+    );
+    // The Back Quarter ledger (spec §5) rides along only where the boards
+    // live: the mailbox flag + drive-in quotes read it on the front page.
+    if ( is_front_page() ) {
+        $tc_ventures_data['bqLedger'] = tc_bq_ledger_data();
+    }
+    wp_localize_script( 'tc-ventures-main', 'tcVentures', $tc_ventures_data );
 
     // Print prep — when a reader saves a page to PDF (Ctrl+P), open every
     // collapsed <details> (the heritage Notes appendix) so it prints, then
