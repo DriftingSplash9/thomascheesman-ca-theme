@@ -323,7 +323,9 @@
 		statics.push( Matter.Bodies.rectangle( 6, H / 2, T, H, { isStatic: true } ) );
 		statics.push( Matter.Bodies.rectangle( W - 6, H / 2, T, H, { isStatic: true } ) );
 		LANDMARKS.forEach( function ( lm ) {
-			if ( lm.build === 'treehouse' || lm.build === 'mailbox' ) {
+			if ( lm.build === 'treehouse' ) {
+				statics.push( Matter.Bodies.circle( lm.x, lm.y, 13, { isStatic: true } ) );
+			} else if ( lm.build === 'mailbox' ) {
 				statics.push( Matter.Bodies.circle( lm.x, lm.y, 7, { isStatic: true } ) );
 			} else {
 				statics.push( Matter.Bodies.rectangle( lm.x, lm.y, lm.w, lm.h, { isStatic: true } ) );
@@ -970,6 +972,8 @@
 		}
 		// yards are flattened but not at zero — sit each building on its ground
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
+		// treehouses read too small against the buggy at 1:1 — scale them up
+		if ( lm.build === 'treehouse' ) g.scale.set( 1.75, 1.75, 1.75 );
 		g.userData.lm = lm;
 		scene.add( g );
 		clickables.push( g );
@@ -1296,14 +1300,15 @@
 			var x = 790 + f * 350 + ( Math.random() - 0.5 ) * 30;
 			var z = 560 + f * 340 + ( Math.random() - 0.5 ) * 30;
 			var gy = hillsAt( x, z );
-			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 2.5, 3.5, 16, 6 ), trunkMat );
-			trunk.position.set( x, gy + 8, z );
+			// big mature poplars — sized against the buggy, not the old board
+			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 4.2, 6, 28, 6 ), trunkMat );
+			trunk.position.set( x, gy + 14, z );
 			scene.add( trunk );
-			var h = 44 + Math.random() * 24;
-			var cone = new THREE.Mesh( new THREE.ConeGeometry( 10 + Math.random() * 4, h, 7 ), leafMat );
-			cone.position.set( x, gy + 16 + h / 2, z );
+			var h = 75 + Math.random() * 40;
+			var cone = new THREE.Mesh( new THREE.ConeGeometry( 17 + Math.random() * 7, h, 7 ), leafMat );
+			cone.position.set( x, gy + 28 + h / 2, z );
 			scene.add( cone );
-			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 7, { isStatic: true } ) );
+			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 11, { isStatic: true } ) );
 		}
 	}
 
