@@ -18,6 +18,14 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * THE SECTION ROAD — a dirt race track ringing the OUTSIDE of the
+ * quarter (the world's walls moved out; the perimeter fence is now
+ * solid and the farm gate at bottom centre is the only way out).
+ * Cross the start line on the south straight for a TIMED LAP: three
+ * corners in order + back over the line. Three GHOSTS replay with
+ * you — your best-ever run (gold) and your two most recent (silver),
+ * kept in localStorage ('tcBqLaps_v1', ~40 KB/lap at 20 Hz samples).
+ *
  * 3D-P2.9 — THE BARNYARD: the tractor slows to a putter and rolls a
  * proper dust cloud; 12 chickens live around an open coop by the
  * farmhouse — squawk and FLUTTER when the buggy scatters them, and
@@ -177,6 +185,27 @@
 	var COOP = { x: 1390, z: 800 };
 	var PIGPEN = { x: 2640, z: 985 };
 	var MUD = { x: 2545, z: 985, r: 60 };
+
+	// THE SECTION ROAD — the race ring outside the fence. Centerline sits
+	// 150 off the property line, corners rounded. Painted into the ground
+	// like the farm roads; the start/finish line is on the south straight,
+	// dead ahead when you leave the farm gate.
+	var TRACK = [
+		{ x: 2240, y: 2670 }, { x: 4200, y: 2670 }, { x: 4420, y: 2610 },
+		{ x: 4570, y: 2460 }, { x: 4630, y: 2240 }, { x: 4630, y: 280 },
+		{ x: 4570, y: 60 }, { x: 4420, y: -90 }, { x: 4200, y: -150 },
+		{ x: 280, y: -150 }, { x: 60, y: -90 }, { x: -90, y: 60 },
+		{ x: -150, y: 280 }, { x: -150, y: 2240 }, { x: -90, y: 2460 },
+		{ x: 60, y: 2610 }, { x: 280, y: 2670 }, { x: 2240, y: 2670 }
+	];
+	var TRACK_W = 92;
+	var START = { x: 2240, z: 2670 };
+	// three corners, hit in order (either direction), then home
+	var LAP_CKPTS = [
+		{ x: 4630, z: 1260 }, // east
+		{ x: 2240, z: -150 }, // north
+		{ x: -150, z: 1260 }  // west
+	];
 	var FLAT = [
 		{ x: 1211, z: 588, ri: 160, ro: 315 },
 		{ x: 2240, z: 462, ri: 122, ro: 262 },
@@ -253,6 +282,8 @@
 	var boostT = 0, padCooldown = [];
 	var inWater = false, inMud = false;
 	var chickens = [], pigs = [];
+	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
+	var ghosts = [], ghostStore = null, prevSX = 0, lastHudTenth = -1;
 	var baseFov = 55;
 	var pX = 0, pY = 0, pA = 0; // physics-step interpolation
 
@@ -364,6 +395,7 @@
 		var pos = groundGeo.attributes.position;
 		var colors = new Float32Array( pos.count * 3 );
 		var core = ROAD_W / 2, feather = ROAD_W / 2 + 18;
+		var tCore = TRACK_W / 2, tFeather = TRACK_W / 2 + 16;
 		for ( var vi = 0; vi < pos.count; vi++ ) {
 			var vx = pos.getX( vi ), vz = pos.getZ( vi );
 			var vy = hillsAt( vx, vz );
@@ -374,13 +406,23 @@
 				if ( dR < core ) break;
 			}
 			var road = dR <= core ? 1 : ( dR >= feather ? 0 : 1 - ( dR - core ) / ( feather - core ) );
+			// the section road ring, painted the same way
+			var dT = 1e9;
+			for ( var ti = 0; ti < TRACK.length - 1; ti++ ) {
+				dT = Math.min( dT, distToSeg( vx, vz, TRACK[ ti ], TRACK[ ti + 1 ] ) );
+				if ( dT < tCore ) break;
+			}
+			var trk = dT <= tCore ? 1 : ( dT >= tFeather ? 0 : 1 - ( dT - tCore ) / ( tFeather - tCore ) );
 			var n = 0.5 + 0.5 * Math.sin( vx * 0.013 ) * Math.sin( vz * 0.017 );
 			var lift = 1 + ( vy - 20 ) * 0.006;
 			var fr = ( 0.085 + n * 0.02 ) * lift, fg = ( 0.14 + n * 0.03 ) * lift, fb = ( 0.10 + n * 0.02 ) * lift;
 			var rr = 0.30 * lift, rg = 0.24 * lift, rb = 0.165 * lift;
-			colors[ vi * 3 ] = fr + ( rr - fr ) * road;
-			colors[ vi * 3 + 1 ] = fg + ( rg - fg ) * road;
-			colors[ vi * 3 + 2 ] = fb + ( rb - fb ) * road;
+			var cr = fr + ( rr - fr ) * road, cg = fg + ( rg - fg ) * road, cb = fb + ( rb - fb ) * road;
+			// racing dirt: a shade redder + more packed than the farm roads
+			var kr = 0.335 * lift, kg = 0.245 * lift, kb = 0.175 * lift;
+			colors[ vi * 3 ] = cr + ( kr - cr ) * trk;
+			colors[ vi * 3 + 1 ] = cg + ( kg - cg ) * trk;
+			colors[ vi * 3 + 2 ] = cb + ( kb - cb ) * trk;
 		}
 		groundGeo.setAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 		groundGeo.computeVertexNormals();
@@ -399,11 +441,19 @@
 		Matter.Body.setAngle( buggyBody, SPAWN.angle );
 		pX = SPAWN.x; pY = SPAWN.y; pA = SPAWN.angle;
 
-		var statics = [], T = 40;
-		statics.push( Matter.Bodies.rectangle( W / 2, 6, W, T, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( W / 2, H - 6, W, T, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( 6, H / 2, T, H, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( W - 6, H / 2, T, H, { isStatic: true } ) );
+		// world walls sit OUTSIDE the section road ring now; the perimeter
+		// fence itself is solid, with the farm gate (x 2180–2300, south) the
+		// only way out onto the track.
+		var statics = [], T = 40, OUT = 265;
+		statics.push( Matter.Bodies.rectangle( W / 2, -OUT + 6, W + OUT * 2 + 80, T, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( W / 2, H + OUT - 6, W + OUT * 2 + 80, T, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( -OUT + 6, H / 2, T, H + OUT * 2 + 80, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( W + OUT - 6, H / 2, T, H + OUT * 2 + 80, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( W / 2, 3, W, 10, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( 3, H / 2, 10, H, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( W - 3, H / 2, 10, H, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( 2180 / 2, H - 3, 2180, 10, { isStatic: true } ) );
+		statics.push( Matter.Bodies.rectangle( ( 2300 + W ) / 2, H - 3, W - 2300, 10, { isStatic: true } ) );
 		LANDMARKS.forEach( function ( lm ) {
 			var s = lm.scale || 1;
 			if ( lm.build === 'treehouse' ) {
@@ -423,6 +473,7 @@
 		buildGrove( THREE );
 		buildFence( THREE );
 		buildGateway( THREE );
+		buildTrack( THREE );
 		buildDriveIns( THREE );
 		buildAnimals( THREE );
 		buildCoop( THREE );
@@ -487,8 +538,15 @@
 	function updateHud() {
 		if ( ! hudEl ) return;
 		hudEl.hidden = false;
-		hudEl.textContent = '3D beta · WASD drives · Space jumps · L/R Shift flips · H honks · Enter steps inside · ⛁ '
+		var txt = '3D beta · WASD drives · Space jumps · L/R Shift flips · H honks · Enter steps inside · ⛁ '
 			+ tokenFound + '/' + tokenCount;
+		if ( lap.active ) {
+			txt += ' · ⏱ ' + fmtLap( lap.t );
+		} else {
+			var st = loadLaps();
+			if ( st.best ) txt += ' · 🏁 ' + fmtLap( st.best.t );
+		}
+		hudEl.textContent = txt;
 	}
 
 	function onKey( e ) {
@@ -633,6 +691,8 @@
 			vAlt = 85 + sp * 5;
 		}
 
+		lapControl();
+
 		// the tractor putters her own rounds — steer off the fences,
 		// the slough and the compound; otherwise wander gently
 		if ( tractor ) {
@@ -754,6 +814,14 @@
 		updateTractor();
 		updateChickens( dms, t );
 		updatePigs( dms );
+		updateGhosts( dms );
+		if ( lap.active ) {
+			var tenth = Math.floor( lap.t / 100 );
+			if ( tenth !== lastHudTenth ) {
+				lastHudTenth = tenth;
+				updateHud();
+			}
+		}
 		updateTokens( dms, t );
 		checkPads( t );
 
@@ -2055,11 +2123,182 @@
 		var step = 300;
 		for ( var x = 0; x < W; x += step ) {
 			fenceRun( THREE, x, 0, Math.min( x + step, W ), 0 );
-			fenceRun( THREE, x, H, Math.min( x + step, W ), H );
+		}
+		// south side leaves the farm gate open — the way out to the track
+		for ( var xa = 0; xa < 2180; xa += step ) {
+			fenceRun( THREE, xa, H, Math.min( xa + step, 2180 ), H );
+		}
+		for ( var xb = 2300; xb < W; xb += step ) {
+			fenceRun( THREE, xb, H, Math.min( xb + step, W ), H );
 		}
 		for ( var z = 0; z < H; z += step ) {
 			fenceRun( THREE, 0, z, 0, Math.min( z + step, H ) );
 			fenceRun( THREE, W, z, W, Math.min( z + step, H ) );
+		}
+	}
+
+	/* ------------------------------------------------------------------ *
+	 *  THE SECTION ROAD — start line, timed laps, ghosts
+	 * ------------------------------------------------------------------ */
+	function buildTrack( THREE ) {
+		// checkered start/finish strip across the south straight
+		var c = document.createElement( 'canvas' );
+		c.width = 64; c.height = 256;
+		var ctx = c.getContext( '2d' );
+		for ( var cy = 0; cy < 16; cy++ ) {
+			for ( var cx = 0; cx < 4; cx++ ) {
+				ctx.fillStyle = ( cx + cy ) % 2 ? '#20201e' : '#cfc8b8';
+				ctx.fillRect( cx * 16, cy * 16, 16, 16 );
+			}
+		}
+		var strip = new THREE.Mesh(
+			new THREE.PlaneGeometry( 16, TRACK_W ),
+			new THREE.MeshBasicMaterial( { map: new THREE.CanvasTexture( c ) } )
+		);
+		strip.rotation.x = -Math.PI / 2;
+		strip.position.set( START.x, hillsAt( START.x, START.z ) + 0.5, START.z );
+		scene.add( strip );
+
+		// posts with lamps at both ends of the line
+		[ START.z - TRACK_W / 2 - 8, START.z + TRACK_W / 2 + 8 ].forEach( function ( pz ) {
+			var post = new THREE.Mesh( new THREE.BoxGeometry( 3, 34, 3 ), mat( THREE, 0x3a2c1c ) );
+			post.position.set( START.x, hillsAt( START.x, pz ) + 17, pz );
+			scene.add( post );
+			var lamp = new THREE.Mesh( new THREE.BoxGeometry( 4, 4.5, 4 ),
+				new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
+			lamp.position.set( START.x, hillsAt( START.x, pz ) + 37, pz );
+			scene.add( lamp );
+		} );
+
+		buildSign( THREE, 'the section road — timed laps', 2085, 2590, START.x, START.z );
+		PROMPTS.push( { id: 'raceline', name: 'the section road', x: START.x, y: START.z, href: null,
+			prompt: 'The section road — cross the line to race the clock (and your ghosts)' } );
+
+		// three ghost buggies: gold = best ever, silver = the two most recent
+		for ( var gi = 0; gi < 3; gi++ ) {
+			var gm = new THREE.MeshLambertMaterial( {
+				color: gi === 0 ? 0xd8b25e : 0x8fa8c8,
+				transparent: true, opacity: 0.34, depthWrite: false
+			} );
+			var gg = new THREE.Group();
+			var chassis = new THREE.Mesh( new THREE.BoxGeometry( 44, 10, 26 ), gm );
+			chassis.position.y = 12;
+			gg.add( chassis );
+			var cage = new THREE.Mesh( new THREE.BoxGeometry( 16, 14, 20 ), gm );
+			cage.position.set( -6, 22, 0 );
+			gg.add( cage );
+			gg.visible = false;
+			scene.add( gg );
+			ghosts.push( { mesh: gg, s: null, gt: 0 } );
+		}
+	}
+
+	function loadLaps() {
+		if ( ghostStore ) return ghostStore;
+		try { ghostStore = JSON.parse( window.localStorage.getItem( 'tcBqLaps_v1' ) || 'null' ); } catch ( err ) {}
+		if ( ! ghostStore || typeof ghostStore !== 'object' ) ghostStore = { best: null, recent: [] };
+		if ( ! ghostStore.recent ) ghostStore.recent = [];
+		return ghostStore;
+	}
+
+	function saveLaps( st ) {
+		ghostStore = st;
+		try { window.localStorage.setItem( 'tcBqLaps_v1', JSON.stringify( st ) ); } catch ( err ) {}
+	}
+
+	function fmtLap( ms ) {
+		var s = ms / 1000;
+		var m = Math.floor( s / 60 );
+		var r = s - m * 60;
+		return m + ':' + ( r < 10 ? '0' : '' ) + r.toFixed( 1 );
+	}
+
+	function startLap( dir ) {
+		lap.active = true;
+		lap.t = 0;
+		lap.dir = dir;
+		lap.next = 0;
+		lap.rec = [];
+		// wake the ghosts: best (gold, slot 0) + up to two recents (silver),
+		// skipping one recent if it IS the best run
+		var st = loadLaps();
+		var streams = [];
+		if ( st.best && st.best.s ) streams.push( st.best.s );
+		var skipped = false;
+		st.recent.forEach( function ( r ) {
+			if ( ! skipped && st.best && r.t === st.best.t ) { skipped = true; return; }
+			if ( r.s && streams.length < 3 ) streams.push( r.s );
+		} );
+		for ( var i = 0; i < ghosts.length; i++ ) {
+			ghosts[ i ].s = streams[ i ] || null;
+			ghosts[ i ].gt = 0;
+			ghosts[ i ].mesh.visible = !! ghosts[ i ].s;
+		}
+		flashChip( streams.length
+			? 'Lap started — the ghosts are running'
+			: 'Lap started — three corners and home' );
+	}
+
+	function finishLap() {
+		var entry = { t: Math.round( lap.t ), s: lap.rec.length ? lap.rec : null };
+		var st = loadLaps();
+		var isBest = ! st.best || entry.t < st.best.t;
+		if ( entry.s ) {
+			st.recent.unshift( entry );
+			st.recent = st.recent.slice( 0, 2 );
+			if ( isBest ) st.best = entry;
+			saveLaps( st );
+		}
+		flashChip( isBest
+			? 'NEW BEST LAP — ' + fmtLap( entry.t ) + ' 🏆'
+			: 'Lap ' + fmtLap( entry.t ) + ' · best ' + fmtLap( st.best.t ) );
+	}
+
+	// called every 60 Hz physics step
+	function lapControl() {
+		var b = buggyBody;
+		var sx = b.position.x - START.x;
+		var onLine = Math.abs( b.position.y - START.z ) < 70;
+		if ( onLine && ( ( prevSX < 0 && sx >= 0 ) || ( prevSX > 0 && sx <= 0 ) ) ) {
+			var dir = sx >= 0 ? 1 : -1; // 1 = heading east = counterclockwise
+			if ( lap.active && dir === lap.dir && lap.next === 3 ) finishLap();
+			startLap( dir );
+		}
+		prevSX = sx;
+		if ( ! lap.active ) return;
+		lap.t += 16.666;
+		// 20 Hz ghost samples ([x, z, angle] flat); 3-minute cap
+		if ( lap.rec.length < 3600 * 3 && Math.round( lap.t / 16.666 ) % 3 === 0 ) {
+			lap.rec.push( Math.round( b.position.x ), Math.round( b.position.y ),
+				Math.round( b.angle * 100 ) / 100 );
+		}
+		if ( lap.next < 3 ) {
+			var seq = lap.dir === 1 ? [ 0, 1, 2 ] : [ 2, 1, 0 ];
+			var ck = LAP_CKPTS[ seq[ lap.next ] ];
+			if ( Math.hypot( b.position.x - ck.x, b.position.y - ck.z ) < 150 ) {
+				lap.next++;
+				flashChip( 'Corner ' + lap.next + ' of 3 · ' + fmtLap( lap.t ) );
+			}
+		}
+	}
+
+	function updateGhosts( dms ) {
+		for ( var i = 0; i < ghosts.length; i++ ) {
+			var g = ghosts[ i ];
+			if ( ! g.s || ! g.mesh.visible ) continue;
+			g.gt += dms;
+			var f = g.gt / 50; // samples every 50 ms
+			var i0 = Math.floor( f ) * 3;
+			if ( i0 + 5 >= g.s.length ) {
+				g.mesh.visible = false;
+				continue;
+			}
+			var u = f - Math.floor( f );
+			var gx = g.s[ i0 ] + ( g.s[ i0 + 3 ] - g.s[ i0 ] ) * u;
+			var gz = g.s[ i0 + 1 ] + ( g.s[ i0 + 4 ] - g.s[ i0 + 1 ] ) * u;
+			var ga = g.s[ i0 + 2 ] + wrapAngle( g.s[ i0 + 5 ] - g.s[ i0 + 2 ] ) * u;
+			g.mesh.position.set( gx, heightAt( gx, gz ), gz );
+			g.mesh.rotation.y = -ga;
 		}
 	}
 
