@@ -18,6 +18,14 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * 3D-P2.9 — THE BARNYARD: the tractor slows to a putter and rolls a
+ * proper dust cloud; 12 chickens live around an open coop by the
+ * farmhouse — squawk and FLUTTER when the buggy scatters them, and
+ * they keep close to home; the herd grows to seven cows plus TRUMAC,
+ * the main bull — black, 30% bigger, horned, with his own prompt; and
+ * a pig pen with a real mud pit — drive through and the mud kicks
+ * up high (pigs wallow in it on their own).
+ *
  * 3D-P2.8 — THE SLOUGH + THE ROUNDS: air toned to half (Thomas flew
  * across the quarter); the four puddles become ONE deep irregular
  * slough — the buggy FLOATS on it (splash-down landings, bobbing,
@@ -164,6 +172,11 @@
 		if ( dx * dx + dz * dz > 108900 ) return false; // beyond the widest lobe
 		return Math.hypot( dx, dz ) < pondR( Math.atan2( dz, dx ) ) - 3;
 	}
+	// the barnyard: chicken coop by the farmhouse, pig pen with a mud pit
+	// on the hillside east of the north road
+	var COOP = { x: 1390, z: 800 };
+	var PIGPEN = { x: 2640, z: 985 };
+	var MUD = { x: 2545, z: 985, r: 60 };
 	var FLAT = [
 		{ x: 1211, z: 588, ri: 160, ro: 315 },
 		{ x: 2240, z: 462, ri: 122, ro: 262 },
@@ -175,7 +188,9 @@
 		{ x: 2240, z: 2432, ri: 245, ro: 455 },
 		{ x: 1694, z: 1284, ri: 560, ro: 750 },
 		{ x: 3850, z: 1802, ri: 88, ro: 210 },
-		{ x: 2730, z: 630, ri: 70, ro: 160 } // the old pull-off (tractor spawn)
+		{ x: 2730, z: 630, ri: 70, ro: 160 }, // the old pull-off (tractor spawn)
+		{ x: 1395, z: 805, ri: 70, ro: 150 }, // chicken coop yard
+		{ x: 2620, z: 985, ri: 110, ro: 220 } // pig pen + mud pit
 	];
 	// Tabletop mounds ON the roads — smooth launches that scale with speed.
 	var MOUNDS = [
@@ -229,14 +244,15 @@
 	var PROMPTS = [];
 	var keys = {}, accMS = 0, nearLandmark = null;
 	var camPos = null, raycaster = null, pointerNDC = null;
-	var dustPool = [], splashPool = [], smokeEmitters = [], trackPool = [], trackIdx = 0, distMark = 0;
+	var dustPool = [], splashPool = [], mudPool = [], smokeEmitters = [], trackPool = [], trackIdx = 0, distMark = 0;
 	var audio = { ctx: null, on: false, master: null, engGain: null, engOsc1: null, engOsc2: null };
 	var soundBtn = null;
 	var tokens = [], tokenCount = 0, tokenFound = 0;
 	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0, climb = 0;
 	var airPitch = 0, jumpCooldown = 0;
 	var boostT = 0, padCooldown = [];
-	var inWater = false;
+	var inWater = false, inMud = false;
+	var chickens = [], pigs = [];
 	var baseFov = 55;
 	var pX = 0, pY = 0, pA = 0; // physics-step interpolation
 
@@ -400,6 +416,9 @@
 		buildGateway( THREE );
 		buildDriveIns( THREE );
 		buildAnimals( THREE );
+		buildCoop( THREE );
+		buildChickens( THREE );
+		buildPigPen( THREE );
 		buildTractor( THREE );
 		buildBales( THREE );
 		buildStacks( THREE );
@@ -415,6 +434,7 @@
 
 		initDust( THREE );
 		initSplash( THREE );
+		initMud( THREE );
 		initTracks( THREE );
 		initSmoke( THREE );
 		buildSoundToggle();
@@ -538,9 +558,11 @@
 		var b = buggyBody;
 		var heading = { x: Math.cos( b.angle ), y: Math.sin( b.angle ) };
 
-		// water check (the slough — floating, not wading)
+		// water check (the slough — floating, not wading) + the mud pit
 		inWater = ! airborne && inPond( b.position.x, b.position.y );
-		b.frictionAir = airborne ? 0.02 : ( inWater ? 0.3 : 0.14 );
+		inMud = ! airborne && ! inWater &&
+			Math.hypot( b.position.x - MUD.x, b.position.y - MUD.z ) < MUD.r;
+		b.frictionAir = airborne ? 0.02 : ( inWater ? 0.3 : ( inMud ? 0.2 : 0.14 ) );
 
 		throttleInput = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.65 : 0 );
 		steerInput = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
@@ -550,6 +572,7 @@
 		var power = boostT > 0 ? 0.0078 : 0.0042;
 		if ( airborne ) power *= 0.25;
 		if ( inWater ) power *= 0.5;
+		if ( inMud ) power *= 0.75;
 		if ( throttleInput ) {
 			Matter.Body.applyForce( b, b.position,
 				{ x: heading.x * power * throttleInput * b.mass, y: heading.y * power * throttleInput * b.mass } );
@@ -573,6 +596,7 @@
 
 		var cap = boostT > 0 ? 13 : 9;
 		if ( inWater ) cap *= 0.5;
+		if ( inMud ) cap *= 0.8;
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		if ( sp > cap ) Matter.Body.setVelocity( b, { x: b.velocity.x * cap / sp, y: b.velocity.y * cap / sp } );
 
@@ -604,8 +628,8 @@
 			}
 			tractor.angle = wrapAngle( tractor.angle + tractor.turn );
 			Matter.Body.applyForce( tb, tb.position, {
-				x: Math.cos( tractor.angle ) * 0.0016 * tb.mass,
-				y: Math.sin( tractor.angle ) * 0.0016 * tb.mass
+				x: Math.cos( tractor.angle ) * 0.001 * tb.mass,
+				y: Math.sin( tractor.angle ) * 0.001 * tb.mass
 			} );
 		}
 	}
@@ -705,6 +729,8 @@
 		checkRestack( dms, sp );
 		updateAnimals( dms );
 		updateTractor();
+		updateChickens( dms, t );
+		updatePigs( dms );
 		updateTokens( dms, t );
 		checkPads( t );
 
@@ -724,6 +750,10 @@
 		if ( inWater && sp > 1.4 ) {
 			spawnSplash( wheelWorld( 10, 12 ), sp );
 			spawnSplash( wheelWorld( 10, -12 ), sp );
+		} else if ( inMud && sp > 1.2 ) {
+			// mud kicks up HIGH
+			spawnMud( wheelWorld( -14, 10 ), sp );
+			spawnMud( wheelWorld( -14, -10 ), sp );
 		} else if ( ! airborne && sp > 1.6 && Math.random() < Math.min( 0.55, 0.1 + sp * 0.04 + Math.abs( steerInput ) * 0.2 ) ) {
 			spawnDust( wheelWorld( -16, steerInput >= 0 ? 13 : -13 ), sp );
 		}
@@ -1533,18 +1563,25 @@
 	var animals = [];
 
 	function buildAnimals( THREE ) {
-		var cows = [ [ 3063, 1365 ], [ 1575, 2013 ], [ 2713, 910 ], [ 3763, 1540 ] ];
+		var cows = [ [ 3063, 1365 ], [ 1575, 2013 ], [ 2713, 910 ], [ 3763, 1540 ],
+			[ 2050, 2200 ], [ 2900, 1350 ], [ 1700, 2150 ] ];
 		var sheep = [ [ 875, 1050 ], [ 2538, 2188 ], [ 1838, 613 ], [ 3938, 735 ], [ 1225, 1750 ] ];
 		cows.forEach( function ( p ) { addAnimal( THREE, 'cow', p[ 0 ], p[ 1 ] ); } );
 		sheep.forEach( function ( p ) { addAnimal( THREE, 'sheep', p[ 0 ], p[ 1 ] ); } );
+		// Trumac, the main bull — black, 30% bigger, and he knows it
+		var trumac = addAnimal( THREE, 'bull', 3150, 1900 );
+		trumac.lm = { id: 'trumac', name: 'Trumac', x: 3150, y: 1900, href: null,
+			prompt: 'Trumac — the main bull. Give him room' };
+		PROMPTS.push( trumac.lm );
 	}
 
 	function addAnimal( THREE, type, x, z ) {
 		var g = new THREE.Group();
-		var cow = type === 'cow';
-		var bodyC = cow ? 0x6f4a33 : 0xd8d3c4;
-		var headC = cow ? 0x543527 : 0x2a2420;
-		var legC = cow ? 0x452c1f : 0xbdb7a6;
+		var bull = type === 'bull';
+		var cow = type === 'cow' || bull;
+		var bodyC = bull ? 0x14100d : ( cow ? 0x6f4a33 : 0xd8d3c4 );
+		var headC = bull ? 0x0d0a08 : ( cow ? 0x543527 : 0x2a2420 );
+		var legC = bull ? 0x0d0a08 : ( cow ? 0x452c1f : 0xbdb7a6 );
 		var bw = cow ? 20 : 13, bh = cow ? 11 : 8.5, bd = cow ? 10 : 9;
 		var legH = cow ? 6 : 4;
 		[ [ 1, 1 ], [ 1, -1 ], [ -1, 1 ], [ -1, -1 ] ].forEach( function ( c ) {
@@ -1559,11 +1596,21 @@
 			new THREE.BoxGeometry( cow ? 7 : 5, cow ? 7 : 5, cow ? 6 : 4.5 ), mat( THREE, headC ) );
 		head.position.set( bw / 2 + 2, legH + bh - 1, 0 );
 		g.add( head );
+		if ( bull ) {
+			[ -1, 1 ].forEach( function ( sd ) {
+				var horn = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 1.4, 4.2 ), mat( THREE, 0xcfc8b8 ) );
+				horn.position.set( bw / 2 + 2, legH + bh + 2.2, sd * 4.4 );
+				g.add( horn );
+			} );
+			g.scale.set( 1.3, 1.3, 1.3 );
+		}
 		scene.add( g );
-		var body2d = Matter.Bodies.circle( x, z, cow ? 11 : 7,
-			{ frictionAir: 0.18, density: 0.003 } );
+		var body2d = Matter.Bodies.circle( x, z, bull ? 15 : ( cow ? 11 : 7 ),
+			{ frictionAir: 0.18, density: bull ? 0.006 : 0.003 } );
 		Matter.Composite.add( engine.world, body2d );
-		animals.push( { g: g, body: body2d, cow: cow, wanderT: 800 + Math.random() * 2400 } );
+		var entry = { g: g, body: body2d, type: type, wanderT: 800 + Math.random() * 2400 };
+		animals.push( entry );
+		return entry;
 	}
 
 	function updateAnimals( dms ) {
@@ -1574,11 +1621,12 @@
 				a.wanderT = 1800 + Math.random() * 2800;
 				if ( Math.random() < 0.7 ) {
 					var dir = Math.random() * Math.PI * 2;
-					var spd = a.cow ? 0.5 : 0.7;
+					var spd = a.type === 'bull' ? 0.4 : ( a.type === 'cow' ? 0.5 : 0.7 );
 					Matter.Body.setVelocity( a.body, { x: Math.cos( dir ) * spd, y: Math.sin( dir ) * spd } );
 				}
 			}
 			var px = a.body.position.x, pz = a.body.position.y;
+			if ( a.lm ) { a.lm.x = px; a.lm.y = pz; } // Trumac's prompt follows him
 			if ( inPond( px, pz ) ) {
 				// swim for shore — heads above water
 				var away = Math.atan2( pz - POND.z, px - POND.x );
@@ -1651,8 +1699,230 @@
 		tractor.lm.y = tp.y;
 		var tsp = Math.hypot( tractor.body.velocity.x, tractor.body.velocity.y );
 		for ( var tw = 0; tw < tractor.wheels.length; tw++ ) tractor.wheels[ tw ].rotation.z -= tsp * 0.07;
-		if ( tsp > 0.8 && Math.random() < 0.04 ) {
-			spawnDust( { x: tp.x - Math.cos( tractor.angle ) * 20, y: tp.y - Math.sin( tractor.angle ) * 20 }, 2 );
+		// she rolls a proper cloud behind her now
+		if ( tsp > 0.5 && Math.random() < 0.18 ) {
+			var td = spawnDust( {
+				x: tp.x - Math.cos( tractor.angle ) * ( 16 + Math.random() * 14 ),
+				y: tp.y - Math.sin( tractor.angle ) * ( 16 + Math.random() * 14 )
+			}, 4 );
+			if ( td ) {
+				td.vy = 14 + Math.random() * 12;
+				td.grow += 10;
+			}
+		}
+	}
+
+	/* ---- the barnyard: coop + chickens, pig pen + mud pit ---- */
+	function penRun( THREE, x0, z0, x1, z1 ) {
+		var postMat = mat( THREE, 0x4a4034 );
+		var dx = x1 - x0, dz = z1 - z0;
+		var len = Math.hypot( dx, dz ), n = Math.max( 1, Math.round( len / 34 ) );
+		for ( var i = 0; i <= n; i++ ) {
+			var px = x0 + dx * ( i / n ), pz = z0 + dz * ( i / n );
+			var p = new THREE.Mesh( new THREE.BoxGeometry( 2.2, 10, 2.2 ), postMat );
+			p.position.set( px, hillsAt( px, pz ) + 5, pz );
+			scene.add( p );
+		}
+		var rail = new THREE.Mesh( new THREE.BoxGeometry( len, 1.5, 1.5 ), postMat );
+		rail.position.set( ( x0 + x1 ) / 2, hillsAt( ( x0 + x1 ) / 2, ( z0 + z1 ) / 2 ) + 8.4, ( z0 + z1 ) / 2 );
+		rail.rotation.y = -Math.atan2( dz, dx );
+		scene.add( rail );
+		Matter.Composite.add( engine.world, Matter.Bodies.rectangle(
+			( x0 + x1 ) / 2, ( z0 + z1 ) / 2, len, 4,
+			{ isStatic: true, angle: Math.atan2( dz, dx ) } ) );
+	}
+
+	function buildCoop( THREE ) {
+		var g = new THREE.Group();
+		var hut = new THREE.Mesh( new THREE.BoxGeometry( 26, 16, 20 ), mat( THREE, 0x6b4a2a ) );
+		hut.position.y = 8;
+		g.add( hut );
+		var roof = gableRoof( THREE, 30, 13, 0x3a2c1c );
+		roof.position.y = 19;
+		g.add( roof );
+		var door = new THREE.Mesh( new THREE.PlaneGeometry( 7, 9 ), mat( THREE, 0x171310 ) );
+		door.position.set( 13.2, 6, 0 );
+		door.rotation.y = Math.PI / 2;
+		g.add( door );
+		var plank = new THREE.Mesh( new THREE.BoxGeometry( 14, 1, 6 ), mat( THREE, 0x54402a ) );
+		plank.position.set( 19, 2.5, 0 );
+		plank.rotation.z = -0.28;
+		g.add( plank );
+		g.position.set( COOP.x, hillsAt( COOP.x, COOP.z ), COOP.z );
+		scene.add( g );
+		Matter.Composite.add( engine.world,
+			Matter.Bodies.rectangle( COOP.x, COOP.z, 28, 22, { isStatic: true } ) );
+		// open pen east of the hut (the girls come and go as they please)
+		penRun( THREE, COOP.x + 18, COOP.z - 34, COOP.x + 78, COOP.z - 34 );
+		penRun( THREE, COOP.x + 78, COOP.z - 34, COOP.x + 78, COOP.z + 34 );
+		penRun( THREE, COOP.x + 18, COOP.z + 34, COOP.x + 78, COOP.z + 34 );
+		PROMPTS.push( { id: 'coop', name: 'the chicken coop', x: COOP.x, y: COOP.z, href: null,
+			prompt: 'The coop — mind the girls' } );
+	}
+
+	function buildChickens( THREE ) {
+		for ( var i = 0; i < 12; i++ ) {
+			var an = Math.random() * Math.PI * 2;
+			var rr = 30 + Math.random() * 95;
+			addChicken( THREE, COOP.x + Math.cos( an ) * rr, COOP.z + Math.sin( an ) * rr );
+		}
+	}
+
+	function addChicken( THREE, x, z ) {
+		var g = new THREE.Group();
+		var feathers = mat( THREE, Math.random() < 0.25 ? 0xb98850 : 0xd8d3c4 );
+		var body = new THREE.Mesh( new THREE.BoxGeometry( 6, 5, 4.5 ), feathers );
+		body.position.y = 4.5;
+		g.add( body );
+		var head = new THREE.Mesh( new THREE.BoxGeometry( 2.6, 2.6, 2.4 ), feathers );
+		head.position.set( 3.4, 8, 0 );
+		g.add( head );
+		var comb = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 1.4, 1 ), mat( THREE, 0xb8352c ) );
+		comb.position.set( 3.4, 9.8, 0 );
+		g.add( comb );
+		var beak = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 1, 1.2 ), mat( THREE, 0xd8a23a ) );
+		beak.position.set( 5, 7.6, 0 );
+		g.add( beak );
+		var wingL = new THREE.Mesh( new THREE.BoxGeometry( 4.5, 0.8, 3 ), feathers );
+		wingL.position.set( -0.5, 6, 2.8 );
+		g.add( wingL );
+		var wingR = new THREE.Mesh( new THREE.BoxGeometry( 4.5, 0.8, 3 ), feathers );
+		wingR.position.set( -0.5, 6, -2.8 );
+		g.add( wingR );
+		scene.add( g );
+		var body2d = Matter.Bodies.circle( x, z, 4, { frictionAir: 0.24, density: 0.0008 } );
+		Matter.Composite.add( engine.world, body2d );
+		chickens.push( { g: g, body: body2d, wingL: wingL, wingR: wingR,
+			wanderT: 400 + Math.random() * 2000, fT: 0, cd: 0 } );
+	}
+
+	function updateChickens( dms, t ) {
+		var b = buggyBody;
+		var bsp = Math.hypot( b.velocity.x, b.velocity.y );
+		for ( var i = 0; i < chickens.length; i++ ) {
+			var c = chickens[ i ];
+			c.wanderT -= dms;
+			c.cd -= dms;
+			if ( c.fT > 0 ) c.fT -= dms;
+			var px = c.body.position.x, pz = c.body.position.y;
+			if ( c.wanderT <= 0 ) {
+				c.wanderT = 900 + Math.random() * 2200;
+				if ( Math.random() < 0.8 ) {
+					// peck about, but keep close to home
+					var dir = Math.hypot( px - COOP.x, pz - COOP.z ) > 200
+						? Math.atan2( COOP.z - pz, COOP.x - px )
+						: Math.random() * Math.PI * 2;
+					Matter.Body.setVelocity( c.body, { x: Math.cos( dir ) * 0.9, y: Math.sin( dir ) * 0.9 } );
+				}
+			}
+			// the buggy scatters them: squawk + flutter
+			if ( c.cd <= 0 && bsp > 0.8 &&
+			     Math.hypot( px - b.position.x, pz - b.position.y ) < 42 ) {
+				c.cd = 1400;
+				c.fT = 680;
+				var fa = Math.atan2( pz - b.position.y, px - b.position.x ) + ( Math.random() - 0.5 ) * 0.7;
+				Matter.Body.setVelocity( c.body, { x: Math.cos( fa ) * 3.4, y: Math.sin( fa ) * 3.4 } );
+				squawk();
+			}
+			var hop = c.fT > 0 ? Math.sin( ( 1 - c.fT / 680 ) * Math.PI ) * 15 : 0;
+			c.g.position.set( px, heightAt( px, pz ) + hop, pz );
+			var flap = c.fT > 0 ? Math.sin( t * 42 ) * 0.9 : 0;
+			c.wingL.rotation.x = flap;
+			c.wingR.rotation.x = -flap;
+			var v = c.body.velocity;
+			if ( Math.hypot( v.x, v.y ) > 0.12 ) c.g.rotation.y = -Math.atan2( v.y, v.x );
+		}
+	}
+
+	function buildPigPen( THREE ) {
+		// pen open on the west side — straight into the mud pit
+		penRun( THREE, PIGPEN.x - 30, PIGPEN.z - 55, PIGPEN.x + 70, PIGPEN.z - 55 );
+		penRun( THREE, PIGPEN.x + 70, PIGPEN.z - 55, PIGPEN.x + 70, PIGPEN.z + 55 );
+		penRun( THREE, PIGPEN.x - 30, PIGPEN.z + 55, PIGPEN.x + 70, PIGPEN.z + 55 );
+		var shed = new THREE.Mesh( new THREE.BoxGeometry( 24, 10, 16 ), mat( THREE, 0x54402a ) );
+		shed.position.set( PIGPEN.x + 52, hillsAt( PIGPEN.x + 52, PIGPEN.z - 38 ) + 5, PIGPEN.z - 38 );
+		scene.add( shed );
+		var shedRoof = new THREE.Mesh( new THREE.BoxGeometry( 28, 1.6, 20 ), mat( THREE, 0x3a2c1c ) );
+		shedRoof.position.set( PIGPEN.x + 52, hillsAt( PIGPEN.x + 52, PIGPEN.z - 38 ) + 11, PIGPEN.z - 38 );
+		shedRoof.rotation.z = 0.12;
+		scene.add( shedRoof );
+		Matter.Composite.add( engine.world, Matter.Bodies.rectangle(
+			PIGPEN.x + 52, PIGPEN.z - 38, 24, 16, { isStatic: true } ) );
+		// the mud pit — layered wet-brown discs
+		[ { r: MUD.r, c: 0x2c1f12, y: 0.35 },
+		  { r: MUD.r * 0.72, c: 0x382817, y: 0.5 },
+		  { r: MUD.r * 0.4, c: 0x241a0e, y: 0.65 } ].forEach( function ( ring ) {
+			var disc = new THREE.Mesh( new THREE.CircleGeometry( ring.r, 20 ), mat( THREE, ring.c ) );
+			disc.rotation.x = -Math.PI / 2;
+			disc.position.set( MUD.x, hillsAt( MUD.x, MUD.z ) + ring.y, MUD.z );
+			disc.scale.x = 1.3;
+			scene.add( disc );
+		} );
+		for ( var i = 0; i < 4; i++ ) {
+			addPig( THREE, PIGPEN.x - 10 + Math.random() * 60, PIGPEN.z - 30 + Math.random() * 60 );
+		}
+		PROMPTS.push( { id: 'pigpen', name: 'the pig pen', x: PIGPEN.x, y: PIGPEN.z, href: null,
+			prompt: 'The pig pen — the mud is deep and they love it' } );
+	}
+
+	function addPig( THREE, x, z ) {
+		var g = new THREE.Group();
+		var pink = mat( THREE, 0xc98d84 );
+		[ [ 1, 1 ], [ 1, -1 ], [ -1, 1 ], [ -1, -1 ] ].forEach( function ( c ) {
+			var leg = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 3.5, 1.4 ), pink );
+			leg.position.set( c[ 0 ] * 3.6, 1.75, c[ 1 ] * 2 );
+			g.add( leg );
+		} );
+		var body = new THREE.Mesh( new THREE.BoxGeometry( 11, 7, 6.5 ), pink );
+		body.position.y = 6.5;
+		g.add( body );
+		var head = new THREE.Mesh( new THREE.BoxGeometry( 4.5, 5, 5 ), pink );
+		head.position.set( 7, 7, 0 );
+		g.add( head );
+		var snout = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 2, 2.4 ), mat( THREE, 0xb87a70 ) );
+		snout.position.set( 9.6, 6.4, 0 );
+		g.add( snout );
+		[ -1, 1 ].forEach( function ( sd ) {
+			var ear = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 1.8, 1.4 ), mat( THREE, 0xb87a70 ) );
+			ear.position.set( 6.4, 10, sd * 1.8 );
+			g.add( ear );
+		} );
+		scene.add( g );
+		var body2d = Matter.Bodies.circle( x, z, 6, { frictionAir: 0.18, density: 0.002 } );
+		Matter.Composite.add( engine.world, body2d );
+		pigs.push( { g: g, body: body2d, wanderT: 600 + Math.random() * 2000, cd: 0 } );
+	}
+
+	function updatePigs( dms ) {
+		var b = buggyBody;
+		for ( var i = 0; i < pigs.length; i++ ) {
+			var p = pigs[ i ];
+			p.wanderT -= dms;
+			p.cd -= dms;
+			var px = p.body.position.x, pz = p.body.position.y;
+			if ( p.wanderT <= 0 ) {
+				p.wanderT = 1600 + Math.random() * 2600;
+				var dir;
+				if ( Math.hypot( px - PIGPEN.x, pz - PIGPEN.z ) > 150 ) {
+					dir = Math.atan2( PIGPEN.z - pz, PIGPEN.x - px );
+				} else if ( Math.random() < 0.4 ) {
+					// pigs love the mud
+					dir = Math.atan2( MUD.z - pz, MUD.x - px ) + ( Math.random() - 0.5 ) * 0.6;
+				} else {
+					dir = Math.random() * Math.PI * 2;
+				}
+				Matter.Body.setVelocity( p.body, { x: Math.cos( dir ) * 0.55, y: Math.sin( dir ) * 0.55 } );
+			}
+			if ( p.cd <= 0 && Math.hypot( px - b.position.x, pz - b.position.y ) < 46 &&
+			     Math.hypot( b.velocity.x, b.velocity.y ) > 1 ) {
+				p.cd = 1200;
+				var fa = Math.atan2( pz - b.position.y, px - b.position.x );
+				Matter.Body.setVelocity( p.body, { x: Math.cos( fa ) * 2.2, y: Math.sin( fa ) * 2.2 } );
+			}
+			var wallow = Math.hypot( px - MUD.x, pz - MUD.z ) < MUD.r ? 1.8 : 0;
+			p.g.position.set( px, heightAt( px, pz ) - wallow, pz );
+			var v = p.body.velocity;
+			if ( Math.hypot( v.x, v.y ) > 0.12 ) p.g.rotation.y = -Math.atan2( v.y, v.x );
 		}
 	}
 
@@ -1816,8 +2086,9 @@
 		}
 	}
 
-	function initDust( THREE ) { initPool( THREE, dustPool, 32, makePuffTexture( THREE, 158, 138, 106 ) ); }
+	function initDust( THREE ) { initPool( THREE, dustPool, 44, makePuffTexture( THREE, 158, 138, 106 ) ); }
 	function initSplash( THREE ) { initPool( THREE, splashPool, 20, makePuffTexture( THREE, 140, 180, 214 ) ); }
+	function initMud( THREE ) { initPool( THREE, mudPool, 22, makePuffTexture( THREE, 96, 74, 52 ) ); }
 
 	function spawnFrom( pool, at, sp ) {
 		for ( var i = 0; i < pool.length; i++ ) {
@@ -1831,12 +2102,20 @@
 					at.y + ( Math.random() - 0.5 ) * 8 );
 				p.vy = 8 + Math.random() * 8;
 				p.grow = 10 + sp * 2.4;
-				return;
+				return p;
 			}
 		}
+		return null;
 	}
-	function spawnDust( at, sp ) { spawnFrom( dustPool, at, sp ); }
-	function spawnSplash( at, sp ) { spawnFrom( splashPool, at, sp * 0.8 ); }
+	function spawnDust( at, sp ) { return spawnFrom( dustPool, at, sp ); }
+	function spawnSplash( at, sp ) { return spawnFrom( splashPool, at, sp * 0.8 ); }
+	function spawnMud( at, sp ) {
+		var p = spawnFrom( mudPool, at, sp );
+		if ( p ) {
+			p.vy = 26 + Math.random() * 28; // mud flies HIGH
+			p.grow = 14 + sp * 2;
+		}
+	}
 
 	function updatePool( pool, dms, baseOpacity ) {
 		for ( var i = 0; i < pool.length; i++ ) {
@@ -1853,6 +2132,7 @@
 	function updateDust( dms ) {
 		updatePool( dustPool, dms, 0.34 );
 		updatePool( splashPool, dms, 0.4 );
+		updatePool( mudPool, dms, 0.5 );
 	}
 
 	function initTracks( THREE ) {
@@ -2011,6 +2291,26 @@
 			g.connect( audio.master );
 			o.start( t0 );
 			o.stop( t0 + 0.36 );
+		} );
+	}
+
+	function squawk() {
+		if ( ! audio.on || ! audio.ctx ) return;
+		var t0 = audio.ctx.currentTime;
+		[ 0, 0.09 ].forEach( function ( d ) {
+			var o = audio.ctx.createOscillator();
+			o.type = 'square';
+			var f0 = 620 + Math.random() * 260;
+			o.frequency.setValueAtTime( f0, t0 + d );
+			o.frequency.exponentialRampToValueAtTime( f0 * 0.55, t0 + d + 0.08 );
+			var g = audio.ctx.createGain();
+			g.gain.setValueAtTime( 0.0001, t0 + d );
+			g.gain.exponentialRampToValueAtTime( 0.07, t0 + d + 0.015 );
+			g.gain.exponentialRampToValueAtTime( 0.0001, t0 + d + 0.1 );
+			o.connect( g );
+			g.connect( audio.master );
+			o.start( t0 + d );
+			o.stop( t0 + d + 0.12 );
 		} );
 	}
 
