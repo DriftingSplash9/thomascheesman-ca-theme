@@ -18,6 +18,15 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * 3D-P2.7 — TO SCALE + REAL AIR: every farm building scales up to sit
+ * honestly beside the buggy (mesh AND Matter footprint together, via a
+ * per-landmark `scale` in LANDMARKS), and the air stops being polite:
+ * five kicker RAMPS on the straights (launch is terrain-honest —
+ * vertical speed = the climb rate you carried up the face, so speed
+ * matters), the mounds grow into real tabletops, boost lowers gravity
+ * for hang-time, and a stuck DOUBLE flip pays double boost. Three new
+ * sky tokens ride the ramp arcs (20 → 23, appended so saves survive).
+ *
  * Carried: interpolated 60Hz physics (no jitter), painted-in roads that
  * ride the terrain, wandering livestock + tractor, token hunt, bale
  * stacks + restack pad, family-gated compound, lantern archway signs.
@@ -35,35 +44,37 @@
 	var COMPOUND = { x0: 1302, z0: 903, x1: 2086, z1: 1666, gateZ0: 1498, gateZ1: 1652 };
 	var GATE = { x: 2086, z: 1575 };
 
+	// `scale` grows the mesh AND the Matter footprint together — a building
+	// without one renders at its authored size.
 	var LANDMARKS = [
-		{ id: 'farmhouse', name: 'the farmhouse', x: 1211, y: 588, w: 130, h: 80,
+		{ id: 'farmhouse', name: 'the farmhouse', x: 1211, y: 588, w: 130, h: 80, scale: 1.6,
 		  href: '/thomas', build: 'farmhouse', signTo: { x: 1435, y: 700 },
 		  prompt: 'The farmhouse — step inside, this is me' },
-		{ id: 'cookshack', name: 'the cookshack', x: 2240, y: 462, w: 70, h: 50,
+		{ id: 'cookshack', name: 'the cookshack', x: 2240, y: 462, w: 70, h: 50, scale: 1.6,
 		  href: '/about', build: 'cookshack', signTo: { x: 2205, y: 578 },
 		  prompt: 'The cookshack — my life on the line' },
-		{ id: 'elevator', name: 'the grain elevator', x: 3136, y: 686, w: 70, h: 70,
+		{ id: 'elevator', name: 'the grain elevator', x: 3136, y: 686, w: 70, h: 70, scale: 1.5,
 		  href: '/hcs', build: 'elevator', signTo: { x: 3045, y: 753 },
 		  prompt: 'The grain elevator — one of fewer than fifty' },
-		{ id: 'church', name: 'the church', x: 693, y: 1302, w: 70, h: 90,
+		{ id: 'church', name: 'the church', x: 693, y: 1302, w: 70, h: 90, scale: 1.6,
 		  href: '/heritage', build: 'church', signTo: { x: 875, y: 1383 },
 		  prompt: 'The church on the hill — eight family lines' },
-		{ id: 'th1', name: 'Patience', x: 1435, y: 1036, w: 26, h: 26,
+		{ id: 'th1', name: 'Patience', x: 1435, y: 1036, w: 26, h: 26, scale: 1.75,
 		  href: '/patience', build: 'treehouse', kidColor: 0xe86ba7, kidCss: '#ff9ecb',
 		  prompt: 'Patience’s treehouse — the family key opens it' },
-		{ id: 'th2', name: 'Daniel', x: 1631, y: 1281, w: 26, h: 26,
+		{ id: 'th2', name: 'Daniel', x: 1631, y: 1281, w: 26, h: 26, scale: 1.75,
 		  href: '/daniel', build: 'treehouse', kidColor: 0x4f9fd8, kidCss: '#8fd0ff',
 		  prompt: 'Daniel’s treehouse — the family key opens it' },
-		{ id: 'th3', name: 'Faith', x: 1873, y: 1505, w: 26, h: 26,
+		{ id: 'th3', name: 'Faith', x: 1873, y: 1505, w: 26, h: 26, scale: 1.75,
 		  href: '/faith', build: 'treehouse', kidColor: 0x9a7fd8, kidCss: '#cbb2ff',
 		  prompt: 'Faith’s treehouse — the family key opens it' },
-		{ id: 'radio', name: 'the radio mast', x: 4095, y: 1260, w: 30, h: 30,
+		{ id: 'radio', name: 'the radio mast', x: 4095, y: 1260, w: 30, h: 30, scale: 1.45,
 		  href: 'https://bareyourrare.org', external: true, build: 'mast', signTo: { x: 3955, y: 1295 },
 		  prompt: 'The radio mast — broadcasting beyond the fence' },
-		{ id: 'barn', name: 'the arcade barn', x: 3539, y: 1435, w: 120, h: 80,
+		{ id: 'barn', name: 'the arcade barn', x: 3539, y: 1435, w: 120, h: 80, scale: 1.6,
 		  href: null, build: 'barn', signTo: { x: 3325, y: 1505 },
 		  prompt: 'The arcade barn — the games are moving in here soon' },
-		{ id: 'shed', name: 'the old shed', x: 651, y: 1932, w: 60, h: 44,
+		{ id: 'shed', name: 'the old shed', x: 651, y: 1932, w: 60, h: 44, scale: 1.45,
 		  href: null, build: 'shed', signTo: { x: 753, y: 1838 },
 		  prompt: 'The shed is padlocked… but a drawer in the house opens' },
 		{ id: 'mailbox', name: 'the mailbox', x: 2083, y: 2450, w: 10, h: 10,
@@ -155,12 +166,27 @@
 		{ x: 3850, z: 1802, ri: 88, ro: 210 },
 		{ x: 2730, z: 630, ri: 70, ro: 160 } // the tractor's pull-off
 	];
-	// Monster ramps ON the roads — big enough to launch a flip from.
+	// Tabletop mounds ON the roads — smooth launches that scale with speed.
 	var MOUNDS = [
-		{ x: 2695, z: 1724, a: 20, r: 60 },
-		{ x: 2205, z: 788, a: 18, r: 54 },
-		{ x: 3325, z: 2100, a: 22, r: 66 }
+		{ x: 2695, z: 1724, a: 32, r: 72 },
+		{ x: 2205, z: 788, a: 28, r: 70 },
+		{ x: 3325, z: 2100, a: 34, r: 86 }
 	];
+	// Kicker ramps — a steepening face that ends in a lip. The launch is
+	// terrain-honest (vertical speed = climb rate at the lip), so speed
+	// matters: hit them flat-out, hit them boosted.
+	var RAMPS = [
+		{ x: 2180, z: 2010, dir: { x: 30, z: -380 }, w: 70, l: 110, h: 28 },   // entry straight — the pad feeds it
+		{ x: 2835, z: 613, dir: { x: 420, z: 280 }, w: 70, l: 120, h: 34 },    // cookshack → elevator run
+		{ x: 3640, z: 1400, dir: { x: 630, z: -90 }, w: 70, l: 120, h: 36 },   // barn → radio mast run
+		{ x: 1242, z: 1698, dir: { x: -315, z: -140 }, w: 70, l: 110, h: 30 }, // west run below the compound
+		{ x: 3780, z: 2065, dir: { x: 1, z: 0 }, w: 76, l: 100, h: 12 }        // the pond hop — splash landing
+	];
+	RAMPS.forEach( function ( r ) {
+		var dl = Math.hypot( r.dir.x, r.dir.z ) || 1;
+		r.cx = r.dir.x / dl;
+		r.cz = r.dir.z / dl;
+	} );
 	var PADS = [
 		{ x: 2188, z: 2065 }, { x: 2258, z: 1155 },
 		{ x: 2625, z: 1750 }, { x: 3693, z: 1960 }
@@ -172,7 +198,11 @@
 		{ x: 1225, z: 2363 }, { x: 2888, z: 2363 }, { x: 788, z: 1663 },
 		{ x: 1575, z: 315 }, { x: 2625, z: 1225 }, { x: 3763, z: 875 },
 		{ x: 613, z: 963 }, { x: 2695, z: 1724, air: true }, { x: 2205, z: 788, air: true },
-		{ x: 525, z: 2065 }, { x: 4078, z: 1138 }
+		{ x: 525, z: 2065 }, { x: 4078, z: 1138 },
+		// sky tokens on the ramp arcs — APPEND ONLY (saved indices must hold)
+		{ x: 2198, z: 1780, air: true, y: 70 },
+		{ x: 3868, z: 1370, air: true, y: 75 },
+		{ x: 4050, z: 2065, air: true, y: 40 }
 	];
 
 	var stage, hudEl, chipEl;
@@ -192,7 +222,7 @@
 	var audio = { ctx: null, on: false, master: null, engGain: null, engOsc1: null, engOsc2: null };
 	var soundBtn = null;
 	var tokens = [], tokenCount = 0, tokenFound = 0;
-	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0;
+	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0, climb = 0;
 	var airPitch = 0, jumpCooldown = 0;
 	var boostT = 0, padCooldown = [];
 	var inWater = false;
@@ -225,10 +255,26 @@
 		}
 		return y;
 	}
+	function rampAt( x, z ) {
+		var y = 0;
+		for ( var i = 0; i < RAMPS.length; i++ ) {
+			var r = RAMPS[ i ];
+			var dx = x - r.x, dz = z - r.z;
+			var t = dx * r.cx + dz * r.cz;
+			if ( t < 0 || t > r.l + 9 ) continue;
+			var sd = Math.abs( dz * r.cx - dx * r.cz );
+			if ( sd > r.w / 2 ) continue;
+			// f² face (steepest at the lip), 9-unit backslope past it
+			var p = t <= r.l ? ( t / r.l ) * ( t / r.l ) : 1 - ( t - r.l ) / 9;
+			var edge = Math.min( 1, ( r.w / 2 - sd ) / 6 );
+			y += r.h * p * edge;
+		}
+		return y;
+	}
 	function heightAt( x, z ) {
 		var y = hillsAt( x, z );
 		for ( var i = 0; i < MOUNDS.length; i++ ) y += gauss( x, z, MOUNDS[ i ] );
-		return y;
+		return y + rampAt( x, z );
 	}
 	function slopeAt( x, z ) {
 		return {
@@ -307,6 +353,7 @@
 
 		buildPonds( THREE );
 		buildMounds( THREE );
+		buildRamps( THREE );
 		buildPads( THREE );
 
 		// ---------- physics ----------
@@ -322,12 +369,13 @@
 		statics.push( Matter.Bodies.rectangle( 6, H / 2, T, H, { isStatic: true } ) );
 		statics.push( Matter.Bodies.rectangle( W - 6, H / 2, T, H, { isStatic: true } ) );
 		LANDMARKS.forEach( function ( lm ) {
+			var s = lm.scale || 1;
 			if ( lm.build === 'treehouse' ) {
-				statics.push( Matter.Bodies.circle( lm.x, lm.y, 13, { isStatic: true } ) );
+				statics.push( Matter.Bodies.circle( lm.x, lm.y, 13 * s, { isStatic: true } ) );
 			} else if ( lm.build === 'mailbox' ) {
 				statics.push( Matter.Bodies.circle( lm.x, lm.y, 7, { isStatic: true } ) );
 			} else {
-				statics.push( Matter.Bodies.rectangle( lm.x, lm.y, lm.w, lm.h, { isStatic: true } ) );
+				statics.push( Matter.Bodies.rectangle( lm.x, lm.y, lm.w * s, lm.h * s, { isStatic: true } ) );
 			}
 		} );
 		Matter.Composite.add( engine.world, [ buggyBody ].concat( statics ) );
@@ -531,7 +579,7 @@
 		if ( keys.jump && ! airborne && jumpCooldown <= 0 ) {
 			jumpCooldown = 300;
 			airborne = true;
-			vAlt = 95 + sp * 5;
+			vAlt = 110 + sp * 7;
 		}
 	}
 
@@ -551,9 +599,13 @@
 		var gy = heightAt( rx, rz );
 		if ( ! airborne ) {
 			var groundRate = ( gy - prevGy ) / Math.max( dt, 0.001 );
+			// remember how hard we were climbing — that's the honest launch
+			climb = groundRate > 0 ? Math.max( climb * 0.85, groundRate ) : climb * 0.85;
 			if ( groundRate < -60 && sp > 4.6 ) {
 				airborne = true;
-				vAlt = Math.min( 150, -groundRate * 0.9 );
+				// the lip drop alone launches modestly; carried climb rate
+				// (slope × speed) is what buys monster air off ramps/mounds
+				vAlt = Math.min( 300, Math.max( Math.min( -groundRate * 1.15, 170 ), climb * 1.1 ) );
 				worldY = prevGy;
 			} else {
 				worldY = gy;
@@ -561,9 +613,9 @@
 		}
 		if ( airborne ) {
 			worldY += vAlt * dt;
-			vAlt -= 320 * dt;
+			vAlt -= ( boostT > 0 ? 245 : 300 ) * dt; // boost = hang-time
 			// L/R Shift pitch the buggy for flips
-			var pitchVel = ( keys.tiltF ? -6.8 : 0 ) + ( keys.tiltB ? 6.8 : 0 );
+			var pitchVel = ( keys.tiltF ? -7.5 : 0 ) + ( keys.tiltB ? 7.5 : 0 );
 			airPitch += pitchVel * dt;
 			if ( worldY <= gy ) {
 				airborne = false;
@@ -576,7 +628,11 @@
 					for ( var cd = 0; cd < 10; cd++ ) spawnDust( wheelWorld( -10 + Math.random() * 20, -14 + Math.random() * 28 ), 6 );
 					flashChip( 'Ate dirt — square the landing next time' );
 				} else {
-					if ( Math.abs( airPitch ) > 5.5 ) { // stuck a full flip
+					if ( Math.abs( airPitch ) > 11.5 ) { // stuck a DOUBLE
+						boostT = 1600;
+						flashChip( 'DOUBLE FLIP! — full send 🛞🛞' );
+						if ( audio.on ) whoosh();
+					} else if ( Math.abs( airPitch ) > 5.5 ) { // stuck a full flip
 						boostT = 800;
 						flashChip( 'FLIP! — have some boost 🛞' );
 						if ( audio.on ) whoosh();
@@ -690,6 +746,50 @@
 		} );
 	}
 
+	function buildRamps( THREE ) {
+		// world-space wedges that follow the terrain, matching rampAt()'s
+		// f² face exactly so the buggy rides the surface it sees
+		var dirt = new THREE.MeshLambertMaterial( { color: 0x5c4830, side: THREE.DoubleSide } );
+		var lampMat = new THREE.MeshBasicMaterial( { color: 0xffd9a0 } );
+		RAMPS.forEach( function ( r ) {
+			var hw = r.w / 2;
+			function pt( sd, t, y ) {
+				var wx = r.x + r.cx * t - r.cz * sd;
+				var wz = r.z + r.cz * t + r.cx * sd;
+				return [ wx, hillsAt( wx, wz ) + y, wz ];
+			}
+			var prof = [], N = 8;
+			for ( var k = 0; k <= N; k++ ) {
+				var f = k / N;
+				prof.push( { t: r.l * f, y: r.h * f * f } );
+			}
+			prof.push( { t: r.l + 9, y: 0 } );
+			var tris = [];
+			function quad( a, b, c, d ) {
+				tris.push( a[ 0 ], a[ 1 ], a[ 2 ], b[ 0 ], b[ 1 ], b[ 2 ], c[ 0 ], c[ 1 ], c[ 2 ],
+					a[ 0 ], a[ 1 ], a[ 2 ], c[ 0 ], c[ 1 ], c[ 2 ], d[ 0 ], d[ 1 ], d[ 2 ] );
+			}
+			for ( var i = 0; i < prof.length - 1; i++ ) {
+				var p0 = prof[ i ], p1 = prof[ i + 1 ];
+				quad( pt( -hw, p0.t, p0.y ), pt( hw, p0.t, p0.y ), pt( hw, p1.t, p1.y ), pt( -hw, p1.t, p1.y ) );
+				quad( pt( -hw, p0.t, 0 ), pt( -hw, p0.t, p0.y ), pt( -hw, p1.t, p1.y ), pt( -hw, p1.t, 0 ) );
+				quad( pt( hw, p0.t, 0 ), pt( hw, p0.t, p0.y ), pt( hw, p1.t, p1.y ), pt( hw, p1.t, 0 ) );
+			}
+			var geo = new THREE.BufferGeometry();
+			geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( tris ), 3 ) );
+			geo.computeVertexNormals();
+			scene.add( new THREE.Mesh( geo, dirt ) );
+			// lit lip markers so the kicker reads at night
+			[ -1, 1 ].forEach( function ( sd ) {
+				var at = pt( sd * ( hw - 4 ), r.l, r.h + 2 );
+				var lamp = new THREE.Mesh( new THREE.BoxGeometry( 3, 3.5, 3 ), lampMat );
+				lamp.position.set( at[ 0 ], at[ 1 ], at[ 2 ] );
+				scene.add( lamp );
+			} );
+			addGlowDisc( THREE, r.x, r.z, 18, 0.07 );
+		} );
+	}
+
 	function buildPads( THREE ) {
 		var padMat = new THREE.MeshBasicMaterial( { color: 0x8be9ff, transparent: true, opacity: 0.5 } );
 		PADS.forEach( function ( p, i ) {
@@ -736,7 +836,7 @@
 		TOKENS.forEach( function ( tk, i ) {
 			var got = found.indexOf( i ) !== -1;
 			var mesh = new THREE.Mesh( geo, gold );
-			var baseY = heightAt( tk.x, tk.z ) + ( tk.air ? 30 : 11 );
+			var baseY = heightAt( tk.x, tk.z ) + ( tk.y || ( tk.air ? 30 : 11 ) );
 			mesh.position.set( tk.x, baseY, tk.z );
 			mesh.visible = ! got;
 			scene.add( mesh );
@@ -755,7 +855,7 @@
 			tk.mesh.position.y = tk.baseY + Math.sin( t * 2.4 + i ) * 2.2;
 			var d2 = Math.hypot( b.position.x - tk.x, b.position.y - tk.z );
 			var dy = Math.abs( ( worldY + 10 ) - tk.mesh.position.y );
-			if ( d2 < ( tk.air ? 34 : 24 ) && dy < ( tk.air ? 26 : 17 ) ) {
+			if ( d2 < ( tk.air ? 34 : 24 ) && dy < ( tk.air ? 30 : 17 ) ) {
 				tk.got = true;
 				tk.mesh.visible = false;
 				tokenFound++;
@@ -1060,8 +1160,9 @@
 			case 'shed': g = buildShed( THREE ); break;
 			case 'mailbox': g = buildMailboxPost( THREE ); break;
 		}
+		var s = lm.scale || 1;
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
-		if ( lm.build === 'treehouse' ) g.scale.set( 1.75, 1.75, 1.75 );
+		g.scale.set( s, s, s );
 		g.userData.lm = lm;
 		scene.add( g );
 		clickables.push( g );
@@ -1069,7 +1170,7 @@
 		if ( lm.signTo ) {
 			var dx = lm.signTo.x - lm.x, dz = lm.signTo.y - lm.y;
 			var dl = Math.hypot( dx, dz ) || 1;
-			var off = Math.max( lm.w, lm.h ) / 2 + 30;
+			var off = Math.max( lm.w, lm.h ) * s / 2 + 30;
 			var sign = buildSign( THREE, lm.name,
 				lm.x + ( dx / dl ) * off, lm.y + ( dz / dl ) * off,
 				lm.signTo.x, lm.signTo.y );
@@ -1154,7 +1255,7 @@
 		addWindow( THREE, g, 12, 10, 0, 18, 32.2 );
 		addWindow( THREE, g, 12, 10, 30, 18, 32.2 );
 		addWindow( THREE, g, 10, 9, 55.2, 18, 0, Math.PI / 2 );
-		addGlowDisc( THREE, lm.x, lm.y + 48, 62, 0.10 );
+		addGlowDisc( THREE, lm.x, lm.y + 77, 80, 0.10 ); // porch pool, 1.6× out
 		return g;
 	}
 
@@ -1171,7 +1272,7 @@
 		g.add( chim );
 		addWindow( THREE, g, 24, 12, 0, 14, 20.2 );
 		addWindow( THREE, g, 9, 9, -28.2, 13, 0, -Math.PI / 2 );
-		addGlowDisc( THREE, lm.x, lm.y + 32, 48, 0.10 );
+		addGlowDisc( THREE, lm.x, lm.y + 51, 62, 0.10 );
 		return g;
 	}
 
@@ -1191,7 +1292,7 @@
 		g.add( silo );
 		addWindow( THREE, g, 8, 10, 0, 96, 23.2 );
 		addWindow( THREE, g, 12, 14, 0, 12, 23.2 );
-		addGlowDisc( THREE, lm.x, lm.y + 34, 44, 0.09 );
+		addGlowDisc( THREE, lm.x, lm.y + 51, 57, 0.09 );
 		return g;
 	}
 
@@ -1217,7 +1318,7 @@
 		addWindow( THREE, g, 8, 14, -23.2, 24, 0, -Math.PI / 2 );
 		addWindow( THREE, g, 8, 14, 23.2, 24, 0, Math.PI / 2 );
 		addWindow( THREE, g, 10, 16, 0, 24, 75.2 );
-		addGlowDisc( THREE, lm.x, lm.y + 52, 54, 0.10 );
+		addGlowDisc( THREE, lm.x, lm.y + 83, 70, 0.10 );
 		return g;
 	}
 
@@ -1298,7 +1399,7 @@
 		addWindow( THREE, g, 10, 9, -34, 26, 33.2 );
 		addWindow( THREE, g, 10, 9, 34, 26, 33.2 );
 		addWindow( THREE, g, 9, 8, 50.2, 22, 0, Math.PI / 2 );
-		addGlowDisc( THREE, lm.x, lm.y + 46, 56, 0.10 );
+		addGlowDisc( THREE, lm.x, lm.y + 74, 73, 0.10 );
 		return g;
 	}
 
@@ -1572,7 +1673,7 @@
 			var x = 350 + Math.random() * ( W - 700 );
 			var z = 260 + Math.random() * ( H - 520 );
 			if ( Math.hypot( x - SPAWN.x, z - SPAWN.y ) < 160 ) continue;
-			if ( ! farFromLandmarks( x, z, 130 ) || inCompound( x, z, 30 ) || ! farFromRoads( x, z, 60 ) ) continue;
+			if ( ! farFromLandmarks( x, z, 170 ) || inCompound( x, z, 30 ) || ! farFromRoads( x, z, 60 ) ) continue;
 			addBale( THREE, x, z );
 			placed++;
 		}
@@ -1682,8 +1783,9 @@
 
 	function initSmoke( THREE ) {
 		var tex = makePuffTexture( THREE, 186, 188, 198 );
-		[ { x: 1245, y: hillsAt( 1211, 588 ) + 72, z: 580 },
-		  { x: 2258, y: hillsAt( 2240, 462 ) + 53, z: 468 } ].forEach( function ( at ) {
+		// chimney tops moved with the 1.6× building scale
+		[ { x: 1265, y: hillsAt( 1211, 588 ) + 114, z: 575 },
+		  { x: 2269, y: hillsAt( 2240, 462 ) + 85, z: 472 } ].forEach( function ( at ) {
 			var em = { at: at, parts: [], timer: Math.random() * 600 };
 			for ( var i = 0; i < 7; i++ ) {
 				var spr = new THREE.Sprite( new THREE.SpriteMaterial( {
