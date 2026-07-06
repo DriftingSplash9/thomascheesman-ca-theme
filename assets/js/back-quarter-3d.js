@@ -109,14 +109,39 @@
 	];
 	var ROAD_W = 60;
 
-	// Rolling hills (gaussians in the ground mesh; roads + yards stay clear).
+	// Rolling terrain: sharp hills + broad gentle swells. Roads are painted
+	// INTO the ground mesh (vertex colors) so they ride the undulation.
 	var HILLS = [
-		{ x: 300, z: 300, a: 16, r: 150 },
-		{ x: 2300, z: 300, a: 18, r: 170 },
-		{ x: 700, z: 700, a: 10, r: 120 },
-		{ x: 1600, z: 650, a: 12, r: 140 },
-		{ x: 2350, z: 1250, a: 14, r: 150 },
-		{ x: 350, z: 1300, a: 12, r: 130 }
+		{ x: 300, z: 300, a: 24, r: 150 },
+		{ x: 2300, z: 300, a: 27, r: 170 },
+		{ x: 700, z: 700, a: 15, r: 120 },
+		{ x: 1600, z: 650, a: 18, r: 140 },
+		{ x: 2350, z: 1250, a: 21, r: 150 },
+		{ x: 350, z: 1300, a: 18, r: 130 },
+		{ x: 1900, z: 420, a: 14, r: 150 },
+		{ x: 1100, z: 1250, a: 13, r: 140 },
+		// broad swells — the whole quarter breathes
+		{ x: 1280, z: 720, a: 10, r: 520 },
+		{ x: 620, z: 420, a: 8, r: 420 },
+		{ x: 2000, z: 1100, a: 9, r: 460 }
+	];
+	// Yards flatten so buildings sit level: blend terrain toward the yard's
+	// own height inside ri, feathered out to ro. (Ponds get flat dishes too.)
+	var FLAT = [
+		{ x: 692, z: 336, ri: 90, ro: 180 },   // farmhouse
+		{ x: 1280, z: 264, ri: 70, ro: 150 },  // cookshack
+		{ x: 1792, z: 392, ri: 80, ro: 170 },  // elevator
+		{ x: 396, z: 744, ri: 100, ro: 190 },  // church
+		{ x: 2022, z: 820, ri: 90, ro: 180 },  // barn
+		{ x: 372, z: 1104, ri: 60, ro: 140 },  // shed
+		{ x: 2340, z: 720, ri: 50, ro: 130 },  // mast
+		{ x: 1280, z: 1390, ri: 140, ro: 260 },// gate + spawn + mailbox
+		{ x: 968, z: 734, ri: 320, ro: 430 },  // the family compound
+		{ x: 2200, z: 1030, ri: 50, ro: 120 }, // restack pad
+		{ x: 2110, z: 560, ri: 70, ro: 150 },  // ponds…
+		{ x: 2290, z: 1180, ri: 60, ro: 140 },
+		{ x: 720, z: 1180, ri: 55, ro: 140 },
+		{ x: 1680, z: 180, ri: 50, ro: 130 }
 	];
 	// Dirt-jump mounds ON the roads (visual brown domes, not in the mesh).
 	var MOUNDS = [
@@ -163,6 +188,9 @@
 	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0;
 	var boostT = 0, padCooldown = [];
 	var baseFov = 55;
+	// physics-step interpolation (kills the drive jitter): render draws the
+	// buggy between the last two fixed steps instead of snapping to steps
+	var pX = 0, pY = 0, pA = 0;
 
 	/* ------------------------------------------------------------------ *
 	 *  Heightfield
@@ -172,10 +200,28 @@
 		var s2 = ( g.r / 2 ) * ( g.r / 2 ) * 2;
 		return g.a * Math.exp( -( dx * dx + dz * dz ) / s2 );
 	}
-	function hillsAt( x, z ) {
+	function rawHills( x, z ) {
 		var y = 0;
 		for ( var i = 0; i < HILLS.length; i++ ) y += gauss( x, z, HILLS[ i ] );
 		return y;
+	}
+	function hillsAt( x, z ) {
+		var y = rawHills( x, z );
+		for ( var i = 0; i < FLAT.length; i++ ) {
+			var f = FLAT[ i ];
+			var d = Math.hypot( x - f.x, z - f.z );
+			if ( d >= f.ro ) continue;
+			var w = d <= f.ri ? 1 : 1 - ( d - f.ri ) / ( f.ro - f.ri );
+			w = w * w * ( 3 - 2 * w ); // smoothstep
+			if ( f.h === undefined ) f.h = rawHills( f.x, f.z );
+			y = y * ( 1 - w ) + f.h * w;
+		}
+		return y;
+	}
+	function wrapAngle( a ) {
+		while ( a > Math.PI ) a -= 2 * Math.PI;
+		while ( a < -Math.PI ) a += 2 * Math.PI;
+		return a;
 	}
 	function heightAt( x, z ) { // hills + jump mounds (what the buggy rides)
 		var y = hillsAt( x, z );
@@ -224,20 +270,42 @@
 		moonBall.position.set( -1000, 640, -1400 );
 		scene.add( moonBall );
 
-		// ---------- ground (displaced by the hills) ----------
-		var groundGeo = new THREE.PlaneGeometry( 4200, 3200, 120, 84 );
+		// ---------- ground: displaced by the terrain, roads PAINTED in ----
+		// Vertex colors bake the dirt roads (and field-tone variation) into
+		// the mesh itself, so the roads ride every hill and swell instead of
+		// clipping through them as flat strips.
+		var groundGeo = new THREE.PlaneGeometry( 4200, 3200, 210, 150 );
 		groundGeo.rotateX( -Math.PI / 2 );
 		groundGeo.translate( W / 2, 0, H / 2 );
 		var pos = groundGeo.attributes.position;
+		var colors = new Float32Array( pos.count * 3 );
 		for ( var vi = 0; vi < pos.count; vi++ ) {
-			pos.setY( vi, hillsAt( pos.getX( vi ), pos.getZ( vi ) ) );
+			var vx = pos.getX( vi ), vz = pos.getZ( vi );
+			var vy = hillsAt( vx, vz );
+			pos.setY( vi, vy );
+			// nearest-road blend: dirt core -> feathered edge -> field
+			var core = ROAD_W / 2, feather = ROAD_W / 2 + 16;
+			var dR = 1e9;
+			for ( var pi = 0; pi < PATHS.length; pi++ ) {
+				dR = Math.min( dR, distToSeg( vx, vz, PATHS[ pi ][ 0 ], PATHS[ pi ][ 1 ] ) );
+				if ( dR < core ) break;
+			}
+			var road = dR <= core ? 1 : ( dR >= feather ? 0 : 1 - ( dR - core ) / ( feather - core ) );
+			// field greens vary softly; moonlight favours the high ground
+			var n = 0.5 + 0.5 * Math.sin( vx * 0.013 ) * Math.sin( vz * 0.017 );
+			var lift = 1 + vy * 0.012;
+			var fr = ( 0.085 + n * 0.02 ) * lift, fg = ( 0.14 + n * 0.03 ) * lift, fb = ( 0.10 + n * 0.02 ) * lift;
+			var rr = 0.30 * lift, rg = 0.24 * lift, rb = 0.165 * lift;
+			colors[ vi * 3 ] = fr + ( rr - fr ) * road;
+			colors[ vi * 3 + 1 ] = fg + ( rg - fg ) * road;
+			colors[ vi * 3 + 2 ] = fb + ( rb - fb ) * road;
 		}
+		groundGeo.setAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 		groundGeo.computeVertexNormals();
-		var ground = new THREE.Mesh( groundGeo, new THREE.MeshLambertMaterial( { color: 0x16241a } ) );
+		var ground = new THREE.Mesh( groundGeo,
+			new THREE.MeshLambertMaterial( { vertexColors: true } ) );
 		scene.add( ground );
 
-		buildStubble( THREE );
-		buildPaths( THREE );
 		buildPonds( THREE );
 		buildMounds( THREE );
 		buildPads( THREE );
@@ -247,6 +315,7 @@
 		engine.gravity.x = 0; engine.gravity.y = 0;
 		buggyBody = Matter.Bodies.rectangle( SPAWN.x, SPAWN.y, 46, 30, { frictionAir: 0.14, density: 0.002 } );
 		Matter.Body.setAngle( buggyBody, SPAWN.angle );
+		pX = SPAWN.x; pY = SPAWN.y; pA = SPAWN.angle;
 
 		var statics = [], T = 40;
 		statics.push( Matter.Bodies.rectangle( W / 2, 6, W, T, { isStatic: true } ) );
@@ -268,7 +337,8 @@
 		buildWindbreak( THREE );
 		buildFence( THREE );
 		buildGateway( THREE );
-		buildTrees( THREE );
+		buildAnimals( THREE );
+		buildTractor( THREE );
 		buildBales( THREE );
 		buildStacks( THREE );
 		buildRestackPad( THREE );
@@ -286,8 +356,9 @@
 		initSmoke( THREE );
 		buildSoundToggle();
 
-		// proximity prompts: all landmarks + the family gate + the restack pad
-		PROMPTS = LANDMARKS.slice();
+		// proximity prompts: all landmarks + the family gate + the restack
+		// pad. APPEND (never reassign) — the tractor already pushed itself in.
+		LANDMARKS.forEach( function ( lm ) { PROMPTS.push( lm ); } );
 		PROMPTS.push( {
 			id: 'familygate', name: 'the family gate', x: GATE.x + 6, y: GATE.z,
 			href: isFamily ? null : '/family-login',
@@ -385,11 +456,14 @@
 		var dms = Math.min( clock.getDelta() * 1000, 100 );
 		accMS += dms;
 		while ( accMS >= 16.666 ) {
+			pX = buggyBody.position.x;
+			pY = buggyBody.position.y;
+			pA = buggyBody.angle;
 			control();
 			Matter.Engine.update( engine, 16.666 );
 			accMS -= 16.666;
 		}
-		render( dms );
+		render( dms, Math.max( 0, Math.min( 1, accMS / 16.666 ) ) );
 	}
 
 	var steerInput = 0, throttleInput = 0;
@@ -435,15 +509,21 @@
 		if ( boostT > 0 ) boostT -= 16.666;
 	}
 
-	function render( dms ) {
+	function render( dms, alpha ) {
 		dms = dms || 16.666;
+		if ( alpha === undefined ) alpha = 1;
 		var dt = dms / 1000;
 		var b = buggyBody;
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		var t = clock.elapsedTime;
 
+		// interpolated pose — smooth at any refresh rate
+		var rx = pX + ( b.position.x - pX ) * alpha;
+		var rz = pY + ( b.position.y - pY ) * alpha;
+		var ra = pA + wrapAngle( b.angle - pA ) * alpha;
+
 		// ---- vertical: ride the terrain; go ballistic off the mound lips ----
-		var gy = heightAt( b.position.x, b.position.y );
+		var gy = heightAt( rx, rz );
 		if ( ! airborne ) {
 			var groundRate = ( gy - prevGy ) / Math.max( dt, 0.001 );
 			if ( groundRate < -55 && sp > 4.4 ) {
@@ -466,13 +546,13 @@
 		}
 		prevGy = gy;
 
-		buggyGroup.position.set( b.position.x, worldY, b.position.y );
-		buggyGroup.rotation.y = -b.angle;
+		buggyGroup.position.set( rx, worldY, rz );
+		buggyGroup.rotation.y = -ra;
 		chassisGroup.rotation.x += ( ( steerInput * -0.08 * Math.min( 1, sp / 3 ) ) - chassisGroup.rotation.x ) * 0.15;
 		chassisGroup.rotation.z += ( ( ( airborne ? -0.14 : throttleInput * -0.05 ) ) - chassisGroup.rotation.z ) * 0.12;
 		for ( var i = 0; i < wheels.length; i++ ) wheels[ i ].rotation.z -= sp * 0.09;
 		var hover = worldY - gy;
-		blobShadow.position.set( b.position.x, gy + 0.6, b.position.y );
+		blobShadow.position.set( rx, gy + 0.6, rz );
 		blobShadow.material.opacity = Math.max( 0.08, 0.32 - hover * 0.01 );
 
 		// bales follow their bodies (and the terrain)
@@ -488,6 +568,7 @@
 		}
 		checkStacks();
 		checkRestack( dms, sp );
+		updateAnimals( dms );
 
 		// tokens spin, bob, get collected
 		updateTokens( dms, t );
@@ -539,14 +620,15 @@
 			}
 		}
 
-		// chase camera (rides the terrain, kicks wide on boost)
-		var hx = Math.cos( b.angle ), hy = Math.sin( b.angle );
-		var tx = b.position.x - hx * 130, tz = b.position.y - hy * 130;
+		// chase camera (rides the terrain, kicks wide on boost) — tracks the
+		// INTERPOLATED pose so the follow is glass-smooth
+		var hx = Math.cos( ra ), hy = Math.sin( ra );
+		var tx = rx - hx * 130, tz = rz - hy * 130;
 		camPos.x += ( tx - camPos.x ) * 0.06;
 		camPos.z += ( tz - camPos.z ) * 0.06;
 		camPos.y += ( ( worldY + 66 + sp * 3 ) - camPos.y ) * 0.06;
 		camera.position.copy( camPos );
-		camera.lookAt( b.position.x + hx * 44, worldY + 6, b.position.y + hy * 44 );
+		camera.lookAt( rx + hx * 44, worldY + 6, rz + hy * 44 );
 		var wantFov = boostT > 0 ? 63 : baseFov;
 		if ( Math.abs( camera.fov - wantFov ) > 0.1 ) {
 			camera.fov += ( wantFov - camera.fov ) * 0.1;
@@ -617,7 +699,7 @@
 		TOKENS.forEach( function ( tk, i ) {
 			var got = found.indexOf( i ) !== -1;
 			var mesh = new THREE.Mesh( geo, gold );
-			var baseY = heightAt( tk.x, tk.z ) + ( tk.air ? 30 : 11 );
+			var baseY = heightAt( tk.x, tk.z ) + ( tk.air ? 26 : 11 );
 			mesh.position.set( tk.x, baseY, tk.z );
 			mesh.visible = ! got;
 			scene.add( mesh );
@@ -636,7 +718,8 @@
 			tk.mesh.position.y = tk.baseY + Math.sin( t * 2.4 + i ) * 2.2;
 			var d2 = Math.hypot( b.position.x - tk.x, b.position.y - tk.z );
 			var dy = Math.abs( ( worldY + 10 ) - tk.mesh.position.y );
-			if ( d2 < 24 && dy < 17 ) {
+			// air tokens get a fatter capture window — jump arcs vary
+			if ( d2 < ( tk.air ? 34 : 24 ) && dy < ( tk.air ? 26 : 17 ) ) {
 				tk.got = true;
 				tk.mesh.visible = false;
 				tokenFound++;
@@ -885,7 +968,8 @@
 			case 'shed': g = buildShed( THREE ); break;
 			case 'mailbox': g = buildMailboxPost( THREE ); break;
 		}
-		g.position.set( lm.x, 0, lm.y );
+		// yards are flattened but not at zero — sit each building on its ground
+		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
 		g.userData.lm = lm;
 		scene.add( g );
 		clickables.push( g );
@@ -923,17 +1007,18 @@
 		];
 		Matter.Composite.add( engine.world, walls );
 
+		var gateH = hillsAt( GATE.x, GATE.z );
 		var postMat = mat( THREE, 0x59554c );
 		[ COMPOUND.gateZ0, COMPOUND.gateZ1 ].forEach( function ( z ) {
 			var p = new THREE.Mesh( new THREE.BoxGeometry( 6, 20, 6 ), postMat );
-			p.position.set( COMPOUND.x1, 10, z );
+			p.position.set( COMPOUND.x1, gateH + 10, z );
 			scene.add( p );
 		} );
 
 		var armGeo = new THREE.BoxGeometry( 2.4, 2.6, COMPOUND.gateZ1 - COMPOUND.gateZ0 - 4 );
 		armGeo.translate( 0, 0, ( COMPOUND.gateZ1 - COMPOUND.gateZ0 - 4 ) / 2 );
 		gateArm = new THREE.Mesh( armGeo, mat( THREE, 0xb8352c ) );
-		gateArm.position.set( COMPOUND.x1, 12, COMPOUND.gateZ0 + 2 );
+		gateArm.position.set( COMPOUND.x1, gateH + 12, COMPOUND.gateZ0 + 2 );
 		scene.add( gateArm );
 		gateBody = Matter.Bodies.rectangle( GATE.x, GATE.z, 10,
 			COMPOUND.gateZ1 - COMPOUND.gateZ0, { isStatic: true } );
@@ -944,7 +1029,7 @@
 
 		var lamp = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 4, 3.4 ),
 			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
-		lamp.position.set( COMPOUND.x1, 22, COMPOUND.gateZ0 );
+		lamp.position.set( COMPOUND.x1, gateH + 22, COMPOUND.gateZ0 );
 		scene.add( lamp );
 		addGlowDisc( THREE, GATE.x + 8, GATE.z, 26, 0.08 );
 	}
@@ -1186,38 +1271,6 @@
 		return true;
 	}
 
-	function buildStubble( THREE ) {
-		var stripMat = new THREE.MeshLambertMaterial( { color: 0x3d3a24 } );
-		var placed = 0, guard = 0;
-		while ( placed < 16 && guard++ < 160 ) {
-			var x = 160 + Math.random() * ( W - 320 );
-			var z = 140 + Math.random() * ( H - 280 );
-			if ( ! farFromLandmarks( x, z, 140 ) || inCompound( x, z, 40 ) || ! farFromRoads( x, z, 90 ) ) continue;
-			var strip = new THREE.Mesh(
-				new THREE.PlaneGeometry( 190 + Math.random() * 170, 90 + Math.random() * 70 ), stripMat );
-			strip.rotation.x = -Math.PI / 2;
-			strip.rotation.z = ( Math.random() - 0.5 ) * 0.5;
-			strip.position.set( x, hillsAt( x, z ) + 0.3, z );
-			scene.add( strip );
-			placed++;
-		}
-	}
-
-	function buildPaths( THREE ) {
-		var pathMat = new THREE.MeshLambertMaterial( { color: 0x4a3b28 } );
-		PATHS.forEach( function ( seg ) {
-			var a = seg[ 0 ], b = seg[ 1 ];
-			var dx = b.x - a.x, dz = b.y - a.y;
-			var len = Math.hypot( dx, dz );
-			var strip = new THREE.Mesh( new THREE.PlaneGeometry( len + 40, ROAD_W ), pathMat );
-			strip.rotation.x = -Math.PI / 2;
-			strip.rotation.z = -Math.atan2( dz, dx );
-			var mx = ( a.x + b.x ) / 2, mz = ( a.y + b.y ) / 2;
-			strip.position.set( mx, hillsAt( mx, mz ) + 0.4, mz );
-			scene.add( strip );
-		} );
-	}
-
 	function buildPonds( THREE ) {
 		var pondMat = new THREE.MeshLambertMaterial( { color: 0x152c3e, emissive: 0x060f16 } );
 		var glintMat = new THREE.MeshBasicMaterial( { color: 0xbcd6ea, transparent: true, opacity: 0.16 } );
@@ -1242,12 +1295,13 @@
 			var f = i / 13;
 			var x = 790 + f * 350 + ( Math.random() - 0.5 ) * 30;
 			var z = 560 + f * 340 + ( Math.random() - 0.5 ) * 30;
+			var gy = hillsAt( x, z );
 			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 2.5, 3.5, 16, 6 ), trunkMat );
-			trunk.position.set( x, 8, z );
+			trunk.position.set( x, gy + 8, z );
 			scene.add( trunk );
 			var h = 44 + Math.random() * 24;
 			var cone = new THREE.Mesh( new THREE.ConeGeometry( 10 + Math.random() * 4, h, 7 ), leafMat );
-			cone.position.set( x, 16 + h / 2, z );
+			cone.position.set( x, gy + 16 + h / 2, z );
 			scene.add( cone );
 			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 7, { isStatic: true } ) );
 		}
@@ -1286,42 +1340,121 @@
 	}
 
 	function buildGateway( THREE ) {
+		var gh = hillsAt( 1280, H - 6 );
 		var stone = mat( THREE, 0x59554c );
 		[ 1220, 1340 ].forEach( function ( x ) {
 			var pillar = new THREE.Mesh( new THREE.BoxGeometry( 10, 26, 10 ), stone );
-			pillar.position.set( x, 13, H - 6 );
+			pillar.position.set( x, gh + 13, H - 6 );
 			scene.add( pillar );
 		} );
 		var bar = new THREE.Mesh( new THREE.BoxGeometry( 124, 3, 3 ), mat( THREE, 0x4a4034 ) );
-		bar.position.set( 1280, 27, H - 6 );
+		bar.position.set( 1280, gh + 27, H - 6 );
 		scene.add( bar );
 		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 4, 5, 4 ),
 			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
-		lantern.position.set( 1280, 31, H - 6 );
+		lantern.position.set( 1280, gh + 31, H - 6 );
 		scene.add( lantern );
 		addGlowDisc( THREE, 1280, H - 30, 34, 0.08 );
 	}
 
-	function buildTrees( THREE ) {
-		var trunkMat = mat( THREE, 0x2c2418 );
-		var leafMat = mat( THREE, 0x1d3a26 );
-		var placed = 0, guard = 0;
-		while ( placed < 34 && guard++ < 220 ) {
-			var x = 80 + Math.random() * ( W - 160 );
-			var z = 80 + Math.random() * ( H - 160 );
-			if ( Math.hypot( x - SPAWN.x, z - SPAWN.y ) < 150 ) continue;
-			if ( ! farFromLandmarks( x, z, 120 ) || inCompound( x, z, 30 ) || ! farFromRoads( x, z, 55 ) ) continue;
-			var gy = hillsAt( x, z );
-			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 2.5, 3.5, 14, 6 ), trunkMat );
-			trunk.position.set( x, gy + 7, z );
-			scene.add( trunk );
-			var h = 40 + Math.random() * 26;
-			var cone = new THREE.Mesh( new THREE.ConeGeometry( 11 + Math.random() * 4, h, 7 ), leafMat );
-			cone.position.set( x, gy + 14 + h / 2, z );
-			scene.add( cone );
-			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 8, { isStatic: true } ) );
-			placed++;
+	/* ---- livestock: wandering cows + sheep (real bodies — shove-able) ---- */
+	var animals = [];
+
+	function buildAnimals( THREE ) {
+		var cows = [ [ 1750, 780 ], [ 900, 1150 ], [ 1550, 520 ], [ 2150, 880 ] ];
+		var sheep = [ [ 500, 600 ], [ 1450, 1250 ], [ 1050, 350 ], [ 2250, 420 ], [ 700, 1000 ] ];
+		cows.forEach( function ( p ) { addAnimal( THREE, 'cow', p[ 0 ], p[ 1 ] ); } );
+		sheep.forEach( function ( p ) { addAnimal( THREE, 'sheep', p[ 0 ], p[ 1 ] ); } );
+	}
+
+	function addAnimal( THREE, type, x, z ) {
+		var g = new THREE.Group();
+		var cow = type === 'cow';
+		var bodyC = cow ? 0x6f4a33 : 0xd8d3c4;
+		var headC = cow ? 0x543527 : 0x2a2420;
+		var legC = cow ? 0x452c1f : 0xbdb7a6;
+		var bw = cow ? 20 : 13, bh = cow ? 11 : 8.5, bd = cow ? 10 : 9;
+		var legH = cow ? 6 : 4;
+		[ [ 1, 1 ], [ 1, -1 ], [ -1, 1 ], [ -1, -1 ] ].forEach( function ( c ) {
+			var leg = new THREE.Mesh( new THREE.BoxGeometry( 1.6, legH, 1.6 ), mat( THREE, legC ) );
+			leg.position.set( c[ 0 ] * ( bw / 2 - 2 ), legH / 2, c[ 1 ] * ( bd / 2 - 1.5 ) );
+			g.add( leg );
+		} );
+		var body = new THREE.Mesh( new THREE.BoxGeometry( bw, bh, bd ), mat( THREE, bodyC ) );
+		body.position.y = legH + bh / 2 - 0.5;
+		g.add( body );
+		var head = new THREE.Mesh(
+			new THREE.BoxGeometry( cow ? 7 : 5, cow ? 7 : 5, cow ? 6 : 4.5 ), mat( THREE, headC ) );
+		head.position.set( bw / 2 + 2, legH + bh - 1, 0 );
+		g.add( head );
+		scene.add( g );
+		var body2d = Matter.Bodies.circle( x, z, cow ? 11 : 7,
+			{ frictionAir: 0.18, density: 0.003 } );
+		Matter.Composite.add( engine.world, body2d );
+		animals.push( { g: g, body: body2d, cow: cow, wanderT: 800 + Math.random() * 2400 } );
+	}
+
+	function updateAnimals( dms ) {
+		for ( var i = 0; i < animals.length; i++ ) {
+			var a = animals[ i ];
+			a.wanderT -= dms;
+			if ( a.wanderT <= 0 ) {
+				a.wanderT = 1800 + Math.random() * 2800;
+				if ( Math.random() < 0.7 ) { // graze sometimes, wander sometimes
+					var dir = Math.random() * Math.PI * 2;
+					var spd = a.cow ? 0.5 : 0.7;
+					Matter.Body.setVelocity( a.body, { x: Math.cos( dir ) * spd, y: Math.sin( dir ) * spd } );
+				}
+			}
+			var px = a.body.position.x, pz = a.body.position.y;
+			a.g.position.set( px, heightAt( px, pz ), pz );
+			var v = a.body.velocity;
+			if ( Math.hypot( v.x, v.y ) > 0.15 ) {
+				a.g.rotation.y = -Math.atan2( v.y, v.x );
+			}
 		}
+	}
+
+	/* ---- the old tractor, parked off the top road ---- */
+	function buildTractor( THREE ) {
+		var g = new THREE.Group();
+		var red = mat( THREE, 0x9a3f2e );
+		var darkMat = mat( THREE, 0x1c1512 );
+		var rearGeo = new THREE.CylinderGeometry( 11, 11, 5, 12 );
+		rearGeo.rotateX( Math.PI / 2 );
+		var frontGeo = new THREE.CylinderGeometry( 6.5, 6.5, 4, 10 );
+		frontGeo.rotateX( Math.PI / 2 );
+		[ 13, -13 ].forEach( function ( z ) {
+			var rw = new THREE.Mesh( rearGeo, darkMat );
+			rw.position.set( -10, 11, z );
+			g.add( rw );
+			var fw = new THREE.Mesh( frontGeo, darkMat );
+			fw.position.set( 14, 6.5, z * 0.8 );
+			g.add( fw );
+		} );
+		var chassis = new THREE.Mesh( new THREE.BoxGeometry( 34, 8, 18 ), red );
+		chassis.position.set( 2, 14, 0 );
+		g.add( chassis );
+		var hood = new THREE.Mesh( new THREE.BoxGeometry( 16, 10, 14 ), mat( THREE, 0x7e3225 ) );
+		hood.position.set( 10, 20, 0 );
+		g.add( hood );
+		var seatBack = new THREE.Mesh( new THREE.BoxGeometry( 3, 10, 12 ), darkMat );
+		seatBack.position.set( -14, 22, 0 );
+		g.add( seatBack );
+		var pipe = new THREE.Mesh( new THREE.CylinderGeometry( 1.2, 1.2, 9, 6 ), darkMat );
+		pipe.position.set( 15, 29, 4 );
+		g.add( pipe );
+
+		var lm = { id: 'tractor', name: 'the old tractor', x: 1560, y: 360, href: null,
+			prompt: 'The old girl still runs — she just needs a reason' };
+		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
+		g.rotation.y = 0.6;
+		g.userData.lm = lm;
+		scene.add( g );
+		clickables.push( g );
+		PROMPTS.push( lm );
+		Matter.Composite.add( engine.world,
+			Matter.Bodies.rectangle( lm.x, lm.y, 42, 26, { isStatic: true } ) );
 	}
 
 	function makeBaleMesh( THREE ) {
@@ -1448,8 +1581,9 @@
 
 	function initSmoke( THREE ) {
 		var tex = makePuffTexture( THREE, 186, 188, 198 );
-		// chimney mouths: farmhouse + cookshack (world coords)
-		[ { x: 726, y: 72, z: 328 }, { x: 1298, y: 53, z: 270 } ].forEach( function ( at ) {
+		// chimney mouths: farmhouse + cookshack (local height + yard terrain)
+		[ { x: 726, y: hillsAt( 692, 336 ) + 72, z: 328 },
+		  { x: 1298, y: hillsAt( 1280, 264 ) + 53, z: 270 } ].forEach( function ( at ) {
 			var em = { at: at, parts: [], timer: Math.random() * 600 };
 			for ( var i = 0; i < 7; i++ ) {
 				var spr = new THREE.Sprite( new THREE.SpriteMaterial( {
