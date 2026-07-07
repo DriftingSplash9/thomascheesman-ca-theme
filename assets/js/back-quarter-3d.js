@@ -18,6 +18,13 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * AUDIO PASS — a full synthesized soundscape (still zero hosted files):
+ * a night wind bed that gusts, surface-aware tire roll (grass/road/mud/
+ * water), splash + mud + landing thud, ambient crickets and coop clucks,
+ * Trumac's snort when you crowd him, a grandstand crowd that swells as
+ * you rip past, and race audio — start blip, corner ticks, best-lap
+ * fanfare. Sound stays OFF by default; the toggle now mutes the master.
+ *
  * SECTION ROAD P3 — ROUGH GROUND (ref: a real MX track): the four
  * corners now BANK — a raised outer shoulder (bermAt) baked into the
  * ground mesh and ridden by the buggy, a low lip on the straights
@@ -858,6 +865,7 @@
 				airborne = false;
 				worldY = landY;
 				vAlt = 0;
+				if ( splash ) splashSound(); else thud( Math.hypot( b.velocity.x, b.velocity.y ) );
 				var n = wrapAngle( airPitch );
 				if ( splash ) {
 					// splash-down — she floats
@@ -957,7 +965,7 @@
 		}
 		updateTracks( dms );
 		updateSmoke( dms );
-		updateAudio( sp );
+		updateAudio( dms, sp );
 
 		var near = null, nearD = 1e9;
 		for ( var p = 0; p < PROMPTS.length; p++ ) {
@@ -1825,7 +1833,7 @@
 	}
 
 	/* ---- livestock ---- */
-	var animals = [];
+	var animals = [], trumacRef = null;
 
 	function buildAnimals( THREE ) {
 		var cows = [ [ 3063, 1365 ], [ 1575, 2013 ], [ 2713, 910 ], [ 3763, 1540 ],
@@ -1837,6 +1845,7 @@
 		var trumac = addAnimal( THREE, 'bull', 3150, 1900 );
 		trumac.lm = { id: 'trumac', name: 'Trumac', x: 3150, y: 1900, href: null,
 			prompt: 'Trumac — the main bull. Give him room' };
+		trumacRef = trumac;
 		PROMPTS.push( trumac.lm );
 	}
 
@@ -2472,6 +2481,7 @@
 		flashChip( streams.length
 			? 'Lap started — the ghosts are running'
 			: 'Lap started — three corners and home' );
+		tone( 784, 0.12, 0.12, 'square' ); // start blip
 	}
 
 	function finishLap() {
@@ -2487,6 +2497,7 @@
 		flashChip( isBest
 			? 'NEW BEST LAP — ' + fmtLap( entry.t ) + ' 🏆'
 			: 'Lap ' + fmtLap( entry.t ) + ' · best ' + fmtLap( st.best.t ) );
+		if ( isBest ) fanfare(); else tone( 988, 0.16, 0.11, 'square' );
 	}
 
 	// called every 60 Hz physics step
@@ -2513,6 +2524,7 @@
 			if ( Math.hypot( b.position.x - ck.x, b.position.y - ck.z ) < 175 ) {
 				lap.next++;
 				flashChip( 'Corner ' + lap.next + ' of 3 · ' + fmtLap( lap.t ) );
+				tone( 523 + lap.next * 130, 0.09, 0.09, 'square' );
 			}
 		}
 	}
@@ -2765,8 +2777,9 @@
 		if ( on ) {
 			ensureAudio();
 			if ( audio.ctx && audio.ctx.state === 'suspended' ) audio.ctx.resume();
-		} else if ( audio.engGain ) {
-			audio.engGain.gain.value = 0;
+			if ( audio.master ) audio.master.gain.value = 0.6;
+		} else if ( audio.master ) {
+			audio.master.gain.value = 0; // mutes engine + ambient bed + SFX
 		}
 	}
 
@@ -2795,14 +2808,95 @@
 		audio.engGain.connect( audio.master );
 		audio.engOsc1.start();
 		audio.engOsc2.start();
+
+		// ---- shared noise source feeds the wind bed AND the tire roll ----
+		var nb = audio.ctx.createBuffer( 1, audio.ctx.sampleRate * 2, audio.ctx.sampleRate );
+		var nd = nb.getChannelData( 0 );
+		for ( var i = 0; i < nd.length; i++ ) nd[ i ] = Math.random() * 2 - 1;
+		audio.noise = audio.ctx.createBufferSource();
+		audio.noise.buffer = nb;
+		audio.noise.loop = true;
+
+		// night wind — low-passed noise that gusts on a slow LFO
+		var windLP = audio.ctx.createBiquadFilter();
+		windLP.type = 'lowpass'; windLP.frequency.value = 360;
+		audio.windGain = audio.ctx.createGain();
+		audio.windGain.gain.value = 0.02;
+		audio.noise.connect( windLP ); windLP.connect( audio.windGain );
+		audio.windGain.connect( audio.master );
+		var gust = audio.ctx.createOscillator();
+		gust.frequency.value = 0.08;
+		var gustAmt = audio.ctx.createGain(); gustAmt.gain.value = 0.012;
+		gust.connect( gustAmt ); gustAmt.connect( audio.windGain.gain );
+		gust.start();
+
+		// tire roll — band-passed noise, driven by speed + surface in updateAudio
+		audio.tireBP = audio.ctx.createBiquadFilter();
+		audio.tireBP.type = 'bandpass'; audio.tireBP.frequency.value = 800; audio.tireBP.Q.value = 0.7;
+		audio.tireGain = audio.ctx.createGain(); audio.tireGain.gain.value = 0;
+		audio.noise.connect( audio.tireBP ); audio.tireBP.connect( audio.tireGain );
+		audio.tireGain.connect( audio.master );
+
+		audio.noise.start();
 	}
 
-	function updateAudio( sp ) {
+	// a short filtered-noise burst — the workhorse for splash/mud/snort/cheer
+	function noiseBurst( dur, type, freq, Q, peak, sweepTo ) {
+		if ( ! audio.on || ! audio.ctx ) return;
+		var t0 = audio.ctx.currentTime;
+		var src = audio.ctx.createBufferSource();
+		src.buffer = audio.noise.buffer;
+		src.loop = true;
+		var bp = audio.ctx.createBiquadFilter();
+		bp.type = type; bp.frequency.value = freq; bp.Q.value = Q || 1;
+		if ( sweepTo ) bp.frequency.exponentialRampToValueAtTime( sweepTo, t0 + dur );
+		var g = audio.ctx.createGain();
+		g.gain.setValueAtTime( 0.0001, t0 );
+		g.gain.exponentialRampToValueAtTime( peak, t0 + dur * 0.18 );
+		g.gain.exponentialRampToValueAtTime( 0.0001, t0 + dur );
+		src.connect( bp ); bp.connect( g ); g.connect( audio.master );
+		src.start( t0 ); src.stop( t0 + dur + 0.02 );
+	}
+
+	function updateAudio( dms, sp ) {
 		if ( ! audio.on || ! audio.ctx || ! audio.engGain ) return;
 		var rev = Math.min( 1, sp / 9 ) + Math.abs( throttleInput ) * 0.25 + ( boostT > 0 ? 0.3 : 0 );
 		audio.engOsc1.frequency.value = 52 + rev * 80;
 		audio.engOsc2.frequency.value = ( 52 + rev * 80 ) * 2.02;
 		audio.engGain.gain.value = 0.012 + rev * 0.05;
+
+		// tire roll — louder/brighter with speed, muffled in water, gritty in mud
+		if ( audio.tireGain ) {
+			var roll = airborne ? 0 : Math.min( 1, sp / 9 ) * 0.055;
+			if ( inWater ) roll *= 0.35;
+			audio.tireGain.gain.value += ( roll - audio.tireGain.gain.value ) * 0.2;
+			var tf = inMud ? 280 : ( inWater ? 480 : 640 + sp * 95 );
+			audio.tireBP.frequency.value += ( tf - audio.tireBP.frequency.value ) * 0.2;
+		}
+
+		// scheduled ambience
+		audio.cricketT = ( audio.cricketT || 0 ) - dms;
+		if ( audio.cricketT <= 0 ) { audio.cricketT = 900 + Math.random() * 1700; cricket(); }
+		audio.cluckT = ( audio.cluckT || 0 ) - dms;
+		if ( audio.cluckT <= 0 ) {
+			audio.cluckT = 4200 + Math.random() * 6500;
+			// only the coop's earshot, and softer than a scattered squawk
+			if ( Math.hypot( buggyBody.position.x - COOP.x, buggyBody.position.y - COOP.z ) < 900 ) softCluck();
+		}
+		audio.snortT = ( audio.snortT || 0 ) - dms;
+		if ( audio.snortT <= 0 ) {
+			if ( trumacRef && Math.hypot( buggyBody.position.x - trumacRef.body.position.x,
+				buggyBody.position.y - trumacRef.body.position.y ) < 240 ) {
+				audio.snortT = 2600; if ( Math.random() < 0.75 ) snort();
+			} else { audio.snortT = 900; }
+		}
+		// the crowd rises as you rip past the grandstands
+		audio.cheerT = ( audio.cheerT || 0 ) - dms;
+		if ( audio.cheerT <= 0 ) {
+			if ( sp > 5 && Math.hypot( buggyBody.position.x - 2240, buggyBody.position.y + 300 ) < 720 ) {
+				audio.cheerT = 3400; cheer( 0.4 );
+			} else { audio.cheerT = 700; }
+		}
 	}
 
 	function honk() {
@@ -2879,6 +2973,70 @@
 		g.connect( audio.master );
 		o.start( t0 );
 		o.stop( t0 + 0.6 );
+	}
+
+	// a short tone helper (beeps, snort pitch, fanfare notes)
+	function tone( freq, dur, peak, type, t0 ) {
+		if ( ! audio.on || ! audio.ctx ) return;
+		t0 = t0 || audio.ctx.currentTime;
+		var o = audio.ctx.createOscillator();
+		o.type = type || 'square';
+		o.frequency.value = freq;
+		var g = audio.ctx.createGain();
+		g.gain.setValueAtTime( 0.0001, t0 );
+		g.gain.exponentialRampToValueAtTime( peak, t0 + 0.015 );
+		g.gain.exponentialRampToValueAtTime( 0.0001, t0 + dur );
+		o.connect( g ); g.connect( audio.master );
+		o.start( t0 ); o.stop( t0 + dur + 0.02 );
+	}
+
+	function splashSound() { noiseBurst( 0.5, 'bandpass', 1400, 0.6, 0.14, 380 ); }
+	function thud( sp ) {
+		if ( ! audio.on || ! audio.ctx ) return;
+		var t0 = audio.ctx.currentTime;
+		var o = audio.ctx.createOscillator();
+		o.type = 'sine';
+		o.frequency.setValueAtTime( 130, t0 );
+		o.frequency.exponentialRampToValueAtTime( 48, t0 + 0.18 );
+		var g = audio.ctx.createGain();
+		var vol = Math.min( 0.22, 0.06 + ( sp || 0 ) * 0.016 );
+		g.gain.setValueAtTime( vol, t0 );
+		g.gain.exponentialRampToValueAtTime( 0.0001, t0 + 0.24 );
+		o.connect( g ); g.connect( audio.master );
+		o.start( t0 ); o.stop( t0 + 0.26 );
+		noiseBurst( 0.16, 'lowpass', 500, 0.7, 0.06 );
+	}
+	function snort() { noiseBurst( 0.28, 'bandpass', 340, 1.4, 0.11, 190 ); }
+	function cricket() {
+		if ( ! audio.on || ! audio.ctx ) return;
+		var t0 = audio.ctx.currentTime;
+		for ( var i = 0; i < 3; i++ ) tone( 4300 + Math.random() * 300, 0.03, 0.018, 'triangle', t0 + i * 0.055 );
+	}
+	function softCluck() { noiseBurst( 0.14, 'bandpass', 700, 1.2, 0.045, 480 ); }
+	function cheer( level ) {
+		if ( ! audio.on || ! audio.ctx ) return;
+		// a wash of crowd noise + a few detuned "voices" swelling and fading
+		noiseBurst( 1.3, 'bandpass', 1100, 0.5, 0.05 * level );
+		var t0 = audio.ctx.currentTime;
+		for ( var i = 0; i < 4; i++ ) {
+			var o = audio.ctx.createOscillator();
+			o.type = 'sawtooth';
+			o.frequency.value = 180 + Math.random() * 340;
+			var g = audio.ctx.createGain();
+			g.gain.setValueAtTime( 0.0001, t0 );
+			g.gain.exponentialRampToValueAtTime( 0.02 * level, t0 + 0.3 + Math.random() * 0.3 );
+			g.gain.exponentialRampToValueAtTime( 0.0001, t0 + 1.1 + Math.random() * 0.3 );
+			o.connect( g ); g.connect( audio.master );
+			o.start( t0 ); o.stop( t0 + 1.5 );
+		}
+	}
+	function fanfare() {
+		if ( ! audio.on || ! audio.ctx ) return;
+		var t0 = audio.ctx.currentTime;
+		[ 523, 659, 784, 1047 ].forEach( function ( f, i ) {
+			tone( f, 0.34, 0.13, 'triangle', t0 + i * 0.11 );
+		} );
+		cheer( 0.9 );
 	}
 
 	/* ------------------------------------------------------------------ *
