@@ -18,6 +18,14 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * DRIVE FEEL — BODY DYNAMICS: the chassis stops being rigid. It leans
+ * OUT of corners (roll ∝ steer × speed), squats on the gas / dives on
+ * the brake, drops on its suspension when it lands (springs back), and
+ * — the big one — TILTS TO THE TERRAIN: it noses up hills and jump
+ * faces and banks onto the berms instead of staying dead flat. Roll is
+ * about the forward axis, pitch about the lateral; both are smoothed
+ * and clamped, and neutral while airborne so flips stay clean.
+ *
  * GRAPHICS P2 — SHADOWS: the moonlight now casts real soft shadows
  * (PCFSoft, 2048) through a tight frustum that FOLLOWS the buggy — the
  * light direction stays fixed, so only nearby geometry casts and it
@@ -346,7 +354,7 @@
 	var audio = { ctx: null, on: false, master: null, engGain: null, engOsc1: null, engOsc2: null };
 	var soundBtn = null;
 	var tokens = [], tokenCount = 0, tokenFound = 0;
-	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0, climb = 0;
+	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0, climb = 0, chassisDip = 0;
 	var airPitch = 0, jumpCooldown = 0;
 	var boostT = 0, padCooldown = [];
 	var inWater = false, inMud = false;
@@ -973,6 +981,7 @@
 			if ( worldY <= landY ) {
 				airborne = false;
 				worldY = landY;
+				chassisDip = -Math.min( 7, 2 + ( -vAlt ) * 0.03 ); // suspension compresses
 				vAlt = 0;
 				if ( splash ) splashSound(); else thud( Math.hypot( b.velocity.x, b.velocity.y ) );
 				var n = wrapAngle( airPitch );
@@ -1006,8 +1015,29 @@
 		buggyGroup.position.set( rx, worldY, rz );
 		buggyGroup.rotation.y = -ra;
 		buggyGroup.rotation.z = airPitch;
-		chassisGroup.rotation.x += ( ( steerVal * -0.08 * Math.min( 1, sp / 3 ) ) - chassisGroup.rotation.x ) * 0.15;
-		chassisGroup.rotation.z += ( ( ( airborne ? -0.1 : throttleInput * -0.05 ) ) - chassisGroup.rotation.z ) * 0.12;
+
+		// --- buggy body dynamics ---
+		// The chassis leans OUT of corners, squats/dives on the pedal, tilts
+		// to follow the terrain (berms, mounds, hills), and compresses on
+		// landing. ROLL is about the forward axis (rotation.x), PITCH about
+		// the lateral axis (rotation.z). If a lean/tilt reads BACKWARDS,
+		// flip that term's sign — roll and pitch are independent, and the
+		// two roll terms share a sign (flip tRoll whole if lean inverts).
+		var gsl = slopeAt( rx, rz );
+		var cosA = Math.cos( ra ), sinA = Math.sin( ra );
+		var fwdSlope = gsl.x * cosA + gsl.z * sinA;        // rise along heading
+		var latSlope = gsl.x * -sinA + gsl.z * cosA;       // rise across (to the left)
+		var af = airborne ? 0 : 1;                          // aloft, airPitch owns the pose
+		var tRoll = af * ( Math.atan( latSlope ) * -1.0     // sit on the ground camber
+			+ steerVal * 0.17 * Math.min( 1, sp / 4 ) );    // + lean out of the turn
+		var tPitch = af * ( Math.atan( fwdSlope )           // nose up the hill / jump face
+			+ throttleInput * 0.06 );                       // + squat on gas / dive on brake
+		tRoll = Math.max( -0.55, Math.min( 0.55, tRoll ) );
+		tPitch = Math.max( -0.55, Math.min( 0.55, tPitch ) );
+		chassisGroup.rotation.x += ( tRoll - chassisGroup.rotation.x ) * 0.18;
+		chassisGroup.rotation.z += ( tPitch - chassisGroup.rotation.z ) * 0.18;
+		chassisDip += ( 0 - chassisDip ) * 0.2;             // suspension rebound
+		chassisGroup.position.y = 10 + chassisDip;
 		for ( var i = 0; i < wheels.length; i++ ) wheels[ i ].rotation.z -= sp * 0.09;
 		var hover = worldY - gy;
 		blobShadow.position.set( rx, gy + 0.6, rz );
