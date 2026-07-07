@@ -18,6 +18,17 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * SECTION ROAD P2 — MOTOCROSS: the ring rebuilt wider (128) with
+ * corners that bulge away from the fence like berms; a double after
+ * the start line, whoop section on the north straight, tabletops on
+ * the others. Heritage drive-ins move OUTSIDE the track at 2.2× with
+ * real instanced GLASS BULBS chasing around their borders; four
+ * corner light towers throw real PointLight pools both ways; two
+ * grandstands of bobbing spectators face the far straight. Steering
+ * eased + loosened (wind-in smoothing, lower rate, more slide);
+ * chicken cluck slowed into an actual buk-bawk. Lap storage moves to
+ * tcBqLaps_v2 (new track, fresh records).
+ *
  * THE SECTION ROAD — a dirt race track ringing the OUTSIDE of the
  * quarter (the world's walls moved out; the perimeter fence is now
  * solid and the farm gate at bottom centre is the only way out).
@@ -105,16 +116,18 @@
 		  prompt: 'Fresh mail soon — “recently added” lands here' }
 	];
 
-	// The eight family lines, shown as drive-in movie screens on the fence.
+	// The eight family lines: big marquee billboards OUTSIDE the section
+	// road, facing the racing — four along the north straight (flanking
+	// the grandstands), two each on the west and east sides.
 	var LINES = [
-		{ name: 'The Cheesmans', href: '/cheesmans', x: 700, z: 130, face: 1 },
-		{ name: 'The Dochertys', href: '/dochertys', x: 1700, z: 130, face: 1 },
-		{ name: 'The Haistes', href: '/haistes', x: 2700, z: 130, face: 1 },
-		{ name: 'The Lakemans', href: '/lakemans', x: 3700, z: 130, face: 1 },
-		{ name: 'The Rycrofts', href: '/rycrofts', x: 130, z: 800, face: 2 },
-		{ name: 'The McIvers', href: '/mcivers', x: 130, z: 1700, face: 2 },
-		{ name: 'The Verbooms', href: '/verbooms', x: 4350, z: 800, face: 3 },
-		{ name: 'The Steinkes', href: '/steinkes', x: 4350, z: 1700, face: 3 }
+		{ name: 'The Cheesmans', href: '/cheesmans', x: 600, z: -330, face: 1 },
+		{ name: 'The Dochertys', href: '/dochertys', x: 1250, z: -330, face: 1 },
+		{ name: 'The Haistes', href: '/haistes', x: 3230, z: -330, face: 1 },
+		{ name: 'The Lakemans', href: '/lakemans', x: 3880, z: -330, face: 1 },
+		{ name: 'The Rycrofts', href: '/rycrofts', x: -330, z: 800, face: 2 },
+		{ name: 'The McIvers', href: '/mcivers', x: -330, z: 1700, face: 2 },
+		{ name: 'The Verbooms', href: '/verbooms', x: 4810, z: 800, face: 3 },
+		{ name: 'The Steinkes', href: '/steinkes', x: 4810, z: 1700, face: 3 }
 	];
 
 	// The road net — wide, and full of bends. Nothing cuts the grove.
@@ -191,20 +204,23 @@
 	// like the farm roads; the start/finish line is on the south straight,
 	// dead ahead when you leave the farm gate.
 	var TRACK = [
-		{ x: 2240, y: 2670 }, { x: 4200, y: 2670 }, { x: 4420, y: 2610 },
-		{ x: 4570, y: 2460 }, { x: 4630, y: 2240 }, { x: 4630, y: 280 },
-		{ x: 4570, y: 60 }, { x: 4420, y: -90 }, { x: 4200, y: -150 },
-		{ x: 280, y: -150 }, { x: 60, y: -90 }, { x: -90, y: 60 },
-		{ x: -150, y: 280 }, { x: -150, y: 2240 }, { x: -90, y: 2460 },
-		{ x: 60, y: 2610 }, { x: 280, y: 2670 }, { x: 2240, y: 2670 }
+		{ x: 2240, y: 2690 }, { x: 4180, y: 2690 }, { x: 4430, y: 2700 },
+		{ x: 4640, y: 2620 }, { x: 4740, y: 2440 }, { x: 4700, y: 2230 },
+		{ x: 4650, y: 2070 }, { x: 4650, y: 450 }, { x: 4700, y: 290 },
+		{ x: 4740, y: 80 }, { x: 4640, y: -100 }, { x: 4430, y: -180 },
+		{ x: 4180, y: -170 }, { x: 300, y: -170 }, { x: 50, y: -180 },
+		{ x: -160, y: -100 }, { x: -260, y: 80 }, { x: -220, y: 290 },
+		{ x: -170, y: 450 }, { x: -170, y: 2070 }, { x: -220, y: 2230 },
+		{ x: -260, y: 2440 }, { x: -160, y: 2620 }, { x: 50, y: 2700 },
+		{ x: 300, y: 2690 }, { x: 2240, y: 2690 }
 	];
-	var TRACK_W = 92;
-	var START = { x: 2240, z: 2670 };
+	var TRACK_W = 128;
+	var START = { x: 2240, z: 2690 };
 	// three corners, hit in order (either direction), then home
 	var LAP_CKPTS = [
-		{ x: 4630, z: 1260 }, // east
-		{ x: 2240, z: -150 }, // north
-		{ x: -150, z: 1260 }  // west
+		{ x: 4650, z: 1260 }, // east
+		{ x: 2240, z: -170 }, // north
+		{ x: -170, z: 1260 }  // west
 	];
 	var FLAT = [
 		{ x: 1211, z: 588, ri: 160, ro: 315 },
@@ -225,7 +241,19 @@
 	var MOUNDS = [
 		{ x: 2695, z: 1724, a: 32, r: 72 },
 		{ x: 2205, z: 788, a: 28, r: 70 },
-		{ x: 3325, z: 2100, a: 34, r: 86 }
+		{ x: 3325, z: 2100, a: 34, r: 86 },
+		// motocross furniture on the section road: a double out of the
+		// start line, whoops down the north straight, tabletops elsewhere
+		{ x: 2700, z: 2690, a: 18, r: 62 },
+		{ x: 2950, z: 2690, a: 18, r: 62 },
+		{ x: 4650, z: 1600, a: 26, r: 90 },
+		{ x: 4650, z: 900, a: 14, r: 56 },
+		{ x: 3300, z: -170, a: 9, r: 46 },
+		{ x: 3150, z: -170, a: 9, r: 46 },
+		{ x: 3000, z: -170, a: 9, r: 46 },
+		{ x: 2850, z: -170, a: 9, r: 46 },
+		{ x: 1400, z: -170, a: 24, r: 85 },
+		{ x: -170, z: 1000, a: 22, r: 80 }
 	];
 	// Kicker ramps — a steepening face that ends in a lip. The launch is
 	// terrain-honest (vertical speed = climb rate at the lip), so speed
@@ -284,6 +312,8 @@
 	var chickens = [], pigs = [];
 	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
 	var ghosts = [], ghostStore = null, prevSX = 0, lastHudTenth = -1;
+	var bulbInst = null, bulbCount = 0, bulbTimer = 0, bulbPhase = 0, bulbLit = null, bulbDim = null;
+	var crowdInst = null, crowdData = [], crowdDummy = null;
 	var baseFov = 55;
 	var pX = 0, pY = 0, pA = 0; // physics-step interpolation
 
@@ -444,7 +474,7 @@
 		// world walls sit OUTSIDE the section road ring now; the perimeter
 		// fence itself is solid, with the farm gate (x 2180–2300, south) the
 		// only way out onto the track.
-		var statics = [], T = 40, OUT = 265;
+		var statics = [], T = 40, OUT = 430;
 		statics.push( Matter.Bodies.rectangle( W / 2, -OUT + 6, W + OUT * 2 + 80, T, { isStatic: true } ) );
 		statics.push( Matter.Bodies.rectangle( W / 2, H + OUT - 6, W + OUT * 2 + 80, T, { isStatic: true } ) );
 		statics.push( Matter.Bodies.rectangle( -OUT + 6, H / 2, T, H + OUT * 2 + 80, { isStatic: true } ) );
@@ -474,6 +504,8 @@
 		buildFence( THREE );
 		buildGateway( THREE );
 		buildTrack( THREE );
+		buildTrackLights( THREE );
+		buildGrandstands( THREE );
 		buildDriveIns( THREE );
 		buildAnimals( THREE );
 		buildCoop( THREE );
@@ -634,7 +666,7 @@
 		render( dms, Math.max( 0, Math.min( 1, accMS / 16.666 ) ) );
 	}
 
-	var steerInput = 0, throttleInput = 0;
+	var steerInput = 0, throttleInput = 0, steerVal = 0;
 	function control() {
 		var b = buggyBody;
 		var heading = { x: Math.cos( b.angle ), y: Math.sin( b.angle ) };
@@ -648,7 +680,10 @@
 		throttleInput = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.65 : 0 );
 		steerInput = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
 
-		Matter.Body.setAngularVelocity( b, steerInput * ( airborne ? 0.03 : 0.072 ) );
+		// eased steering: the wheel winds in and out instead of snapping
+		steerVal += ( steerInput - steerVal ) * 0.16;
+		if ( ! steerInput && Math.abs( steerVal ) < 0.02 ) steerVal = 0;
+		Matter.Body.setAngularVelocity( b, steerVal * ( airborne ? 0.03 : 0.06 ) );
 
 		var power = boostT > 0 ? 0.0078 : 0.0042;
 		if ( airborne ) power *= 0.25;
@@ -663,7 +698,7 @@
 		var fwd = v.x * heading.x + v.y * heading.y;
 		var lat = { x: -heading.y, y: heading.x };
 		var latSpeed = v.x * lat.x + v.y * lat.y;
-		var grip = airborne ? 0.995 : 0.76;
+		var grip = airborne ? 0.995 : 0.84; // looser — she slides now
 		var nvx = heading.x * fwd + lat.x * latSpeed * grip;
 		var nvy = heading.y * fwd + lat.y * latSpeed * grip;
 
@@ -791,7 +826,7 @@
 		buggyGroup.position.set( rx, worldY, rz );
 		buggyGroup.rotation.y = -ra;
 		buggyGroup.rotation.z = airPitch;
-		chassisGroup.rotation.x += ( ( steerInput * -0.08 * Math.min( 1, sp / 3 ) ) - chassisGroup.rotation.x ) * 0.15;
+		chassisGroup.rotation.x += ( ( steerVal * -0.08 * Math.min( 1, sp / 3 ) ) - chassisGroup.rotation.x ) * 0.15;
 		chassisGroup.rotation.z += ( ( ( airborne ? -0.1 : throttleInput * -0.05 ) ) - chassisGroup.rotation.z ) * 0.12;
 		for ( var i = 0; i < wheels.length; i++ ) wheels[ i ].rotation.z -= sp * 0.09;
 		var hover = worldY - gy;
@@ -815,6 +850,8 @@
 		updateChickens( dms, t );
 		updatePigs( dms );
 		updateGhosts( dms );
+		updateDriveInChase( dms );
+		updateCrowd( t );
 		if ( lap.active ) {
 			var tenth = Math.floor( lap.t / 100 );
 			if ( tenth !== lastHudTenth ) {
@@ -1148,6 +1185,24 @@
 		var quotes = {};
 		( ledgerData().quotes || [] ).forEach( function ( q ) { quotes[ q.href ] = q.text; } );
 
+		// old-school GLASS BULBS around every border — one InstancedMesh for
+		// all screens, colors chased in updateDriveInChase()
+		bulbLit = new THREE.Color( 0xffe6a8 );
+		bulbDim = new THREE.Color( 0x6a4d26 );
+		var ring = [], rb;
+		for ( rb = -62; rb <= 62; rb += 13.75 ) ring.push( [ rb, 103 ] );  // top →
+		for ( rb = 90; rb >= 43; rb -= 13.5 ) ring.push( [ 66, rb ] );     // right ↓
+		for ( rb = 62; rb >= -62; rb -= 13.75 ) ring.push( [ rb, 29 ] );   // bottom ←
+		for ( rb = 43; rb <= 90; rb += 13.5 ) ring.push( [ -66, rb ] );    // left ↑
+		bulbCount = ring.length * LINES.length;
+		bulbInst = new THREE.InstancedMesh(
+			new THREE.SphereGeometry( 2.1, 8, 8 ),
+			new THREE.MeshBasicMaterial( { color: 0xffffff } ),
+			bulbCount
+		);
+		var dummy = new THREE.Object3D();
+		var idx = 0;
+
 		LINES.forEach( function ( line ) {
 			var c = document.createElement( 'canvas' );
 			c.width = 560; c.height = 320;
@@ -1156,38 +1211,32 @@
 			ctx.fillStyle = '#171310';
 			ctx.fillRect( 0, 0, 560, 320 );
 			ctx.fillStyle = '#0d0b09';
-			ctx.fillRect( 22, 22, 516, 276 );
-			// marquee bulbs around the border
-			for ( var bx = 34; bx < 560; bx += 44 ) {
-				ctx.fillStyle = ( bx / 44 ) % 2 < 1 ? '#ffd9a0' : '#7a5a34';
-				ctx.beginPath(); ctx.arc( bx, 11, 6, 0, 7 ); ctx.fill();
-				ctx.beginPath(); ctx.arc( bx, 309, 6, 0, 7 ); ctx.fill();
-			}
+			ctx.fillRect( 16, 16, 528, 288 );
 			ctx.textAlign = 'center';
 			ctx.font = '600 46px Georgia, serif';
 			ctx.fillStyle = '#ffe3b0';
-			ctx.fillText( line.name, 280, 92 );
+			ctx.fillText( line.name, 280, 88 );
 			var quote = quotes[ line.href ];
 			if ( quote ) {
 				ctx.font = '20px Georgia, serif';
 				ctx.fillStyle = 'rgba(255, 227, 176, 0.45)';
-				ctx.fillText( 'NOW SHOWING', 280, 128 );
+				ctx.fillText( 'NOW SHOWING', 280, 126 );
 				ctx.font = 'italic 25px Georgia, serif';
 				ctx.fillStyle = 'rgba(255, 227, 176, 0.85)';
 				var words = ( '“' + quote + '”' ).split( ' ' );
 				var lines = [], cur = '';
 				words.forEach( function ( w ) {
 					var t = cur ? cur + ' ' + w : w;
-					if ( ctx.measureText( t ).width > 470 && cur ) { lines.push( cur ); cur = w; }
+					if ( ctx.measureText( t ).width > 480 && cur ) { lines.push( cur ); cur = w; }
 					else cur = t;
 				} );
 				if ( cur ) lines.push( cur );
 				lines.slice( 0, 4 ).forEach( function ( ln, li ) {
-					ctx.fillText( ln, 280, 168 + li * 32 );
+					ctx.fillText( ln, 280, 166 + li * 32 );
 				} );
 				ctx.font = '22px Georgia, serif';
 				ctx.fillStyle = 'rgba(255, 227, 176, 0.55)';
-				ctx.fillText( 'drive in →', 280, 293 );
+				ctx.fillText( 'drive in →', 280, 294 );
 			} else {
 				ctx.font = 'italic 30px Georgia, serif';
 				ctx.fillStyle = 'rgba(255, 227, 176, 0.6)';
@@ -1214,17 +1263,45 @@
 			var lm = { id: 'line-' + line.href, name: line.name, x: line.x, y: line.z,
 				href: line.href, prompt: line.name + ' — a family line, projected on the night' };
 			g.position.set( line.x, hillsAt( line.x, line.z ), line.z );
-			// face into the field: 1 = north fence (face south), 2 = west
-			// fence (face east), 3 = east fence (face west)
+			// face the racing: 1 = north side (face south), 2 = west side
+			// (face east), 3 = east side (face west)
 			g.rotation.y = line.face === 1 ? 0 : ( line.face === 2 ? Math.PI / 2 : -Math.PI / 2 );
+			g.scale.set( 2.2, 2.2, 2.2 );
 			g.userData.lm = lm;
 			scene.add( g );
 			clickables.push( g );
 			PROMPTS.push( lm );
 			Matter.Composite.add( engine.world,
 				Matter.Bodies.rectangle( line.x, line.z,
-					line.face === 1 ? 124 : 12, line.face === 1 ? 12 : 124, { isStatic: true } ) );
+					line.face === 1 ? 273 : 26, line.face === 1 ? 26 : 273, { isStatic: true } ) );
+
+			// place this screen's bulbs in world space
+			g.updateMatrixWorld( true );
+			ring.forEach( function ( rp ) {
+				var v = new THREE.Vector3( rp[ 0 ], rp[ 1 ], 3 );
+				g.localToWorld( v );
+				dummy.position.copy( v );
+				dummy.scale.set( 2.2, 2.2, 2.2 );
+				dummy.updateMatrix();
+				bulbInst.setMatrixAt( idx, dummy.matrix );
+				bulbInst.setColorAt( idx, bulbDim );
+				idx++;
+			} );
 		} );
+		bulbInst.instanceMatrix.needsUpdate = true;
+		scene.add( bulbInst );
+	}
+
+	function updateDriveInChase( dms ) {
+		if ( ! bulbInst ) return;
+		bulbTimer += dms;
+		if ( bulbTimer < 300 ) return;
+		bulbTimer = 0;
+		bulbPhase = ( bulbPhase + 1 ) % 3;
+		for ( var i = 0; i < bulbCount; i++ ) {
+			bulbInst.setColorAt( i, ( i + bulbPhase ) % 3 === 0 ? bulbLit : bulbDim );
+		}
+		bulbInst.instanceColor.needsUpdate = true;
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -2193,9 +2270,104 @@
 		}
 	}
 
+	function buildTrackLights( THREE ) {
+		// tall corner towers, lamp heads aimed both ways down the track,
+		// with a real PointLight pooling on the dirt
+		var poleMat = mat( THREE, 0x3a3630 );
+		var headMat = new THREE.MeshBasicMaterial( { color: 0xfff2d0 } );
+		[ { x: -60, z: -60 }, { x: W + 60, z: -60 },
+		  { x: -60, z: H + 60 }, { x: W + 60, z: H + 60 } ].forEach( function ( c ) {
+			var gy = hillsAt( c.x, c.z );
+			var pole = new THREE.Mesh( new THREE.CylinderGeometry( 2.6, 3.4, 110, 8 ), poleMat );
+			pole.position.set( c.x, gy + 55, c.z );
+			scene.add( pole );
+			var A = Math.atan2( H / 2 - c.z, W / 2 - c.x );
+			var th = A + Math.PI / 2; // crossbar perpendicular to the infield diagonal
+			var bar = new THREE.Mesh( new THREE.BoxGeometry( 34, 4, 8 ), poleMat );
+			bar.position.set( c.x, gy + 108, c.z );
+			bar.rotation.y = -th;
+			scene.add( bar );
+			[ -14, 14 ].forEach( function ( o ) {
+				var head = new THREE.Mesh( new THREE.BoxGeometry( 11, 6.5, 9 ), headMat );
+				head.position.set( c.x + Math.cos( th ) * o, gy + 105, c.z + Math.sin( th ) * o );
+				head.rotation.y = -th;
+				scene.add( head );
+			} );
+			var pt = new THREE.PointLight( 0xffe2b0, 0.9, 1150 );
+			pt.position.set( c.x, gy + 100, c.z );
+			scene.add( pt );
+		} );
+	}
+
+	function buildGrandstands( THREE ) {
+		// two stands on the far straight, packed with a bobbing crowd
+		var frame = mat( THREE, 0x3a3630 );
+		var seatMat = mat( THREE, 0x4a443c );
+		var stands = [ { x: 1900, z: -300 }, { x: 2580, z: -300 } ];
+		var ROWS = 5, SEATS = 20;
+		crowdDummy = new THREE.Object3D();
+		crowdInst = new THREE.InstancedMesh(
+			new THREE.BoxGeometry( 6, 9, 4 ),
+			new THREE.MeshLambertMaterial( { color: 0xffffff } ),
+			stands.length * ROWS * SEATS
+		);
+		crowdInst.instanceMatrix.setUsage( THREE.DynamicDrawUsage );
+		var palette = [ 0xc84a3a, 0x4a78c8, 0xd8b25e, 0x5da868, 0xd8d3c4, 0x9a6fc8, 0xd88a3a ];
+		var col = new THREE.Color();
+		var idx = 0;
+		stands.forEach( function ( st ) {
+			var baseY = hillsAt( st.x, st.z );
+			for ( var r = 0; r < ROWS; r++ ) {
+				var tier = new THREE.Mesh( new THREE.BoxGeometry( 310, 10, 24 ), seatMat );
+				tier.position.set( st.x, baseY + r * 13 + 5, st.z - r * 24 );
+				scene.add( tier );
+				for ( var s2 = 0; s2 < SEATS; s2++ ) {
+					var px = st.x - 133 + s2 * 14;
+					var py = baseY + r * 13 + 14.5;
+					var pz = st.z - r * 24 - 3;
+					crowdDummy.position.set( px, py, pz );
+					crowdDummy.updateMatrix();
+					crowdInst.setMatrixAt( idx, crowdDummy.matrix );
+					col.setHex( palette[ ( idx * 7 + 3 ) % palette.length ] );
+					crowdInst.setColorAt( idx, col );
+					crowdData.push( { x: px, y: py, z: pz,
+						ph: Math.random() * Math.PI * 2, sp: 2.2 + Math.random() * 1.6 } );
+					idx++;
+				}
+			}
+			var roof = new THREE.Mesh( new THREE.BoxGeometry( 320, 4, 110 ), frame );
+			roof.position.set( st.x, baseY + 96, st.z - 48 );
+			scene.add( roof );
+			[ -152, 152 ].forEach( function ( ox ) {
+				[ 6, -100 ].forEach( function ( oz ) {
+					var post = new THREE.Mesh( new THREE.BoxGeometry( 4, 96, 4 ), frame );
+					post.position.set( st.x + ox, baseY + 48, st.z + oz );
+					scene.add( post );
+				} );
+			} );
+			Matter.Composite.add( engine.world,
+				Matter.Bodies.rectangle( st.x, st.z - 48, 330, 130, { isStatic: true } ) );
+			PROMPTS.push( { id: 'stand' + st.x, name: 'the grandstands', x: st.x, y: st.z,
+				href: null, prompt: 'The grandstands — they came to watch you send it' } );
+		} );
+		scene.add( crowdInst );
+	}
+
+	function updateCrowd( t ) {
+		if ( ! crowdInst ) return;
+		for ( var i = 0; i < crowdData.length; i++ ) {
+			var p = crowdData[ i ];
+			var hop = Math.max( 0, Math.sin( t * p.sp + p.ph ) ) * 5;
+			crowdDummy.position.set( p.x, p.y + hop, p.z );
+			crowdDummy.updateMatrix();
+			crowdInst.setMatrixAt( i, crowdDummy.matrix );
+		}
+		crowdInst.instanceMatrix.needsUpdate = true;
+	}
+
 	function loadLaps() {
 		if ( ghostStore ) return ghostStore;
-		try { ghostStore = JSON.parse( window.localStorage.getItem( 'tcBqLaps_v1' ) || 'null' ); } catch ( err ) {}
+		try { ghostStore = JSON.parse( window.localStorage.getItem( 'tcBqLaps_v2' ) || 'null' ); } catch ( err ) {}
 		if ( ! ghostStore || typeof ghostStore !== 'object' ) ghostStore = { best: null, recent: [] };
 		if ( ! ghostStore.recent ) ghostStore.recent = [];
 		return ghostStore;
@@ -2203,7 +2375,7 @@
 
 	function saveLaps( st ) {
 		ghostStore = st;
-		try { window.localStorage.setItem( 'tcBqLaps_v1', JSON.stringify( st ) ); } catch ( err ) {}
+		try { window.localStorage.setItem( 'tcBqLaps_v2', JSON.stringify( st ) ); } catch ( err ) {}
 	}
 
 	function fmtLap( ms ) {
@@ -2258,7 +2430,7 @@
 	function lapControl() {
 		var b = buggyBody;
 		var sx = b.position.x - START.x;
-		var onLine = Math.abs( b.position.y - START.z ) < 70;
+		var onLine = Math.abs( b.position.y - START.z ) < 80;
 		if ( onLine && ( ( prevSX < 0 && sx >= 0 ) || ( prevSX > 0 && sx <= 0 ) ) ) {
 			var dir = sx >= 0 ? 1 : -1; // 1 = heading east = counterclockwise
 			if ( lap.active && dir === lap.dir && lap.next === 3 ) finishLap();
@@ -2275,7 +2447,7 @@
 		if ( lap.next < 3 ) {
 			var seq = lap.dir === 1 ? [ 0, 1, 2 ] : [ 2, 1, 0 ];
 			var ck = LAP_CKPTS[ seq[ lap.next ] ];
-			if ( Math.hypot( b.position.x - ck.x, b.position.y - ck.z ) < 150 ) {
+			if ( Math.hypot( b.position.x - ck.x, b.position.y - ck.z ) < 175 ) {
 				lap.next++;
 				flashChip( 'Corner ' + lap.next + ' of 3 · ' + fmtLap( lap.t ) );
 			}
@@ -2593,20 +2765,21 @@
 	function squawk() {
 		if ( ! audio.on || ! audio.ctx ) return;
 		var t0 = audio.ctx.currentTime;
-		[ 0, 0.09 ].forEach( function ( d ) {
+		// an unhurried barnyard "buk-BAWK" — low, throaty, two beats
+		[ 0, 0.22 ].forEach( function ( d, i ) {
 			var o = audio.ctx.createOscillator();
-			o.type = 'square';
-			var f0 = 620 + Math.random() * 260;
+			o.type = 'triangle';
+			var f0 = ( i ? 430 : 330 ) + Math.random() * 60;
 			o.frequency.setValueAtTime( f0, t0 + d );
-			o.frequency.exponentialRampToValueAtTime( f0 * 0.55, t0 + d + 0.08 );
+			o.frequency.exponentialRampToValueAtTime( f0 * 0.55, t0 + d + 0.16 );
 			var g = audio.ctx.createGain();
 			g.gain.setValueAtTime( 0.0001, t0 + d );
-			g.gain.exponentialRampToValueAtTime( 0.07, t0 + d + 0.015 );
-			g.gain.exponentialRampToValueAtTime( 0.0001, t0 + d + 0.1 );
+			g.gain.exponentialRampToValueAtTime( 0.11, t0 + d + 0.025 );
+			g.gain.exponentialRampToValueAtTime( 0.0001, t0 + d + 0.2 );
 			o.connect( g );
 			g.connect( audio.master );
 			o.start( t0 + d );
-			o.stop( t0 + d + 0.12 );
+			o.stop( t0 + d + 0.24 );
 		} );
 	}
 
