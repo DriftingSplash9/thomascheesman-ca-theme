@@ -18,6 +18,12 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * GRAPHICS P1 — FOUNDATION: ACES filmic tone mapping + exposure (pulls
+ * the flat-bright night into contrast), a gradient sky DOME with a
+ * starfield and a haloed moon (rides the camera so it never clips),
+ * and fog retuned to the horizon colour so distance fades into the sky.
+ * Zero new dependencies — the bloom/shadow passes come next.
+ *
  * AUDIO PASS — a full synthesized soundscape (still zero hosted files):
  * a night wind bed that gusts, surface-aware tire roll (grass/road/mud/
  * water), splash + mud + landing thud, ambient crickets and coop clucks,
@@ -340,6 +346,7 @@
 	var chickens = [], pigs = [];
 	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
 	var ghosts = [], ghostStore = null, prevSX = 0, lastHudTenth = -1;
+	var skyGroup = null;
 	var bulbInst = null, bulbCount = 0, bulbTimer = 0, bulbPhase = 0, bulbLit = null, bulbDim = null;
 	var crowdInst = null, crowdData = [], crowdDummy = null;
 	var baseFov = 55;
@@ -443,6 +450,73 @@
 		return a;
 	}
 
+	function haloTexture( THREE ) {
+		var c = document.createElement( 'canvas' );
+		c.width = c.height = 128;
+		var ctx = c.getContext( '2d' );
+		var g = ctx.createRadialGradient( 64, 64, 0, 64, 64, 64 );
+		g.addColorStop( 0, 'rgba(255,255,255,1)' );
+		g.addColorStop( 0.25, 'rgba(205,222,255,0.5)' );
+		g.addColorStop( 1, 'rgba(205,222,255,0)' );
+		ctx.fillStyle = g; ctx.fillRect( 0, 0, 128, 128 );
+		return new THREE.CanvasTexture( c );
+	}
+
+	// A gradient sky dome + starfield + a haloed moon, all parented into
+	// one group that rides the camera each frame (so we never clip out the
+	// far side). Replaces the flat background fill.
+	function buildSky( THREE ) {
+		skyGroup = new THREE.Group();
+
+		var skyMat = new THREE.ShaderMaterial( {
+			side: THREE.BackSide, depthWrite: false, fog: false,
+			uniforms: {
+				topCol: { value: new THREE.Color( 0x05070d ) },
+				botCol: { value: new THREE.Color( 0x1b2740 ) },
+				expo: { value: 0.7 }
+			},
+			vertexShader:
+				'varying vec3 vP; void main(){ vP = position; ' +
+				'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }',
+			fragmentShader:
+				'uniform vec3 topCol; uniform vec3 botCol; uniform float expo; varying vec3 vP;' +
+				'void main(){ float h = normalize( vP ).y; float t = pow( max( h, 0.0 ), expo );' +
+				'gl_FragColor = vec4( mix( botCol, topCol, t ), 1.0 ); }'
+		} );
+		skyGroup.add( new THREE.Mesh( new THREE.SphereGeometry( 6500, 32, 16 ), skyMat ) );
+
+		var N = 900, sp = new Float32Array( N * 3 );
+		for ( var i = 0; i < N; i++ ) {
+			var y = Math.random() * 0.9 + 0.08;      // height fraction (upper sky)
+			var s = Math.sqrt( 1 - y * y ), a = Math.random() * Math.PI * 2, r = 6200;
+			sp[ i * 3 ] = r * s * Math.cos( a );
+			sp[ i * 3 + 1 ] = r * y;
+			sp[ i * 3 + 2 ] = r * s * Math.sin( a );
+		}
+		var starGeo = new THREE.BufferGeometry();
+		starGeo.setAttribute( 'position', new THREE.BufferAttribute( sp, 3 ) );
+		skyGroup.add( new THREE.Points( starGeo, new THREE.PointsMaterial( {
+			color: 0xcfe0ff, size: 7, sizeAttenuation: false, fog: false,
+			transparent: true, opacity: 0.9
+		} ) ) );
+
+		var moonBall = new THREE.Mesh(
+			new THREE.SphereGeometry( 150, 24, 24 ),
+			new THREE.MeshBasicMaterial( { color: 0xeef4ff, fog: false } )
+		);
+		moonBall.position.set( -1500, 1400, -2400 );
+		skyGroup.add( moonBall );
+		var halo = new THREE.Sprite( new THREE.SpriteMaterial( {
+			map: haloTexture( THREE ), color: 0xbcd2f4, transparent: true, opacity: 0.55,
+			blending: THREE.AdditiveBlending, depthWrite: false, fog: false
+		} ) );
+		halo.scale.set( 1400, 1400, 1 );
+		halo.position.copy( moonBall.position );
+		skyGroup.add( halo );
+
+		scene.add( skyGroup );
+	}
+
 	function boot( stageEl ) {
 		stage = stageEl;
 		hudEl = stage.querySelector( '.bq-hud' );
@@ -466,27 +540,27 @@
 		renderer = new THREE.WebGLRenderer( { antialias: true } );
 		renderer.setPixelRatio( Math.min( window.devicePixelRatio || 1, 2 ) );
 		renderer.setSize( stage.clientWidth, stage.clientHeight );
+		// filmic tone mapping — the biggest single "less cheesy" win: it
+		// pulls the flat-bright night into contrast and lets the lights read.
+		renderer.toneMapping = THREE.ACESFilmicToneMapping;
+		renderer.toneMappingExposure = 1.15;
 		renderer.domElement.className = 'bq-canvas';
 		renderer.domElement.setAttribute( 'aria-hidden', 'true' );
 		stage.appendChild( renderer.domElement );
 
 		scene = new THREE.Scene();
 		scene.background = new THREE.Color( 0x0a1220 );
-		scene.fog = new THREE.Fog( 0x0a1220, 560, 2700 );
+		// fog tinted to the horizon so distance fades into the sky, not a wall
+		scene.fog = new THREE.Fog( 0x141d2e, 620, 3000 );
 
-		camera = new THREE.PerspectiveCamera( baseFov, stage.clientWidth / stage.clientHeight, 1, 8000 );
+		camera = new THREE.PerspectiveCamera( baseFov, stage.clientWidth / stage.clientHeight, 1, 9000 );
 
-		scene.add( new THREE.AmbientLight( 0x24324a, 0.85 ) );
-		scene.add( new THREE.HemisphereLight( 0x39506e, 0x141d14, 0.5 ) );
-		var moon = new THREE.DirectionalLight( 0x9ec2e8, 0.75 );
+		scene.add( new THREE.AmbientLight( 0x233248, 0.8 ) );
+		scene.add( new THREE.HemisphereLight( 0x3a5372, 0x121a12, 0.5 ) );
+		var moon = new THREE.DirectionalLight( 0xaecdf0, 0.9 );
 		moon.position.set( -700, 900, -600 );
 		scene.add( moon );
-		var moonBall = new THREE.Mesh(
-			new THREE.SphereGeometry( 110, 20, 20 ),
-			new THREE.MeshBasicMaterial( { color: 0xdfe9f5, fog: false } )
-		);
-		moonBall.position.set( -1400, 900, -2000 );
-		scene.add( moonBall );
+		buildSky( THREE );
 
 		// ---------- ground: displaced terrain with roads painted in ----------
 		var groundGeo = new THREE.PlaneGeometry( 7200, 5200, 260, 180 );
@@ -995,6 +1069,8 @@
 			camera.fov += ( wantFov - camera.fov ) * 0.1;
 			camera.updateProjectionMatrix();
 		}
+
+		if ( skyGroup ) skyGroup.position.copy( camera.position ); // sky rides with us
 
 		renderer.render( scene, camera );
 	}
