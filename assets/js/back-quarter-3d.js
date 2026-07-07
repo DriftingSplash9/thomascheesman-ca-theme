@@ -18,6 +18,13 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * GRAPHICS P2 — SHADOWS: the moonlight now casts real soft shadows
+ * (PCFSoft, 2048) through a tight frustum that FOLLOWS the buggy — the
+ * light direction stays fixed, so only nearby geometry casts and it
+ * stays crisp. Solid matte (Lambert) meshes cast + receive; the ground
+ * receives; the emissive "lights", sky, sprites and points don't. This
+ * is what stops everything from looking like it's floating.
+ *
  * GRAPHICS P1 — FOUNDATION: ACES filmic tone mapping + exposure (pulls
  * the flat-bright night into contrast), a gradient sky DOME with a
  * starfield and a haloed moon (rides the camera so it never clips),
@@ -346,7 +353,7 @@
 	var chickens = [], pigs = [];
 	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
 	var ghosts = [], ghostStore = null, prevSX = 0, lastHudTenth = -1;
-	var skyGroup = null;
+	var skyGroup = null, moonLight = null, moonTarget = null;
 	var bulbInst = null, bulbCount = 0, bulbTimer = 0, bulbPhase = 0, bulbLit = null, bulbDim = null;
 	var crowdInst = null, crowdData = [], crowdDummy = null;
 	var baseFov = 55;
@@ -544,6 +551,8 @@
 		// pulls the flat-bright night into contrast and lets the lights read.
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
 		renderer.toneMappingExposure = 1.15;
+		renderer.shadowMap.enabled = true;
+		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		renderer.domElement.className = 'bq-canvas';
 		renderer.domElement.setAttribute( 'aria-hidden', 'true' );
 		stage.appendChild( renderer.domElement );
@@ -557,9 +566,20 @@
 
 		scene.add( new THREE.AmbientLight( 0x233248, 0.8 ) );
 		scene.add( new THREE.HemisphereLight( 0x3a5372, 0x121a12, 0.5 ) );
-		var moon = new THREE.DirectionalLight( 0xaecdf0, 0.9 );
-		moon.position.set( -700, 900, -600 );
-		scene.add( moon );
+		moonLight = new THREE.DirectionalLight( 0xaecdf0, 0.9 );
+		moonLight.position.set( -700, 900, -600 );
+		moonLight.castShadow = true;
+		moonLight.shadow.mapSize.set( 2048, 2048 );
+		moonLight.shadow.bias = -0.0004;
+		moonLight.shadow.normalBias = 1.2;
+		var sc = moonLight.shadow.camera; // a tight frustum that follows the buggy
+		sc.near = 200; sc.far = 2600;
+		sc.left = -760; sc.right = 760; sc.top = 760; sc.bottom = -760;
+		sc.updateProjectionMatrix();
+		moonTarget = new THREE.Object3D();
+		scene.add( moonTarget );
+		moonLight.target = moonTarget;
+		scene.add( moonLight );
 		buildSky( THREE );
 
 		// ---------- ground: displaced terrain with roads painted in ----------
@@ -600,8 +620,11 @@
 		}
 		groundGeo.setAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 		groundGeo.computeVertexNormals();
-		scene.add( new THREE.Mesh( groundGeo,
-			new THREE.MeshLambertMaterial( { vertexColors: true } ) ) );
+		var groundMesh = new THREE.Mesh( groundGeo,
+			new THREE.MeshLambertMaterial( { vertexColors: true } ) );
+		groundMesh.receiveShadow = true;   // catches the buggy + building shadows
+		groundMesh.userData.noCast = true; // the ground itself never casts
+		scene.add( groundMesh );
 
 		buildPonds( THREE );
 		buildMounds( THREE );
@@ -693,6 +716,18 @@
 		raycaster = new THREE.Raycaster();
 		pointerNDC = new THREE.Vector2();
 		renderer.domElement.addEventListener( 'pointerdown', onClick );
+
+		// grounding: solid matte (Lambert) meshes cast shadows; the emissive
+		// "lights" (MeshBasic), sky, sprites, points and the ground itself
+		// don't. One traverse now that the whole world is built.
+		scene.traverse( function ( o ) {
+			if ( ! o.isMesh || o.userData.noCast ) return;
+			if ( o.material && o.material.isMeshLambertMaterial ) {
+				o.castShadow = true;
+				o.receiveShadow = true;
+			}
+		} );
+		buggyGroup.traverse( function ( o ) { if ( o.isMesh ) o.castShadow = true; } );
 
 		updateHud();
 		stage.focus();
@@ -1071,6 +1106,14 @@
 		}
 
 		if ( skyGroup ) skyGroup.position.copy( camera.position ); // sky rides with us
+
+		// the shadow frustum tracks the buggy, keeping the light direction
+		// constant (position − target is a fixed vector)
+		if ( moonLight ) {
+			moonTarget.position.set( rx, worldY, rz );
+			moonTarget.updateMatrixWorld();
+			moonLight.position.set( rx - 700, worldY + 1000, rz - 600 );
+		}
 
 		renderer.render( scene, camera );
 	}
