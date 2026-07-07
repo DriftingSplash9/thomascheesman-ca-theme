@@ -18,6 +18,14 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * SECTION ROAD P3 — ROUGH GROUND (ref: a real MX track): the four
+ * corners now BANK — a raised outer shoulder (bermAt) baked into the
+ * ground mesh and ridden by the buggy, a low lip on the straights
+ * rising to a tall berm wall through the turns. The straights fill
+ * with rhythm: a double off the start, climbing tabletops east/west/
+ * south, and a whoop (washboard) section down the north straight —
+ * all generated onto MOUNDS at boot by generateTrackJumps().
+ *
  * SECTION ROAD P2 — MOTOCROSS: the ring rebuilt wider (128) with
  * corners that bulge away from the fence like berms; a double after
  * the start line, whoop section on the north straight, tabletops on
@@ -238,23 +246,36 @@
 		{ x: 2620, z: 985, ri: 110, ro: 220 } // pig pen + mud pit
 	];
 	// Tabletop mounds ON the roads — smooth launches that scale with speed.
+	// The section-road rhythm sections + whoops are generated onto this array
+	// at boot by generateTrackJumps(); these three are the farm-road jumps.
 	var MOUNDS = [
 		{ x: 2695, z: 1724, a: 32, r: 72 },
 		{ x: 2205, z: 788, a: 28, r: 70 },
-		{ x: 3325, z: 2100, a: 34, r: 86 },
-		// motocross furniture on the section road: a double out of the
-		// start line, whoops down the north straight, tabletops elsewhere
-		{ x: 2700, z: 2690, a: 18, r: 62 },
-		{ x: 2950, z: 2690, a: 18, r: 62 },
-		{ x: 4650, z: 1600, a: 26, r: 90 },
-		{ x: 4650, z: 900, a: 14, r: 56 },
-		{ x: 3300, z: -170, a: 9, r: 46 },
-		{ x: 3150, z: -170, a: 9, r: 46 },
-		{ x: 3000, z: -170, a: 9, r: 46 },
-		{ x: 2850, z: -170, a: 9, r: 46 },
-		{ x: 1400, z: -170, a: 24, r: 85 },
-		{ x: -170, z: 1000, a: 22, r: 80 }
+		{ x: 3325, z: 2100, a: 34, r: 86 }
 	];
+	var trackJumpsBuilt = false;
+	// A proper motocross build for the section road (reference: a real MX
+	// track — bermed corners, rhythm doubles, tabletops, a whoop section):
+	// rhythm along the straights + a washboard run on the north straight.
+	function generateTrackJumps() {
+		if ( trackJumpsBuilt ) return;
+		trackJumpsBuilt = true;
+		var J = [];
+		// SOUTH straight (the start): a double just past the line, then two
+		// climbing tabletops before the east berm
+		J.push( { x: 2760, z: 2690, a: 20, r: 64 }, { x: 2985, z: 2690, a: 20, r: 64 } );
+		J.push( { x: 3450, z: 2690, a: 30, r: 90 }, { x: 3900, z: 2690, a: 26, r: 82 } );
+		// EAST straight: big rhythm tabletops
+		var ez;
+		for ( ez = 1850; ez >= 700; ez -= 384 ) J.push( { x: 4650, z: ez, a: 30, r: 88 } );
+		// NORTH straight: a WHOOP section — a run of tight washboard bumps
+		var nx;
+		for ( nx = 3550; nx >= 1050; nx -= 178 ) J.push( { x: nx, z: -170, a: 15, r: 47 } );
+		// WEST straight: a step-up then climbing tabletops
+		var wz;
+		for ( wz = 1850; wz >= 700; wz -= 384 ) J.push( { x: -170, z: wz, a: 28, r: 84 } );
+		for ( var i = 0; i < J.length; i++ ) MOUNDS.push( J[ i ] );
+	}
 	// Kicker ramps — a steepening face that ends in a lip. The launch is
 	// terrain-honest (vertical speed = climb rate at the lip), so speed
 	// matters: hit them flat-out, hit them boosted.
@@ -359,10 +380,49 @@
 		}
 		return y;
 	}
+	// Banked corners: a raised shoulder on the OUTER edge of the section
+	// road — a low lip on the straights, a tall berm wall through the four
+	// corners. The buggy rides the bank (heightAt), and the ground mesh
+	// shows it (displaced at boot). nearTrack() early-outs everything inside
+	// the fence so the 25-segment scan only runs out on the ring.
+	var BERM = { w: 108, max: 42, straightMax: 8, cr: 780 };
+	var CORNERS = [
+		{ x: 4740, z: 2440 }, { x: 4740, z: 80 },
+		{ x: -260, z: 80 }, { x: -260, z: 2440 }
+	];
+	function nearTrack( x, z ) {
+		return ! ( x > 90 && x < W - 90 && z > 90 && z < H - 90 );
+	}
+	function bermAt( x, z ) {
+		if ( ! nearTrack( x, z ) ) return 0;
+		var best = 1e9, cx = 0, cz = 0;
+		for ( var i = 0; i < TRACK.length - 1; i++ ) {
+			var a = TRACK[ i ], b = TRACK[ i + 1 ];
+			var abx = b.x - a.x, abz = b.y - a.y;
+			var t = ( ( x - a.x ) * abx + ( z - a.y ) * abz ) / ( abx * abx + abz * abz );
+			t = t < 0 ? 0 : ( t > 1 ? 1 : t );
+			var px = a.x + abx * t, pz = a.y + abz * t;
+			var d = Math.hypot( x - px, z - pz );
+			if ( d < best ) { best = d; cx = px; cz = pz; }
+		}
+		var ex = best - TRACK_W / 2; // how far outside the racing surface
+		if ( ex <= 0 || ex >= BERM.w ) return 0;
+		// outer side only (farther from the farm centre than the racing line)
+		if ( ( x - cx ) * ( cx - W / 2 ) + ( z - cz ) * ( cz - H / 2 ) <= 0 ) return 0;
+		var cf = BERM.straightMax / BERM.max;
+		for ( var k = 0; k < CORNERS.length; k++ ) {
+			var cd = Math.hypot( x - CORNERS[ k ].x, z - CORNERS[ k ].z );
+			if ( cd < BERM.cr ) cf = Math.max( cf, 1 - cd / BERM.cr );
+		}
+		var f = ex / BERM.w;
+		f = f < 0.62 ? f / 0.62 : 1; // climb to the crest, then hold as a wall
+		f = f * f * ( 3 - 2 * f );
+		return BERM.max * cf * f;
+	}
 	function heightAt( x, z ) {
 		var y = hillsAt( x, z );
 		for ( var i = 0; i < MOUNDS.length; i++ ) y += gauss( x, z, MOUNDS[ i ] );
-		return y + rampAt( x, z );
+		return y + rampAt( x, z ) + bermAt( x, z );
 	}
 	function slopeAt( x, z ) {
 		return {
@@ -383,6 +443,9 @@
 		Matter = window.Matter;
 		var THREE = window.THREE;
 		isFamily = !! ( window.tcVentures && Number( window.tcVentures.bqFamily ) );
+		generateTrackJumps(); // populate MOUNDS with the section-road rhythm
+
+
 
 		// fresh mail: the mailbox prompt + flag follow the ledger
 		if ( Number( ledgerData().mailNew ) ) {
@@ -428,7 +491,7 @@
 		var tCore = TRACK_W / 2, tFeather = TRACK_W / 2 + 16;
 		for ( var vi = 0; vi < pos.count; vi++ ) {
 			var vx = pos.getX( vi ), vz = pos.getZ( vi );
-			var vy = hillsAt( vx, vz );
+			var vy = hillsAt( vx, vz ) + bermAt( vx, vz );
 			pos.setY( vi, vy );
 			var dR = 1e9;
 			for ( var pi = 0; pi < PATHS.length; pi++ ) {
