@@ -1028,8 +1028,8 @@
 		var fwdSlope = gsl.x * cosA + gsl.z * sinA;        // rise along heading
 		var latSlope = gsl.x * -sinA + gsl.z * cosA;       // rise across (to the left)
 		var af = airborne ? 0 : 1;                          // aloft, airPitch owns the pose
-		var tRoll = af * ( Math.atan( latSlope ) * -1.0     // sit on the ground camber
-			+ steerVal * 0.17 * Math.min( 1, sp / 4 ) );    // + lean out of the turn
+		var tRoll = af * ( Math.atan( latSlope ) * 1.0      // sit on the ground camber
+			+ steerVal * -0.17 * Math.min( 1, sp / 4 ) );   // + lean OUT of the turn (flipped)
 		var tPitch = af * ( Math.atan( fwdSlope )           // nose up the hill / jump face
 			+ throttleInput * 0.06 );                       // + squat on gas / dive on brake
 		tRoll = Math.max( -0.55, Math.min( 0.55, tRoll ) );
@@ -1152,13 +1152,41 @@
 	 *  Playground systems
 	 * ------------------------------------------------------------------ */
 	function buildMounds( THREE ) {
-		var dirt = new THREE.MeshLambertMaterial( { color: 0x4a3826 } );
+		// Each mound is meshed as the ACTUAL launch surface the buggy rides
+		// (same gaussian as heightAt) — the old dome poked 35% above it, which
+		// is what made the buggy look like it sank into the hill. Built
+		// non-indexed so computeVertexNormals gives hard facets: sculpted
+		// packed dirt, not a smooth cheese dome. (Real steep-faced ramps are
+		// a later pass; this de-cheeses the placeholder + fixes the sink.)
+		var dirt = new THREE.MeshLambertMaterial( { color: 0x4a3323 } );
 		MOUNDS.forEach( function ( m ) {
-			var dome = new THREE.Mesh( new THREE.SphereGeometry( m.r, 18, 12,
-				0, Math.PI * 2, 0, Math.PI / 2 ), dirt );
-			dome.scale.y = ( m.a / m.r ) * 1.35;
-			dome.position.set( m.x, hillsAt( m.x, m.z ) + 0.2, m.z );
-			scene.add( dome );
+			var RINGS = 5, SEG = 12, maxR = m.r * 1.6, inv = 2 / ( m.r * m.r );
+			function vp( ri, si ) {
+				if ( ri === 0 ) return [ 0, m.a, 0 ];
+				var rr = maxR * ri / RINGS;
+				var hh = m.a * Math.exp( -rr * rr * inv );
+				var ang = si / SEG * Math.PI * 2;
+				return [ Math.cos( ang ) * rr, hh, Math.sin( ang ) * rr ];
+			}
+			var tri = [];
+			function push3( a, b, c ) {
+				tri.push( a[ 0 ], a[ 1 ], a[ 2 ], b[ 0 ], b[ 1 ], b[ 2 ], c[ 0 ], c[ 1 ], c[ 2 ] );
+			}
+			for ( var si = 0; si < SEG; si++ ) {
+				push3( vp( 0, 0 ), vp( 1, si + 1 ), vp( 1, si ) ); // centre fan
+			}
+			for ( var ri = 1; ri < RINGS; ri++ ) {
+				for ( var s2 = 0; s2 < SEG; s2++ ) {
+					push3( vp( ri, s2 ), vp( ri, s2 + 1 ), vp( ri + 1, s2 ) );
+					push3( vp( ri, s2 + 1 ), vp( ri + 1, s2 + 1 ), vp( ri + 1, s2 ) );
+				}
+			}
+			var geo = new THREE.BufferGeometry();
+			geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( tri ), 3 ) );
+			geo.computeVertexNormals(); // non-indexed → flat facets
+			var mesh = new THREE.Mesh( geo, dirt );
+			mesh.position.set( m.x, hillsAt( m.x, m.z ) + 0.1, m.z );
+			scene.add( mesh );
 		} );
 	}
 
