@@ -18,6 +18,14 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * SECTION ROAD P4 — REAL JUMPS: the placeholder gaussian mounds on the
+ * track become proper MX features — shaped dirt with steep take-off
+ * faces, flat decks and landing faces (tabletops), plus a kicker. Each
+ * is symmetric enough to hit fair in either lap direction; roll them or
+ * send them. Physics (jumpAt/jumpProfile) and mesh (buildJumps) share
+ * one profile so the buggy rides exactly what it sees. Whoops stay
+ * rounded. The farm-road RAMPS and the 3 farm mounds are untouched.
+ *
  * DRIVE FEEL — BODY DYNAMICS: the chassis stops being rigid. It leans
  * OUT of corners (roll ∝ steer × speed), squats on the gas / dives on
  * the brake, drops on its suspension when it lands (springs back), and
@@ -281,28 +289,41 @@
 		{ x: 2205, z: 788, a: 28, r: 70 },
 		{ x: 3325, z: 2100, a: 34, r: 86 }
 	];
+	// Real MX jumps on the section road: shaped features with steep takeoff
+	// faces, flat decks and landing faces — not gaussian bumps. Each is
+	// symmetric enough to hit fair in EITHER lap direction. `kind`:
+	//   'table' — up-face → flat deck → down-face (roll it or send it)
+	//   'kick'  — up-face → short steep drop (pure launch)
+	// Profile + physics: jumpProfile()/jumpAt(); mesh: buildJumps().
+	var JUMPS = [];
 	var trackJumpsBuilt = false;
-	// A proper motocross build for the section road (reference: a real MX
-	// track — bermed corners, rhythm doubles, tabletops, a whoop section):
-	// rhythm along the straights + a washboard run on the north straight.
+	function addJump( x, z, dir, kind, o ) {
+		var dl = Math.hypot( dir.x, dir.z ) || 1;
+		var j = { x: x, z: z, kind: kind, w: o.w || 98, h: o.h || 26,
+			up: o.up || 50, flat: o.flat || 32, down: o.down || 30,
+			cx: dir.x / dl, cz: dir.z / dl };
+		j.len = kind === 'table' ? j.up + j.flat + j.down : j.up + j.down;
+		JUMPS.push( j );
+	}
 	function generateTrackJumps() {
 		if ( trackJumpsBuilt ) return;
 		trackJumpsBuilt = true;
-		var J = [];
-		// SOUTH straight (the start): a double just past the line, then two
-		// climbing tabletops before the east berm
-		J.push( { x: 2760, z: 2690, a: 20, r: 64 }, { x: 2985, z: 2690, a: 20, r: 64 } );
-		J.push( { x: 3450, z: 2690, a: 30, r: 90 }, { x: 3900, z: 2690, a: 26, r: 82 } );
-		// EAST straight: big rhythm tabletops
-		var ez;
-		for ( ez = 1850; ez >= 700; ez -= 384 ) J.push( { x: 4650, z: ez, a: 30, r: 88 } );
-		// NORTH straight: a WHOOP section — a run of tight washboard bumps
-		var nx;
-		for ( nx = 3550; nx >= 1050; nx -= 178 ) J.push( { x: nx, z: -170, a: 15, r: 47 } );
-		// WEST straight: a step-up then climbing tabletops
-		var wz;
-		for ( wz = 1850; wz >= 700; wz -= 384 ) J.push( { x: -170, z: wz, a: 28, r: 84 } );
-		for ( var i = 0; i < J.length; i++ ) MOUNDS.push( J[ i ] );
+		var X = { x: 1, z: 0 }, Z = { x: 0, z: 1 };
+		// SOUTH straight past the start line — a rhythm of three tables,
+		// building to a big steep one
+		addJump( 2700, 2690, X, 'table', { h: 24, up: 52, flat: 42, down: 42 } );
+		addJump( 3200, 2690, X, 'table', { h: 30, up: 54, flat: 24, down: 28 } );
+		addJump( 3760, 2690, X, 'table', { h: 36, up: 56, flat: 18, down: 26 } );
+		// EAST straight
+		addJump( 4650, 1820, Z, 'table', { h: 30, up: 54, flat: 22, down: 28 } );
+		addJump( 4650, 1240, Z, 'table', { h: 24, up: 52, flat: 38, down: 40 } );
+		addJump( 4650, 640, Z, 'kick', { h: 34, up: 58, down: 18 } ); // launch before the NE berm
+		// WEST straight
+		addJump( -170, 700, Z, 'table', { h: 30, up: 54, flat: 22, down: 28 } );
+		addJump( -170, 1280, Z, 'table', { h: 26, up: 52, flat: 34, down: 38 } );
+		addJump( -170, 1860, Z, 'table', { h: 36, up: 56, flat: 18, down: 26 } );
+		// NORTH straight: WHOOPS — rounded washboard (small faceted mounds)
+		for ( var nx = 3550; nx >= 1050; nx -= 178 ) MOUNDS.push( { x: nx, z: -170, a: 14, r: 46 } );
 	}
 	// Kicker ramps — a steepening face that ends in a lip. The launch is
 	// terrain-honest (vertical speed = climb rate at the lip), so speed
@@ -448,10 +469,35 @@
 		f = f * f * ( 3 - 2 * f );
 		return BERM.max * cf * f;
 	}
+	// normalized 0..1 height along a jump's axis (t in [0, len])
+	function jumpProfile( j, t ) {
+		if ( t <= 0 || t >= j.len ) return 0;
+		if ( j.kind === 'table' ) {
+			if ( t < j.up ) return Math.pow( t / j.up, 1.5 );               // steep take-off
+			if ( t < j.up + j.flat ) return 1;                              // flat deck
+			return Math.pow( 1 - ( t - j.up - j.flat ) / j.down, 1.4 );     // landing face
+		}
+		if ( t < j.up ) return Math.pow( t / j.up, 1.5 );
+		return 1 - ( t - j.up ) / j.down;                                  // short steep drop
+	}
+	function jumpAt( x, z ) {
+		if ( ! nearTrack( x, z ) ) return 0; // jumps live on the section road
+		var y = 0;
+		for ( var i = 0; i < JUMPS.length; i++ ) {
+			var j = JUMPS[ i ];
+			var dx = x - j.x, dz = z - j.z;
+			var t = dx * j.cx + dz * j.cz + j.len / 2; // (x,z) is the jump's centre
+			if ( t <= 0 || t >= j.len ) continue;
+			var sd = Math.abs( dx * -j.cz + dz * j.cx );
+			if ( sd >= j.w / 2 ) continue;
+			y += j.h * jumpProfile( j, t ) * Math.min( 1, ( j.w / 2 - sd ) / 8 );
+		}
+		return y;
+	}
 	function heightAt( x, z ) {
 		var y = hillsAt( x, z );
 		for ( var i = 0; i < MOUNDS.length; i++ ) y += gauss( x, z, MOUNDS[ i ] );
-		return y + rampAt( x, z ) + bermAt( x, z );
+		return y + rampAt( x, z ) + bermAt( x, z ) + jumpAt( x, z );
 	}
 	function slopeAt( x, z ) {
 		return {
@@ -637,6 +683,7 @@
 		buildPonds( THREE );
 		buildMounds( THREE );
 		buildRamps( THREE );
+		buildJumps( THREE );
 		buildPads( THREE );
 
 		// ---------- physics ----------
@@ -1187,6 +1234,45 @@
 			var mesh = new THREE.Mesh( geo, dirt );
 			mesh.position.set( m.x, hillsAt( m.x, m.z ) + 0.1, m.z );
 			scene.add( mesh );
+		} );
+	}
+
+	// The section-road jumps: shaped dirt features that follow jumpProfile()
+	// exactly (so the buggy rides the surface it sees), faceted like the
+	// mounds, with lit lip markers so the take-off reads at night.
+	function buildJumps( THREE ) {
+		var dirt = new THREE.MeshLambertMaterial( { color: 0x4a3323, side: THREE.DoubleSide } );
+		var lampMat = new THREE.MeshBasicMaterial( { color: 0xffd9a0 } );
+		JUMPS.forEach( function ( j ) {
+			var hw = j.w / 2, N = 20;
+			function pt( sd, t, y ) {
+				var tl = t - j.len / 2;
+				var wx = j.x + j.cx * tl - j.cz * sd;
+				var wz = j.z + j.cz * tl + j.cx * sd;
+				return [ wx, hillsAt( wx, wz ) + y, wz ];
+			}
+			var tris = [];
+			function push3( a, b, c ) { tris.push( a[0],a[1],a[2], b[0],b[1],b[2], c[0],c[1],c[2] ); }
+			function quad( a, b, c, d ) { push3( a, b, c ); push3( a, c, d ); }
+			for ( var k = 0; k < N; k++ ) {
+				var t0 = j.len * k / N, t1 = j.len * ( k + 1 ) / N;
+				var y0 = j.h * jumpProfile( j, t0 ), y1 = j.h * jumpProfile( j, t1 );
+				quad( pt( -hw, t0, y0 ), pt( hw, t0, y0 ), pt( hw, t1, y1 ), pt( -hw, t1, y1 ) ); // deck + faces
+				quad( pt( -hw, t0, 0 ), pt( -hw, t0, y0 ), pt( -hw, t1, y1 ), pt( -hw, t1, 0 ) );  // left wall
+				quad( pt( hw, t0, 0 ), pt( hw, t0, y0 ), pt( hw, t1, y1 ), pt( hw, t1, 0 ) );       // right wall
+			}
+			var geo = new THREE.BufferGeometry();
+			geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( tris ), 3 ) );
+			geo.computeVertexNormals();
+			scene.add( new THREE.Mesh( geo, dirt ) );
+			// lit markers at the take-off lip
+			var lipY = j.h * jumpProfile( j, Math.min( j.len - 0.1, j.up ) ) + 2;
+			[ -1, 1 ].forEach( function ( s ) {
+				var at = pt( s * ( hw - 4 ), j.up, lipY );
+				var lamp = new THREE.Mesh( new THREE.BoxGeometry( 3, 3.5, 3 ), lampMat );
+				lamp.position.set( at[0], at[1], at[2] );
+				scene.add( lamp );
+			} );
 		} );
 	}
 
