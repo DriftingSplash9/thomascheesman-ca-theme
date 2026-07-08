@@ -4,7 +4,7 @@ Description: Custom child theme for TC 'ventures based on Astra
 Author: Thomas Cheesman
 Author URI: https://thomascheesman.ca
 Template: astra
-Version: 1.0.697
+Version: 1.0.698
 Text Domain: tc-ventures-child
 Domain Path: /languages
 */
@@ -718,6 +718,15 @@ body {
 }
 
 /* fullscreen toggle (top-right of the stage) */
+/* ⚠ THE "INVISIBLE BUTTON TEXT" BUG (recurring, Thomas flags it often):
+   JS-created / stage buttons keep showing an empty pill. Root causes seen
+   on this site: (a) Astra's global button rules win the cascade in the
+   LiteSpeed-combined stylesheet and repaint our text dark-on-dark, and
+   (b) gradient-text utilities (background-clip:text) leak
+   -webkit-text-fill-color:transparent onto buttons. Defence: EVERY custom
+   button gets an explicit color AND -webkit-text-fill-color, repeated for
+   the :fullscreen state (fullscreen re-resolves the cascade against the
+   UA's fullscreen stylesheet). Do this on sight for any new button. */
 .bq-fs {
     position: absolute;
     top: 10px;
@@ -728,10 +737,18 @@ body {
     border: 1px solid rgba(34, 211, 238, 0.4);
     background: rgba(5, 10, 8, 0.7);
     color: #eafdff;
+    -webkit-text-fill-color: #eafdff;
     font-size: 0.78rem;
     letter-spacing: 0.02em;
     cursor: pointer;
     transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.bq-stage:fullscreen .bq-fs,
+.bq-stage:-webkit-full-screen .bq-fs {
+    color: #eafdff;
+    -webkit-text-fill-color: #eafdff;
+    opacity: 1;
 }
 .bq-fs:hover,
 .bq-fs:focus-visible {

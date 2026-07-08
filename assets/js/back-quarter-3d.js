@@ -18,6 +18,19 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * SCALE-UP PASS — the world grows into the low camera: chase cam drops
+ * (54 up, looking 14 high — buildings/flags read at real height). The
+ * farmhouse becomes the ESTATE: two storeys, wraparound patio on two
+ * sides, second-floor balcony, garden beds + shrubs (scale 3.0);
+ * cookshack 2.8, shed 2.9, church 2.4, treehouses 2.2 with their
+ * windbreak cleared 150 around them so the kids' houses stand alone.
+ * Windmill 2.5× and moved onto the slough shore; pumpjack 2.5×; flare
+ * stack 25% taller. Flags double with poles set BEHIND the panels.
+ * NW forest doubled + two new hills under it; six big poplars planted.
+ * Prompt ranges now scale with footprint. Fullscreen-button text bug
+ * hardened + documented in style.css (color + -webkit-text-fill-color,
+ * repeated for :fullscreen).
+ *
  * HEARTLAND PASS — gravity up (jumps were too airy), speed-up pads +
  * two inverted dimple swales on the track, six new track tokens, and
  * the token hunt now RESETS at the restack pad. The world grows its
@@ -134,25 +147,25 @@
 	// `scale` grows the mesh AND the Matter footprint together — a building
 	// without one renders at its authored size.
 	var LANDMARKS = [
-		{ id: 'farmhouse', name: 'the farmhouse', x: 1211, y: 588, w: 130, h: 80, scale: 1.6,
+		{ id: 'farmhouse', name: 'the farmhouse', x: 1211, y: 588, w: 130, h: 80, scale: 3.0,
 		  href: '/thomas', build: 'farmhouse', signTo: { x: 1435, y: 700 },
 		  prompt: 'The farmhouse — step inside, this is me' },
-		{ id: 'cookshack', name: 'the cookshack', x: 2240, y: 462, w: 70, h: 50, scale: 1.6,
+		{ id: 'cookshack', name: 'the cookshack', x: 2240, y: 462, w: 70, h: 50, scale: 2.8,
 		  href: '/about', build: 'cookshack', signTo: { x: 2205, y: 578 },
 		  prompt: 'The cookshack — my life on the line' },
 		{ id: 'elevator', name: 'the grain elevator', x: 3136, y: 686, w: 70, h: 70, scale: 1.5,
 		  href: '/hcs', build: 'elevator', signTo: { x: 3045, y: 753 },
 		  prompt: 'The grain elevator — one of fewer than fifty' },
-		{ id: 'church', name: 'the church', x: 693, y: 1302, w: 70, h: 90, scale: 1.6,
+		{ id: 'church', name: 'the church', x: 693, y: 1302, w: 70, h: 90, scale: 2.4,
 		  href: '/heritage', build: 'church', signTo: { x: 875, y: 1383 },
 		  prompt: 'The church on the hill — eight family lines' },
-		{ id: 'th1', name: 'Patience', x: 1435, y: 1036, w: 26, h: 26, scale: 1.75,
+		{ id: 'th1', name: 'Patience', x: 1435, y: 1036, w: 26, h: 26, scale: 2.2,
 		  href: '/patience', build: 'treehouse', kidColor: 0xe86ba7, kidCss: '#ff9ecb',
 		  prompt: 'Patience’s treehouse — the family key opens it' },
-		{ id: 'th2', name: 'Daniel', x: 1631, y: 1281, w: 26, h: 26, scale: 1.75,
+		{ id: 'th2', name: 'Daniel', x: 1631, y: 1281, w: 26, h: 26, scale: 2.2,
 		  href: '/daniel', build: 'treehouse', kidColor: 0x4f9fd8, kidCss: '#8fd0ff',
 		  prompt: 'Daniel’s treehouse — the family key opens it' },
-		{ id: 'th3', name: 'Faith', x: 1873, y: 1505, w: 26, h: 26, scale: 1.75,
+		{ id: 'th3', name: 'Faith', x: 1873, y: 1505, w: 26, h: 26, scale: 2.2,
 		  href: '/faith', build: 'treehouse', kidColor: 0x9a7fd8, kidCss: '#cbb2ff',
 		  prompt: 'Faith’s treehouse — the family key opens it' },
 		{ id: 'radio', name: 'the radio mast', x: 4095, y: 1260, w: 30, h: 30, scale: 1.45,
@@ -161,7 +174,7 @@
 		{ id: 'barn', name: 'the arcade barn', x: 3539, y: 1435, w: 120, h: 80, scale: 1.6,
 		  href: null, build: 'barn', signTo: { x: 3325, y: 1505 },
 		  prompt: 'The arcade barn — the games are moving in here soon' },
-		{ id: 'shed', name: 'the old shed', x: 651, y: 1932, w: 60, h: 44, scale: 1.45,
+		{ id: 'shed', name: 'the old shed', x: 651, y: 1932, w: 60, h: 44, scale: 2.9,
 		  href: null, build: 'shed', signTo: { x: 753, y: 1838 },
 		  prompt: 'The shed is padlocked… but a drawer in the house opens' },
 		{ id: 'mailbox', name: 'the mailbox', x: 2083, y: 2450, w: 10, h: 10,
@@ -266,6 +279,9 @@
 		{ x: 2240, z: 1260, a: 15, r: 900 },
 		{ x: 1085, z: 735, a: 12, r: 700 },
 		{ x: 3500, z: 1925, a: 14, r: 800 },
+		// rolling ground under the doubled northwest forest
+		{ x: 900, z: 350, a: 22, r: 220 },
+		{ x: 350, z: 900, a: 20, r: 200 },
 		// the slough basin — one deep bowl under the big pond
 		{ x: 3730, z: 1000, a: -26, r: 420 },
 		{ x: 3880, z: 1090, a: -14, r: 240 },
@@ -316,12 +332,12 @@
 		{ x: -170, z: 1260 }  // west
 	];
 	var FLAT = [
-		{ x: 1211, z: 588, ri: 160, ro: 315 },
-		{ x: 2240, z: 462, ri: 122, ro: 262 },
+		{ x: 1211, z: 588, ri: 260, ro: 460 },
+		{ x: 2240, z: 462, ri: 170, ro: 340 },
 		{ x: 3136, z: 686, ri: 140, ro: 300 },
-		{ x: 693, z: 1302, ri: 175, ro: 332 },
+		{ x: 693, z: 1302, ri: 230, ro: 400 },
 		{ x: 3539, z: 1435, ri: 158, ro: 315 },
-		{ x: 651, z: 1932, ri: 105, ro: 245 },
+		{ x: 651, z: 1932, ri: 160, ro: 330 },
 		{ x: 4095, z: 1260, ri: 88, ro: 228 },
 		{ x: 2240, z: 2432, ri: 245, ro: 455 },
 		{ x: 1694, z: 1284, ri: 560, ro: 750 },
@@ -786,6 +802,7 @@
 		buildCompound( THREE );
 		buildWindbreak( THREE );
 		buildGrove( THREE );
+		buildPoplars( THREE );
 		buildFence( THREE );
 		buildGateway( THREE );
 		buildTrack( THREE );
@@ -1226,7 +1243,10 @@
 		for ( var p = 0; p < PROMPTS.length; p++ ) {
 			var lm = PROMPTS[ p ];
 			var d = Math.hypot( b.position.x - lm.x, b.position.y - lm.y );
-			var range = ( lm.id === 'familygate' || lm.id === 'restack' ) ? 130 : 180;
+			// big buildings need a bigger trigger — you park at the wall,
+			// which is already ~half the footprint from the centre
+			var range = ( lm.id === 'familygate' || lm.id === 'restack' ) ? 130
+				: ( lm.w ? Math.max( 180, Math.max( lm.w, lm.h ) * ( lm.scale || 1 ) / 2 + 60 ) : 180 );
 			if ( d < range && d < nearD ) { near = lm; nearD = d; }
 		}
 		if ( near !== nearLandmark ) {
@@ -1237,14 +1257,15 @@
 			}
 		}
 
-		// chase camera
+		// chase camera — LOW pov: closer to the hood, looking slightly up
+		// the world so buildings/flags/jumps read at their real height
 		var hx = Math.cos( ra ), hy = Math.sin( ra );
-		var tx = rx - hx * 150, tz = rz - hy * 150;
+		var tx = rx - hx * 158, tz = rz - hy * 158;
 		camPos.x += ( tx - camPos.x ) * 0.06;
 		camPos.z += ( tz - camPos.z ) * 0.06;
-		camPos.y += ( ( worldY + 76 + sp * 3 ) - camPos.y ) * 0.06;
+		camPos.y += ( ( worldY + 54 + sp * 2.5 ) - camPos.y ) * 0.06;
 		camera.position.copy( camPos );
-		camera.lookAt( rx + hx * 48, worldY + 6, rz + hy * 48 );
+		camera.lookAt( rx + hx * 62, worldY + 14, rz + hy * 62 );
 		var wantFov = boostT > 0 ? 63 : baseFov;
 		if ( Math.abs( camera.fov - wantFov ) > 0.1 ) {
 			camera.fov += ( wantFov - camera.fov ) * 0.1;
@@ -1676,20 +1697,21 @@
 			face.position.set( 0, 66, 2 );
 			g.add( face );
 
-			// the old-country flags fly on poles above the sign
+			// the old-country flags fly on poles above the sign — big, and
+			// set back behind the panel so the frame never crops them
 			var fl = line.flags || [];
 			fl.forEach( function ( code, fi ) {
-				var fx = fl.length === 1 ? 0 : ( fi === 0 ? -30 : 30 );
-				var pole = new THREE.Mesh( new THREE.CylinderGeometry( 0.9, 0.9, 26, 5 ), wood );
-				pole.position.set( fx, 112, 0 );
+				var fx = fl.length === 1 ? 0 : ( fi === 0 ? -34 : 34 );
+				var pole = new THREE.Mesh( new THREE.CylinderGeometry( 1.1, 1.1, 34, 5 ), wood );
+				pole.position.set( fx, 116, -4 );
 				g.add( pole );
 				var flag = new THREE.Mesh(
-					new THREE.PlaneGeometry( 15, 10 ),
+					new THREE.PlaneGeometry( 26, 17 ),
 					new THREE.MeshBasicMaterial( {
 						map: flagTexture( THREE, code ), side: THREE.DoubleSide
 					} )
 				);
-				flag.position.set( fx + 8.4, 119.5, 0 );
+				flag.position.set( fx + 14, 124, -4 );
 				g.add( flag );
 			} );
 
@@ -1928,32 +1950,100 @@
 	 *  The buildings
 	 * ------------------------------------------------------------------ */
 	function buildFarmhouse( THREE, lm ) {
+		// the estate build: two storeys, patio wrapping the front + east
+		// sides, a second-floor balcony, garden beds behind, shrubs all
+		// around. Everything local — the group scales as one.
 		var g = new THREE.Group();
-		var walls = new THREE.Mesh( new THREE.BoxGeometry( 110, 34, 64 ), mat( THREE, 0x4a3a2c ) );
-		walls.position.y = 17;
+		var wallMat = mat( THREE, 0x4a3a2c );
+		var trimMat = mat( THREE, 0x3a2e22 );
+		var walls = new THREE.Mesh( new THREE.BoxGeometry( 110, 30, 64 ), wallMat );
+		walls.position.y = 15;
 		g.add( walls );
-		var roof = gableRoof( THREE, 118, 40, 0x2b2119 );
-		roof.position.y = 44;
+		var upper = new THREE.Mesh( new THREE.BoxGeometry( 92, 22, 52 ), wallMat );
+		upper.position.set( -6, 41, -3 );
+		g.add( upper );
+		var roof = gableRoof( THREE, 100, 32, 0x2b2119 );
+		roof.position.set( -6, 56, -3 );
 		g.add( roof );
-		var porch = new THREE.Mesh( new THREE.BoxGeometry( 60, 3, 20 ), mat( THREE, 0x3a2e22 ) );
-		porch.position.set( 0, 1.5, 42 );
-		g.add( porch );
-		var awning = new THREE.Mesh( new THREE.BoxGeometry( 60, 2, 22 ), mat( THREE, 0x2b2119 ) );
-		awning.position.set( 0, 26, 42 );
-		g.add( awning );
-		[ -24, 24 ].forEach( function ( px ) {
-			var post = new THREE.Mesh( new THREE.BoxGeometry( 3, 24, 3 ), mat( THREE, 0x3a2e22 ) );
-			post.position.set( px, 13, 50 );
+		var chim = new THREE.Mesh( new THREE.BoxGeometry( 8, 30, 8 ), mat( THREE, 0x59493c ) );
+		chim.position.set( 22, 62, -10 );
+		g.add( chim );
+
+		// patio running two sides (front + east), posts and rails
+		var patioF = new THREE.Mesh( new THREE.BoxGeometry( 126, 3, 22 ), trimMat );
+		patioF.position.set( 4, 1.5, 43 );
+		g.add( patioF );
+		var patioE = new THREE.Mesh( new THREE.BoxGeometry( 22, 3, 96 ), trimMat );
+		patioE.position.set( 66, 1.5, 6 );
+		g.add( patioE );
+		[ -54, -27, 0, 27, 54 ].forEach( function ( px ) {
+			var post = new THREE.Mesh( new THREE.BoxGeometry( 2.6, 12, 2.6 ), trimMat );
+			post.position.set( px + 4, 9, 52 );
 			g.add( post );
 		} );
-		var chim = new THREE.Mesh( new THREE.BoxGeometry( 8, 26, 8 ), mat( THREE, 0x59493c ) );
-		chim.position.set( 34, 58, -8 );
-		g.add( chim );
-		addWindow( THREE, g, 12, 10, -30, 18, 32.2 );
-		addWindow( THREE, g, 12, 10, 0, 18, 32.2 );
-		addWindow( THREE, g, 12, 10, 30, 18, 32.2 );
-		addWindow( THREE, g, 10, 9, 55.2, 18, 0, Math.PI / 2 );
-		addGlowDisc( THREE, lm.x, lm.y + 77, 80, 0.10 ); // porch pool, 1.6× out
+		[ -36, -6, 24, 50 ].forEach( function ( pz ) {
+			var post = new THREE.Mesh( new THREE.BoxGeometry( 2.6, 12, 2.6 ), trimMat );
+			post.position.set( 75, 9, pz );
+			g.add( post );
+		} );
+		var railF = new THREE.Mesh( new THREE.BoxGeometry( 126, 1.6, 1.6 ), trimMat );
+		railF.position.set( 4, 14, 52 );
+		g.add( railF );
+		var railE = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 1.6, 96 ), trimMat );
+		railE.position.set( 75, 14, 6 );
+		g.add( railE );
+
+		// the balcony off the second floor
+		var balc = new THREE.Mesh( new THREE.BoxGeometry( 44, 2.5, 14 ), trimMat );
+		balc.position.set( -6, 31.5, 29 );
+		g.add( balc );
+		var balcRail = new THREE.Mesh( new THREE.BoxGeometry( 44, 1.4, 1.4 ), trimMat );
+		balcRail.position.set( -6, 39, 35.6 );
+		g.add( balcRail );
+		[ -26, -6, 14 ].forEach( function ( px ) {
+			var bp = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 8, 1.6 ), trimMat );
+			bp.position.set( px, 35, 35.6 );
+			g.add( bp );
+		} );
+		var balcDoor = new THREE.Mesh( new THREE.PlaneGeometry( 9, 13 ), mat( THREE, 0x171310 ) );
+		balcDoor.position.set( -6, 37.5, 23.2 );
+		g.add( balcDoor );
+
+		// door + windows, both floors + east gable
+		var door = new THREE.Mesh( new THREE.PlaneGeometry( 10, 16 ), mat( THREE, 0x171310 ) );
+		door.position.set( 24, 8, 32.2 );
+		g.add( door );
+		addWindow( THREE, g, 12, 10, -34, 17, 32.2 );
+		addWindow( THREE, g, 12, 10, -4, 17, 32.2 );
+		addWindow( THREE, g, 12, 10, 44, 17, 32.2 );
+		addWindow( THREE, g, 10, 9, -34, 43, 23.4 );
+		addWindow( THREE, g, 10, 9, 22, 43, 23.4 );
+		addWindow( THREE, g, 10, 9, 55.2, 17, 0, Math.PI / 2 );
+		addWindow( THREE, g, 9, 8, 40.2, 43, -3, Math.PI / 2 );
+
+		// the big garden out back: tilled rows + greens
+		var soilMat = mat( THREE, 0x33261a );
+		var greenMat = mat( THREE, 0x2f4a2a );
+		for ( var row = 0; row < 3; row++ ) {
+			var bed = new THREE.Mesh( new THREE.BoxGeometry( 84, 2, 7 ), soilMat );
+			bed.position.set( -8, 1, -44 - row * 11 );
+			g.add( bed );
+			for ( var vi2 = 0; vi2 < 7; vi2++ ) {
+				var veg = new THREE.Mesh( new THREE.SphereGeometry( 2.4, 6, 5 ), greenMat );
+				veg.position.set( -44 + vi2 * 12 + ( Math.random() - 0.5 ) * 3, 3.4, -44 - row * 11 );
+				g.add( veg );
+			}
+		}
+		// shrubs hugging the walls
+		[ [ -60, 38 ], [ -62, 8 ], [ -60, -26 ], [ 34, 52 ], [ 8, 54 ],
+		  [ 62, -38 ], [ 28, -40 ], [ -22, -40 ] ].forEach( function ( s ) {
+			var shrub = new THREE.Mesh( new THREE.SphereGeometry( 3 + Math.random() * 1.6, 6, 5 ),
+				mat( THREE, 0x263f24 ) );
+			shrub.position.set( s[ 0 ], 3, s[ 1 ] );
+			g.add( shrub );
+		} );
+
+		addGlowDisc( THREE, lm.x + 30, lm.y + 145, 130, 0.10 ); // porch pool
 		return g;
 	}
 
@@ -1970,7 +2060,7 @@
 		g.add( chim );
 		addWindow( THREE, g, 24, 12, 0, 14, 20.2 );
 		addWindow( THREE, g, 9, 9, -28.2, 13, 0, -Math.PI / 2 );
-		addGlowDisc( THREE, lm.x, lm.y + 51, 62, 0.10 );
+		addGlowDisc( THREE, lm.x, lm.y + 90, 95, 0.10 );
 		return g;
 	}
 
@@ -2016,7 +2106,7 @@
 		addWindow( THREE, g, 8, 14, -23.2, 24, 0, -Math.PI / 2 );
 		addWindow( THREE, g, 8, 14, 23.2, 24, 0, Math.PI / 2 );
 		addWindow( THREE, g, 10, 16, 0, 24, 75.2 );
-		addGlowDisc( THREE, lm.x, lm.y + 83, 70, 0.10 );
+		addGlowDisc( THREE, lm.x, lm.y + 125, 105, 0.10 );
 		return g;
 	}
 
@@ -2619,15 +2709,16 @@
 			windmillBlades.add( arm );
 		}
 		g.add( windmillBlades );
-		var lm = { id: 'windmill', name: 'the windmill', x: 3350, y: 780, href: '/lakemans',
+		var lm = { id: 'windmill', name: 'the windmill', x: 3480, y: 870, href: '/lakemans',
 			prompt: 'The windmill — the Dutch lines still turn in the wind' };
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
 		g.rotation.y = -0.5; // sails face the slough
+		g.scale.set( 2.5, 2.5, 2.5 ); // a proper mill, right on the shore
 		g.userData.lm = lm;
 		scene.add( g );
 		clickables.push( g );
 		PROMPTS.push( lm );
-		Matter.Composite.add( engine.world, Matter.Bodies.circle( lm.x, lm.y, 17, { isStatic: true } ) );
+		Matter.Composite.add( engine.world, Matter.Bodies.circle( lm.x, lm.y, 42, { isStatic: true } ) );
 
 		// tulip rows beside the mill — red, yellow, pink
 		var rows = [ 0xc8321e, 0xe8b93a, 0xd86f9a ];
@@ -2642,8 +2733,8 @@
 		var ti = 0;
 		rows.forEach( function ( rc, ri ) {
 			for ( var cix = 0; cix < COLS; cix++ ) {
-				var tx = 3282 + cix * 11 + ( Math.random() - 0.5 ) * 5;
-				var tz = 838 + ri * 14 + ( Math.random() - 0.5 ) * 5;
+				var tx = 3336 + cix * 12 + ( Math.random() - 0.5 ) * 5;
+				var tz = 752 + ri * 15 + ( Math.random() - 0.5 ) * 5;
 				var ty = hillsAt( tx, tz );
 				dummy.position.set( tx, ty + 3.5, tz );
 				dummy.updateMatrix();
@@ -2775,27 +2866,28 @@
 			prompt: 'The pumpjack — the oilpatch kept the lights on' };
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
 		g.rotation.y = 0.4;
+		g.scale.set( 2.5, 2.5, 2.5 ); // a proper oilfield unit
 		g.userData.lm = lm;
 		scene.add( g );
 		clickables.push( g );
 		PROMPTS.push( lm );
 		Matter.Composite.add( engine.world,
-			Matter.Bodies.rectangle( lm.x, lm.y, 34, 18, { isStatic: true } ) );
+			Matter.Bodies.rectangle( lm.x, lm.y, 85, 45, { isStatic: true } ) );
 
-		// flare stack, always burning
-		var fx = 3862, fz = 2252;
+		// flare stack, always burning — taller, seen across the quarter
+		var fx = 3888, fz = 2238;
 		var fy = hillsAt( fx, fz );
-		var stack = new THREE.Mesh( new THREE.CylinderGeometry( 1.8, 2.4, 55, 7 ), black );
-		stack.position.set( fx, fy + 27.5, fz );
+		var stack = new THREE.Mesh( new THREE.CylinderGeometry( 1.8, 2.6, 69, 7 ), black );
+		stack.position.set( fx, fy + 34.5, fz );
 		scene.add( stack );
-		flareFlame = new THREE.Mesh( new THREE.ConeGeometry( 4, 13, 6 ),
+		flareFlame = new THREE.Mesh( new THREE.ConeGeometry( 4.5, 15, 6 ),
 			new THREE.MeshBasicMaterial( { color: 0xffa03a, transparent: true, opacity: 0.9 } ) );
-		flareFlame.position.set( fx, fy + 61, fz );
+		flareFlame.position.set( fx, fy + 76, fz );
 		scene.add( flareFlame );
-		flareLight = new THREE.PointLight( 0xff8c3a, 0.7, 340 );
-		flareLight.position.set( fx, fy + 60, fz );
+		flareLight = new THREE.PointLight( 0xff8c3a, 0.7, 380 );
+		flareLight.position.set( fx, fy + 74, fz );
 		scene.add( flareLight );
-		Matter.Composite.add( engine.world, Matter.Bodies.circle( fx, fz, 4, { isStatic: true } ) );
+		Matter.Composite.add( engine.world, Matter.Bodies.circle( fx, fz, 5, { isStatic: true } ) );
 	}
 
 	function updateScenery( dms, t ) {
@@ -2813,10 +2905,18 @@
 	function buildWindbreak( THREE ) {
 		var trunkMat = mat( THREE, 0x2c2418 );
 		var leafMat = mat( THREE, 0x1d3a26 );
+		// keep clear of the treehouses — the kids' houses were getting lost
+		// in the windbreak; their own (bigger) trees carry them now
+		var TH = [ [ 1435, 1036 ], [ 1631, 1281 ], [ 1873, 1505 ] ];
 		for ( var i = 0; i < 14; i++ ) {
 			var f = i / 13;
 			var x = 1383 + f * 615 + ( Math.random() - 0.5 ) * 40;
 			var z = 980 + f * 595 + ( Math.random() - 0.5 ) * 40;
+			var nearTh = false;
+			for ( var thi = 0; thi < 3; thi++ ) {
+				if ( Math.hypot( x - TH[ thi ][ 0 ], z - TH[ thi ][ 1 ] ) < 150 ) { nearTh = true; break; }
+			}
+			if ( nearTh ) continue;
 			var gy = hillsAt( x, z );
 			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 4.2, 6, 28, 6 ), trunkMat );
 			trunk.position.set( x, gy + 14, z );
@@ -2830,33 +2930,56 @@
 	}
 
 	function buildGrove( THREE ) {
-		// wind-rows: a dense shelterbelt grove packed into the northwest
-		// corner — tight enough to weave a buggy through, barely
+		// wind-rows: the northwest forest, DOUBLED — rolling over its own
+		// hills, still weavable at speed if you're brave
 		var trunkMat = mat( THREE, 0x2c2418 );
 		var leafMat = mat( THREE, 0x22422c );
 		var spots = [], guard = 0;
-		while ( spots.length < 40 && guard++ < 500 ) {
-			var x = 130 + Math.random() * 500;
-			var z = 150 + Math.random() * 500;
-			if ( ( x - 130 ) + ( z - 150 ) > 860 ) continue; // hug the corner
+		while ( spots.length < 90 && guard++ < 1200 ) {
+			var x = 130 + Math.random() * 1000;
+			var z = 150 + Math.random() * 1000;
+			if ( ( x - 130 ) + ( z - 150 ) > 1700 ) continue; // hug the corner
 			if ( Math.hypot( x - 350, z - 350 ) < 32 ) continue; // token clearing
 			if ( Math.hypot( x - 130, z - 800 ) < 150 ) continue; // Rycroft screen approach
+			if ( Math.hypot( x - 1211, z - 588 ) < 400 ) continue; // the farmhouse yard
 			var ok = true;
 			for ( var i = 0; i < spots.length; i++ ) {
-				if ( Math.hypot( x - spots[ i ].x, z - spots[ i ].z ) < 46 ) { ok = false; break; }
+				if ( Math.hypot( x - spots[ i ].x, z - spots[ i ].z ) < 48 ) { ok = false; break; }
 			}
 			if ( ! ok ) continue;
 			spots.push( { x: x, z: z } );
 			var gy = hillsAt( x, z );
-			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 3.6, 5.2, 24, 6 ), trunkMat );
-			trunk.position.set( x, gy + 12, z );
+			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 4, 5.8, 30, 6 ), trunkMat );
+			trunk.position.set( x, gy + 15, z );
 			scene.add( trunk );
-			var h = 55 + Math.random() * 55;
-			var cone = new THREE.Mesh( new THREE.ConeGeometry( 14 + Math.random() * 8, h, 7 ), leafMat );
-			cone.position.set( x, gy + 24 + h / 2, z );
+			var h = 70 + Math.random() * 60;
+			var cone = new THREE.Mesh( new THREE.ConeGeometry( 16 + Math.random() * 9, h, 7 ), leafMat );
+			cone.position.set( x, gy + 30 + h / 2, z );
 			scene.add( cone );
 			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 10, { isStatic: true } ) );
 		}
+	}
+
+	function buildPoplars( THREE ) {
+		// a few big prairie poplars — tall columnar canopies you can see
+		// across the quarter
+		var trunkMat = mat( THREE, 0x3a2f20 );
+		var leafMat = mat( THREE, 0x2a4a30 );
+		[ [ 950, 430 ], [ 2550, 330 ], [ 2950, 1620 ],
+		  [ 1150, 1900 ], [ 4000, 1500 ], [ 600, 2350 ] ].forEach( function ( p ) {
+			var x = p[ 0 ], z = p[ 1 ];
+			if ( ! farFromRoads( x, z, 70 ) || ! farFromLandmarks( x, z, 220 ) ||
+			     inPond( x, z ) || inCompound( x, z, 40 ) ) return;
+			var gy = hillsAt( x, z );
+			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 2.6, 3.6, 44, 6 ), trunkMat );
+			trunk.position.set( x, gy + 22, z );
+			scene.add( trunk );
+			var canopy = new THREE.Mesh( new THREE.SphereGeometry( 12, 8, 8 ), leafMat );
+			canopy.scale.set( 1, 3.4, 1 );
+			canopy.position.set( x, gy + 44 + 34, z );
+			scene.add( canopy );
+			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 8, { isStatic: true } ) );
+		} );
 	}
 
 	function fenceRun( THREE, x0, z0, x1, z1 ) {
@@ -3199,7 +3322,7 @@
 			var x = 350 + Math.random() * ( W - 700 );
 			var z = 260 + Math.random() * ( H - 520 );
 			if ( Math.hypot( x - SPAWN.x, z - SPAWN.y ) < 160 ) continue;
-			if ( ! farFromLandmarks( x, z, 170 ) || inCompound( x, z, 30 ) || ! farFromRoads( x, z, 60 ) || inPond( x, z ) ) continue;
+			if ( ! farFromLandmarks( x, z, 260 ) || inCompound( x, z, 30 ) || ! farFromRoads( x, z, 60 ) || inPond( x, z ) ) continue;
 			addBale( THREE, x, z );
 			placed++;
 		}
@@ -3320,9 +3443,10 @@
 
 	function initSmoke( THREE ) {
 		var tex = makePuffTexture( THREE, 186, 188, 198 );
-		// chimney tops moved with the 1.6× building scale
-		[ { x: 1265, y: hillsAt( 1211, 588 ) + 114, z: 575 },
-		  { x: 2269, y: hillsAt( 2240, 462 ) + 85, z: 472 } ].forEach( function ( at ) {
+		// chimney tops: farmhouse local (22, 77, -10) × 3.0, cookshack
+		// local (18, 52, 6) × 2.8 — move these when a chimney moves
+		[ { x: 1277, y: hillsAt( 1211, 588 ) + 231, z: 558 },
+		  { x: 2290, y: hillsAt( 2240, 462 ) + 146, z: 479 } ].forEach( function ( at ) {
 			var em = { at: at, parts: [], timer: Math.random() * 600 };
 			for ( var i = 0; i < 7; i++ ) {
 				var spr = new THREE.Sprite( new THREE.SpriteMaterial( {
