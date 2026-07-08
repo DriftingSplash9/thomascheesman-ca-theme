@@ -18,6 +18,15 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * FEEL + FARM SHUFFLE: gravity +15% again (476); BIG AIR pays turbo on
+ * any clean landing over 0.85s aloft (scales with hang-time, caps at
+ * 1300ms). Corner light towers moved OUTSIDE the ring, tripled in
+ * height with double-size heads + longer-throw lamps. The chicken coop
+ * moves to the empty NE corner at 2× (the corner token now lives inside
+ * the pen); hens +5%, and the first bird out is a BLACK ROOSTER (tail
+ * fan, tall comb). The old circular blob shadow under the buggy is gone
+ * — the real moonlight shadow does the grounding.
+ *
  * DAY/NIGHT + TRUE POSE: an 8-minute Minecraft-style day cycle (starts
  * at dusk) — one factor drives sky colours, fog, light intensities,
  * stars, and a sun/moon riding opposite ends of the arc; night is
@@ -313,9 +322,9 @@
 		if ( dx * dx + dz * dz > 108900 ) return false; // beyond the widest lobe
 		return Math.hypot( dx, dz ) < pondR( Math.atan2( dz, dx ) ) - 3;
 	}
-	// the barnyard: chicken coop by the farmhouse, pig pen with a mud pit
-	// on the hillside east of the north road
-	var COOP = { x: 1390, z: 800 };
+	// the barnyard: chicken coop filling the empty northeast corner, pig
+	// pen with a mud pit on the hillside east of the north road
+	var COOP = { x: 4130, z: 330 };
 	var PIGPEN = { x: 2640, z: 985 };
 	var MUD = { x: 2545, z: 985, r: 60 };
 
@@ -354,7 +363,7 @@
 		{ x: 1694, z: 1284, ri: 560, ro: 750 },
 		{ x: 3850, z: 1802, ri: 88, ro: 210 },
 		{ x: 2730, z: 630, ri: 70, ro: 160 }, // the old pull-off (tractor spawn)
-		{ x: 1395, z: 805, ri: 70, ro: 150 }, // chicken coop yard
+		{ x: 4135, z: 335, ri: 100, ro: 210 }, // chicken coop yard (NE corner)
 		{ x: 2620, z: 985, ri: 110, ro: 220 } // pig pen + mud pit
 	];
 	// Tabletop mounds ON the roads — smooth launches that scale with speed.
@@ -449,7 +458,7 @@
 	var stage, hudEl, chipEl;
 	var renderer, scene, camera, clock;
 	var Matter, engine, buggyBody;
-	var buggyGroup, chassisGroup, wheels = [], blobShadow;
+	var buggyGroup, chassisGroup, wheels = [];
 	var bales = [];
 	var stacks = [];
 	var restackPad = { x: 3850, z: 1802, r: 40, holdMS: 0 };
@@ -465,6 +474,7 @@
 	var tokens = [], tokenCount = 0, tokenFound = 0;
 	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0, climb = 0, chassisDip = 0;
 	var groupPitchS = 0, groupRollS = 0; // smoothed whole-buggy terrain alignment
+	var airTime = 0; // seconds aloft — big air pays boost on the landing
 	var airPitch = 0, jumpCooldown = 0;
 	var boostT = 0, padCooldown = [];
 	var inWater = false, inMud = false;
@@ -1176,7 +1186,8 @@
 		}
 		if ( airborne ) {
 			worldY += vAlt * dt;
-			vAlt -= ( boostT > 0 ? 380 : 414 ) * dt; // heavier still (+15%)
+			vAlt -= ( boostT > 0 ? 437 : 476 ) * dt; // heavier still (+15% again)
+			airTime += dt;
 			// L/R Shift pitch the buggy for flips
 			var pitchVel = ( keys.tiltF ? -7.5 : 0 ) + ( keys.tiltB ? 7.5 : 0 );
 			airPitch += pitchVel * dt;
@@ -1208,10 +1219,16 @@
 						boostT = 800;
 						flashChip( 'FLIP! — have some boost 🛞' );
 						if ( audio.on ) whoosh();
+					} else if ( airTime > 0.85 ) {
+						// big air pays boost on a clean landing
+						boostT = Math.max( boostT, Math.min( 1300, airTime * 750 ) );
+						flashChip( 'Big air — boost on the landing 🛞' );
+						if ( audio.on ) whoosh();
 					}
 					for ( var ld = 0; ld < 6; ld++ ) spawnDust( wheelWorld( -8 + Math.random() * 16, -12 + Math.random() * 24 ), sp );
 				}
 				airPitch = 0;
+				airTime = 0;
 			}
 		}
 		prevGy = gy;
@@ -1243,9 +1260,8 @@
 		chassisDip += ( 0 - chassisDip ) * 0.2;             // suspension rebound
 		chassisGroup.position.y = 10 + chassisDip;
 		for ( var i = 0; i < wheels.length; i++ ) wheels[ i ].rotation.z -= sp * 0.09;
-		var hover = worldY - gy;
-		blobShadow.position.set( rx, gy + 0.6, rz );
-		blobShadow.material.opacity = Math.max( 0.06, 0.32 - hover * 0.008 );
+		// (the old circular blob shadow is gone — the moonlight's real
+		// shadow does the grounding now)
 
 		for ( var j = 0; j < bales.length; j++ ) {
 			var bl = bales[ j ];
@@ -2573,13 +2589,14 @@
 		plank.rotation.z = -0.28;
 		g.add( plank );
 		g.position.set( COOP.x, hillsAt( COOP.x, COOP.z ), COOP.z );
+		g.scale.set( 2, 2, 2 );
 		scene.add( g );
 		Matter.Composite.add( engine.world,
-			Matter.Bodies.rectangle( COOP.x, COOP.z, 28, 22, { isStatic: true } ) );
+			Matter.Bodies.rectangle( COOP.x, COOP.z, 56, 44, { isStatic: true } ) );
 		// open pen east of the hut (the girls come and go as they please)
-		penRun( THREE, COOP.x + 18, COOP.z - 34, COOP.x + 78, COOP.z - 34 );
-		penRun( THREE, COOP.x + 78, COOP.z - 34, COOP.x + 78, COOP.z + 34 );
-		penRun( THREE, COOP.x + 18, COOP.z + 34, COOP.x + 78, COOP.z + 34 );
+		penRun( THREE, COOP.x + 36, COOP.z - 68, COOP.x + 156, COOP.z - 68 );
+		penRun( THREE, COOP.x + 156, COOP.z - 68, COOP.x + 156, COOP.z + 68 );
+		penRun( THREE, COOP.x + 36, COOP.z + 68, COOP.x + 156, COOP.z + 68 );
 		PROMPTS.push( { id: 'coop', name: 'the chicken coop', x: COOP.x, y: COOP.z, href: null,
 			prompt: 'The coop — mind the girls' } );
 	}
@@ -2587,23 +2604,34 @@
 	function buildChickens( THREE ) {
 		for ( var i = 0; i < 12; i++ ) {
 			var an = Math.random() * Math.PI * 2;
-			var rr = 30 + Math.random() * 95;
-			addChicken( THREE, COOP.x + Math.cos( an ) * rr, COOP.z + Math.sin( an ) * rr );
+			var rr = 40 + Math.random() * 120;
+			// the first one out of the coop is the black rooster
+			addChicken( THREE, COOP.x + Math.cos( an ) * rr, COOP.z + Math.sin( an ) * rr, i === 0 );
 		}
 	}
 
-	function addChicken( THREE, x, z ) {
+	function addChicken( THREE, x, z, rooster ) {
 		var g = new THREE.Group();
-		var feathers = mat( THREE, Math.random() < 0.25 ? 0xb98850 : 0xd8d3c4 );
+		var feathers = mat( THREE, rooster ? 0x1c1815
+			: ( Math.random() < 0.25 ? 0xb98850 : 0xd8d3c4 ) );
 		var body = new THREE.Mesh( new THREE.BoxGeometry( 6, 5, 4.5 ), feathers );
 		body.position.y = 4.5;
 		g.add( body );
 		var head = new THREE.Mesh( new THREE.BoxGeometry( 2.6, 2.6, 2.4 ), feathers );
 		head.position.set( 3.4, 8, 0 );
 		g.add( head );
-		var comb = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 1.4, 1 ), mat( THREE, 0xb8352c ) );
-		comb.position.set( 3.4, 9.8, 0 );
+		var comb = new THREE.Mesh(
+			new THREE.BoxGeometry( rooster ? 2.2 : 1.6, rooster ? 2.4 : 1.4, 1 ),
+			mat( THREE, 0xb8352c ) );
+		comb.position.set( 3.4, rooster ? 10.4 : 9.8, 0 );
 		g.add( comb );
+		if ( rooster ) {
+			// the tail fan, iridescent black-green
+			var tail = new THREE.Mesh( new THREE.BoxGeometry( 1.2, 5.5, 4 ), mat( THREE, 0x14241c ) );
+			tail.position.set( -3.6, 7.6, 0 );
+			tail.rotation.z = 0.55;
+			g.add( tail );
+		}
 		var beak = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 1, 1.2 ), mat( THREE, 0xd8a23a ) );
 		beak.position.set( 5, 7.6, 0 );
 		g.add( beak );
@@ -2613,8 +2641,9 @@
 		var wingR = new THREE.Mesh( new THREE.BoxGeometry( 4.5, 0.8, 3 ), feathers );
 		wingR.position.set( -0.5, 6, -2.8 );
 		g.add( wingR );
+		g.scale.setScalar( rooster ? 1.26 : 1.05 );
 		scene.add( g );
-		var body2d = Matter.Bodies.circle( x, z, 4, { frictionAir: 0.24, density: 0.0008 } );
+		var body2d = Matter.Bodies.circle( x, z, rooster ? 5 : 4, { frictionAir: 0.24, density: 0.0008 } );
 		Matter.Composite.add( engine.world, body2d );
 		chickens.push( { g: g, body: body2d, wingL: wingL, wingR: wingR,
 			wanderT: 400 + Math.random() * 2000, fT: 0, cd: 0 } );
@@ -3151,30 +3180,30 @@
 	}
 
 	function buildTrackLights( THREE ) {
-		// tall corner towers, lamp heads aimed both ways down the track,
-		// with a real PointLight pooling on the dirt
+		// stadium towers OUTSIDE the ring corners — triple height, big
+		// double-size heads, lamp light thrown both ways down the track
 		var poleMat = mat( THREE, 0x3a3630 );
 		var headMat = new THREE.MeshBasicMaterial( { color: 0xfff2d0 } );
-		[ { x: -60, z: -60 }, { x: W + 60, z: -60 },
-		  { x: -60, z: H + 60 }, { x: W + 60, z: H + 60 } ].forEach( function ( c ) {
+		[ { x: -300, z: -300 }, { x: W + 300, z: -300 },
+		  { x: -300, z: H + 300 }, { x: W + 300, z: H + 300 } ].forEach( function ( c ) {
 			var gy = hillsAt( c.x, c.z );
-			var pole = new THREE.Mesh( new THREE.CylinderGeometry( 2.6, 3.4, 110, 8 ), poleMat );
-			pole.position.set( c.x, gy + 55, c.z );
+			var pole = new THREE.Mesh( new THREE.CylinderGeometry( 4, 6.5, 330, 8 ), poleMat );
+			pole.position.set( c.x, gy + 165, c.z );
 			scene.add( pole );
 			var A = Math.atan2( H / 2 - c.z, W / 2 - c.x );
 			var th = A + Math.PI / 2; // crossbar perpendicular to the infield diagonal
-			var bar = new THREE.Mesh( new THREE.BoxGeometry( 34, 4, 8 ), poleMat );
-			bar.position.set( c.x, gy + 108, c.z );
+			var bar = new THREE.Mesh( new THREE.BoxGeometry( 70, 8, 16 ), poleMat );
+			bar.position.set( c.x, gy + 326, c.z );
 			bar.rotation.y = -th;
 			scene.add( bar );
-			[ -14, 14 ].forEach( function ( o ) {
-				var head = new THREE.Mesh( new THREE.BoxGeometry( 11, 6.5, 9 ), headMat );
-				head.position.set( c.x + Math.cos( th ) * o, gy + 105, c.z + Math.sin( th ) * o );
+			[ -28, 28 ].forEach( function ( o ) {
+				var head = new THREE.Mesh( new THREE.BoxGeometry( 22, 13, 18 ), headMat );
+				head.position.set( c.x + Math.cos( th ) * o, gy + 318, c.z + Math.sin( th ) * o );
 				head.rotation.y = -th;
 				scene.add( head );
 			} );
-			var pt = new THREE.PointLight( 0xffe2b0, 0.9, 1150 );
-			pt.position.set( c.x, gy + 100, c.z );
+			var pt = new THREE.PointLight( 0xffe2b0, 1.2, 2300 );
+			pt.position.set( c.x, gy + 300, c.z );
 			scene.add( pt );
 		} );
 	}
@@ -3893,13 +3922,6 @@
 			g.add( spot );
 			g.add( spot.target );
 		} );
-
-		blobShadow = new THREE.Mesh(
-			new THREE.CircleGeometry( 26, 20 ),
-			new THREE.MeshBasicMaterial( { color: 0x000000, transparent: true, opacity: 0.32 } )
-		);
-		blobShadow.rotation.x = -Math.PI / 2;
-		scene.add( blobShadow );
 
 		return g;
 	}
