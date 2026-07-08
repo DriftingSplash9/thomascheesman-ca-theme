@@ -18,6 +18,17 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * DAY/NIGHT + TRUE POSE: an 8-minute Minecraft-style day cycle (starts
+ * at dusk) — one factor drives sky colours, fog, light intensities,
+ * stars, and a sun/moon riding opposite ends of the arc; night is
+ * dimmer than before (it read like daylight). The buggy now aligns to
+ * the terrain as a WHOLE — wheels and axles ride the ground pitch and
+ * camber (was body-only, wheels stayed flat), camber roll sign fixed
+ * (it leaned away from the pond bank), body keeps lean/squat/dip on
+ * top. Gravity +15% again. Billboards ride tall legs (panel ~246 up)
+ * so trees never obstruct them. Church's decorative base mound removed
+ * (visual-only — the buggy drove inside it at 2.4×).
+ *
  * SCALE-UP PASS — the world grows into the low camera: chase cam drops
  * (54 up, looking 14 high — buildings/flags read at real height). The
  * farmhouse becomes the ESTATE: two storeys, wraparound patio on two
@@ -453,6 +464,7 @@
 	var soundBtn = null;
 	var tokens = [], tokenCount = 0, tokenFound = 0;
 	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0, climb = 0, chassisDip = 0;
+	var groupPitchS = 0, groupRollS = 0; // smoothed whole-buggy terrain alignment
 	var airPitch = 0, jumpCooldown = 0;
 	var boostT = 0, padCooldown = [];
 	var inWater = false, inMud = false;
@@ -460,6 +472,10 @@
 	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
 	var ghosts = [], ghostStore = null, prevSX = 0, lastHudTenth = -1;
 	var skyGroup = null, moonLight = null, moonTarget = null;
+	var ambLight = null, hemiLight = null;
+	var skyMatRef = null, starMatRef = null, sunBall = null, sunHalo = null, moonBall = null, moonHalo = null;
+	var DAY_CYCLE = 480; // seconds for a full day+night, Minecraft-style
+	var DAY_START = 0.62; // begin in the evening — the farm's identity is dusk
 	var windmillBlades = null, pumpBeam = null, pumpCrank = null, flareFlame = null, flareLight = null;
 	var ducks = [];
 	var bulbInst = null, bulbCount = 0, bulbTimer = 0, bulbPhase = 0, bulbLit = null, bulbDim = null;
@@ -624,6 +640,7 @@
 				'gl_FragColor = vec4( mix( botCol, topCol, t ), 1.0 ); }'
 		} );
 		skyGroup.add( new THREE.Mesh( new THREE.SphereGeometry( 6500, 32, 16 ), skyMat ) );
+		skyMatRef = skyMat;
 
 		var N = 900, sp = new Float32Array( N * 3 );
 		for ( var i = 0; i < N; i++ ) {
@@ -635,26 +652,80 @@
 		}
 		var starGeo = new THREE.BufferGeometry();
 		starGeo.setAttribute( 'position', new THREE.BufferAttribute( sp, 3 ) );
-		skyGroup.add( new THREE.Points( starGeo, new THREE.PointsMaterial( {
+		starMatRef = new THREE.PointsMaterial( {
 			color: 0xcfe0ff, size: 7, sizeAttenuation: false, fog: false,
 			transparent: true, opacity: 0.9
-		} ) ) );
+		} );
+		skyGroup.add( new THREE.Points( starGeo, starMatRef ) );
 
-		var moonBall = new THREE.Mesh(
+		// the moon and the sun ride opposite ends of the day arc
+		moonBall = new THREE.Mesh(
 			new THREE.SphereGeometry( 150, 24, 24 ),
 			new THREE.MeshBasicMaterial( { color: 0xeef4ff, fog: false } )
 		);
-		moonBall.position.set( -1500, 1400, -2400 );
 		skyGroup.add( moonBall );
-		var halo = new THREE.Sprite( new THREE.SpriteMaterial( {
+		moonHalo = new THREE.Sprite( new THREE.SpriteMaterial( {
 			map: haloTexture( THREE ), color: 0xbcd2f4, transparent: true, opacity: 0.55,
 			blending: THREE.AdditiveBlending, depthWrite: false, fog: false
 		} ) );
-		halo.scale.set( 1400, 1400, 1 );
-		halo.position.copy( moonBall.position );
-		skyGroup.add( halo );
+		moonHalo.scale.set( 1400, 1400, 1 );
+		skyGroup.add( moonHalo );
+		sunBall = new THREE.Mesh(
+			new THREE.SphereGeometry( 210, 24, 24 ),
+			new THREE.MeshBasicMaterial( { color: 0xfff3d0, fog: false } )
+		);
+		skyGroup.add( sunBall );
+		sunHalo = new THREE.Sprite( new THREE.SpriteMaterial( {
+			map: haloTexture( THREE ), color: 0xffe2a8, transparent: true, opacity: 0,
+			blending: THREE.AdditiveBlending, depthWrite: false, fog: false
+		} ) );
+		sunHalo.scale.set( 2200, 2200, 1 );
+		skyGroup.add( sunHalo );
 
 		scene.add( skyGroup );
+	}
+
+	// Minecraft-style day/night: an 8-minute cycle starting at dusk. One
+	// factor df (0 = deep night, 1 = full day) drives sky colours, fog,
+	// light intensities, stars and the sun/moon positions. Windows, marquee
+	// bulbs and the flare keep burning — they're the payoff at night.
+	var dnNight = null, dnDay = null;
+	function updateDayNight( t ) {
+		if ( ! skyMatRef ) return;
+		if ( ! dnNight ) {
+			dnNight = {
+				top: new THREE.Color( 0x05070d ), bot: new THREE.Color( 0x1b2740 ),
+				fog: new THREE.Color( 0x141d2e ), sun: new THREE.Color( 0xaecdf0 )
+			};
+			dnDay = {
+				top: new THREE.Color( 0x3f6fb8 ), bot: new THREE.Color( 0xa9c8e8 ),
+				fog: new THREE.Color( 0x93b2d6 ), sun: new THREE.Color( 0xfff2dc )
+			};
+		}
+		var phase = ( t / DAY_CYCLE + DAY_START ) % 1;
+		var elev = Math.sin( phase * Math.PI * 2 ); // >0 sun up, <0 moon up
+		var df = Math.max( 0, Math.min( 1, ( elev + 0.08 ) / 0.45 ) );
+		df = df * df * ( 3 - 2 * df );
+
+		skyMatRef.uniforms.topCol.value.copy( dnNight.top ).lerp( dnDay.top, df );
+		skyMatRef.uniforms.botCol.value.copy( dnNight.bot ).lerp( dnDay.bot, df );
+		scene.fog.color.copy( dnNight.fog ).lerp( dnDay.fog, df );
+		scene.background.copy( scene.fog.color );
+		ambLight.intensity = 0.5 + df * 0.45;
+		hemiLight.intensity = 0.32 + df * 0.35;
+		moonLight.intensity = 0.6 + df * 0.45;
+		moonLight.color.copy( dnNight.sun ).lerp( dnDay.sun, df );
+		starMatRef.opacity = 0.9 * ( 1 - df );
+
+		var sx = Math.cos( phase * Math.PI * 2 );
+		sunBall.position.set( sx * 4200, elev * 3000 + 150, -2600 );
+		sunHalo.position.copy( sunBall.position );
+		sunBall.visible = sunHalo.visible = elev > -0.12;
+		sunHalo.material.opacity = 0.5 * df;
+		moonBall.position.set( -sx * 4200, -elev * 3000 + 150, -2600 );
+		moonHalo.position.copy( moonBall.position );
+		moonBall.visible = moonHalo.visible = elev < 0.12;
+		moonHalo.material.opacity = 0.55 * ( 1 - df );
 	}
 
 	function boot( stageEl ) {
@@ -697,9 +768,11 @@
 
 		camera = new THREE.PerspectiveCamera( baseFov, stage.clientWidth / stage.clientHeight, 1, 9000 );
 
-		scene.add( new THREE.AmbientLight( 0x233248, 0.8 ) );
-		scene.add( new THREE.HemisphereLight( 0x3a5372, 0x121a12, 0.5 ) );
-		moonLight = new THREE.DirectionalLight( 0xaecdf0, 0.9 );
+		ambLight = new THREE.AmbientLight( 0x233248, 0.5 );
+		scene.add( ambLight );
+		hemiLight = new THREE.HemisphereLight( 0x3a5372, 0x121a12, 0.32 );
+		scene.add( hemiLight );
+		moonLight = new THREE.DirectionalLight( 0xaecdf0, 0.6 );
 		moonLight.position.set( -700, 900, -600 );
 		moonLight.castShadow = true;
 		moonLight.shadow.mapSize.set( 2048, 2048 );
@@ -1103,7 +1176,7 @@
 		}
 		if ( airborne ) {
 			worldY += vAlt * dt;
-			vAlt -= ( boostT > 0 ? 330 : 360 ) * dt; // heavier — jumps were too airy
+			vAlt -= ( boostT > 0 ? 380 : 414 ) * dt; // heavier still (+15%)
 			// L/R Shift pitch the buggy for flips
 			var pitchVel = ( keys.tiltF ? -7.5 : 0 ) + ( keys.tiltB ? 7.5 : 0 );
 			airPitch += pitchVel * dt;
@@ -1145,26 +1218,26 @@
 
 		buggyGroup.position.set( rx, worldY, rz );
 		buggyGroup.rotation.y = -ra;
-		buggyGroup.rotation.z = airPitch;
 
-		// --- buggy body dynamics ---
-		// The chassis leans OUT of corners, squats/dives on the pedal, tilts
-		// to follow the terrain (berms, mounds, hills), and compresses on
-		// landing. ROLL is about the forward axis (rotation.x), PITCH about
-		// the lateral axis (rotation.z). If a lean/tilt reads BACKWARDS,
-		// flip that term's sign — roll and pitch are independent, and the
-		// two roll terms share a sign (flip tRoll whole if lean inverts).
+		// --- buggy pose ---
+		// TERRAIN alignment goes on the WHOLE group (wheels + axles ride
+		// the ground pitch/camber, not just the body); the body-only layer
+		// on chassisGroup adds cornering lean, throttle squat, and the
+		// landing dip. Signs (verified in play): nose-up-hill = +rot.z;
+		// camber roll = −atan(latSlope) about the forward axis (rot.x).
 		var gsl = slopeAt( rx, rz );
 		var cosA = Math.cos( ra ), sinA = Math.sin( ra );
 		var fwdSlope = gsl.x * cosA + gsl.z * sinA;        // rise along heading
 		var latSlope = gsl.x * -sinA + gsl.z * cosA;       // rise across (to the left)
 		var af = airborne ? 0 : 1;                          // aloft, airPitch owns the pose
-		var tRoll = af * ( Math.atan( latSlope ) * 1.0      // sit on the ground camber
-			+ steerVal * -0.17 * Math.min( 1, sp / 4 ) );   // + lean OUT of the turn (flipped)
-		var tPitch = af * ( Math.atan( fwdSlope )           // nose up the hill / jump face
-			+ throttleInput * 0.06 );                       // + squat on gas / dive on brake
-		tRoll = Math.max( -0.55, Math.min( 0.55, tRoll ) );
-		tPitch = Math.max( -0.55, Math.min( 0.55, tPitch ) );
+		groupPitchS += ( af * Math.atan( fwdSlope ) - groupPitchS ) * 0.18;
+		groupRollS += ( af * -Math.atan( latSlope ) - groupRollS ) * 0.18;
+		buggyGroup.rotation.z = airPitch + groupPitchS;
+		buggyGroup.rotation.x = groupRollS;
+		var tRoll = af * steerVal * -0.17 * Math.min( 1, sp / 4 ); // lean OUT of the turn
+		var tPitch = af * throttleInput * 0.06;                    // squat on gas / dive on brake
+		tRoll = Math.max( -0.35, Math.min( 0.35, tRoll ) );
+		tPitch = Math.max( -0.35, Math.min( 0.35, tPitch ) );
 		chassisGroup.rotation.x += ( tRoll - chassisGroup.rotation.x ) * 0.18;
 		chassisGroup.rotation.z += ( tPitch - chassisGroup.rotation.z ) * 0.18;
 		chassisDip += ( 0 - chassisDip ) * 0.2;             // suspension rebound
@@ -1192,6 +1265,7 @@
 		updatePigs( dms );
 		updateDucks( dms, t );
 		updateScenery( dms, t );
+		updateDayNight( t );
 		updateGhosts( dms );
 		updateDriveInChase( dms );
 		updateCrowd( t );
@@ -1627,10 +1701,10 @@
 		bulbLit = new THREE.Color( 0xffe6a8 );
 		bulbDim = new THREE.Color( 0x6a4d26 );
 		var ring = [], rb;
-		for ( rb = -62; rb <= 62; rb += 13.75 ) ring.push( [ rb, 103 ] );  // top →
-		for ( rb = 90; rb >= 43; rb -= 13.5 ) ring.push( [ 66, rb ] );     // right ↓
-		for ( rb = 62; rb >= -62; rb -= 13.75 ) ring.push( [ rb, 29 ] );   // bottom ←
-		for ( rb = 43; rb <= 90; rb += 13.5 ) ring.push( [ -66, rb ] );    // left ↑
+		for ( rb = -62; rb <= 62; rb += 13.75 ) ring.push( [ rb, 149 ] );  // top →
+		for ( rb = 136; rb >= 89; rb -= 13.5 ) ring.push( [ 66, rb ] );    // right ↓
+		for ( rb = 62; rb >= -62; rb -= 13.75 ) ring.push( [ rb, 75 ] );   // bottom ←
+		for ( rb = 89; rb <= 136; rb += 13.5 ) ring.push( [ -66, rb ] );   // left ↑
 		bulbCount = ring.length * LINES.length;
 		bulbInst = new THREE.InstancedMesh(
 			new THREE.SphereGeometry( 2.1, 8, 8 ),
@@ -1682,19 +1756,21 @@
 
 			var g = new THREE.Group();
 			var wood = mat( THREE, 0x3a2c1c );
+			// tall legs: the panel rides high (y 112 local ≈ 246 world) so
+			// trees/fences/berms never obstruct it from the track
 			[ -52, 52 ].forEach( function ( ox ) {
-				var leg = new THREE.Mesh( new THREE.BoxGeometry( 5, 34, 5 ), wood );
-				leg.position.set( ox, 17, 0 );
+				var leg = new THREE.Mesh( new THREE.BoxGeometry( 5, 108, 5 ), wood );
+				leg.position.set( ox, 54, 0 );
 				g.add( leg );
 			} );
 			var panel = new THREE.Mesh( new THREE.BoxGeometry( 124, 70, 3 ), mat( THREE, 0x241c14 ) );
-			panel.position.y = 66;
+			panel.position.y = 112;
 			g.add( panel );
 			var face = new THREE.Mesh(
 				new THREE.PlaneGeometry( 118, 66 ),
 				new THREE.MeshBasicMaterial( { map: new THREE.CanvasTexture( c ) } )
 			);
-			face.position.set( 0, 66, 2 );
+			face.position.set( 0, 112, 2 );
 			g.add( face );
 
 			// the old-country flags fly on poles above the sign — big, and
@@ -1703,7 +1779,7 @@
 			fl.forEach( function ( code, fi ) {
 				var fx = fl.length === 1 ? 0 : ( fi === 0 ? -34 : 34 );
 				var pole = new THREE.Mesh( new THREE.CylinderGeometry( 1.1, 1.1, 34, 5 ), wood );
-				pole.position.set( fx, 116, -4 );
+				pole.position.set( fx, 162, -4 );
 				g.add( pole );
 				var flag = new THREE.Mesh(
 					new THREE.PlaneGeometry( 26, 17 ),
@@ -1711,7 +1787,7 @@
 						map: flagTexture( THREE, code ), side: THREE.DoubleSide
 					} )
 				);
-				flag.position.set( fx + 14, 124, -4 );
+				flag.position.set( fx + 14, 170, -4 );
 				g.add( flag );
 			} );
 
@@ -2085,10 +2161,9 @@
 	}
 
 	function buildChurch( THREE, lm ) {
+		// (the old decorative base mound is gone — it was visual-only, so at
+		// 2.4× the buggy drove INSIDE it; the church sits on its FLAT yard)
 		var g = new THREE.Group();
-		var mound = new THREE.Mesh( new THREE.CylinderGeometry( 78, 92, 10, 18 ), mat( THREE, 0x1c2d20 ) );
-		mound.position.y = 5;
-		g.add( mound );
 		var nave = new THREE.Mesh( new THREE.BoxGeometry( 46, 30, 70 ), mat( THREE, 0xcfd2cd ) );
 		nave.position.y = 25;
 		g.add( nave );
