@@ -18,6 +18,15 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * HEARTLAND PASS — gravity up (jumps were too airy), speed-up pads +
+ * two inverted dimple swales on the track, six new track tokens, and
+ * the token hunt now RESETS at the restack pad. The world grows its
+ * heritage: a Dutch WINDMILL (sails turning, tulip rows) on the slough
+ * shore linking to /lakemans, old-country FLAGS on poles above every
+ * drive-in sign (mixed lines fly two), cattails on the northeast shore,
+ * five ducks paddling the slough, two horses in the pastures, and an
+ * oilpatch corner — nodding PUMPJACK + flickering flare stack.
+ *
  * SECTION ROAD P4 — REAL JUMPS: the placeholder gaussian mounds on the
  * track become proper MX features — shaped dirt with steep take-off
  * faces, flat decks and landing faces (tabletops), plus a kicker. Each
@@ -163,16 +172,52 @@
 	// The eight family lines: big marquee billboards OUTSIDE the section
 	// road, facing the racing — four along the north straight (flanking
 	// the grandstands), two each on the west and east sides.
+	// `flags` = old-country flags flown on poles above each sign; mixed
+	// heritages fly both (per the long-reads: Docherty Ireland→Scotland,
+	// Steinke Germany-in-Poland).
 	var LINES = [
-		{ name: 'The Cheesmans', href: '/cheesmans', x: 600, z: -330, face: 1 },
-		{ name: 'The Dochertys', href: '/dochertys', x: 1250, z: -330, face: 1 },
-		{ name: 'The Haistes', href: '/haistes', x: 3230, z: -330, face: 1 },
-		{ name: 'The Lakemans', href: '/lakemans', x: 3880, z: -330, face: 1 },
-		{ name: 'The Rycrofts', href: '/rycrofts', x: -330, z: 800, face: 2 },
-		{ name: 'The McIvers', href: '/mcivers', x: -330, z: 1700, face: 2 },
-		{ name: 'The Verbooms', href: '/verbooms', x: 4810, z: 800, face: 3 },
-		{ name: 'The Steinkes', href: '/steinkes', x: 4810, z: 1700, face: 3 }
+		{ name: 'The Cheesmans', href: '/cheesmans', x: 600, z: -330, face: 1, flags: [ 'en' ] },
+		{ name: 'The Dochertys', href: '/dochertys', x: 1250, z: -330, face: 1, flags: [ 'ie', 'sct' ] },
+		{ name: 'The Haistes', href: '/haistes', x: 3230, z: -330, face: 1, flags: [ 'en' ] },
+		{ name: 'The Lakemans', href: '/lakemans', x: 3880, z: -330, face: 1, flags: [ 'nl' ] },
+		{ name: 'The Rycrofts', href: '/rycrofts', x: -330, z: 800, face: 2, flags: [ 'en' ] },
+		{ name: 'The McIvers', href: '/mcivers', x: -330, z: 1700, face: 2, flags: [ 'sct' ] },
+		{ name: 'The Verbooms', href: '/verbooms', x: 4810, z: 800, face: 3, flags: [ 'nl' ] },
+		{ name: 'The Steinkes', href: '/steinkes', x: 4810, z: 1700, face: 3, flags: [ 'de', 'pl' ] }
 	];
+	// tiny canvas flags (cached by code)
+	var flagTexCache = {};
+	function flagTexture( THREE, code ) {
+		if ( flagTexCache[ code ] ) return flagTexCache[ code ];
+		var c = document.createElement( 'canvas' );
+		c.width = 48; c.height = 32;
+		var x = c.getContext( '2d' );
+		function bands( cols, horiz ) {
+			cols.forEach( function ( col, i ) {
+				x.fillStyle = col;
+				if ( horiz ) x.fillRect( 0, i * 32 / cols.length, 48, 32 / cols.length );
+				else x.fillRect( i * 48 / cols.length, 0, 48 / cols.length, 32 );
+			} );
+		}
+		if ( code === 'en' ) {
+			x.fillStyle = '#f4f4f0'; x.fillRect( 0, 0, 48, 32 );
+			x.fillStyle = '#c8102e'; x.fillRect( 20, 0, 8, 32 ); x.fillRect( 0, 12, 48, 8 );
+		} else if ( code === 'sct' ) {
+			x.fillStyle = '#0057a8'; x.fillRect( 0, 0, 48, 32 );
+			x.strokeStyle = '#f4f4f0'; x.lineWidth = 6;
+			x.beginPath(); x.moveTo( 0, 0 ); x.lineTo( 48, 32 ); x.moveTo( 48, 0 ); x.lineTo( 0, 32 ); x.stroke();
+		} else if ( code === 'ie' ) {
+			bands( [ '#169b62', '#f4f4f0', '#ff883e' ], false );
+		} else if ( code === 'nl' ) {
+			bands( [ '#ae1c28', '#f4f4f0', '#21468b' ], true );
+		} else if ( code === 'de' ) {
+			bands( [ '#1a1a1a', '#dd0000', '#ffce00' ], true );
+		} else { // pl
+			bands( [ '#f4f4f0', '#dc143c' ], true );
+		}
+		flagTexCache[ code ] = new THREE.CanvasTexture( c );
+		return flagTexCache[ code ];
+	}
 
 	// The road net — wide, and full of bends. Nothing cuts the grove.
 	var PATHS = [
@@ -224,7 +269,11 @@
 		// the slough basin — one deep bowl under the big pond
 		{ x: 3730, z: 1000, a: -26, r: 420 },
 		{ x: 3880, z: 1090, a: -14, r: 240 },
-		{ x: 3600, z: 900, a: -12, r: 240 }
+		{ x: 3600, z: 900, a: -12, r: 240 },
+		// inverted dimples — two swales ON the section road (line-choice
+		// hazards: they scrub speed if you take the lazy line)
+		{ x: 4050, z: 2690, a: -13, r: 130 },
+		{ x: -170, z: 990, a: -12, r: 120 }
 	];
 	// ONE pond now — an irregular slough, deep enough that the buggy floats
 	// (see control()/render()). The blob outline is pondR(θ).
@@ -342,7 +391,13 @@
 	} );
 	var PADS = [
 		{ x: 2188, z: 2065 }, { x: 2258, z: 1155 },
-		{ x: 2625, z: 1750 }, { x: 3693, z: 1960 }
+		{ x: 2625, z: 1750 }, { x: 3693, z: 1960 },
+		// speed-up pads on the section road, one per straight, chevrons
+		// pointing the counterclockwise racing line
+		{ x: 2420, z: 2690, rot: -Math.PI / 2 },
+		{ x: 4650, z: 950, rot: 0 },
+		{ x: 750, z: -170, rot: Math.PI / 2 },
+		{ x: -170, z: 470, rot: Math.PI }
 	];
 	var TOKENS = [
 		{ x: 350, z: 350 }, { x: 4200, z: 315 }, { x: 315, z: 2188 },
@@ -355,7 +410,13 @@
 		// sky tokens on the ramp arcs — APPEND ONLY (saved indices must hold)
 		{ x: 2198, z: 1780, air: true, y: 70 },
 		{ x: 3868, z: 1370, air: true, y: 75 },
-		{ x: 3565, z: 990, air: true, y: 26 }
+		{ x: 3565, z: 990, air: true, y: 26 },
+		// section-road tokens (append only): four on the racing line, two
+		// in the air over the big south sender and the NE kicker
+		{ x: 2000, z: 2690 }, { x: 4650, z: 1500 }, { x: 2240, z: -170 },
+		{ x: -170, z: 1500 },
+		{ x: 3760, z: 2690, air: true, y: 40 },
+		{ x: 4650, z: 640, air: true, y: 40 }
 	];
 
 	var stage, hudEl, chipEl;
@@ -383,6 +444,8 @@
 	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
 	var ghosts = [], ghostStore = null, prevSX = 0, lastHudTenth = -1;
 	var skyGroup = null, moonLight = null, moonTarget = null;
+	var windmillBlades = null, pumpBeam = null, pumpCrank = null, flareFlame = null, flareLight = null;
+	var ducks = [];
 	var bulbInst = null, bulbCount = 0, bulbTimer = 0, bulbPhase = 0, bulbLit = null, bulbDim = null;
 	var crowdInst = null, crowdData = [], crowdDummy = null;
 	var baseFov = 55;
@@ -734,6 +797,10 @@
 		buildChickens( THREE );
 		buildPigPen( THREE );
 		buildTractor( THREE );
+		buildWindmill( THREE );
+		buildCattails( THREE );
+		buildDucks( THREE );
+		buildPumpjack( THREE );
 		buildBales( THREE );
 		buildStacks( THREE );
 		buildRestackPad( THREE );
@@ -957,7 +1024,7 @@
 		if ( keys.jump && ! airborne && jumpCooldown <= 0 ) {
 			jumpCooldown = 300;
 			airborne = true;
-			vAlt = 85 + sp * 5;
+			vAlt = 80 + sp * 4.5;
 		}
 
 		lapControl();
@@ -1008,7 +1075,7 @@
 				airborne = true;
 				// the lip drop alone launches modestly; carried climb rate
 				// (slope × speed) is what buys big air off ramps/mounds
-				vAlt = Math.min( 200, Math.max( Math.min( -groundRate * 0.85, 115 ), climb * 0.75 ) );
+				vAlt = Math.min( 185, Math.max( Math.min( -groundRate * 0.85, 110 ), climb * 0.7 ) );
 				worldY = prevGy;
 			} else {
 				// afloat on the slough: ride the water line, bobbing
@@ -1019,7 +1086,7 @@
 		}
 		if ( airborne ) {
 			worldY += vAlt * dt;
-			vAlt -= ( boostT > 0 ? 270 : 300 ) * dt; // boost = hang-time
+			vAlt -= ( boostT > 0 ? 330 : 360 ) * dt; // heavier — jumps were too airy
 			// L/R Shift pitch the buggy for flips
 			var pitchVel = ( keys.tiltF ? -7.5 : 0 ) + ( keys.tiltB ? 7.5 : 0 );
 			airPitch += pitchVel * dt;
@@ -1106,6 +1173,8 @@
 		updateTractor();
 		updateChickens( dms, t );
 		updatePigs( dms );
+		updateDucks( dms, t );
+		updateScenery( dms, t );
 		updateGhosts( dms );
 		updateDriveInChase( dms );
 		updateCrowd( t );
@@ -1332,6 +1401,7 @@
 				g.add( chev );
 			}
 			g.position.set( p.x, hillsAt( p.x, p.z ), p.z );
+			g.rotation.y = p.rot || 0;
 			p.group = g;
 			scene.add( g );
 		} );
@@ -1401,7 +1471,7 @@
 			} catch ( err ) {}
 			updateHud();
 			if ( tokenFound === tokenCount ) {
-				flashChip( 'All ' + tokenCount + ' tokens found — the quarter is yours! 🏆' );
+				flashChip( 'All ' + tokenCount + ' tokens found — park at the restack pad to hide them again 🏆' );
 			}
 		}
 	}
@@ -1457,8 +1527,10 @@
 			restackPad.holdMS += dms;
 			if ( restackPad.holdMS > 900 ) {
 				restackPad.holdMS = -2500;
-				restackAll();
-				flashChip( 'Bales restacked — go wreck ’em again' );
+				var huntReset = restackAll();
+				flashChip( huntReset
+					? 'Bales restacked — and the token hunt is reset 🪙'
+					: 'Bales restacked — go wreck ’em again' );
 			}
 		} else if ( restackPad.holdMS > 0 ) {
 			restackPad.holdMS = 0;
@@ -1489,6 +1561,16 @@
 				u.mesh.rotation.y = 0;
 			} );
 		} );
+		// a completed token hunt resets here too — the pad is the farm's
+		// "set it all up again" spot
+		if ( tokenCount > 0 && tokenFound === tokenCount ) {
+			try { window.localStorage.removeItem( 'tcBqTok_v1' ); } catch ( err ) {}
+			tokens.forEach( function ( tk ) { tk.got = false; tk.mesh.visible = true; } );
+			tokenFound = 0;
+			updateHud();
+			return true;
+		}
+		return false;
 	}
 
 	function buildRestackPad( THREE ) {
@@ -1593,6 +1675,23 @@
 			);
 			face.position.set( 0, 66, 2 );
 			g.add( face );
+
+			// the old-country flags fly on poles above the sign
+			var fl = line.flags || [];
+			fl.forEach( function ( code, fi ) {
+				var fx = fl.length === 1 ? 0 : ( fi === 0 ? -30 : 30 );
+				var pole = new THREE.Mesh( new THREE.CylinderGeometry( 0.9, 0.9, 26, 5 ), wood );
+				pole.position.set( fx, 112, 0 );
+				g.add( pole );
+				var flag = new THREE.Mesh(
+					new THREE.PlaneGeometry( 15, 10 ),
+					new THREE.MeshBasicMaterial( {
+						map: flagTexture( THREE, code ), side: THREE.DoubleSide
+					} )
+				);
+				flag.position.set( fx + 8.4, 119.5, 0 );
+				g.add( flag );
+			} );
 
 			var lm = { id: 'line-' + line.href, name: line.name, x: line.x, y: line.z,
 				href: line.href, prompt: line.name + ' — a family line, projected on the night' };
@@ -2102,8 +2201,10 @@
 		var cows = [ [ 3063, 1365 ], [ 1575, 2013 ], [ 2713, 910 ], [ 3763, 1540 ],
 			[ 2050, 2200 ], [ 2900, 1350 ], [ 1700, 2150 ] ];
 		var sheep = [ [ 875, 1050 ], [ 2538, 2188 ], [ 1838, 613 ], [ 3938, 735 ], [ 1225, 1750 ] ];
+		var horses = [ [ 1950, 2080 ], [ 3350, 1750 ] ];
 		cows.forEach( function ( p ) { addAnimal( THREE, 'cow', p[ 0 ], p[ 1 ] ); } );
 		sheep.forEach( function ( p ) { addAnimal( THREE, 'sheep', p[ 0 ], p[ 1 ] ); } );
+		horses.forEach( function ( p ) { addAnimal( THREE, 'horse', p[ 0 ], p[ 1 ] ); } );
 		// Trumac, the main bull — black, 30% bigger, and he knows it
 		var trumac = addAnimal( THREE, 'bull', 3150, 1900 );
 		trumac.lm = { id: 'trumac', name: 'Trumac', x: 3150, y: 1900, href: null,
@@ -2115,12 +2216,15 @@
 	function addAnimal( THREE, type, x, z ) {
 		var g = new THREE.Group();
 		var bull = type === 'bull';
+		var horse = type === 'horse';
 		var cow = type === 'cow' || bull;
-		var bodyC = bull ? 0x14100d : ( cow ? 0x6f4a33 : 0xd8d3c4 );
-		var headC = bull ? 0x0d0a08 : ( cow ? 0x543527 : 0x2a2420 );
-		var legC = bull ? 0x0d0a08 : ( cow ? 0x452c1f : 0xbdb7a6 );
-		var bw = cow ? 20 : 13, bh = cow ? 11 : 8.5, bd = cow ? 10 : 9;
-		var legH = cow ? 6 : 4;
+		var bodyC = bull ? 0x14100d : ( horse ? 0x5a3d28 : ( cow ? 0x6f4a33 : 0xd8d3c4 ) );
+		var headC = bull ? 0x0d0a08 : ( horse ? 0x4a2f1e : ( cow ? 0x543527 : 0x2a2420 ) );
+		var legC = bull ? 0x0d0a08 : ( horse ? 0x3a2517 : ( cow ? 0x452c1f : 0xbdb7a6 ) );
+		var bw = horse ? 22 : ( cow ? 20 : 13 );
+		var bh = horse ? 11 : ( cow ? 11 : 8.5 );
+		var bd = horse ? 8 : ( cow ? 10 : 9 );
+		var legH = horse ? 9 : ( cow ? 6 : 4 );
 		[ [ 1, 1 ], [ 1, -1 ], [ -1, 1 ], [ -1, -1 ] ].forEach( function ( c ) {
 			var leg = new THREE.Mesh( new THREE.BoxGeometry( 1.6, legH, 1.6 ), mat( THREE, legC ) );
 			leg.position.set( c[ 0 ] * ( bw / 2 - 2 ), legH / 2, c[ 1 ] * ( bd / 2 - 1.5 ) );
@@ -2133,6 +2237,23 @@
 			new THREE.BoxGeometry( cow ? 7 : 5, cow ? 7 : 5, cow ? 6 : 4.5 ), mat( THREE, headC ) );
 		head.position.set( bw / 2 + 2, legH + bh - 1, 0 );
 		g.add( head );
+		if ( horse ) {
+			// raised neck + head, mane ridge, tail
+			head.position.set( bw / 2 + 4.5, legH + bh + 6, 0 );
+			head.scale.set( 1.2, 0.8, 0.75 );
+			var neck = new THREE.Mesh( new THREE.BoxGeometry( 4, 10, 3.6 ), mat( THREE, bodyC ) );
+			neck.position.set( bw / 2 - 0.5, legH + bh + 2, 0 );
+			neck.rotation.z = -0.35;
+			g.add( neck );
+			var mane = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 9, 1.2 ), mat( THREE, 0x2a1a10 ) );
+			mane.position.set( bw / 2 - 2.4, legH + bh + 3.4, 0 );
+			mane.rotation.z = -0.35;
+			g.add( mane );
+			var tail = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 8, 1.6 ), mat( THREE, 0x2a1a10 ) );
+			tail.position.set( -bw / 2 - 0.5, legH + bh - 2, 0 );
+			tail.rotation.z = 0.4;
+			g.add( tail );
+		}
 		if ( bull ) {
 			[ -1, 1 ].forEach( function ( sd ) {
 				var horn = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 1.4, 4.2 ), mat( THREE, 0xcfc8b8 ) );
@@ -2142,8 +2263,8 @@
 			g.scale.set( 1.3, 1.3, 1.3 );
 		}
 		scene.add( g );
-		var body2d = Matter.Bodies.circle( x, z, bull ? 15 : ( cow ? 11 : 7 ),
-			{ frictionAir: 0.18, density: bull ? 0.006 : 0.003 } );
+		var body2d = Matter.Bodies.circle( x, z, bull ? 15 : ( horse ? 12 : ( cow ? 11 : 7 ) ),
+			{ frictionAir: 0.18, density: bull ? 0.006 : ( horse ? 0.0035 : 0.003 ) } );
 		Matter.Composite.add( engine.world, body2d );
 		var entry = { g: g, body: body2d, type: type, wanderT: 800 + Math.random() * 2400 };
 		animals.push( entry );
@@ -2158,7 +2279,8 @@
 				a.wanderT = 1800 + Math.random() * 2800;
 				if ( Math.random() < 0.7 ) {
 					var dir = Math.random() * Math.PI * 2;
-					var spd = a.type === 'bull' ? 0.4 : ( a.type === 'cow' ? 0.5 : 0.7 );
+					var spd = a.type === 'bull' ? 0.4
+					: ( a.type === 'cow' ? 0.5 : ( a.type === 'horse' ? 0.6 : 0.7 ) );
 					Matter.Body.setVelocity( a.body, { x: Math.cos( dir ) * spd, y: Math.sin( dir ) * spd } );
 				}
 			}
@@ -2460,6 +2582,231 @@
 			p.g.position.set( px, heightAt( px, pz ) - wallow, pz );
 			var v = p.body.velocity;
 			if ( Math.hypot( v.x, v.y ) > 0.12 ) p.g.rotation.y = -Math.atan2( v.y, v.x );
+		}
+	}
+
+	/* ---- heritage + heartland dressing: windmill, tulips, cattails,
+	 *      ducks, and the oilpatch corner ---- */
+	function buildWindmill( THREE ) {
+		// a Dutch windmill on the slough's west shore — the Lakeman/Verboom nod
+		var g = new THREE.Group();
+		var brick = mat( THREE, 0x6e4632 );
+		var tower = new THREE.Mesh( new THREE.CylinderGeometry( 10, 16, 52, 8 ), brick );
+		tower.position.y = 26;
+		g.add( tower );
+		var cap = new THREE.Mesh( new THREE.ConeGeometry( 12, 14, 8 ), mat( THREE, 0x3a2c1c ) );
+		cap.position.y = 59;
+		g.add( cap );
+		var door = new THREE.Mesh( new THREE.PlaneGeometry( 7, 11 ), mat( THREE, 0x171310 ) );
+		door.position.set( 0, 6, 14.6 );
+		g.add( door );
+		addWindow( THREE, g, 5, 6, 0, 34, 12.4 );
+		// four sails on a hub, spun in render
+		windmillBlades = new THREE.Group();
+		windmillBlades.position.set( 0, 52, 14 );
+		var hub = new THREE.Mesh( new THREE.CylinderGeometry( 2.4, 2.4, 4, 8 ), mat( THREE, 0x2a211b ) );
+		hub.rotation.x = Math.PI / 2;
+		windmillBlades.add( hub );
+		for ( var bi = 0; bi < 4; bi++ ) {
+			var arm = new THREE.Group();
+			arm.rotation.z = bi * Math.PI / 2;
+			var spar = new THREE.Mesh( new THREE.BoxGeometry( 2, 34, 1.2 ), mat( THREE, 0x3a2c1c ) );
+			spar.position.y = 17;
+			arm.add( spar );
+			var sail = new THREE.Mesh( new THREE.BoxGeometry( 7, 26, 0.6 ), mat( THREE, 0xd8d3c4 ) );
+			sail.position.set( 4.2, 20, 0 );
+			arm.add( sail );
+			windmillBlades.add( arm );
+		}
+		g.add( windmillBlades );
+		var lm = { id: 'windmill', name: 'the windmill', x: 3350, y: 780, href: '/lakemans',
+			prompt: 'The windmill — the Dutch lines still turn in the wind' };
+		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
+		g.rotation.y = -0.5; // sails face the slough
+		g.userData.lm = lm;
+		scene.add( g );
+		clickables.push( g );
+		PROMPTS.push( lm );
+		Matter.Composite.add( engine.world, Matter.Bodies.circle( lm.x, lm.y, 17, { isStatic: true } ) );
+
+		// tulip rows beside the mill — red, yellow, pink
+		var rows = [ 0xc8321e, 0xe8b93a, 0xd86f9a ];
+		var COLS = 8;
+		var stemGeo = new THREE.CylinderGeometry( 0.5, 0.5, 7, 5 );
+		var stems = new THREE.InstancedMesh( stemGeo, mat( THREE, 0x3f6b3a ), rows.length * COLS );
+		var headGeo = new THREE.BoxGeometry( 2.3, 2.7, 2.3 );
+		var heads = new THREE.InstancedMesh( headGeo,
+			new THREE.MeshLambertMaterial( { color: 0xffffff } ), rows.length * COLS );
+		var dummy = new THREE.Object3D();
+		var col = new THREE.Color();
+		var ti = 0;
+		rows.forEach( function ( rc, ri ) {
+			for ( var cix = 0; cix < COLS; cix++ ) {
+				var tx = 3282 + cix * 11 + ( Math.random() - 0.5 ) * 5;
+				var tz = 838 + ri * 14 + ( Math.random() - 0.5 ) * 5;
+				var ty = hillsAt( tx, tz );
+				dummy.position.set( tx, ty + 3.5, tz );
+				dummy.updateMatrix();
+				stems.setMatrixAt( ti, dummy.matrix );
+				dummy.position.y = ty + 8.2;
+				dummy.updateMatrix();
+				heads.setMatrixAt( ti, dummy.matrix );
+				col.setHex( rc );
+				heads.setColorAt( ti, col );
+				ti++;
+			}
+		} );
+		scene.add( stems );
+		scene.add( heads );
+	}
+
+	function buildCattails( THREE ) {
+		// tall weeds on the slough's northeast shore
+		var N = 30;
+		var stalks = new THREE.InstancedMesh(
+			new THREE.CylinderGeometry( 0.55, 0.75, 1, 5 ), mat( THREE, 0x4a5d3a ), N );
+		var heads = new THREE.InstancedMesh(
+			new THREE.CylinderGeometry( 1.2, 1.2, 4.5, 6 ), mat( THREE, 0x3a2a1a ), N );
+		var dummy = new THREE.Object3D();
+		for ( var i = 0; i < N; i++ ) {
+			var th = -0.9 + Math.random() * 1.5; // east → northeast arc
+			var rr = pondR( th ) + 6 + Math.random() * 30;
+			var cx2 = POND.x + Math.cos( th ) * rr;
+			var cz2 = POND.z + Math.sin( th ) * rr;
+			var base = heightAt( cx2, cz2 );
+			var h = 14 + Math.random() * 8;
+			dummy.position.set( cx2, base + h / 2, cz2 );
+			dummy.scale.set( 1, h, 1 );
+			dummy.updateMatrix();
+			stalks.setMatrixAt( i, dummy.matrix );
+			dummy.position.y = base + h + 2;
+			dummy.scale.set( 1, 1, 1 );
+			dummy.updateMatrix();
+			heads.setMatrixAt( i, dummy.matrix );
+		}
+		scene.add( stalks );
+		scene.add( heads );
+	}
+
+	function buildDucks( THREE ) {
+		for ( var i = 0; i < 5; i++ ) {
+			var th = Math.random() * Math.PI * 2;
+			var rr = 40 + Math.random() * 110;
+			addDuck( THREE, POND.x + Math.cos( th ) * rr, POND.z + Math.sin( th ) * rr );
+		}
+	}
+
+	function addDuck( THREE, x, z ) {
+		var g = new THREE.Group();
+		var mallard = Math.random() < 0.6;
+		var bodyC = mallard ? 0x6b5a42 : 0xd8d3c4;
+		var body = new THREE.Mesh( new THREE.BoxGeometry( 7, 4, 4.5 ), mat( THREE, bodyC ) );
+		body.position.y = 2.5;
+		g.add( body );
+		var head = new THREE.Mesh( new THREE.BoxGeometry( 2.8, 2.8, 2.6 ),
+			mat( THREE, mallard ? 0x2d5a35 : 0xd8d3c4 ) );
+		head.position.set( 3.6, 5.6, 0 );
+		g.add( head );
+		var beak = new THREE.Mesh( new THREE.BoxGeometry( 1.8, 0.9, 1.4 ), mat( THREE, 0xd8a23a ) );
+		beak.position.set( 5.6, 5.2, 0 );
+		g.add( beak );
+		scene.add( g );
+		var body2d = Matter.Bodies.circle( x, z, 4, { frictionAir: 0.26, density: 0.0006 } );
+		Matter.Composite.add( engine.world, body2d );
+		ducks.push( { g: g, body: body2d, wanderT: 400 + Math.random() * 1800, cd: 0 } );
+	}
+
+	function updateDucks( dms, t ) {
+		var b = buggyBody;
+		for ( var i = 0; i < ducks.length; i++ ) {
+			var d = ducks[ i ];
+			d.wanderT -= dms;
+			d.cd -= dms;
+			var px = d.body.position.x, pz = d.body.position.y;
+			var wet = inPond( px, pz );
+			if ( d.wanderT <= 0 ) {
+				d.wanderT = 1400 + Math.random() * 2400;
+				// paddle about, but stay on the water
+				var dir = wet
+					? Math.random() * Math.PI * 2
+					: Math.atan2( POND.z - pz, POND.x - px );
+				Matter.Body.setVelocity( d.body, { x: Math.cos( dir ) * 0.5, y: Math.sin( dir ) * 0.5 } );
+			}
+			// scatter (and squawk-ish) when the buggy wades in close
+			if ( d.cd <= 0 && Math.hypot( px - b.position.x, pz - b.position.y ) < 60 &&
+			     Math.hypot( b.velocity.x, b.velocity.y ) > 1 ) {
+				d.cd = 1600;
+				var fa = Math.atan2( pz - b.position.y, px - b.position.x );
+				Matter.Body.setVelocity( d.body, { x: Math.cos( fa ) * 2.6, y: Math.sin( fa ) * 2.6 } );
+				softCluck();
+			}
+			d.g.position.set( px,
+				wet ? POND.waterY - 1 + Math.sin( t * 2.1 + i * 1.7 ) * 0.5 : heightAt( px, pz ), pz );
+			var v = d.body.velocity;
+			if ( Math.hypot( v.x, v.y ) > 0.1 ) d.g.rotation.y = -Math.atan2( v.y, v.x );
+		}
+	}
+
+	function buildPumpjack( THREE ) {
+		// the oilpatch corner: a nodding pumpjack + a flare stack
+		var black = mat( THREE, 0x1c1512 );
+		var rust = mat( THREE, 0x8a3a2a );
+		var g = new THREE.Group();
+		var slab = new THREE.Mesh( new THREE.BoxGeometry( 30, 2, 12 ), mat( THREE, 0x4a443c ) );
+		slab.position.y = 1;
+		g.add( slab );
+		var post = new THREE.Mesh( new THREE.BoxGeometry( 4, 20, 4 ), rust );
+		post.position.set( -2, 11, 0 );
+		g.add( post );
+		pumpBeam = new THREE.Group();
+		pumpBeam.position.set( -2, 21, 0 );
+		var beam = new THREE.Mesh( new THREE.BoxGeometry( 30, 3, 4 ), black );
+		beam.position.x = 2;
+		pumpBeam.add( beam );
+		var horsehead = new THREE.Mesh( new THREE.BoxGeometry( 4, 9, 5 ), black );
+		horsehead.position.set( 16, -1, 0 );
+		pumpBeam.add( horsehead );
+		g.add( pumpBeam );
+		pumpCrank = new THREE.Mesh( new THREE.CylinderGeometry( 5, 5, 3, 10 ), rust );
+		pumpCrank.rotation.x = Math.PI / 2;
+		pumpCrank.position.set( -13, 8, 0 );
+		g.add( pumpCrank );
+		var lm = { id: 'pumpjack', name: 'the pumpjack', x: 3820, y: 2280, href: null,
+			prompt: 'The pumpjack — the oilpatch kept the lights on' };
+		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
+		g.rotation.y = 0.4;
+		g.userData.lm = lm;
+		scene.add( g );
+		clickables.push( g );
+		PROMPTS.push( lm );
+		Matter.Composite.add( engine.world,
+			Matter.Bodies.rectangle( lm.x, lm.y, 34, 18, { isStatic: true } ) );
+
+		// flare stack, always burning
+		var fx = 3862, fz = 2252;
+		var fy = hillsAt( fx, fz );
+		var stack = new THREE.Mesh( new THREE.CylinderGeometry( 1.8, 2.4, 55, 7 ), black );
+		stack.position.set( fx, fy + 27.5, fz );
+		scene.add( stack );
+		flareFlame = new THREE.Mesh( new THREE.ConeGeometry( 4, 13, 6 ),
+			new THREE.MeshBasicMaterial( { color: 0xffa03a, transparent: true, opacity: 0.9 } ) );
+		flareFlame.position.set( fx, fy + 61, fz );
+		scene.add( flareFlame );
+		flareLight = new THREE.PointLight( 0xff8c3a, 0.7, 340 );
+		flareLight.position.set( fx, fy + 60, fz );
+		scene.add( flareLight );
+		Matter.Composite.add( engine.world, Matter.Bodies.circle( fx, fz, 4, { isStatic: true } ) );
+	}
+
+	function updateScenery( dms, t ) {
+		if ( windmillBlades ) windmillBlades.rotation.z += dms * 0.0006;
+		if ( pumpBeam ) pumpBeam.rotation.z = Math.sin( t * 1.7 ) * 0.2;
+		if ( pumpCrank ) pumpCrank.rotation.y += dms * 0.0034;
+		if ( flareFlame ) {
+			var fl = 0.75 + Math.sin( t * 13 ) * 0.18 + Math.random() * 0.14;
+			flareFlame.scale.set( 1, fl * 1.2, 1 );
+			flareFlame.material.opacity = 0.6 + fl * 0.3;
+			if ( flareLight ) flareLight.intensity = 0.4 + fl * 0.5;
 		}
 	}
 
