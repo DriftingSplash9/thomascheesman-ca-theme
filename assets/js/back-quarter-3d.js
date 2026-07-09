@@ -2,6 +2,18 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * GRAPHICS PHASE D — BLOOM + EMISSIVE: the scene renders through an
+ * EffectComposer (vendored r128 postprocessing, assets/js/vendor/
+ * three-r128-postfx.js, loaded by back-quarter.js) with an
+ * UnrealBloomPass, so the lights finally GLOW: windows, lanterns, lamp
+ * heads, marquee bulbs, the flare, the fire, the headlights, screens'
+ * titles, tokens, boost pads, sun/moon and the fireworks. Light-source
+ * materials are pushed past 1.0 via glow() (HDR colours) so they cross
+ * the bloom threshold after ACES; knobs live in BLOOM up top. Bloom is
+ * WebGL2-only (a multisample target keeps the antialiasing the composer
+ * would otherwise lose); WebGL1 or a missing postfx bundle falls back
+ * to the direct render, exactly the phase-C look.
+ *
  * 3D-P2.6 — MONSTER QUARTER: the world triples again (4480×2520 — 12× the
  * original board), the whole quarter sits on a tilted grade with hills
  * ~50% stronger, and the toys grow up:
@@ -518,6 +530,7 @@
 
 	var stage, hudEl, chipEl;
 	var renderer, scene, camera, clock;
+	var composer = null, bloomPass = null; // bloom stack — null renders plain
 	var Matter, engine, buggyBody;
 	var buggyGroup, chassisGroup, wheels = [];
 	var bales = [];
@@ -548,6 +561,10 @@
 	var skyMatRef = null, starMatRef = null, sunBall = null, sunHalo = null, moonBall = null, moonHalo = null;
 	var DAY_CYCLE = 480; // seconds for a full day+night, Minecraft-style
 	var DAY_START = 0.62; // begin in the evening — the farm's identity is dusk
+	// Bloom knobs. Threshold is POST-tone-mapping luminance: ACES lands the
+	// day sky around ~0.6 and moonlit ground far lower, so 0.72 catches only
+	// the boosted glow() materials, the sun/moon discs and the fireworks.
+	var BLOOM = { strength: 0.55, radius: 0.4, threshold: 0.72 };
 	var windmillBlades = null, pumpBeam = null, pumpCrank = null, flareFlame = null, flareLight = null;
 	var ducks = [];
 	var bulbInst = null, bulbCount = 0, bulbTimer = 0, bulbPhase = 0, bulbLit = null, bulbDim = null;
@@ -733,7 +750,7 @@
 		// the moon and the sun ride opposite ends of the day arc
 		moonBall = new THREE.Mesh(
 			new THREE.SphereGeometry( 150, 24, 24 ),
-			new THREE.MeshBasicMaterial( { color: 0xeef4ff, fog: false } )
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xeef4ff, 1.3 ), fog: false } )
 		);
 		skyGroup.add( moonBall );
 		moonHalo = new THREE.Sprite( new THREE.SpriteMaterial( {
@@ -744,7 +761,7 @@
 		skyGroup.add( moonHalo );
 		sunBall = new THREE.Mesh(
 			new THREE.SphereGeometry( 210, 24, 24 ),
-			new THREE.MeshBasicMaterial( { color: 0xfff3d0, fog: false } )
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xfff3d0, 1.5 ), fog: false } )
 		);
 		skyGroup.add( sunBall );
 		sunHalo = new THREE.Sprite( new THREE.SpriteMaterial( {
@@ -845,6 +862,27 @@
 		scene.fog = new THREE.Fog( 0x141d2e, 620, 3000 );
 
 		camera = new THREE.PerspectiveCamera( baseFov, stage.clientWidth / stage.clientHeight, 1, 9000 );
+
+		// ---------- bloom (graphics phase D) ----------
+		// Render through an EffectComposer so UnrealBloomPass can pick up the
+		// glow() materials. Composer render targets lose the canvas MSAA, so
+		// bloom is WebGL2-only (multisample target keeps the AA) — WebGL1
+		// falls back to the plain aliasing-free direct render, no bloom.
+		if ( THREE.EffectComposer && THREE.UnrealBloomPass &&
+			renderer.capabilities.isWebGL2 && THREE.WebGLMultisampleRenderTarget ) {
+			var pr = renderer.getPixelRatio();
+			var msTarget = new THREE.WebGLMultisampleRenderTarget(
+				stage.clientWidth * pr, stage.clientHeight * pr,
+				{ format: THREE.RGBAFormat } );
+			composer = new THREE.EffectComposer( renderer, msTarget );
+			composer.setPixelRatio( pr );
+			composer.setSize( stage.clientWidth, stage.clientHeight );
+			composer.addPass( new THREE.RenderPass( scene, camera ) );
+			bloomPass = new THREE.UnrealBloomPass(
+				new THREE.Vector2( stage.clientWidth, stage.clientHeight ),
+				BLOOM.strength, BLOOM.radius, BLOOM.threshold );
+			composer.addPass( bloomPass );
+		}
 
 		ambLight = new THREE.AmbientLight( 0x233248, 0.5 );
 		scene.add( ambLight );
@@ -1043,6 +1081,7 @@
 				var w = stage.clientWidth, h = stage.clientHeight;
 				if ( ! w || ! h ) return;
 				renderer.setSize( w, h );
+				if ( composer ) composer.setSize( w, h );
 				camera.aspect = w / h;
 				camera.updateProjectionMatrix();
 			} ).observe( stage );
@@ -1462,7 +1501,8 @@
 			moonLight.position.set( rx - 700, worldY + 1000, rz - 600 );
 		}
 
-		renderer.render( scene, camera );
+		if ( composer ) composer.render();
+		else renderer.render( scene, camera );
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -1512,7 +1552,7 @@
 	// mounds, with lit lip markers so the take-off reads at night.
 	function buildJumps( THREE ) {
 		var dirt = new THREE.MeshLambertMaterial( { color: 0x4a3323, side: THREE.DoubleSide } );
-		var lampMat = new THREE.MeshBasicMaterial( { color: 0xffd9a0 } );
+		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } );
 		JUMPS.forEach( function ( j ) {
 			var hw = j.w / 2, N = 20;
 			function pt( sd, t, y ) {
@@ -1550,7 +1590,7 @@
 		// world-space wedges that follow the terrain, matching rampAt()'s
 		// f² face exactly so the buggy rides the surface it sees
 		var dirt = new THREE.MeshLambertMaterial( { color: 0x5c4830, side: THREE.DoubleSide } );
-		var lampMat = new THREE.MeshBasicMaterial( { color: 0xffd9a0 } );
+		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } );
 		RAMPS.forEach( function ( r ) {
 			var hw = r.w / 2;
 			function pt( sd, t, y ) {
@@ -1591,7 +1631,7 @@
 	}
 
 	function buildPads( THREE ) {
-		var padMat = new THREE.MeshBasicMaterial( { color: 0x8be9ff, transparent: true, opacity: 0.5 } );
+		var padMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0x8be9ff, 1.5 ), transparent: true, opacity: 0.5 } );
 		PADS.forEach( function ( p, i ) {
 			padCooldown[ i ] = 0;
 			var g = new THREE.Group();
@@ -1632,7 +1672,7 @@
 		try { found = JSON.parse( window.localStorage.getItem( 'tcBqTok_v1' ) || '[]' ); } catch ( err ) {}
 		var geo = new THREE.CylinderGeometry( 6, 6, 1.8, 16 );
 		geo.rotateZ( Math.PI / 2 );
-		var gold = new THREE.MeshBasicMaterial( { color: 0xffd76a } );
+		var gold = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd76a, 1.4 ) } );
 		tokenCount = TOKENS.length;
 		TOKENS.forEach( function ( tk, i ) {
 			var got = found.indexOf( i ) !== -1;
@@ -1784,7 +1824,7 @@
 		scene.add( pad );
 		var ring = new THREE.Mesh(
 			new THREE.CylinderGeometry( restackPad.r + 2.5, restackPad.r + 2.5, 0.6, 22 ),
-			new THREE.MeshBasicMaterial( { color: 0xffcf8a, transparent: true, opacity: 0.35 } )
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffcf8a, 1.5 ), transparent: true, opacity: 0.35 } )
 		);
 		ring.position.copy( pad.position );
 		ring.position.y += 0.6;
@@ -1805,7 +1845,7 @@
 
 		// old-school GLASS BULBS around every border — one InstancedMesh for
 		// all screens, colors chased in updateDriveInChase()
-		bulbLit = new THREE.Color( 0xffe6a8 );
+		bulbLit = new THREE.Color( 0xffe6a8 ).multiplyScalar( 2.2 ); // HDR — the chase blooms
 		bulbDim = new THREE.Color( 0x6a4d26 );
 		var ring = [], rb;
 		for ( rb = -62; rb <= 62; rb += 13.75 ) ring.push( [ rb, 149 ] );  // top →
@@ -1875,7 +1915,9 @@
 			g.add( panel );
 			var face = new THREE.Mesh(
 				new THREE.PlaneGeometry( 118, 66 ),
-				new THREE.MeshBasicMaterial( { map: new THREE.CanvasTexture( c ) } )
+				// slight HDR lift: the white titles bloom like a projector beam,
+				// the dark screen body stays dark
+				new THREE.MeshBasicMaterial( { map: new THREE.CanvasTexture( c ), color: glow( THREE, 0xffffff, 1.25 ) } )
 			);
 			face.position.set( 0, 112, 2 );
 			g.add( face );
@@ -1947,10 +1989,18 @@
 	 * ------------------------------------------------------------------ */
 	function mat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color } ); }
 
+	// A light source: a MeshBasic colour pushed past 1.0 (HDR) so ACES still
+	// leaves it hot enough to cross BLOOM.threshold — these are the meshes
+	// the bloom pass picks up. ~1.4 reads "lit", ~2.2 reads "burning".
+	// Harmless without the composer: the colour just clamps at white-ish.
+	function glow( THREE, hex, boost ) {
+		return new THREE.Color( hex ).multiplyScalar( boost || 1.8 );
+	}
+
 	function addWindow( THREE, group, w, h, x, y, z, rotY ) {
 		var pane = new THREE.Mesh(
 			new THREE.PlaneGeometry( w, h ),
-			new THREE.MeshBasicMaterial( { color: 0xffb65e } )
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb65e, 1.7 ) } )
 		);
 		pane.position.set( x, y, z );
 		if ( rotY ) pane.rotation.y = rotY;
@@ -2035,7 +2085,7 @@
 			g.add( face );
 		} );
 		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 3.8, 3.4 ),
-			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } ) );
 		lantern.position.y = beamY + bh / 2 + 3.4;
 		g.add( lantern );
 		var cap = new THREE.Mesh( new THREE.ConeGeometry( 3.2, 2.8, 4 ), mat( THREE, 0x1c1512 ) );
@@ -2123,7 +2173,7 @@
 			COMPOUND.x1 + 26, COMPOUND.gateZ0 - 14, HUB.x + 40, HUB.y );
 
 		var lamp = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 4, 3.4 ),
-			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } ) );
 		lamp.position.set( COMPOUND.x1, gateH + 22, COMPOUND.gateZ0 );
 		scene.add( lamp );
 		addGlowDisc( THREE, GATE.x + 8, GATE.z, 26, 0.08 );
@@ -2350,7 +2400,7 @@
 		spine.position.y = 75;
 		g.add( spine );
 		mastLamp = new THREE.Mesh( new THREE.SphereGeometry( 3.4, 8, 8 ),
-			new THREE.MeshBasicMaterial( { color: 0xff3b30 } ) );
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xff3b30, 1.6 ) } ) );
 		mastLamp.position.y = 154;
 		g.add( mastLamp );
 		return g;
@@ -3069,7 +3119,7 @@
 		stack.position.set( fx, fy + 34.5, fz );
 		scene.add( stack );
 		flareFlame = new THREE.Mesh( new THREE.ConeGeometry( 4.5, 15, 6 ),
-			new THREE.MeshBasicMaterial( { color: 0xffa03a, transparent: true, opacity: 0.9 } ) );
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffa03a, 2.2 ), transparent: true, opacity: 0.9 } ) );
 		flareFlame.position.set( fx, fy + 76, fz );
 		scene.add( flareFlame );
 		flareLight = new THREE.PointLight( 0xff8c3a, 0.7, 380 );
@@ -3168,7 +3218,7 @@
 		// the fire — two flickering cones + warm light
 		[ 0, 1 ].forEach( function ( fi ) {
 			var flame = new THREE.Mesh( new THREE.ConeGeometry( 4 - fi * 1.6, 9 - fi * 2, 6 ),
-				new THREE.MeshBasicMaterial( { color: fi ? 0xffd27a : 0xff8c3a, transparent: true, opacity: 0.9 } ) );
+				new THREE.MeshBasicMaterial( { color: glow( THREE, fi ? 0xffd27a : 0xff8c3a, 2.2 ), transparent: true, opacity: 0.9 } ) );
 			flame.position.set( HX, gy + 5 + fi * 2, HZ );
 			scene.add( flame );
 			fireFlames.push( flame );
@@ -3566,7 +3616,7 @@
 			post.position.set( START.x, hillsAt( START.x, pz ) + 17, pz );
 			scene.add( post );
 			var lamp = new THREE.Mesh( new THREE.BoxGeometry( 4, 4.5, 4 ),
-				new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
+				new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } ) );
 			lamp.position.set( START.x, hillsAt( START.x, pz ) + 37, pz );
 			scene.add( lamp );
 		} );
@@ -3598,7 +3648,7 @@
 		// stadium towers OUTSIDE the ring corners — triple height, big
 		// double-size heads, lamp light thrown both ways down the track
 		var poleMat = mat( THREE, 0x3a3630 );
-		var headMat = new THREE.MeshBasicMaterial( { color: 0xfff2d0 } );
+		var headMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xfff2d0, 2.0 ) } );
 		[ { x: -300, z: -300 }, { x: W + 300, z: -300 },
 		  { x: -300, z: H + 300 }, { x: W + 300, z: H + 300 } ].forEach( function ( c ) {
 			var gy = hillsAt( c.x, c.z );
@@ -3813,7 +3863,7 @@
 		bar.position.set( 2240, gh + 27, H - 6 );
 		scene.add( bar );
 		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 4, 5, 4 ),
-			new THREE.MeshBasicMaterial( { color: 0xffd9a0 } ) );
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } ) );
 		lantern.position.set( 2240, gh + 31, H - 6 );
 		scene.add( lantern );
 		addGlowDisc( THREE, 2240, H - 30, 34, 0.08 );
@@ -3983,7 +4033,7 @@
 			if ( p.life > 0 ) continue;
 			used++;
 			p.max = p.life = 1100 + Math.random() * 500;
-			p.spr.material.color.setHex( color );
+			p.spr.material.color.setHex( color ).multiplyScalar( 1.6 ); // HDR — bursts bloom
 			p.spr.position.set( cx, cy, cz );
 			var th = Math.random() * Math.PI * 2, ph = Math.random() * Math.PI;
 			var sp2 = 40 + Math.random() * 55;
@@ -4607,7 +4657,7 @@
 			wheels.push( w );
 		} );
 
-		var lampMat = new THREE.MeshBasicMaterial( { color: 0xffe9c9 } );
+		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffe9c9, 2.0 ) } );
 		[ -8, 8 ].forEach( function ( z ) {
 			var lamp = new THREE.Mesh( new THREE.BoxGeometry( 2.5, 3, 4 ), lampMat );
 			lamp.position.set( 22, 10, z );

@@ -132,6 +132,12 @@
 			( base + '/assets/js/vendor/three-r128.min.js' );
 		loadScript( base + '/assets/js/vendor/matter-0.20.0.min.js' )
 			.then( function () { return window.THREE ? null : loadScript( threeUrl ); } )
+			.then( function () {
+				// bloom stack (EffectComposer + UnrealBloomPass) — optional:
+				// if it fails to load, the 3D module renders without bloom
+				if ( window.THREE && window.THREE.UnrealBloomPass ) return null;
+				return loadScript( base + '/assets/js/vendor/three-r128-postfx.js' ).catch( function () { return null; } );
+			} )
 			.then( function () { return loadScript( base + '/assets/js/back-quarter-3d.js?cb=' + Date.now() ); } )
 			.then( function () {
 				if ( ! window.Matter || ! window.THREE || ! window.TCBackQuarter3D ) {
