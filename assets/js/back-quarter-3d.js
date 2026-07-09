@@ -431,7 +431,7 @@
 	var RAMPS = [
 		{ x: 2180, z: 2010, dir: { x: 30, z: -380 }, w: 70, l: 110, h: 28 },   // entry straight — the pad feeds it
 		{ x: 2835, z: 613, dir: { x: 420, z: 280 }, w: 70, l: 120, h: 34 },    // cookshack → elevator run
-		{ x: 3640, z: 1400, dir: { x: 630, z: -90 }, w: 70, l: 120, h: 36 },   // barn → radio mast run
+		{ x: 3283, z: 1210, dir: { x: 70, z: 455 }, w: 70, l: 120, h: 36 },    // elevator → barn run (moved off the barn wall)
 		{ x: 1242, z: 1698, dir: { x: -315, z: -140 }, w: 70, l: 110, h: 30 }, // west run below the compound
 		{ x: 3390, z: 990, dir: { x: 1, z: 0 }, w: 76, l: 100, h: 14 }         // the slough jump — splash-down
 	];
@@ -460,14 +460,16 @@
 		{ x: 525, z: 2065 }, { x: 4078, z: 1138 },
 		// sky tokens on the ramp arcs — APPEND ONLY (saved indices must hold)
 		{ x: 2198, z: 1780, air: true, y: 70 },
-		{ x: 3868, z: 1370, air: true, y: 75 },
+		{ x: 3319, z: 1448, air: true, y: 75 }, // rides the relocated ramp's arc
 		{ x: 3565, z: 990, air: true, y: 26 },
 		// section-road tokens (append only): four on the racing line, two
 		// in the air over the big south sender and the NE kicker
 		{ x: 2000, z: 2690 }, { x: 4650, z: 1500 }, { x: 2240, z: -170 },
 		{ x: -170, z: 1500 },
 		{ x: 3760, z: 2690, air: true, y: 40 },
-		{ x: 4650, z: 640, air: true, y: 40 }
+		{ x: 4650, z: 640, air: true, y: 40 },
+		// #30: in the air over the second south table (append only)
+		{ x: 3200, z: 2690, air: true, y: 42 }
 	];
 
 	var stage, hudEl, chipEl;
@@ -938,6 +940,7 @@
 		initDust( THREE );
 		initSplash( THREE );
 		initMud( THREE );
+		initFireworks( THREE );
 		initTracks( THREE );
 		initSmoke( THREE );
 		buildSoundToggle();
@@ -1304,6 +1307,7 @@
 		updateDucks( dms, t );
 		updateScenery( dms, t );
 		updateDayNight( t );
+		updateFireworks( dms );
 		updateGhosts( dms );
 		updateDriveInChase( dms );
 		updateCrowd( t );
@@ -1604,7 +1608,8 @@
 			} catch ( err ) {}
 			updateHud();
 			if ( tokenFound === tokenCount ) {
-				flashChip( 'All ' + tokenCount + ' tokens found — park at the restack pad to hide them again 🏆' );
+				flashChip( 'ALL ' + tokenCount + ' TOKENS — the quarter is yours! 🏆🎆 (the restack pad resets the hunt)' );
+				startCelebration();
 			}
 		}
 	}
@@ -3564,6 +3569,74 @@
 			if ( tr.life <= 0 ) continue;
 			tr.life -= dms;
 			tr.mesh.material.opacity = 0.30 * Math.max( 0, tr.life / 6000 );
+		}
+	}
+
+	/* ---- fireworks — the all-tokens celebration ---- */
+	var fwPool = [], fwBursts = 0, fwNextT = 0;
+
+	function initFireworks( THREE ) {
+		var tex = makePuffTexture( THREE, 255, 255, 255 );
+		for ( var i = 0; i < 70; i++ ) {
+			var spr = new THREE.Sprite( new THREE.SpriteMaterial( {
+				map: tex, transparent: true, opacity: 0, depthWrite: false,
+				blending: THREE.AdditiveBlending, color: 0xffffff
+			} ) );
+			spr.scale.set( 6, 6, 1 );
+			scene.add( spr );
+			fwPool.push( { spr: spr, life: 0, max: 0, vx: 0, vy: 0, vz: 0 } );
+		}
+	}
+
+	function fireworkBurst( cx, cy, cz, color ) {
+		var used = 0;
+		for ( var i = 0; i < fwPool.length && used < 20; i++ ) {
+			var p = fwPool[ i ];
+			if ( p.life > 0 ) continue;
+			used++;
+			p.max = p.life = 1100 + Math.random() * 500;
+			p.spr.material.color.setHex( color );
+			p.spr.position.set( cx, cy, cz );
+			var th = Math.random() * Math.PI * 2, ph = Math.random() * Math.PI;
+			var sp2 = 40 + Math.random() * 55;
+			p.vx = Math.cos( th ) * Math.sin( ph ) * sp2;
+			p.vz = Math.sin( th ) * Math.sin( ph ) * sp2;
+			p.vy = Math.abs( Math.cos( ph ) ) * sp2 * 0.9 + 25;
+		}
+	}
+
+	// six bursts over ~4s in the kids' colors + gold, cheers with each
+	function startCelebration() {
+		fwBursts = 6;
+		fwNextT = 0;
+		fanfare();
+	}
+
+	function updateFireworks( dms ) {
+		if ( fwBursts > 0 ) {
+			fwNextT -= dms;
+			if ( fwNextT <= 0 ) {
+				fwNextT = 640;
+				fwBursts--;
+				var cols = [ 0xffd76a, 0xff9ecb, 0x8fd0ff, 0xcbb2ff, 0xf4f4f0 ];
+				fireworkBurst(
+					buggyBody.position.x + ( Math.random() - 0.5 ) * 240,
+					worldY + 90 + Math.random() * 70,
+					buggyBody.position.y + ( Math.random() - 0.5 ) * 240,
+					cols[ fwBursts % cols.length ] );
+				cheer( 1.3 );
+			}
+		}
+		for ( var i = 0; i < fwPool.length; i++ ) {
+			var p = fwPool[ i ];
+			if ( p.life <= 0 ) continue;
+			p.life -= dms;
+			var dt2 = dms / 1000;
+			p.vy -= 85 * dt2;
+			p.spr.position.x += p.vx * dt2;
+			p.spr.position.y += p.vy * dt2;
+			p.spr.position.z += p.vz * dt2;
+			p.spr.material.opacity = 0.85 * Math.max( 0, p.life / p.max );
 		}
 	}
 
