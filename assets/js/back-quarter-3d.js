@@ -2338,32 +2338,91 @@
 		g.add( spire );
 		addWindow( THREE, g, 8, 14, -23.2, 14, 0, -Math.PI / 2 );
 		addWindow( THREE, g, 8, 14, 23.2, 14, 0, Math.PI / 2 );
-		addWindow( THREE, g, 10, 16, 0, 14, 75.2 );
+		// front window on the TOWER face (z 48), not floating out at z 75
+		addWindow( THREE, g, 9, 15, 0, 30, 48.2 );
 		addGlowDisc( THREE, lm.x, lm.y + 125, 105, 0.10 );
 		return g;
 	}
 
 	function buildTreehouse( THREE, lm ) {
+		// A cabin genuinely up IN the trees: three trees cradle it, the cabin
+		// sits on a stilted deck with a railing, and a ladder climbs the
+		// front. The kid's name is a yard signpost planted out front, low to
+		// the ground — not stuck on the wall.
 		var g = new THREE.Group();
-		[ [ -10, -6 ], [ 12, 4 ], [ -2, 10 ] ].forEach( function ( p ) {
-			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 2.5, 3.5, 44, 6 ), mat( THREE, 0x2c2418 ) );
-			trunk.position.set( p[ 0 ], 22, p[ 1 ] );
-			g.add( trunk );
-			var cone = new THREE.Mesh( new THREE.ConeGeometry( 11, 46, 7 ), mat( THREE, 0x1d3a26 ) );
-			cone.position.set( p[ 0 ], 62, p[ 1 ] );
-			g.add( cone );
-		} );
-		var cabin = new THREE.Mesh( new THREE.BoxGeometry( 22, 16, 18 ), mat( THREE, 0x4a3a28 ) );
-		cabin.position.y = 40;
-		g.add( cabin );
 		var kidColor = ( lm && lm.kidColor ) || 0x33261a;
+		var bark = 0x2c2418, foliage = 0x1d3a26;
+
+		// the trees it nests in — a big one behind + two flanking, canopies
+		// rising above and around the roof so the cabin reads as tucked in
+		[ [ 0, -13, 3.6, 4.8, 88, 15, 54 ],
+		  [ -17, 7, 2.6, 3.6, 72, 11, 44 ],
+		  [ 16, 9, 2.6, 3.6, 68, 11, 42 ] ].forEach( function ( t ) {
+			var trunk = new THREE.Mesh(
+				new THREE.CylinderGeometry( t[ 2 ], t[ 3 ], t[ 4 ], 6 ), mat( THREE, bark ) );
+			trunk.position.set( t[ 0 ], t[ 4 ] / 2, t[ 1 ] );
+			g.add( trunk );
+			var f1 = new THREE.Mesh( new THREE.ConeGeometry( t[ 5 ], t[ 6 ], 7 ), mat( THREE, foliage ) );
+			f1.position.set( t[ 0 ], t[ 4 ] - t[ 6 ] * 0.15, t[ 1 ] );
+			g.add( f1 );
+			var f2 = new THREE.Mesh( new THREE.ConeGeometry( t[ 5 ] * 0.68, t[ 6 ] * 0.68, 7 ), mat( THREE, foliage ) );
+			f2.position.set( t[ 0 ], t[ 4 ] + t[ 6 ] * 0.28, t[ 1 ] );
+			g.add( f2 );
+		} );
+
+		// the stilted deck the cabin stands on
+		var deckTop = 35;
+		var postGeo = new THREE.CylinderGeometry( 1.7, 1.7, deckTop, 5 );
+		[ [ -11, -8 ], [ 11, -8 ], [ -11, 9 ], [ 11, 9 ] ].forEach( function ( p ) {
+			var st = new THREE.Mesh( postGeo, mat( THREE, bark ) );
+			st.position.set( p[ 0 ], deckTop / 2, p[ 1 ] );
+			g.add( st );
+		} );
+		var deck = new THREE.Mesh( new THREE.BoxGeometry( 30, 3, 26 ), mat( THREE, 0x5a4630 ) );
+		deck.position.y = deckTop - 1.5;
+		g.add( deck );
+
+		// a low railing round the deck, with a gap at front-centre for the ladder
+		var railMat = mat( THREE, 0x4a3a28 ), railY = deckTop + 4;
+		var railBack = new THREE.Mesh( new THREE.BoxGeometry( 30, 6, 1.6 ), railMat );
+		railBack.position.set( 0, railY, -13 );
+		g.add( railBack );
+		[ -15, 15 ].forEach( function ( x ) {
+			var side = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 6, 26 ), railMat );
+			side.position.set( x, railY, 0 );
+			g.add( side );
+		} );
+		[ -10.5, 10.5 ].forEach( function ( x ) {
+			var frontRail = new THREE.Mesh( new THREE.BoxGeometry( 9, 6, 1.6 ), railMat );
+			frontRail.position.set( x, railY, 13 );
+			g.add( frontRail );
+		} );
+
+		// the cabin: a clear little house sitting on the deck
+		var cabin = new THREE.Mesh( new THREE.BoxGeometry( 22, 17, 18 ), mat( THREE, 0x6b5236 ) );
+		cabin.position.y = deckTop + 8.5;
+		g.add( cabin );
 		var roof = gableRoof( THREE, 26, 13, kidColor );
-		roof.position.y = 52;
+		roof.position.y = deckTop + 21;
 		g.add( roof );
-		var ladder = new THREE.Mesh( new THREE.BoxGeometry( 2, 34, 6 ), mat( THREE, kidColor ) );
-		ladder.position.set( 12, 17, 0 );
-		g.add( ladder );
-		addWindow( THREE, g, 8, 7, 0, 40, 9.2 );
+		var door = new THREE.Mesh( new THREE.PlaneGeometry( 6, 11 ), mat( THREE, 0x2a2016 ) );
+		door.position.set( 6, deckTop + 5.5, 9.2 );
+		g.add( door );
+		addWindow( THREE, g, 8, 8, -4, deckTop + 9, 9.2 ); // warm glowing window
+
+		// the ladder up the front to the deck
+		[ -3, 3 ].forEach( function ( x ) {
+			var rail = new THREE.Mesh( new THREE.BoxGeometry( 1.4, deckTop + 2, 1.4 ), mat( THREE, bark ) );
+			rail.position.set( x, ( deckTop + 2 ) / 2, 14.5 );
+			g.add( rail );
+		} );
+		for ( var r = 6; r < deckTop; r += 7 ) {
+			var rung = new THREE.Mesh( new THREE.BoxGeometry( 7.5, 1.2, 1.2 ), mat( THREE, bark ) );
+			rung.position.set( 0, r, 14.5 );
+			g.add( rung );
+		}
+
+		// the name: a yard SIGNPOST planted out front, low to the ground
 		if ( lm && lm.name ) {
 			var c = document.createElement( 'canvas' );
 			var ctx = c.getContext( '2d' );
@@ -2379,13 +2438,22 @@
 			ctx.font = '600 44px Georgia, serif';
 			ctx.fillStyle = lm.kidCss || '#ffe3b0';
 			ctx.fillText( lm.name, 18, 47 );
-			var bw = Math.max( 12, Math.min( 20, wpx * 0.075 ) );
-			var plate = new THREE.Mesh(
-				new THREE.PlaneGeometry( bw, bw * 64 / wpx ),
-				new THREE.MeshBasicMaterial( { map: new THREE.CanvasTexture( c ) } )
-			);
-			plate.position.set( 0, 31.5, 9.3 );
-			g.add( plate );
+
+			var signZ = 30, plateW = 22, plateH = plateW * 64 / wpx;
+			var postH = 15;
+			var signPost = new THREE.Mesh( new THREE.BoxGeometry( 2.4, postH, 2.4 ), mat( THREE, 0x3a2c1c ) );
+			signPost.position.set( 0, postH / 2, signZ );
+			g.add( signPost );
+			var tex = new THREE.CanvasTexture( c );
+			[ 1, -1 ].forEach( function ( side ) {
+				var plate = new THREE.Mesh(
+					new THREE.PlaneGeometry( plateW, plateH ),
+					new THREE.MeshBasicMaterial( { map: tex } )
+				);
+				plate.position.set( 0, postH + plateH / 2, signZ + side * 0.4 );
+				if ( side < 0 ) plate.rotation.y = Math.PI;
+				g.add( plate );
+			} );
 		}
 		return g;
 	}
