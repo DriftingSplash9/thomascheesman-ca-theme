@@ -18,6 +18,21 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * SOUND PASS 2 — REAL RECORDINGS + POSITIONAL AUDIO (Thomas's "1980s
+ * driving game" review, addressed): ten real samples (public domain /
+ * CC0 off Wikimedia Commons + one CC BY-SA mallard — see
+ * assets/audio/CREDITS.md), lazy-fetched only when sound goes ON
+ * (~340 KB total), every caller falling back to its synth when a
+ * buffer is missing. A diesel-engine loop rides under the (ducked)
+ * synth engine, rate-bent with the revs. PannerNode positional audio:
+ * the listener rides the buggy; hens cluck FROM the coop, applause
+ * drifts FROM the grandstands, the windmill creaks FROM the shore,
+ * the pumpjack clanks FROM the unit. Real squawk slices when you
+ * scatter chickens, mallard quacks off the slough, bathtub-splash
+ * landings, cows moo / horses whinny as you pass, Trumac's pitched-
+ * down moo, applause layered into the cheers — and the ROOSTER CROWS
+ * AT SUNRISE, every dawn of the 8-minute day.
+ *
  * FEEL + FARM SHUFFLE: gravity +15% again (476); BIG AIR pays turbo on
  * any clean landing over 0.85s aloft (scales with hang-time, caps at
  * 1300ms). Corner light towers moved OUTSIDE the ring, tripled in
@@ -470,6 +485,7 @@
 	var camPos = null, raycaster = null, pointerNDC = null;
 	var dustPool = [], splashPool = [], mudPool = [], smokeEmitters = [], trackPool = [], trackIdx = 0, distMark = 0;
 	var audio = { ctx: null, on: false, master: null, engGain: null, engOsc1: null, engOsc2: null };
+	var sampleBufs = {}, samplesLoading = false, posStarted = {}, engSample = null, dnPrevElev = null;
 	var soundBtn = null;
 	var tokens = [], tokenCount = 0, tokenFound = 0;
 	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0, climb = 0, chassisDip = 0;
@@ -726,6 +742,12 @@
 		moonLight.intensity = 0.6 + df * 0.45;
 		moonLight.color.copy( dnNight.sun ).lerp( dnDay.sun, df );
 		starMatRef.opacity = 0.9 * ( 1 - df );
+
+		// the rooster greets the sunrise from the coop
+		if ( dnPrevElev !== null && dnPrevElev <= 0.08 && elev > 0.08 ) {
+			playSample( 'rooster', { gain: 0.95, at: { x: COOP.x, z: COOP.z } } );
+		}
+		dnPrevElev = elev;
 
 		var sx = Math.cos( phase * Math.PI * 2 );
 		sunBall.position.set( sx * 4200, elev * 3000 + 150, -2600 );
@@ -2675,7 +2697,7 @@
 				c.fT = 680;
 				var fa = Math.atan2( pz - b.position.y, px - b.position.x ) + ( Math.random() - 0.5 ) * 0.7;
 				Matter.Body.setVelocity( c.body, { x: Math.cos( fa ) * 3.4, y: Math.sin( fa ) * 3.4 } );
-				squawk();
+				squawk( { x: px, z: pz } );
 			}
 			var hop = c.fT > 0 ? Math.sin( ( 1 - c.fT / 680 ) * Math.PI ) * 15 : 0;
 			c.g.position.set( px, heightAt( px, pz ) + hop, pz );
@@ -2933,7 +2955,7 @@
 				d.cd = 1600;
 				var fa = Math.atan2( pz - b.position.y, px - b.position.x );
 				Matter.Body.setVelocity( d.body, { x: Math.cos( fa ) * 2.6, y: Math.sin( fa ) * 2.6 } );
-				softCluck();
+				if ( ! playSample( 'duck', { slice: 1.3, gain: 0.8, at: { x: px, z: pz } } ) ) softCluck();
 			}
 			d.g.position.set( px,
 				wet ? POND.waterY - 1 + Math.sin( t * 2.1 + i * 1.7 ) * 0.5 : heightAt( px, pz ), pz );
@@ -3616,6 +3638,7 @@
 			ensureAudio();
 			if ( audio.ctx && audio.ctx.state === 'suspended' ) audio.ctx.resume();
 			if ( audio.master ) audio.master.gain.value = 0.6;
+			loadSamples(); // real recordings, fetched once, first time sound goes on
 		} else if ( audio.master ) {
 			audio.master.gain.value = 0; // mutes engine + ambient bed + SFX
 		}
@@ -3678,6 +3701,137 @@
 		audio.noise.start();
 	}
 
+	/* ---- the SAMPLE layer: real recordings, lazy-loaded on sound-on.
+	 * Sources + licenses: assets/audio/CREDITS.md. bq-duck.mp3 is a
+	 * recording by Jonathon Jongsma, CC BY-SA 3.0, xeno-canto.org/62258;
+	 * everything else is public domain / CC0. Every caller falls back to
+	 * its synth version when a buffer is missing — audio can never break.
+	 * Positional sound: PannerNodes in world-units/10; the listener rides
+	 * the buggy (see updateAudio). ---- */
+	var SAMPLE_NAMES = [ 'engine', 'clucks', 'coop', 'rooster', 'horse', 'moo',
+		'splash', 'creak', 'crowd', 'duck' ];
+
+	function loadSamples() {
+		if ( samplesLoading || ! audio.ctx || ! window.fetch ) return;
+		samplesLoading = true;
+		var base = ( ( window.tcVentures && window.tcVentures.themeUrl ) || '' ) + '/assets/audio/bq-';
+		SAMPLE_NAMES.forEach( function ( name ) {
+			fetch( base + name + '.mp3' )
+				.then( function ( r ) { if ( ! r.ok ) throw new Error( name ); return r.arrayBuffer(); } )
+				.then( function ( ab ) {
+					return new Promise( function ( res, rej ) {
+						audio.ctx.decodeAudioData( ab, res, rej ); // callback form for Safari
+					} );
+				} )
+				.then( function ( buf ) {
+					sampleBufs[ name ] = buf;
+					if ( name === 'engine' ) startEngineSample();
+					if ( name === 'creak' || name === 'coop' || name === 'crowd' ) startPosLoops();
+				} )
+				.catch( function () { /* synth fallback covers it */ } );
+		} );
+	}
+
+	function makePanner( x, z ) {
+		var p = audio.ctx.createPanner();
+		p.panningModel = 'equalpower';
+		p.distanceModel = 'inverse';
+		p.refDistance = 14;
+		p.rolloffFactor = 1.1;
+		if ( p.positionX ) { p.positionX.value = x / 10; p.positionZ.value = z / 10; }
+		else p.setPosition( x / 10, 0, z / 10 );
+		p.connect( audio.master );
+		return p;
+	}
+
+	// one-shot sample; o = { at:{x,z}, gain, rate, slice } — slice plays a
+	// random window of that many seconds (varied clucks/quacks for free)
+	function playSample( name, o ) {
+		var buf = sampleBufs[ name ];
+		if ( ! buf || ! audio.on || ! audio.ctx ) return false;
+		o = o || {};
+		var src = audio.ctx.createBufferSource();
+		src.buffer = buf;
+		src.playbackRate.value = o.rate || 1;
+		var g = audio.ctx.createGain();
+		g.gain.value = o.gain !== undefined ? o.gain : 0.5;
+		src.connect( g );
+		g.connect( o.at ? makePanner( o.at.x, o.at.z ) : audio.master );
+		var off = 0, dur = buf.duration;
+		if ( o.slice && buf.duration > o.slice ) {
+			off = Math.random() * ( buf.duration - o.slice );
+			dur = o.slice;
+		}
+		src.start( 0, off, dur + 0.05 );
+		return true;
+	}
+
+	// the diesel loop rides UNDER the synth engine; rate + gain follow revs
+	function startEngineSample() {
+		if ( engSample || ! sampleBufs.engine || ! audio.ctx ) return;
+		var src = audio.ctx.createBufferSource();
+		src.buffer = sampleBufs.engine;
+		src.loop = true;
+		var g = audio.ctx.createGain();
+		g.gain.value = 0;
+		src.connect( g );
+		g.connect( audio.master );
+		src.start();
+		engSample = { src: src, gain: g };
+	}
+
+	// world-anchored beds: hens at the coop, applause at the stands, the
+	// windmill creaking on a lazy randomized repeat
+	function startPosLoops() {
+		if ( ! audio.ctx ) return;
+		[ { name: 'coop', x: COOP.x, z: COOP.z, gain: 0.5, loop: true },
+		  { name: 'crowd', x: 2240, z: -300, gain: 0.4, loop: true },
+		  { name: 'creak', x: 3480, z: 870, gain: 0.6, rate: 0.85, gapMin: 2400, gapMax: 5600 } ].forEach( function ( d ) {
+			if ( posStarted[ d.name ] || ! sampleBufs[ d.name ] ) return;
+			posStarted[ d.name ] = true;
+			var panner = makePanner( d.x, d.z );
+			if ( d.loop ) {
+				var src = audio.ctx.createBufferSource();
+				src.buffer = sampleBufs[ d.name ];
+				src.loop = true;
+				var g = audio.ctx.createGain();
+				g.gain.value = d.gain;
+				src.connect( g );
+				g.connect( panner );
+				src.start();
+			} else {
+				( function again() {
+					var src = audio.ctx.createBufferSource();
+					src.buffer = sampleBufs[ d.name ];
+					src.playbackRate.value = d.rate * ( 0.92 + Math.random() * 0.16 );
+					var g = audio.ctx.createGain();
+					g.gain.value = d.gain;
+					src.connect( g );
+					g.connect( panner );
+					src.start();
+					setTimeout( again, d.gapMin + Math.random() * ( d.gapMax - d.gapMin ) );
+				} )();
+			}
+		} );
+	}
+
+	// the pumpjack's clank — synth, but placed in the world at the unit
+	function pumpClank() {
+		if ( ! audio.on || ! audio.ctx ) return;
+		var t0 = audio.ctx.currentTime;
+		var o = audio.ctx.createOscillator();
+		o.type = 'sine';
+		o.frequency.setValueAtTime( 92, t0 );
+		o.frequency.exponentialRampToValueAtTime( 55, t0 + 0.16 );
+		var g = audio.ctx.createGain();
+		g.gain.setValueAtTime( 0.5, t0 );
+		g.gain.exponentialRampToValueAtTime( 0.0001, t0 + 0.22 );
+		o.connect( g );
+		g.connect( makePanner( 3820, 2280 ) );
+		o.start( t0 );
+		o.stop( t0 + 0.24 );
+	}
+
 	// a short filtered-noise burst — the workhorse for splash/mud/snort/cheer
 	function noiseBurst( dur, type, freq, Q, peak, sweepTo ) {
 		if ( ! audio.on || ! audio.ctx ) return;
@@ -3701,7 +3855,24 @@
 		var rev = Math.min( 1, sp / 9 ) + Math.abs( throttleInput ) * 0.25 + ( boostT > 0 ? 0.3 : 0 );
 		audio.engOsc1.frequency.value = 52 + rev * 80;
 		audio.engOsc2.frequency.value = ( 52 + rev * 80 ) * 2.02;
-		audio.engGain.gain.value = 0.012 + rev * 0.05;
+		// with the diesel sample running, the synth ducks to a bass layer
+		audio.engGain.gain.value = ( 0.012 + rev * 0.05 ) * ( engSample ? 0.35 : 1 );
+		if ( engSample ) {
+			engSample.gain.gain.value = 0.035 + rev * 0.17;
+			engSample.src.playbackRate.value = 0.72 + rev * 0.78;
+		}
+
+		// the listener rides the buggy — positional sound tracks the drive
+		var L = audio.ctx.listener;
+		var lx = buggyBody.position.x / 10, lz = buggyBody.position.y / 10;
+		var lfx = Math.cos( buggyBody.angle ), lfz = Math.sin( buggyBody.angle );
+		if ( L.positionX ) {
+			L.positionX.value = lx; L.positionZ.value = lz;
+			L.forwardX.value = lfx; L.forwardZ.value = lfz;
+		} else if ( L.setPosition ) {
+			L.setPosition( lx, 0, lz );
+			L.setOrientation( lfx, 0, lfz, 0, 1, 0 );
+		}
 
 		// tire roll — louder/brighter with speed, muffled in water, gritty in mud
 		if ( audio.tireGain ) {
@@ -3718,15 +3889,50 @@
 		audio.cluckT = ( audio.cluckT || 0 ) - dms;
 		if ( audio.cluckT <= 0 ) {
 			audio.cluckT = 4200 + Math.random() * 6500;
-			// only the coop's earshot, and softer than a scattered squawk
-			if ( Math.hypot( buggyBody.position.x - COOP.x, buggyBody.position.y - COOP.z ) < 900 ) softCluck();
+			// the coop's earshot: mostly the hens bed (loop), sometimes the
+			// rooster sounds off over it
+			if ( Math.hypot( buggyBody.position.x - COOP.x, buggyBody.position.y - COOP.z ) < 900 ) {
+				if ( Math.random() < 0.18 && sampleBufs.rooster ) {
+					playSample( 'rooster', { gain: 0.6, at: { x: COOP.x, z: COOP.z } } );
+				} else if ( ! posStarted.coop ) {
+					softCluck();
+				}
+			}
 		}
 		audio.snortT = ( audio.snortT || 0 ) - dms;
 		if ( audio.snortT <= 0 ) {
 			if ( trumacRef && Math.hypot( buggyBody.position.x - trumacRef.body.position.x,
 				buggyBody.position.y - trumacRef.body.position.y ) < 240 ) {
-				audio.snortT = 2600; if ( Math.random() < 0.75 ) snort();
+				audio.snortT = 2600;
+				if ( Math.random() < 0.75 ) {
+					// Trumac: a LOW moo (pitched down) — or the old synth snort
+					if ( ! playSample( 'moo', { rate: 0.62, gain: 0.9,
+						at: { x: trumacRef.body.position.x, z: trumacRef.body.position.y } } ) ) snort();
+				}
 			} else { audio.snortT = 900; }
+		}
+		// cows moo / horses whinny as you pass
+		audio.herdT = ( audio.herdT || 0 ) - dms;
+		if ( audio.herdT <= 0 ) {
+			audio.herdT = 1400;
+			for ( var ai = 0; ai < animals.length; ai++ ) {
+				var an = animals[ ai ];
+				if ( an.type !== 'cow' && an.type !== 'horse' ) continue;
+				if ( Math.hypot( buggyBody.position.x - an.body.position.x,
+					buggyBody.position.y - an.body.position.y ) < 260 && Math.random() < 0.3 ) {
+					playSample( an.type === 'cow' ? 'moo' : 'horse',
+						{ gain: 0.75, rate: 0.9 + Math.random() * 0.2,
+						  at: { x: an.body.position.x, z: an.body.position.y } } );
+					audio.herdT = 5200 + Math.random() * 4000;
+					break;
+				}
+			}
+		}
+		// the pumpjack clanks once per beam stroke, from where it stands
+		audio.pumpT = ( audio.pumpT || 0 ) - dms;
+		if ( audio.pumpT <= 0 ) {
+			audio.pumpT = 1848; // one clank per sin(t*1.7) cycle
+			if ( Math.hypot( buggyBody.position.x - 3820, buggyBody.position.y - 2280 ) < 1000 ) pumpClank();
 		}
 		// the crowd rises as you rip past the grandstands
 		audio.cheerT = ( audio.cheerT || 0 ) - dms;
@@ -3757,8 +3963,11 @@
 		} );
 	}
 
-	function squawk() {
+	function squawk( at ) {
 		if ( ! audio.on || ! audio.ctx ) return;
+		// a random slice of REAL flustered hens, from where the bird is
+		if ( playSample( 'clucks', { slice: 0.9, rate: 0.95 + Math.random() * 0.2,
+			gain: 0.85, at: at } ) ) return;
 		var t0 = audio.ctx.currentTime;
 		// an unhurried barnyard "buk-BAWK" — low, throaty, two beats
 		[ 0, 0.22 ].forEach( function ( d, i ) {
@@ -3828,7 +4037,10 @@
 		o.start( t0 ); o.stop( t0 + dur + 0.02 );
 	}
 
-	function splashSound() { noiseBurst( 0.5, 'bandpass', 1400, 0.6, 0.14, 380 ); }
+	function splashSound() {
+		if ( playSample( 'splash', { gain: 0.85, rate: 0.95 + Math.random() * 0.1 } ) ) return;
+		noiseBurst( 0.5, 'bandpass', 1400, 0.6, 0.14, 380 );
+	}
 	function thud( sp ) {
 		if ( ! audio.on || ! audio.ctx ) return;
 		var t0 = audio.ctx.currentTime;
@@ -3853,7 +4065,8 @@
 	function softCluck() { noiseBurst( 0.14, 'bandpass', 700, 1.2, 0.045, 480 ); }
 	function cheer( level ) {
 		if ( ! audio.on || ! audio.ctx ) return;
-		// a wash of crowd noise + a few detuned "voices" swelling and fading
+		// real applause when loaded, layered over the synth voice-wash
+		playSample( 'crowd', { slice: 2.6, gain: 0.3 * level } );
 		noiseBurst( 1.3, 'bandpass', 1100, 0.5, 0.05 * level );
 		var t0 = audio.ctx.currentTime;
 		for ( var i = 0; i < 4; i++ ) {

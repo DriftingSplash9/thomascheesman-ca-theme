@@ -97,6 +97,32 @@ Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_s
 
 ---
 
+## The Back Quarter 3D sample set (bq-*.mp3)
+
+Added 2026-07-08 for the 3D game's sample-based sound pass. All were
+sourced from Wikimedia Commons, transcoded to mono MP3 (trimmed,
+loudness-normalized; engine + crowd self-crossfaded into seamless
+loops). Lazy-loaded by back-quarter-3d.js only when sound is ON.
+
+| File | Source (Commons) | Author | License |
+|---|---|---|---|
+| bq-engine.mp3 | File:Lawnmover diesel.ogg | pdsounds.org | Public domain |
+| bq-clucks.mp3 | File:Chickens demanding food.ogg | pdsounds.org | Public domain |
+| bq-coop.mp3 | File:Hens leaving coop.ogg | pdsounds.org | Public domain |
+| bq-rooster.mp3 | File:Medium rooster crowing.ogg | alys (pdsounds.org) | Public domain |
+| bq-horse.mp3 | File:Wiehern.ogg | (Commons) | Public domain |
+| bq-moo.mp3 | File:Cow in Vezo.ogg | (Commons) | CC0 |
+| bq-splash.mp3 | File:Bathtub water splashes.ogg | gradha (pdsounds.org) | Public domain |
+| bq-creak.mp3 | File:Creaky wooden casket.ogg | pdsounds.org | Public domain |
+| bq-crowd.mp3 | File:Slow starting applause.ogg | pdsounds.org | Public domain |
+| bq-duck.mp3 | File:Anas platyrhynchos - Mallard XC62258.mp3 | **Jonathon Jongsma** (xeno-canto.org/62258) | **CC BY-SA 3.0** |
+
+The duck clip is the only one requiring attribution: recording by
+Jonathon Jongsma, CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0),
+via https://www.xeno-canto.org/62258 / Wikimedia Commons. The trimmed
+bq-duck.mp3 derivative remains CC BY-SA 3.0. A matching credit
+comment sits at the top of the audio section in back-quarter-3d.js.
+
 ## Where attribution is rendered
 
 The Pac-Man modal carries an inline credit line (`.tc-pacman__credits`)
