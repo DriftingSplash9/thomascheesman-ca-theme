@@ -3287,19 +3287,48 @@
 	// (drive-through), BERRY bushes (red berries), and little APPLE
 	// trees (trunk + canopy + apples; solid). Six instanced draws total.
 	function buildShrubs( THREE ) {
-		var spots = [], guard = 0;
-		while ( spots.length < 256 && guard++ < 3200 ) {
-			var x = 250 + Math.random() * ( W - 500 );
-			var z = 250 + Math.random() * ( H - 500 );
-			if ( ! farFromLandmarks( x, z, 300 ) || ! farFromRoads( x, z, 70 ) ||
+		// clustered, not scattered: hedgerows lining the road shoulders +
+		// bluffs (dense clumps) seeded into the genuinely empty ground
+		var spots = [];
+		function tryAdd( x, z, minSpace ) {
+			if ( x < 150 || x > W - 150 || z < 150 || z > H - 150 ) return;
+			if ( ! farFromLandmarks( x, z, 280 ) || ! farFromRoads( x, z, 42 ) ||
 			     inPond( x, z ) || inCompound( x, z, 40 ) ||
-			     inMudArea( x, z, 40 ) || nearCreek( x, z, 45 ) ) continue;
-			var ok = true;
+			     inMudArea( x, z, 40 ) || nearCreek( x, z, 40 ) ) return;
 			for ( var i = 0; i < spots.length; i++ ) {
-				if ( Math.hypot( x - spots[ i ].x, z - spots[ i ].z ) < 40 ) { ok = false; break; }
+				if ( Math.hypot( x - spots[ i ].x, z - spots[ i ].z ) < minSpace ) return;
 			}
-			if ( ! ok ) continue;
 			spots.push( { x: x, z: z, gy: hillsAt( x, z ) } );
+		}
+		// hedgerows: brush along both shoulders of every farm road
+		PATHS.forEach( function ( seg ) {
+			var ax = seg[ 0 ].x, az = seg[ 0 ].y, bx = seg[ 1 ].x, bz = seg[ 1 ].y;
+			var len = Math.hypot( bx - ax, bz - az );
+			var nx = -( bz - az ) / len, nz = ( bx - ax ) / len;
+			var count = Math.floor( len / 95 );
+			for ( var k = 0; k < count; k++ ) {
+				var t2 = ( k + 0.3 + Math.random() * 0.5 ) / count;
+				var side = Math.random() < 0.5 ? 1 : -1;
+				var off = 48 + Math.random() * 26;
+				tryAdd( ax + ( bx - ax ) * t2 + nx * off * side,
+					az + ( bz - az ) * t2 + nz * off * side, 26 );
+			}
+		} );
+		// bluffs: find a void (far from everything), plant a clump in it
+		var clusters = 0, cGuard = 0;
+		while ( clusters < 16 && cGuard++ < 400 ) {
+			var cx = 300 + Math.random() * ( W - 600 );
+			var cz = 300 + Math.random() * ( H - 600 );
+			if ( ! farFromLandmarks( cx, cz, 340 ) || ! farFromRoads( cx, cz, 130 ) ||
+			     inPond( cx, cz ) || inCompound( cx, cz, 60 ) ||
+			     inMudArea( cx, cz, 80 ) || nearCreek( cx, cz, 70 ) ) continue;
+			clusters++;
+			var n3 = 7 + Math.floor( Math.random() * 6 );
+			for ( var m = 0; m < n3; m++ ) {
+				var a5 = Math.random() * Math.PI * 2;
+				var r5 = Math.pow( Math.random(), 0.6 ) * 85;
+				tryAdd( cx + Math.cos( a5 ) * r5, cz + Math.sin( a5 ) * r5, 24 );
+			}
 		}
 		var bushes = [], berries = [], apples = [];
 		spots.forEach( function ( s, i2 ) {
