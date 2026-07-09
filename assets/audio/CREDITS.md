@@ -111,17 +111,21 @@ loops). Lazy-loaded by back-quarter-3d.js only when sound is ON.
 | bq-coop.mp3 | File:Hens leaving coop.ogg | pdsounds.org | Public domain |
 | bq-rooster.mp3 | File:Medium rooster crowing.ogg | alys (pdsounds.org) | Public domain |
 | bq-horse.mp3 | File:Wiehern.ogg | (Commons) | Public domain |
-| bq-moo.mp3 | File:Cow in Vezo.ogg | (Commons) | CC0 |
+| bq-moo.mp3 | File:Single Cow Moo.ogg | **MichaeltheFox8621** | **CC BY-SA 4.0** (replaced "Cow in Vezo" 2026-07-08 — it read as a sheep) |
 | bq-splash.mp3 | File:Bathtub water splashes.ogg | gradha (pdsounds.org) | Public domain |
 | bq-creak.mp3 | File:Creaky wooden casket.ogg | pdsounds.org | Public domain |
 | bq-crowd.mp3 | File:Slow starting applause.ogg | pdsounds.org | Public domain |
 | bq-duck.mp3 | File:Anas platyrhynchos - Mallard XC62258.mp3 | **Jonathon Jongsma** (xeno-canto.org/62258) | **CC BY-SA 3.0** |
 
-The duck clip is the only one requiring attribution: recording by
-Jonathon Jongsma, CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0),
-via https://www.xeno-canto.org/62258 / Wikimedia Commons. The trimmed
-bq-duck.mp3 derivative remains CC BY-SA 3.0. A matching credit
-comment sits at the top of the audio section in back-quarter-3d.js.
+Two clips require attribution: the duck (Jonathon Jongsma, CC BY-SA
+3.0, https://creativecommons.org/licenses/by-sa/3.0, via
+https://www.xeno-canto.org/62258 / Wikimedia Commons) and the moo
+(MichaeltheFox8621, CC BY-SA 4.0,
+https://creativecommons.org/licenses/by-sa/4.0, via Wikimedia
+Commons "Single Cow Moo"). The trimmed bq-duck.mp3 / bq-moo.mp3
+derivatives remain under their respective BY-SA licenses. A matching
+credit comment sits at the top of the audio section in
+back-quarter-3d.js.
 
 ## Where attribution is rendered
 

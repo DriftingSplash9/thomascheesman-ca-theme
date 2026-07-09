@@ -18,6 +18,19 @@
  *   Haistes, Lakemans, Rycrofts, McIvers, Verbooms, Steinkes), each
  *   clickable/Enter-able straight into that line's long-read.
  *
+ * FILL THE FARM: a CREEK flows out of the slough, fords two roads and
+ * exits the south fence (painted into the terrain like the roads;
+ * shallow wade with splashes + drag). THE BOG — a long rutted wallow
+ * in the south field with mud humps, ruts and a sign: mudbogging
+ * country. The mud pit got the same face-lift (ruts + sheen). A
+ * FIREPIT HANGOUT east of the estate: gravel pad, stone ring, LIVE
+ * flickering fire + warm light, log benches, a firewood stack, and
+ * the CAMPER parked beside it. An open STOCK BARN in the pasture
+ * (three walls + roof — the herd and the buggy wander in), 64
+ * instanced shrubs across the open quarter, the church grounded
+ * (it floated where its old base mound used to be), and the cow
+ * finally moos like a cow (new sample, credited).
+ *
  * SOUND PASS 2 — REAL RECORDINGS + POSITIONAL AUDIO (Thomas's "1980s
  * driving game" review, addressed): ten real samples (public domain /
  * CC0 off Wikimedia Commons + one CC BY-SA mallard — see
@@ -341,7 +354,31 @@
 	// pen with a mud pit on the hillside east of the north road
 	var COOP = { x: 4130, z: 330 };
 	var PIGPEN = { x: 2640, z: 985 };
-	var MUD = { x: 2545, z: 985, r: 60 };
+	var MUD = { x: 2545, z: 985, r: 75 };
+	// THE BOG — a long rutted wallow in the south field, for mudbogging
+	var BOG = { x: 1900, z: 2250, rx: 170, rz: 70, rot: 0.5 };
+	function inMudArea( x, z, pad ) {
+		pad = pad || 0;
+		if ( Math.hypot( x - MUD.x, z - MUD.z ) < MUD.r + pad ) return true;
+		var dx = x - BOG.x, dz = z - BOG.z;
+		var ca = Math.cos( -BOG.rot ), sa = Math.sin( -BOG.rot );
+		var ex = ( dx * ca - dz * sa ) / ( BOG.rx + pad );
+		var ez = ( dx * sa + dz * ca ) / ( BOG.rz + pad );
+		return ex * ex + ez * ez < 1;
+	}
+	// THE CREEK — flows out of the slough, fords two roads, exits the
+	// south fence. Painted into the ground like the roads; shallow wade.
+	var CREEK = [
+		{ x: 3520, y: 1090 }, { x: 3450, y: 1250 }, { x: 3250, y: 1500 },
+		{ x: 3150, y: 1800 }, { x: 3220, y: 2100 }, { x: 3050, y: 2350 },
+		{ x: 2950, y: 2520 }
+	];
+	function nearCreek( x, z, d ) {
+		for ( var i = 0; i < CREEK.length - 1; i++ ) {
+			if ( distToSeg( x, z, CREEK[ i ], CREEK[ i + 1 ] ) < d ) return true;
+		}
+		return false;
+	}
 
 	// THE SECTION ROAD — the race ring outside the fence. Centerline sits
 	// 150 off the property line, corners rounded. Painted into the ground
@@ -379,7 +416,9 @@
 		{ x: 3850, z: 1802, ri: 88, ro: 210 },
 		{ x: 2730, z: 630, ri: 70, ro: 160 }, // the old pull-off (tractor spawn)
 		{ x: 4135, z: 335, ri: 100, ro: 210 }, // chicken coop yard (NE corner)
-		{ x: 2620, z: 985, ri: 110, ro: 220 } // pig pen + mud pit
+		{ x: 2620, z: 985, ri: 110, ro: 220 }, // pig pen + mud pit
+		{ x: 1600, z: 795, ri: 130, ro: 240 }, // the firepit hangout + camper
+		{ x: 2900, z: 1550, ri: 130, ro: 260 } // the stock barn yard
 	];
 	// Tabletop mounds ON the roads — smooth launches that scale with speed.
 	// The section-road rhythm sections + whoops are generated onto this array
@@ -387,7 +426,12 @@
 	var MOUNDS = [
 		{ x: 2695, z: 1724, a: 32, r: 72 },
 		{ x: 2205, z: 788, a: 28, r: 70 },
-		{ x: 3325, z: 2100, a: 34, r: 86 }
+		{ x: 3325, z: 2100, a: 34, r: 86 },
+		// mud humps inside the bog — rutted, lumpy bogging ground
+		{ x: 1860, z: 2210, a: 5, r: 34 },
+		{ x: 1960, z: 2290, a: 4, r: 30 },
+		{ x: 1800, z: 2290, a: 4.5, r: 30 },
+		{ x: 1990, z: 2200, a: 4, r: 28 }
 	];
 	// Real MX jumps on the section road: shaped features with steep takeoff
 	// faces, flat decks and landing faces — not gaussian bumps. Each is
@@ -495,7 +539,7 @@
 	var airTime = 0; // seconds aloft — big air pays boost on the landing
 	var airPitch = 0, jumpCooldown = 0;
 	var boostT = 0, padCooldown = [];
-	var inWater = false, inMud = false;
+	var inWater = false, inMud = false, inCreek = false;
 	var chickens = [], pigs = [];
 	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
 	var ghosts = [], ghostStore = null, prevSX = 0, lastHudTenth = -1;
@@ -847,6 +891,13 @@
 				if ( dT < tCore ) break;
 			}
 			var trk = dT <= tCore ? 1 : ( dT >= tFeather ? 0 : 1 - ( dT - tCore ) / ( tFeather - tCore ) );
+			// the creek, painted over everything (fords where it crosses roads)
+			var dK = 1e9;
+			for ( var ci = 0; ci < CREEK.length - 1; ci++ ) {
+				dK = Math.min( dK, distToSeg( vx, vz, CREEK[ ci ], CREEK[ ci + 1 ] ) );
+				if ( dK < 14 ) break;
+			}
+			var crk = dK <= 14 ? 1 : ( dK >= 26 ? 0 : 1 - ( dK - 14 ) / 12 );
 			var n = 0.5 + 0.5 * Math.sin( vx * 0.013 ) * Math.sin( vz * 0.017 );
 			var lift = 1 + ( vy - 20 ) * 0.006;
 			var fr = ( 0.085 + n * 0.02 ) * lift, fg = ( 0.14 + n * 0.03 ) * lift, fb = ( 0.10 + n * 0.02 ) * lift;
@@ -854,9 +905,13 @@
 			var cr = fr + ( rr - fr ) * road, cg = fg + ( rg - fg ) * road, cb = fb + ( rb - fb ) * road;
 			// racing dirt: a shade redder + more packed than the farm roads
 			var kr = 0.335 * lift, kg = 0.245 * lift, kb = 0.175 * lift;
-			colors[ vi * 3 ] = cr + ( kr - cr ) * trk;
-			colors[ vi * 3 + 1 ] = cg + ( kg - cg ) * trk;
-			colors[ vi * 3 + 2 ] = cb + ( kb - cb ) * trk;
+			cr = cr + ( kr - cr ) * trk;
+			cg = cg + ( kg - cg ) * trk;
+			cb = cb + ( kb - cb ) * trk;
+			// creek water: cool blue-green, brightest mid-channel
+			colors[ vi * 3 ] = cr + ( 0.06 * lift - cr ) * crk;
+			colors[ vi * 3 + 1 ] = cg + ( 0.15 * lift - cg ) * crk;
+			colors[ vi * 3 + 2 ] = cb + ( 0.19 * lift - cb ) * crk;
 		}
 		groundGeo.setAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 		groundGeo.computeVertexNormals();
@@ -925,6 +980,10 @@
 		buildCattails( THREE );
 		buildDucks( THREE );
 		buildPumpjack( THREE );
+		buildBog( THREE );
+		buildHangout( THREE );
+		buildStockBarn( THREE );
+		buildShrubs( THREE );
 		buildBales( THREE );
 		buildStacks( THREE );
 		buildRestackPad( THREE );
@@ -1097,11 +1156,13 @@
 		var b = buggyBody;
 		var heading = { x: Math.cos( b.angle ), y: Math.sin( b.angle ) };
 
-		// water check (the slough — floating, not wading) + the mud pit
+		// water check (the slough — floating, not wading), mud (pit + bog),
+		// and the creek (a shallow wade)
 		inWater = ! airborne && inPond( b.position.x, b.position.y );
-		inMud = ! airborne && ! inWater &&
-			Math.hypot( b.position.x - MUD.x, b.position.y - MUD.z ) < MUD.r;
-		b.frictionAir = airborne ? 0.02 : ( inWater ? 0.3 : ( inMud ? 0.2 : 0.14 ) );
+		inMud = ! airborne && ! inWater && inMudArea( b.position.x, b.position.y );
+		inCreek = ! airborne && ! inWater && ! inMud && nearCreek( b.position.x, b.position.y, 15 );
+		b.frictionAir = airborne ? 0.02
+			: ( inWater ? 0.3 : ( inMud ? 0.2 : ( inCreek ? 0.18 : 0.14 ) ) );
 
 		throttleInput = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.65 : 0 );
 		steerInput = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
@@ -1115,6 +1176,7 @@
 		if ( airborne ) power *= 0.25;
 		if ( inWater ) power *= 0.5;
 		if ( inMud ) power *= 0.75;
+		if ( inCreek ) power *= 0.85;
 		if ( throttleInput ) {
 			Matter.Body.applyForce( b, b.position,
 				{ x: heading.x * power * throttleInput * b.mass, y: heading.y * power * throttleInput * b.mass } );
@@ -1341,6 +1403,8 @@
 			// mud kicks up HIGH
 			spawnMud( wheelWorld( -14, 10 ), sp );
 			spawnMud( wheelWorld( -14, -10 ), sp );
+		} else if ( inCreek && sp > 1.5 ) {
+			spawnSplash( wheelWorld( 8, ( Math.random() < 0.5 ? 11 : -11 ) ), sp * 0.7 );
 		} else if ( ! airborne && sp > 1.6 && Math.random() < Math.min( 0.55, 0.1 + sp * 0.04 + Math.abs( steerInput ) * 0.2 ) ) {
 			spawnDust( wheelWorld( -16, steerInput >= 0 ? 13 : -13 ), sp );
 		}
@@ -2204,26 +2268,27 @@
 	}
 
 	function buildChurch( THREE, lm ) {
-		// (the old decorative base mound is gone — it was visual-only, so at
-		// 2.4× the buggy drove INSIDE it; the church sits on its FLAT yard)
+		// (all y-offsets sit 10 lower than the original build — that gap was
+		// the old decorative base mound, whose removal left the church
+		// floating at 2.4×)
 		var g = new THREE.Group();
 		var nave = new THREE.Mesh( new THREE.BoxGeometry( 46, 30, 70 ), mat( THREE, 0xcfd2cd ) );
-		nave.position.y = 25;
+		nave.position.y = 15;
 		g.add( nave );
 		var roof = gableRoof( THREE, 76, 26, 0x3a4048 );
-		roof.position.y = 44;
+		roof.position.y = 34;
 		roof.rotation.y = Math.PI / 2;
 		g.add( roof );
 		var tower = new THREE.Mesh( new THREE.BoxGeometry( 16, 34, 16 ), mat( THREE, 0xcfd2cd ) );
-		tower.position.set( 0, 42, 40 );
+		tower.position.set( 0, 32, 40 );
 		g.add( tower );
 		var spire = new THREE.Mesh( new THREE.ConeGeometry( 11, 22, 4 ), mat( THREE, 0x3a4048 ) );
-		spire.position.set( 0, 70, 40 );
+		spire.position.set( 0, 60, 40 );
 		spire.rotation.y = Math.PI / 4;
 		g.add( spire );
-		addWindow( THREE, g, 8, 14, -23.2, 24, 0, -Math.PI / 2 );
-		addWindow( THREE, g, 8, 14, 23.2, 24, 0, Math.PI / 2 );
-		addWindow( THREE, g, 10, 16, 0, 24, 75.2 );
+		addWindow( THREE, g, 8, 14, -23.2, 14, 0, -Math.PI / 2 );
+		addWindow( THREE, g, 8, 14, 23.2, 14, 0, Math.PI / 2 );
+		addWindow( THREE, g, 10, 16, 0, 14, 75.2 );
 		addGlowDisc( THREE, lm.x, lm.y + 125, 105, 0.10 );
 		return g;
 	}
@@ -2728,16 +2793,8 @@
 		scene.add( shedRoof );
 		Matter.Composite.add( engine.world, Matter.Bodies.rectangle(
 			PIGPEN.x + 52, PIGPEN.z - 38, 24, 16, { isStatic: true } ) );
-		// the mud pit — layered wet-brown discs
-		[ { r: MUD.r, c: 0x2c1f12, y: 0.35 },
-		  { r: MUD.r * 0.72, c: 0x382817, y: 0.5 },
-		  { r: MUD.r * 0.4, c: 0x241a0e, y: 0.65 } ].forEach( function ( ring ) {
-			var disc = new THREE.Mesh( new THREE.CircleGeometry( ring.r, 20 ), mat( THREE, ring.c ) );
-			disc.rotation.x = -Math.PI / 2;
-			disc.position.set( MUD.x, hillsAt( MUD.x, MUD.z ) + ring.y, MUD.z );
-			disc.scale.x = 1.3;
-			scene.add( disc );
-		} );
+		// the mud pit — layered, rutted, glinting wet
+		buildMudPatch( THREE, MUD.x, MUD.z, MUD.r * 1.3, MUD.r, 0 );
 		for ( var i = 0; i < 4; i++ ) {
 			addPig( THREE, PIGPEN.x - 10 + Math.random() * 60, PIGPEN.z - 30 + Math.random() * 60 );
 		}
@@ -3031,6 +3088,228 @@
 			flareFlame.material.opacity = 0.6 + fl * 0.3;
 			if ( flareLight ) flareLight.intensity = 0.4 + fl * 0.5;
 		}
+		if ( fireFlames.length ) {
+			var ff = 0.7 + Math.sin( t * 11 + 1 ) * 0.2 + Math.random() * 0.18;
+			for ( var fi2 = 0; fi2 < fireFlames.length; fi2++ ) {
+				fireFlames[ fi2 ].scale.set( 1, ff * ( 1 + fi2 * 0.15 ), 1 );
+				fireFlames[ fi2 ].material.opacity = 0.55 + ff * 0.35;
+			}
+			if ( fireLight ) fireLight.intensity = 0.55 + ff * 0.5;
+		}
+	}
+
+	// layered wet-brown ellipses + tire ruts + glints — shared by the pig
+	// pit and the bog
+	function buildMudPatch( THREE, cx, cz, rx, rz, rot ) {
+		var gy = hillsAt( cx, cz );
+		[ { s: 1, c: 0x2c1f12, y: 0.35 },
+		  { s: 0.74, c: 0x382817, y: 0.5 },
+		  { s: 0.45, c: 0x241a0e, y: 0.65 } ].forEach( function ( ring ) {
+			var disc = new THREE.Mesh( new THREE.CircleGeometry( 1, 26 ), mat( THREE, ring.c ) );
+			disc.rotation.x = -Math.PI / 2;
+			disc.rotation.z = rot;
+			disc.scale.set( rx * ring.s, rz * ring.s, 1 );
+			disc.position.set( cx, gy + ring.y, cz );
+			scene.add( disc );
+		} );
+		// wet sheen
+		var glintMat = new THREE.MeshBasicMaterial( { color: 0x8fa8b8, transparent: true, opacity: 0.12 } );
+		for ( var gi = 0; gi < 3; gi++ ) {
+			var glint = new THREE.Mesh( new THREE.CircleGeometry( 8 + Math.random() * 10, 10 ), glintMat );
+			glint.rotation.x = -Math.PI / 2;
+			glint.scale.x = 2;
+			glint.position.set(
+				cx + ( Math.random() - 0.5 ) * rx,
+				gy + 0.8,
+				cz + ( Math.random() - 0.5 ) * rz );
+			scene.add( glint );
+		}
+		// tire ruts carved through it
+		var rutMat = mat( THREE, 0x1c130b );
+		for ( var ri = 0; ri < 4; ri++ ) {
+			var rut = new THREE.Mesh( new THREE.PlaneGeometry( 4, rx * 1.1 ), rutMat );
+			rut.rotation.x = -Math.PI / 2;
+			rut.rotation.z = rot + Math.PI / 2 + ( Math.random() - 0.5 ) * 0.5;
+			rut.position.set(
+				cx + ( Math.random() - 0.5 ) * rx * 0.5,
+				gy + 0.78,
+				cz + ( Math.random() - 0.5 ) * rz * 0.8 );
+			scene.add( rut );
+		}
+	}
+
+	function buildBog( THREE ) {
+		buildMudPatch( THREE, BOG.x, BOG.z, BOG.rx, BOG.rz, BOG.rot );
+		buildSign( THREE, 'the bog — send it', BOG.x + 150, BOG.z - 130, BOG.x, BOG.z );
+		PROMPTS.push( { id: 'bog', name: 'the bog', x: BOG.x, y: BOG.z, href: null,
+			prompt: 'The bog — mudbogging country. Keep your momentum up' } );
+	}
+
+	// the firepit hangout: gravel pad, stone ring, live fire, log benches,
+	// the camper, and a firewood stack — every farm's summer living room
+	var fireFlames = [], fireLight = null;
+
+	function buildHangout( THREE ) {
+		var HX = 1580, HZ = 800;
+		var gy = hillsAt( HX, HZ );
+		var gravel = new THREE.Mesh( new THREE.CircleGeometry( 58, 22 ), mat( THREE, 0x3f3a33 ) );
+		gravel.rotation.x = -Math.PI / 2;
+		gravel.position.set( HX, gy + 0.4, HZ );
+		scene.add( gravel );
+		// stone ring
+		var stone = mat( THREE, 0x59554c );
+		for ( var si = 0; si < 10; si++ ) {
+			var a = si / 10 * Math.PI * 2;
+			var rock = new THREE.Mesh( new THREE.BoxGeometry( 5, 4, 4 ), stone );
+			rock.position.set( HX + Math.cos( a ) * 12, gy + 2, HZ + Math.sin( a ) * 12 );
+			rock.rotation.y = a;
+			scene.add( rock );
+		}
+		// the fire — two flickering cones + warm light
+		[ 0, 1 ].forEach( function ( fi ) {
+			var flame = new THREE.Mesh( new THREE.ConeGeometry( 4 - fi * 1.6, 9 - fi * 2, 6 ),
+				new THREE.MeshBasicMaterial( { color: fi ? 0xffd27a : 0xff8c3a, transparent: true, opacity: 0.9 } ) );
+			flame.position.set( HX, gy + 5 + fi * 2, HZ );
+			scene.add( flame );
+			fireFlames.push( flame );
+		} );
+		fireLight = new THREE.PointLight( 0xff9c46, 0.9, 420 );
+		fireLight.position.set( HX, gy + 14, HZ );
+		scene.add( fireLight );
+		// log benches around the pit
+		var logMat = mat( THREE, 0x4a3423 );
+		var logGeo = new THREE.CylinderGeometry( 3.2, 3.2, 26, 8 );
+		logGeo.rotateZ( Math.PI / 2 );
+		[ 0.6, 2.2, 3.8, 5.2 ].forEach( function ( a2 ) {
+			var bench = new THREE.Mesh( logGeo, logMat );
+			bench.position.set( HX + Math.cos( a2 ) * 30, gy + 3.2, HZ + Math.sin( a2 ) * 30 );
+			bench.rotation.y = -a2 + Math.PI / 2;
+			scene.add( bench );
+		} );
+		// the firewood stack
+		var wx = 1510, wz = 860;
+		var wgy = hillsAt( wx, wz );
+		var splitGeo = new THREE.CylinderGeometry( 2.5, 2.5, 14, 6 );
+		splitGeo.rotateX( Math.PI / 2 );
+		for ( var row = 0; row < 2; row++ ) {
+			for ( var li2 = 0; li2 < 5 - row; li2++ ) {
+				var log2 = new THREE.Mesh( splitGeo, mat( THREE, li2 % 2 ? 0x5a4330 : 0x4a3423 ) );
+				log2.position.set( wx - 12 + li2 * 5.4 + row * 2.7, wgy + 2.5 + row * 4.6, wz );
+				scene.add( log2 );
+			}
+		}
+		Matter.Composite.add( engine.world, Matter.Bodies.rectangle( wx, wz, 30, 16, { isStatic: true } ) );
+		// the camper
+		var cx2 = 1700, cz2 = 755;
+		var cgy = hillsAt( cx2, cz2 );
+		var camper = new THREE.Group();
+		var shell = new THREE.Mesh( new THREE.BoxGeometry( 62, 24, 22 ), mat( THREE, 0xd8d5cc ) );
+		shell.position.y = 20;
+		camper.add( shell );
+		var stripe = new THREE.Mesh( new THREE.BoxGeometry( 62.4, 4, 22.4 ), mat( THREE, 0x8a5a30 ) );
+		stripe.position.y = 16;
+		camper.add( stripe );
+		var door = new THREE.Mesh( new THREE.PlaneGeometry( 8, 15 ), mat( THREE, 0x3a3630 ) );
+		door.position.set( 6, 15.5, 11.3 );
+		camper.add( door );
+		addWindow( THREE, camper, 9, 6, -16, 24, 11.3 );
+		var wheelGeo2 = new THREE.CylinderGeometry( 5, 5, 4, 10 );
+		wheelGeo2.rotateX( Math.PI / 2 );
+		[ -14, 14 ].forEach( function ( ox ) {
+			var wh = new THREE.Mesh( wheelGeo2, mat( THREE, 0x1c1512 ) );
+			wh.position.set( ox, 5, 9 );
+			camper.add( wh );
+		} );
+		var tongue = new THREE.Mesh( new THREE.BoxGeometry( 16, 2, 2.4 ), mat( THREE, 0x59554c ) );
+		tongue.position.set( -38, 9, 0 );
+		camper.add( tongue );
+		var propane = new THREE.Mesh( new THREE.SphereGeometry( 4, 8, 8 ), mat( THREE, 0xd8d5cc ) );
+		propane.position.set( -33, 14, 0 );
+		camper.add( propane );
+		camper.position.set( cx2, cgy, cz2 );
+		camper.rotation.y = 0.45;
+		scene.add( camper );
+		Matter.Composite.add( engine.world,
+			Matter.Bodies.rectangle( cx2, cz2, 66, 26, { isStatic: true, angle: -0.45 } ) );
+		PROMPTS.push( { id: 'firepit', name: 'the firepit', x: HX, y: HZ, href: null,
+			prompt: 'The firepit — pull up a log, the night’s long' } );
+		PROMPTS.push( { id: 'camper', name: 'the camper', x: cx2, y: cz2, href: null,
+			prompt: 'The camper — half the summer lives in here' } );
+	}
+
+	// the open stock barn: three walls + a big roof, open to the south so
+	// the herd (and the buggy) can wander in
+	function buildStockBarn( THREE ) {
+		var BX = 2900, BZ = 1550;
+		var g = new THREE.Group();
+		var red = mat( THREE, 0x6e2a20 );
+		var back = new THREE.Mesh( new THREE.BoxGeometry( 170, 40, 6 ), red );
+		back.position.set( 0, 20, -52 );
+		g.add( back );
+		[ -82, 82 ].forEach( function ( ox ) {
+			var side = new THREE.Mesh( new THREE.BoxGeometry( 6, 40, 110 ), red );
+			side.position.set( ox, 20, 0 );
+			g.add( side );
+		} );
+		var roof = gableRoof( THREE, 178, 62, 0x2f2119 );
+		roof.position.y = 52;
+		g.add( roof );
+		// stall rails + hay + trough inside
+		var railMat = mat( THREE, 0x4a4034 );
+		[ -30, 30 ].forEach( function ( ox ) {
+			var rail = new THREE.Mesh( new THREE.BoxGeometry( 3, 2.5, 70 ), railMat );
+			rail.position.set( ox, 12, -12 );
+			g.add( rail );
+		} );
+		[ [ -60, -30 ], [ -45, -38 ], [ -55, -14 ] ].forEach( function ( hp ) {
+			var hay = new THREE.Mesh( new THREE.SphereGeometry( 9, 8, 6 ), mat( THREE, 0x8f7a3e ) );
+			hay.scale.y = 0.6;
+			hay.position.set( hp[ 0 ], 5, hp[ 1 ] );
+			g.add( hay );
+		} );
+		var trough = new THREE.Mesh( new THREE.BoxGeometry( 40, 6, 10 ), mat( THREE, 0x3a3630 ) );
+		trough.position.set( 40, 3, 20 );
+		g.add( trough );
+		addWindow( THREE, g, 10, 8, 0, 26, -48.8 );
+		g.position.set( BX, hillsAt( BX, BZ ), BZ );
+		scene.add( g );
+		Matter.Composite.add( engine.world, Matter.Bodies.rectangle( BX, BZ - 52, 170, 10, { isStatic: true } ) );
+		[ -82, 82 ].forEach( function ( ox ) {
+			Matter.Composite.add( engine.world,
+				Matter.Bodies.rectangle( BX + ox, BZ, 10, 110, { isStatic: true } ) );
+		} );
+		PROMPTS.push( { id: 'stockbarn', name: 'the stock barn', x: BX, y: BZ, href: null,
+			prompt: 'The stock barn — everybody wanders home eventually' } );
+	}
+
+	// low brush scattered across the open quarter — drivable-through
+	function buildShrubs( THREE ) {
+		var N = 64;
+		var inst = new THREE.InstancedMesh( new THREE.SphereGeometry( 5, 7, 5 ),
+			new THREE.MeshLambertMaterial( { color: 0xffffff } ), N );
+		var dummy = new THREE.Object3D();
+		var col = new THREE.Color();
+		var greens = [ 0x263f24, 0x2e4a2a, 0x22422c ];
+		var placed = 0, guard = 0;
+		while ( placed < N && guard++ < 900 ) {
+			var x = 250 + Math.random() * ( W - 500 );
+			var z = 250 + Math.random() * ( H - 500 );
+			if ( ! farFromLandmarks( x, z, 300 ) || ! farFromRoads( x, z, 70 ) ||
+			     inPond( x, z ) || inCompound( x, z, 40 ) ||
+			     inMudArea( x, z, 40 ) || nearCreek( x, z, 45 ) ) continue;
+			var gy = hillsAt( x, z );
+			dummy.position.set( x, gy + 2.2, z );
+			var s = 0.7 + Math.random() * 0.9;
+			dummy.scale.set( s, s * ( 0.55 + Math.random() * 0.25 ), s );
+			dummy.rotation.y = Math.random() * Math.PI;
+			dummy.updateMatrix();
+			inst.setMatrixAt( placed, dummy.matrix );
+			col.setHex( greens[ placed % 3 ] );
+			inst.setColorAt( placed, col );
+			placed++;
+		}
+		inst.count = placed;
+		scene.add( inst );
 	}
 
 	function buildWindbreak( THREE ) {
@@ -3791,6 +4070,7 @@
 	/* ---- the SAMPLE layer: real recordings, lazy-loaded on sound-on.
 	 * Sources + licenses: assets/audio/CREDITS.md. bq-duck.mp3 is a
 	 * recording by Jonathon Jongsma, CC BY-SA 3.0, xeno-canto.org/62258;
+	 * bq-moo.mp3 by MichaeltheFox8621, CC BY-SA 4.0, Wikimedia Commons;
 	 * everything else is public domain / CC0. Every caller falls back to
 	 * its synth version when a buffer is missing — audio can never break.
 	 * Positional sound: PannerNodes in world-units/10; the listener rides
@@ -3973,7 +4253,7 @@
 			var roll = airborne ? 0 : Math.min( 1, sp / 9 ) * 0.055;
 			if ( inWater ) roll *= 0.35;
 			audio.tireGain.gain.value += ( roll - audio.tireGain.gain.value ) * 0.2;
-			var tf = inMud ? 280 : ( inWater ? 480 : 640 + sp * 95 );
+			var tf = inMud ? 280 : ( inWater ? 480 : ( inCreek ? 540 : 640 + sp * 95 ) );
 			audio.tireBP.frequency.value += ( tf - audio.tireBP.frequency.value ) * 0.2;
 		}
 
