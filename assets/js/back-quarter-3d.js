@@ -436,9 +436,10 @@
 	// The section-road rhythm sections + whoops are generated onto this array
 	// at boot by generateTrackJumps(); these three are the farm-road jumps.
 	var MOUNDS = [
-		{ x: 2695, z: 1724, a: 32, r: 72 },
-		{ x: 2205, z: 788, a: 28, r: 70 },
-		{ x: 3325, z: 2100, a: 34, r: 86 },
+		// the three big open-quarter jumps — piled HAY you launch off
+		{ x: 2695, z: 1724, a: 32, r: 72, hay: true },
+		{ x: 2205, z: 788, a: 28, r: 70, hay: true },
+		{ x: 3325, z: 2100, a: 34, r: 86, hay: true },
 		// mud humps inside the bog — rutted, lumpy bogging ground
 		{ x: 1860, z: 2210, a: 5, r: 34 },
 		{ x: 1960, z: 2290, a: 4, r: 30 },
@@ -1516,6 +1517,7 @@
 		// packed dirt, not a smooth cheese dome. (Real steep-faced ramps are
 		// a later pass; this de-cheeses the placeholder + fixes the sink.)
 		var dirt = new THREE.MeshLambertMaterial( { color: 0x4a3323 } );
+		var hayMat = new THREE.MeshLambertMaterial( { color: 0xd8bd6a, map: makeHayTexture( THREE ) } );
 		MOUNDS.forEach( function ( m ) {
 			var RINGS = 5, SEG = 12, maxR = m.r * 1.6, inv = 2 / ( m.r * m.r );
 			function vp( ri, si ) {
@@ -1525,9 +1527,12 @@
 				var ang = si / SEG * Math.PI * 2;
 				return [ Math.cos( ang ) * rr, hh, Math.sin( ang ) * rr ];
 			}
-			var tri = [];
+			var tri = [], uvs = [], TILE = m.hay ? 4 : 1;
 			function push3( a, b, c ) {
-				tri.push( a[ 0 ], a[ 1 ], a[ 2 ], b[ 0 ], b[ 1 ], b[ 2 ], c[ 0 ], c[ 1 ], c[ 2 ] );
+				[ a, b, c ].forEach( function ( p ) {
+					tri.push( p[ 0 ], p[ 1 ], p[ 2 ] );
+					uvs.push( ( p[ 0 ] / ( maxR * 2 ) + 0.5 ) * TILE, ( p[ 2 ] / ( maxR * 2 ) + 0.5 ) * TILE );
+				} );
 			}
 			for ( var si = 0; si < SEG; si++ ) {
 				push3( vp( 0, 0 ), vp( 1, si + 1 ), vp( 1, si ) ); // centre fan
@@ -1540,11 +1545,34 @@
 			}
 			var geo = new THREE.BufferGeometry();
 			geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( tri ), 3 ) );
+			geo.setAttribute( 'uv', new THREE.BufferAttribute( new Float32Array( uvs ), 2 ) );
 			geo.computeVertexNormals(); // non-indexed → flat facets
-			var mesh = new THREE.Mesh( geo, dirt );
+			var mesh = new THREE.Mesh( geo, m.hay ? hayMat : dirt );
 			mesh.position.set( m.x, hillsAt( m.x, m.z ) + 0.1, m.z );
 			scene.add( mesh );
 		} );
+	}
+
+	// procedural straw for the hay mounds — golden base, scattered strands
+	function makeHayTexture( THREE ) {
+		var c = document.createElement( 'canvas' );
+		c.width = c.height = 64;
+		var x = c.getContext( '2d' );
+		x.fillStyle = '#c9a94e';
+		x.fillRect( 0, 0, 64, 64 );
+		for ( var i = 0; i < 200; i++ ) {
+			var gx = Math.random() * 64, gy = Math.random() * 64;
+			var len = 4 + Math.random() * 9, ang = ( Math.random() - 0.5 ) * 1.1;
+			x.strokeStyle = Math.random() < 0.5 ? 'rgba(120, 92, 40, 0.5)' : 'rgba(236, 214, 156, 0.6)';
+			x.lineWidth = 1;
+			x.beginPath();
+			x.moveTo( gx, gy );
+			x.lineTo( gx + Math.cos( ang ) * len, gy + Math.sin( ang ) * len );
+			x.stroke();
+		}
+		var t = new THREE.CanvasTexture( c );
+		t.wrapS = t.wrapT = THREE.RepeatWrapping;
+		return t;
 	}
 
 	// The section-road jumps: shaped dirt features that follow jumpProfile()
@@ -3389,6 +3417,19 @@
 		trough.position.set( 40, 3, 20 );
 		g.add( trough );
 		addWindow( THREE, g, 10, 8, 0, 26, -48.8 );
+		// a lantern hangs from the ridge and lights the interior — no more
+		// black void when you wander in (glows under bloom)
+		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 5, 6, 5 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.8 ) } ) );
+		lantern.position.set( 0, 41, -8 );
+		g.add( lantern );
+		var cap = new THREE.Mesh( new THREE.ConeGeometry( 4, 3, 4 ), mat( THREE, 0x1c1512 ) );
+		cap.position.set( 0, 45, -8 );
+		cap.rotation.y = Math.PI / 4;
+		g.add( cap );
+		var barnLight = new THREE.PointLight( 0xffcf8a, 0.9, 340 );
+		barnLight.position.set( 0, 36, -8 );
+		g.add( barnLight );
 		g.position.set( BX, hillsAt( BX, BZ ), BZ );
 		scene.add( g );
 		Matter.Composite.add( engine.world, Matter.Bodies.rectangle( BX, BZ - 52, 170, 10, { isStatic: true } ) );
