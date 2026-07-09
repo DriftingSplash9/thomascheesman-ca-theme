@@ -3282,34 +3282,114 @@
 			prompt: 'The stock barn — everybody wanders home eventually' } );
 	}
 
-	// low brush scattered across the open quarter — drivable-through
+	// brush across the quarter — 4× the old count, three varieties, and
+	// big enough to read as plants instead of warts: plain bushes
+	// (drive-through), BERRY bushes (red berries), and little APPLE
+	// trees (trunk + canopy + apples; solid). Six instanced draws total.
 	function buildShrubs( THREE ) {
-		var N = 64;
-		var inst = new THREE.InstancedMesh( new THREE.SphereGeometry( 5, 7, 5 ),
-			new THREE.MeshLambertMaterial( { color: 0xffffff } ), N );
-		var dummy = new THREE.Object3D();
-		var col = new THREE.Color();
-		var greens = [ 0x263f24, 0x2e4a2a, 0x22422c ];
-		var placed = 0, guard = 0;
-		while ( placed < N && guard++ < 900 ) {
+		var spots = [], guard = 0;
+		while ( spots.length < 256 && guard++ < 3200 ) {
 			var x = 250 + Math.random() * ( W - 500 );
 			var z = 250 + Math.random() * ( H - 500 );
 			if ( ! farFromLandmarks( x, z, 300 ) || ! farFromRoads( x, z, 70 ) ||
 			     inPond( x, z ) || inCompound( x, z, 40 ) ||
 			     inMudArea( x, z, 40 ) || nearCreek( x, z, 45 ) ) continue;
-			var gy = hillsAt( x, z );
-			dummy.position.set( x, gy + 2.2, z );
-			var s = 0.7 + Math.random() * 0.9;
-			dummy.scale.set( s, s * ( 0.55 + Math.random() * 0.25 ), s );
+			var ok = true;
+			for ( var i = 0; i < spots.length; i++ ) {
+				if ( Math.hypot( x - spots[ i ].x, z - spots[ i ].z ) < 40 ) { ok = false; break; }
+			}
+			if ( ! ok ) continue;
+			spots.push( { x: x, z: z, gy: hillsAt( x, z ) } );
+		}
+		var bushes = [], berries = [], apples = [];
+		spots.forEach( function ( s, i2 ) {
+			if ( i2 % 9 < 5 ) bushes.push( s );
+			else if ( i2 % 9 < 7 ) berries.push( s );
+			else apples.push( s );
+		} );
+		var dummy = new THREE.Object3D();
+		var col = new THREE.Color();
+
+		var greens = [ 0x263f24, 0x2e4a2a, 0x22422c ];
+		var bushInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 7, 7, 5 ),
+			new THREE.MeshLambertMaterial( { color: 0xffffff } ), bushes.length );
+		bushes.forEach( function ( s, i3 ) {
+			var sc = 1.2 + Math.random();
+			dummy.position.set( s.x, s.gy + 4.5 * sc, s.z );
+			dummy.scale.set( sc, sc * ( 0.65 + Math.random() * 0.25 ), sc );
 			dummy.rotation.y = Math.random() * Math.PI;
 			dummy.updateMatrix();
-			inst.setMatrixAt( placed, dummy.matrix );
-			col.setHex( greens[ placed % 3 ] );
-			inst.setColorAt( placed, col );
-			placed++;
-		}
-		inst.count = placed;
-		scene.add( inst );
+			bushInst.setMatrixAt( i3, dummy.matrix );
+			col.setHex( greens[ i3 % 3 ] );
+			bushInst.setColorAt( i3, col );
+		} );
+		scene.add( bushInst );
+
+		// berry bushes — a lighter bush studded with bright berries
+		var bbInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 7, 7, 5 ),
+			mat( THREE, 0x33512e ), berries.length );
+		var berryInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 1.1, 5, 4 ),
+			new THREE.MeshBasicMaterial( { color: 0xc83a3a } ), berries.length * 5 );
+		var bi = 0;
+		berries.forEach( function ( s, i4 ) {
+			var sc = 1.1 + Math.random() * 0.8;
+			dummy.position.set( s.x, s.gy + 4.5 * sc, s.z );
+			dummy.rotation.y = Math.random() * Math.PI;
+			dummy.scale.set( sc, sc * 0.8, sc );
+			dummy.updateMatrix();
+			bbInst.setMatrixAt( i4, dummy.matrix );
+			dummy.rotation.y = 0;
+			dummy.scale.set( 1, 1, 1 );
+			for ( var b2 = 0; b2 < 5; b2++ ) {
+				var a3 = Math.random() * Math.PI * 2;
+				dummy.position.set(
+					s.x + Math.cos( a3 ) * 5.6 * sc,
+					s.gy + 4.5 * sc + ( Math.random() - 0.2 ) * 4,
+					s.z + Math.sin( a3 ) * 5.6 * sc );
+				dummy.updateMatrix();
+				berryInst.setMatrixAt( bi++, dummy.matrix );
+			}
+		} );
+		scene.add( bbInst );
+		scene.add( berryInst );
+
+		// little apple trees — solid trunks, round canopies, hanging fruit
+		var trunkInst = new THREE.InstancedMesh( new THREE.CylinderGeometry( 1.6, 2.2, 14, 6 ),
+			mat( THREE, 0x4a3423 ), apples.length );
+		var canInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 10, 8, 6 ),
+			new THREE.MeshLambertMaterial( { color: 0xffffff } ), apples.length );
+		var appleInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 1.2, 5, 4 ),
+			new THREE.MeshBasicMaterial( { color: 0xd84a30 } ), apples.length * 4 );
+		var canGreens = [ 0x2e5a30, 0x37623a, 0x2a5230 ];
+		var ai2 = 0;
+		apples.forEach( function ( s, i5 ) {
+			var sc = 0.9 + Math.random() * 0.5;
+			dummy.rotation.y = 0;
+			dummy.scale.set( sc, sc, sc );
+			dummy.position.set( s.x, s.gy + 7 * sc, s.z );
+			dummy.updateMatrix();
+			trunkInst.setMatrixAt( i5, dummy.matrix );
+			dummy.position.set( s.x, s.gy + 22 * sc, s.z );
+			dummy.scale.set( sc, sc * 0.9, sc );
+			dummy.updateMatrix();
+			canInst.setMatrixAt( i5, dummy.matrix );
+			col.setHex( canGreens[ i5 % 3 ] );
+			canInst.setColorAt( i5, col );
+			dummy.scale.set( 1, 1, 1 );
+			for ( var a4 = 0; a4 < 4; a4++ ) {
+				var an2 = Math.random() * Math.PI * 2;
+				dummy.position.set(
+					s.x + Math.cos( an2 ) * 8 * sc,
+					s.gy + 22 * sc - 4 + Math.random() * 6,
+					s.z + Math.sin( an2 ) * 8 * sc );
+				dummy.updateMatrix();
+				appleInst.setMatrixAt( ai2++, dummy.matrix );
+			}
+			Matter.Composite.add( engine.world, Matter.Bodies.circle( s.x, s.z, 5, { isStatic: true } ) );
+		} );
+		scene.add( trunkInst );
+		scene.add( canInst );
+		scene.add( appleInst );
 	}
 
 	function buildWindbreak( THREE ) {
