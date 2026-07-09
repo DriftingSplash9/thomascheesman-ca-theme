@@ -3739,7 +3739,21 @@
 		audio.engOsc1.connect( lp );
 		audio.engOsc2.connect( lp );
 		lp.connect( audio.engGain );
-		audio.engGain.connect( audio.master );
+		// the engine bus: synth AND diesel sample route through it, and a
+		// square-wave LFO chops its gain at cylinder-firing rate — the
+		// "putt putt". Slow + deep at idle, blurring away as revs climb.
+		audio.engBus = audio.ctx.createGain();
+		audio.engBus.gain.value = 0.75;
+		audio.engBus.connect( audio.master );
+		audio.engGain.connect( audio.engBus );
+		audio.puttOsc = audio.ctx.createOscillator();
+		audio.puttOsc.type = 'square';
+		audio.puttOsc.frequency.value = 9;
+		audio.puttDepth = audio.ctx.createGain();
+		audio.puttDepth.gain.value = 0.4;
+		audio.puttOsc.connect( audio.puttDepth );
+		audio.puttDepth.connect( audio.engBus.gain );
+		audio.puttOsc.start();
 		audio.engOsc1.start();
 		audio.engOsc2.start();
 
@@ -3848,7 +3862,7 @@
 		var g = audio.ctx.createGain();
 		g.gain.value = 0;
 		src.connect( g );
-		g.connect( audio.master );
+		g.connect( audio.engBus || audio.master ); // through the putt bus
 		src.start();
 		engSample = { src: src, gain: g };
 	}
@@ -3928,11 +3942,18 @@
 		var rev = Math.min( 1, sp / 9 ) + Math.abs( throttleInput ) * 0.25 + ( boostT > 0 ? 0.3 : 0 );
 		audio.engOsc1.frequency.value = 52 + rev * 80;
 		audio.engOsc2.frequency.value = ( 52 + rev * 80 ) * 2.02;
-		// with the diesel sample running, the synth ducks to a bass layer
-		audio.engGain.gain.value = ( 0.012 + rev * 0.05 ) * ( engSample ? 0.35 : 1 );
+		// with the diesel sample running, the synth ducks to a bass layer.
+		// AUDIBLE IDLE: the sample keeps a floor at rest, slowed to a chug.
+		audio.engGain.gain.value = ( 0.02 + rev * 0.05 ) * ( engSample ? 0.4 : 1 );
 		if ( engSample ) {
-			engSample.gain.gain.value = 0.035 + rev * 0.17;
-			engSample.src.playbackRate.value = 0.72 + rev * 0.78;
+			engSample.gain.gain.value = 0.085 + rev * 0.13;
+			engSample.src.playbackRate.value = 0.6 + rev * 0.9;
+		}
+		// putt-putt: firing-rate pulses, deep + slow at idle, faded at speed
+		if ( audio.puttOsc ) {
+			var idleF = 1 - Math.min( 1, rev * 1.4 );
+			audio.puttOsc.frequency.value = 8.5 + rev * 22 + Math.random() * 0.9;
+			audio.puttDepth.gain.value = 0.42 * ( 0.3 + idleF * 0.7 );
 		}
 
 		// the listener rides the buggy — positional sound tracks the drive
