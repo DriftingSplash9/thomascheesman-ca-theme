@@ -134,9 +134,11 @@
 			.then( function () { return window.THREE ? null : loadScript( threeUrl ); } )
 			.then( function () {
 				// bloom stack (EffectComposer + UnrealBloomPass) — optional:
-				// if it fails to load, the 3D module renders without bloom
-				if ( window.THREE && window.THREE.UnrealBloomPass ) return null;
-				return loadScript( base + '/assets/js/vendor/three-r128-postfx.js' ).catch( function () { return null; } );
+				// if it fails to load, the 3D module renders without bloom.
+				// Same Date.now() bust as the 3D module while in beta —
+				// browsers hold vendor files long past a LiteSpeed purge.
+				if ( window.THREE && window.THREE.ShaderPass ) return null;
+				return loadScript( base + '/assets/js/vendor/three-r128-postfx.js?cb=' + Date.now() ).catch( function () { return null; } );
 			} )
 			.then( function () { return loadScript( base + '/assets/js/back-quarter-3d.js?cb=' + Date.now() ); } )
 			.then( function () {
