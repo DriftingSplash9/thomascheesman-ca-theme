@@ -387,17 +387,25 @@
 	// the barnyard: chicken coop filling the empty northeast corner, pig
 	// pen with a mud pit on the hillside east of the north road
 	var COOP = { x: 4130, z: 330 };
-	var PIGPEN = { x: 2640, z: 985 };
-	var MUD = { x: 2545, z: 985, r: 75 };
-	// THE BOG — a long rutted wallow in the south field, for mudbogging
-	var BOG = { x: 1900, z: 2250, rx: 170, rz: 70, rot: 0.5 };
-	// the bog is DUG IN: three soft bowls along its axis, baked into
+	// the pig pen lives ON the bog now — open south side spills straight
+	// into the mud pit, which overlaps the bog's edge (all connected)
+	var PIGPEN = { x: 1908, z: 2095 };
+	var MUD = { x: 1885, z: 2185, r: 75 };
+	// THE BOG — 3× long: a wallow RUN arcing across the whole south field
+	// (extended west; the east tip stays clear of the gate road)
+	var BOG = { x: 1689, z: 2135, rx: 510, rz: 70, rot: 0.5 };
+	// the bog is DUG IN: a chain of soft bowls along its axis, baked into
 	// hillsAt so the ground mesh, the physics and the mud all agree —
 	// you drop in, wallow through the goo, and climb out the far side
 	var BOG_BOWLS = [
-		{ x: 1839, z: 2216, a: -5, r: 44 },
-		{ x: 1904, z: 2252, a: -6.5, r: 50 },
-		{ x: 1966, z: 2286, a: -5, r: 42 }
+		{ x: 1303, z: 1924, a: -5, r: 46 },
+		{ x: 1412, z: 1984, a: -6, r: 50 },
+		{ x: 1522, z: 2044, a: -5, r: 44 },
+		{ x: 1632, z: 2104, a: -6.5, r: 52 },
+		{ x: 1742, z: 2164, a: -5.5, r: 46 },
+		{ x: 1851, z: 2224, a: -6, r: 50 },
+		{ x: 1961, z: 2284, a: -5, r: 44 },
+		{ x: 2071, z: 2344, a: -6.5, r: 52 }
 	];
 	function inMudArea( x, z, pad ) {
 		pad = pad || 0;
@@ -458,7 +466,7 @@
 		{ x: 3850, z: 1802, ri: 88, ro: 210 },
 		{ x: 2730, z: 630, ri: 70, ro: 160 }, // the old pull-off (tractor spawn)
 		{ x: 4135, z: 335, ri: 100, ro: 210 }, // chicken coop yard (NE corner)
-		{ x: 2620, z: 985, ri: 150, ro: 270 }, // pig pen (2×) + mud pit
+		{ x: 1908, z: 2095, ri: 130, ro: 230 }, // pig pen — moved onto the bog
 		{ x: 1600, z: 795, ri: 130, ro: 240 }, // the firepit hangout + camper
 		{ x: 2900, z: 1550, ri: 130, ro: 260 } // the stock barn yard
 	];
@@ -470,11 +478,15 @@
 		{ x: 2695, z: 1724, a: 32, r: 72, hay: true },
 		{ x: 2205, z: 788, a: 28, r: 70, hay: true },
 		{ x: 3325, z: 2100, a: 34, r: 86, hay: true },
-		// mud humps inside the bog — rutted, lumpy bogging ground
-		{ x: 1860, z: 2210, a: 5, r: 34 },
-		{ x: 1960, z: 2290, a: 4, r: 30 },
-		{ x: 1800, z: 2290, a: 4.5, r: 30 },
-		{ x: 1990, z: 2200, a: 4, r: 28 }
+		// mud humps inside the bog — rutted, lumpy bogging ground, spread
+		// down the full 3× run
+		{ x: 1860, z: 2210, a: 5, r: 34, mud: true },
+		{ x: 1960, z: 2290, a: 4, r: 30, mud: true },
+		{ x: 1800, z: 2290, a: 4.5, r: 30, mud: true },
+		{ x: 1990, z: 2200, a: 4, r: 28, mud: true },
+		{ x: 1620, z: 2075, a: 5, r: 32, mud: true },
+		{ x: 1495, z: 2015, a: 4, r: 28, mud: true },
+		{ x: 1365, z: 1950, a: 4.5, r: 30, mud: true }
 	];
 	// Real MX jumps on the section road: shaped features with steep takeoff
 	// faces, flat decks and landing faces — not gaussian bumps. Each is
@@ -644,7 +656,7 @@
 			y = y * ( 1 - w ) + f.h * w;
 		}
 		// the bog's dug-in bowls (bbox early-out keeps this free elsewhere)
-		if ( x > 1720 && x < 2090 && z > 2120 && z < 2380 ) {
+		if ( x > 1220 && x < 2160 && z > 1840 && z < 2440 ) {
 			for ( var bi = 0; bi < BOG_BOWLS.length; bi++ ) y += gauss( x, z, BOG_BOWLS[ bi ] );
 		}
 		return y;
@@ -1054,9 +1066,9 @@
 				var bogDeep = 0;
 				for ( var bw2 = 0; bw2 < BOG_BOWLS.length; bw2++ ) bogDeep -= gauss( vx, vz, BOG_BOWLS[ bw2 ] );
 				var deep = Math.max( 0, Math.min( 1, bogDeep / 6 ) );
-				var mr = ( 0.17 - deep * 0.08 ) * lift;
-				var mg = ( 0.121 - deep * 0.058 ) * lift;
-				var mb = ( 0.078 - deep * 0.038 ) * lift;
+				var mr = ( 0.142 - deep * 0.07 ) * lift;
+				var mg = ( 0.098 - deep * 0.048 ) * lift;
+				var mb = ( 0.06 - deep * 0.028 ) * lift;
 				cr = cr + ( mr - cr ) * bogW;
 				cg = cg + ( mg - cg ) * bogW;
 				cb = cb + ( mb - cb ) * bogW;
@@ -1323,9 +1335,11 @@
 		steerInput = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
 
 		// eased steering: the wheel winds in and out instead of snapping
-		steerVal += ( steerInput - steerVal ) * 0.16;
+		// heavier steering: slower to wind on, slower turn rate — she's a
+		// farm rig, not a go-kart (Thomas: "not so responsive")
+		steerVal += ( steerInput - steerVal ) * 0.11;
 		if ( ! steerInput && Math.abs( steerVal ) < 0.02 ) steerVal = 0;
-		Matter.Body.setAngularVelocity( b, steerVal * ( airborne ? 0.03 : 0.06 ) );
+		Matter.Body.setAngularVelocity( b, steerVal * ( airborne ? 0.026 : 0.05 ) );
 
 		var power = boostT > 0 ? 0.0078 : 0.0042;
 		if ( airborne ) power *= 0.25;
@@ -1667,7 +1681,10 @@
 		// non-indexed so computeVertexNormals gives hard facets: sculpted
 		// packed dirt, not a smooth cheese dome. (Real steep-faced ramps are
 		// a later pass; this de-cheeses the placeholder + fixes the sink.)
-		var dirt = applyAtmosphere( new THREE.MeshLambertMaterial( { color: 0x4a3323 } ), true );
+		// dirt hills wear the dirt grain; MUD humps are dark, wet and NOT
+		// dusted (dust-tinting is what made them read pale and plastic)
+		var dirt = applyAtmosphere( new THREE.MeshLambertMaterial( { color: 0x4a3323, map: dirtTex( THREE ) } ), true );
+		var wetMud = applyAtmosphere( new THREE.MeshLambertMaterial( { color: 0x2e2015, map: dirtTex( THREE ) } ), false );
 		var hayMat = applyAtmosphere( new THREE.MeshLambertMaterial( { color: 0xd8bd6a, map: makeHayTexture( THREE ) } ), true );
 		MOUNDS.forEach( function ( m ) {
 			var RINGS = 5, SEG = 12, maxR = m.r * 1.6, inv = 2 / ( m.r * m.r );
@@ -1676,6 +1693,12 @@
 				var rr = maxR * ri / RINGS;
 				var hh = m.a * Math.exp( -rr * rr * inv );
 				var ang = si / SEG * Math.PI * 2;
+				// slight radial lumpiness (skip hay) — a hill, not a dome;
+				// small enough that the ride still matches the physics gauss
+				if ( ! m.hay ) {
+					var lj = 1 + 0.07 * Math.sin( ang * 3.3 + rr * 0.21 + m.x );
+					rr *= lj;
+				}
 				return [ Math.cos( ang ) * rr, hh, Math.sin( ang ) * rr ];
 			}
 			var tri = [], uvs = [], TILE = m.hay ? 4 : 1;
@@ -1698,7 +1721,7 @@
 			geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( tri ), 3 ) );
 			geo.setAttribute( 'uv', new THREE.BufferAttribute( new Float32Array( uvs ), 2 ) );
 			geo.computeVertexNormals(); // non-indexed → flat facets
-			var mesh = new THREE.Mesh( geo, m.hay ? hayMat : dirt );
+			var mesh = new THREE.Mesh( geo, m.hay ? hayMat : ( m.mud ? wetMud : dirt ) );
 			mesh.position.set( m.x, hillsAt( m.x, m.z ) + 0.1, m.z );
 			scene.add( mesh );
 		} );
@@ -3592,12 +3615,13 @@
 	}
 
 	function buildPigPen( THREE ) {
-		// the pen at 2× — open on the west side, straight into the mud pit
-		penRun( THREE, PIGPEN.x - 45, PIGPEN.z - 78, PIGPEN.x + 100, PIGPEN.z - 78 );
-		penRun( THREE, PIGPEN.x + 100, PIGPEN.z - 78, PIGPEN.x + 100, PIGPEN.z + 78 );
-		penRun( THREE, PIGPEN.x - 45, PIGPEN.z + 78, PIGPEN.x + 100, PIGPEN.z + 78 );
+		// the pen sits ON the bog's north shoulder — open on the SOUTH side,
+		// spilling straight into the mud pit and the bog beyond
+		penRun( THREE, PIGPEN.x - 72, PIGPEN.z - 78, PIGPEN.x + 72, PIGPEN.z - 78 );
+		penRun( THREE, PIGPEN.x - 72, PIGPEN.z - 78, PIGPEN.x - 72, PIGPEN.z + 78 );
+		penRun( THREE, PIGPEN.x + 72, PIGPEN.z - 78, PIGPEN.x + 72, PIGPEN.z + 78 );
 		// two huts — the herd grew
-		[ [ 78, -56 ], [ 72, 54 ] ].forEach( function ( hp ) {
+		[ [ 48, -52 ], [ -48, -48 ] ].forEach( function ( hp ) {
 			var hx = PIGPEN.x + hp[ 0 ], hz = PIGPEN.z + hp[ 1 ];
 			var shed = new THREE.Mesh( new THREE.BoxGeometry( 24, 10, 16 ), woodMat( THREE, 0x54402a ) );
 			shed.position.set( hx, hillsAt( hx, hz ) + 5, hz );
@@ -3612,12 +3636,12 @@
 		// the mud pit — layered, rutted, glinting wet
 		buildMudPatch( THREE, MUD.x, MUD.z, MUD.r * 1.3, MUD.r, 0 );
 		for ( var i = 0; i < 9; i++ ) {
-			addPig( THREE, PIGPEN.x - 30 + Math.random() * 115, PIGPEN.z - 60 + Math.random() * 120 );
+			addPig( THREE, PIGPEN.x - 55 + Math.random() * 110, PIGPEN.z - 60 + Math.random() * 120 );
 		}
 		// four piglets in their own little colors, tumbling near the huts
 		[ 0xe0a0b8, 0x6a5a4c, 0x3a332e, 0xdca878 ].forEach( function ( pc, pi ) {
-			addPig( THREE, PIGPEN.x + 40 + Math.random() * 50,
-				PIGPEN.z - 40 + pi * 26, { coat: pc, scale: 0.48 } );
+			addPig( THREE, PIGPEN.x - 45 + Math.random() * 90,
+				PIGPEN.z - 55 + pi * 26, { coat: pc, scale: 0.48 } );
 		} );
 		PROMPTS.push( { id: 'pigpen', name: 'the pig pen', x: PIGPEN.x, y: PIGPEN.z, href: null,
 			prompt: 'The pig pen — the mud is deep and they love it' } );
@@ -3970,9 +3994,10 @@
 		// — the dressing is what sits IN it: standing-goo sheen pooled in
 		// each bowl bottom, tire ruts, and clods thrown around the rims.
 		// (The old flat mud discs would float over the dip — gone.)
-		var glintMat = new THREE.MeshBasicMaterial( { color: 0x8fa8b8, transparent: true, opacity: 0.16 } );
+		// darker steel sheen, smaller — reads as wet goo, not pale sand
+		var glintMat = new THREE.MeshBasicMaterial( { color: 0x5a6f80, transparent: true, opacity: 0.13 } );
 		BOG_BOWLS.forEach( function ( bw ) {
-			var glint = new THREE.Mesh( new THREE.CircleGeometry( bw.r * 0.52, 16 ), glintMat );
+			var glint = new THREE.Mesh( new THREE.CircleGeometry( bw.r * 0.42, 16 ), glintMat );
 			glint.rotation.x = -Math.PI / 2;
 			glint.rotation.z = BOG.rot;
 			glint.scale.set( 1.5, 1, 1 );
@@ -3981,7 +4006,7 @@
 		} );
 		var rutMat = mat( THREE, 0x1c130b );
 		var ca = Math.cos( BOG.rot ), sa = Math.sin( BOG.rot );
-		for ( var ri = 0; ri < 7; ri++ ) {
+		for ( var ri = 0; ri < 16; ri++ ) {
 			var t = -BOG.rx * 0.8 + Math.random() * BOG.rx * 1.6;
 			var off = ( Math.random() - 0.5 ) * BOG.rz * 1.1;
 			var px = BOG.x + ca * t - sa * off;
@@ -3994,9 +4019,9 @@
 		}
 		// clods slung out around the rims
 		var clodMat = mat( THREE, 0x241a0e );
-		for ( var ci = 0; ci < 10; ci++ ) {
+		for ( var ci = 0; ci < 20; ci++ ) {
 			var an = Math.random() * Math.PI * 2;
-			var bwl = BOG_BOWLS[ ci % 3 ];
+			var bwl = BOG_BOWLS[ ci % BOG_BOWLS.length ];
 			var cxp = bwl.x + Math.cos( an ) * bwl.r * ( 0.9 + Math.random() * 0.5 );
 			var czp = bwl.z + Math.sin( an ) * bwl.r * ( 0.9 + Math.random() * 0.5 );
 			var clod = new THREE.Mesh( lumpy( new THREE.SphereGeometry( 1.6 + Math.random() * 2, 6, 5 ), 0.3 ), clodMat );
