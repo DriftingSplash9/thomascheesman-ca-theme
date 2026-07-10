@@ -570,6 +570,7 @@
 	var atmo = null; // shared prairie-dust + ground-haze uniforms (phase 2)
 	var Matter, engine, buggyBody;
 	var buggyGroup, chassisGroup, wheels = [];
+	var frontSteer = []; // the front wheels' yaw pivots — they steer visibly
 	var bales = [];
 	var stacks = [];
 	var restackPad = { x: 3850, z: 1802, r: 40, holdMS: 0 };
@@ -1503,6 +1504,8 @@
 		chassisDip += ( 0 - chassisDip ) * 0.2;             // suspension rebound
 		chassisGroup.position.y = 10 + chassisDip;
 		for ( var i = 0; i < wheels.length; i++ ) wheels[ i ].rotation.z -= sp * 0.09;
+		// the fronts steer with the input (right = clockwise from above)
+		for ( var fs = 0; fs < frontSteer.length; fs++ ) frontSteer[ fs ].rotation.y = -steerVal * 0.42;
 		// (the old circular blob shadow is gone — the moonlight's real
 		// shadow does the grounding now)
 
@@ -2534,9 +2537,30 @@
 	// read as leftover blob shadows once the lights actually glowed)
 
 	function gableRoof( THREE, len, halfWidth, color ) {
-		var geo = new THREE.CylinderGeometry( halfWidth, halfWidth, len, 3 );
-		geo.rotateZ( Math.PI / 2 );
-		return new THREE.Mesh( geo, mat( THREE, color ) );
+		// a REAL gable: two sloped planes to a ridge, closed triangular
+		// ends, gentle pitch + eave overhang. (The old 3-sided cylinder
+		// read as a giant equilateral wedge — Thomas's "odd triangles".)
+		// Vertically it spans eaves −0.5·hw to ridge +0.7·hw so existing
+		// caller positions still sit right on their walls.
+		var L = len / 2, w = halfWidth * 1.12;
+		var lo = -halfWidth * 0.5, hi = halfWidth * 0.7;
+		var v = [];
+		function push3( a, b, c ) { v.push( a[0],a[1],a[2], b[0],b[1],b[2], c[0],c[1],c[2] ); }
+		function quad( a, b, c, d ) { push3( a, b, c ); push3( a, c, d ); }
+		quad( [ -L, lo, w ], [ L, lo, w ], [ L, hi, 0 ], [ -L, hi, 0 ] );   // south slope
+		quad( [ -L, lo, -w ], [ -L, hi, 0 ], [ L, hi, 0 ], [ L, lo, -w ] ); // north slope
+		push3( [ -L, lo, -w ], [ -L, lo, w ], [ -L, hi, 0 ] );              // west gable
+		push3( [ L, lo, w ], [ L, lo, -w ], [ L, hi, 0 ] );                 // east gable
+		var geo = new THREE.BufferGeometry();
+		geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( v ), 3 ) );
+		var uv = new Float32Array( v.length / 3 * 2 );
+		for ( var i = 0, j = 0; i < v.length; i += 3 ) {
+			uv[ j++ ] = v[ i ] / 16;
+			uv[ j++ ] = ( v[ i + 1 ] + v[ i + 2 ] ) / 16;
+		}
+		geo.setAttribute( 'uv', new THREE.BufferAttribute( uv, 2 ) );
+		geo.computeVertexNormals();
+		return new THREE.Mesh( geo, woodMat( THREE, color ) );
 	}
 
 	function buildSign( THREE, text, px, pz, faceX, faceZ ) {
@@ -3266,16 +3290,20 @@
 		var redDark = skinMat( THREE, 0x7e3225, metalTex( THREE ) );
 		var creamT = skinMat( THREE, 0xd8cdb0, metalTex( THREE ) );
 		var darkMat = mat( THREE, 0x1c1512 );
-		var tWheels = [];
+		var tWheels = [], tSteer = [];
 		[ 13, -13 ].forEach( function ( z ) {
 			var rw = makeWheel( THREE, 11, 5.5, 'wheelTracR', '#a83a28', '#d8cdb0' );
 			rw.position.set( -10, 11, z );
 			g.add( rw );
 			tWheels.push( rw );
+			// fronts in a yaw pivot — they lean into her slow turns
 			var fw = makeWheel( THREE, 6.5, 4, 'wheelTracF', '#a83a28', '#d8cdb0' );
-			fw.position.set( 14, 6.5, z * 0.8 );
-			g.add( fw );
+			var fp = new THREE.Group();
+			fp.position.set( 14, 6.5, z * 0.8 );
+			fp.add( fw );
+			g.add( fp );
 			tWheels.push( fw );
+			tSteer.push( fp );
 		} );
 		var chassis = new THREE.Mesh( new THREE.BoxGeometry( 34, 8, 18 ), red );
 		chassis.position.set( 2, 14, 0 );
@@ -3370,7 +3398,8 @@
 		PROMPTS.push( lm );
 		var body = Matter.Bodies.circle( lm.x, lm.y, 20, { frictionAir: 0.12, density: 0.004 } );
 		Matter.Composite.add( engine.world, body );
-		tractor = { g: g, body: body, lm: lm, wheels: tWheels, angle: -0.6, turn: 0, turnT: 1500 };
+		tractor = { g: g, body: body, lm: lm, wheels: tWheels, steer: tSteer,
+			angle: -0.6, turn: 0, turnT: 1500 };
 	}
 
 	function updateTractor() {
@@ -3383,6 +3412,7 @@
 		tractor.lm.y = tp.y;
 		var tsp = Math.hypot( tractor.body.velocity.x, tractor.body.velocity.y );
 		for ( var tw = 0; tw < tractor.wheels.length; tw++ ) tractor.wheels[ tw ].rotation.z -= tsp * 0.07;
+		for ( var ts = 0; ts < tractor.steer.length; ts++ ) tractor.steer[ ts ].rotation.y = -tractor.turn * 22;
 		// she rolls a proper cloud behind her now
 		if ( tsp > 0.5 && Math.random() < 0.18 ) {
 			var td = spawnDust( {
@@ -5668,11 +5698,21 @@
 		spare.position.set( -17.5, 9, 3 );
 		chassisGroup.add( spare );
 
-		// knobby wheels with cream five-spoke rims + protruding hubs
+		// knobby wheels with cream five-spoke rims. The FRONTS sit inside a
+		// yaw pivot group so they visibly steer; the mesh inside still owns
+		// the rolling spin (rotation.z), so both motions compose correctly.
 		[ [ 15, 8, 15 ], [ 15, 8, -15 ], [ -15, 8, 15 ], [ -15, 8, -15 ] ].forEach( function ( p ) {
 			var w = makeWheel( THREE, 8, 6.5, 'wheelBuggy', '#c8beac', '#7a2a18' );
-			w.position.set( p[ 0 ], p[ 1 ], p[ 2 ] );
-			g.add( w );
+			if ( p[ 0 ] > 0 ) {
+				var pivot = new THREE.Group();
+				pivot.position.set( p[ 0 ], p[ 1 ], p[ 2 ] );
+				pivot.add( w );
+				g.add( pivot );
+				frontSteer.push( pivot );
+			} else {
+				w.position.set( p[ 0 ], p[ 1 ], p[ 2 ] );
+				g.add( w );
+			}
 			wheels.push( w );
 		} );
 
