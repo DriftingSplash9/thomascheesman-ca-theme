@@ -2,6 +2,16 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * GRAPHICS PHASE 2 — COHESION & DEPTH: one shader injection (applyAtmosphere,
+ * via onBeforeCompile on every Lambert surface) does two "one world" jobs at
+ * once. DUST: near-ground fragments drift toward warm prairie dust + up-faces
+ * sun-bleach — decades of wind, nothing freshly painted, everything belongs.
+ * GROUND HAZE: low fragments fade toward the horizon colour with distance, so
+ * fields feel huge and headlights read at night. Colours ride shared uniforms
+ * updated from the day cycle (heavier haze at night); one program variant for
+ * all. Lights stay excluded so they still bloom. (SSAO is the remaining
+ * phase-2 depth item — deferred: heavier vendoring + a look to eyeball.)
+ *
  * GRAPHICS PHASE 1 — THE PAINTED WORLD: the flat single-colour materials
  * that read as "coloured plastic" now carry hand-painted grain. A
  * procedural texture library (woodTex/barnTex/dirtTex/metalTex/stoneTex/
@@ -545,6 +555,7 @@
 	var renderer, scene, camera, clock;
 	var composer = null, bloomPass = null; // bloom stack — null renders plain
 	var gradePass = null, dayFactor = 1; // color grade + time-of-day (1=day)
+	var atmo = null; // shared prairie-dust + ground-haze uniforms (phase 2)
 	var Matter, engine, buggyBody;
 	var buggyGroup, chassisGroup, wheels = [];
 	var bales = [];
@@ -815,6 +826,11 @@
 		skyMatRef.uniforms.botCol.value.copy( dnNight.bot ).lerp( dnDay.bot, df );
 		scene.fog.color.copy( dnNight.fog ).lerp( dnDay.fog, df );
 		scene.background.copy( scene.fog.color );
+		// ground haze rides the horizon colour; a touch warmer/stronger at dusk
+		if ( atmo ) {
+			atmo.haze.value.copy( scene.fog.color );
+			atmo.amt.value = 0.42 + ( 1 - df ) * 0.18; // heavier at night
+		}
 		ambLight.intensity = 0.5 + df * 0.45;
 		hemiLight.intensity = 0.32 + df * 0.35;
 		moonLight.intensity = 0.6 + df * 0.45;
@@ -844,6 +860,12 @@
 		chipEl = stage.querySelector( '.bq-chip' );
 		Matter = window.Matter;
 		var THREE = window.THREE;
+		// shared atmosphere uniforms — must exist before any material is built
+		atmo = {
+			haze: { value: new THREE.Color( 0x93b2d6 ) },
+			amt: { value: 0.5 },
+			cam: { value: new THREE.Vector3() }
+		};
 		isFamily = !! ( window.tcVentures && Number( window.tcVentures.bqFamily ) );
 		generateTrackJumps(); // populate MOUNDS with the section-road rhythm
 
@@ -1007,7 +1029,7 @@
 		groundGeo.setAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 		groundGeo.computeVertexNormals();
 		var groundMesh = new THREE.Mesh( groundGeo,
-			new THREE.MeshLambertMaterial( { vertexColors: true, map: groundTex( THREE ) } ) );
+			applyAtmosphere( new THREE.MeshLambertMaterial( { vertexColors: true, map: groundTex( THREE ) } ), false ) );
 		groundMesh.receiveShadow = true;   // catches the buggy + building shadows
 		groundMesh.userData.noCast = true; // the ground itself never casts
 		scene.add( groundMesh );
@@ -1555,6 +1577,7 @@
 		}
 
 		if ( gradePass ) gradePass.uniforms.night.value = 1 - dayFactor;
+		if ( atmo ) atmo.cam.value.copy( camera.position );
 		if ( composer ) composer.render();
 		else renderer.render( scene, camera );
 	}
@@ -1569,8 +1592,8 @@
 		// non-indexed so computeVertexNormals gives hard facets: sculpted
 		// packed dirt, not a smooth cheese dome. (Real steep-faced ramps are
 		// a later pass; this de-cheeses the placeholder + fixes the sink.)
-		var dirt = new THREE.MeshLambertMaterial( { color: 0x4a3323 } );
-		var hayMat = new THREE.MeshLambertMaterial( { color: 0xd8bd6a, map: makeHayTexture( THREE ) } );
+		var dirt = applyAtmosphere( new THREE.MeshLambertMaterial( { color: 0x4a3323 } ), true );
+		var hayMat = applyAtmosphere( new THREE.MeshLambertMaterial( { color: 0xd8bd6a, map: makeHayTexture( THREE ) } ), true );
 		MOUNDS.forEach( function ( m ) {
 			var RINGS = 5, SEG = 12, maxR = m.r * 1.6, inv = 2 / ( m.r * m.r );
 			function vp( ri, si ) {
@@ -2068,7 +2091,47 @@
 	/* ------------------------------------------------------------------ *
 	 *  Shared low-poly helpers
 	 * ------------------------------------------------------------------ */
-	function mat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color } ); }
+	function mat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color } ), true ); }
+
+	/* ------------------------------------------------------------------ *
+	 *  PRAIRIE ATMOSPHERE (graphics phase 2) — one injected shader, applied
+	 *  to every Lambert surface, that does two cohesion jobs at once:
+	 *   • DUST: near-ground fragments drift toward a warm prairie-dust colour
+	 *     (the "decades of wind, everything collects dust, nothing is freshly
+	 *     painted" move) + up-facing faces sun-bleach a touch.
+	 *   • GROUND HAZE: low fragments fade toward the horizon/fog colour with
+	 *     distance — fields feel huge and headlights read at night.
+	 *  Colours ride shared uniforms updated per-frame from the day cycle, so
+	 *  all materials share ONE program variant (cache key below). Lights
+	 *  (MeshBasic glow) are deliberately excluded so they still bloom.
+	 * ------------------------------------------------------------------ */
+	function applyAtmosphere( material, dust ) {
+		if ( ! atmo ) return material; // pre-boot safety
+		material.onBeforeCompile = function ( shader ) {
+			shader.uniforms.uHaze = atmo.haze;
+			shader.uniforms.uHazeAmt = atmo.amt;
+			shader.uniforms.uCam = atmo.cam;
+			shader.vertexShader = 'varying vec3 vWPos;\nvarying float vUpN;\n' + shader.vertexShader
+				.replace( '#include <begin_vertex>',
+					'#include <begin_vertex>\n\tvWPos = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;' )
+				.replace( '#include <beginnormal_vertex>',
+					'#include <beginnormal_vertex>\n\tvUpN = normalize( mat3( modelMatrix ) * objectNormal ).y;' );
+			shader.fragmentShader = 'uniform vec3 uHaze;\nuniform float uHazeAmt;\nuniform vec3 uCam;\n' +
+				'varying vec3 vWPos;\nvarying float vUpN;\n' + shader.fragmentShader
+				.replace( '#include <dithering_fragment>',
+					'#include <dithering_fragment>\n' +
+					( dust ?
+						'\tfloat _g = smoothstep( 34.0, 2.0, vWPos.y );\n' +
+						'\tgl_FragColor.rgb = mix( gl_FragColor.rgb, mix( gl_FragColor.rgb, vec3(0.60,0.53,0.40), 0.5 ), _g * 0.5 );\n' +
+						'\tgl_FragColor.rgb += clamp( vUpN, 0.0, 1.0 ) * 0.04;\n'
+						: '' ) +
+					'\tfloat _low = clamp( smoothstep( 34.0, -6.0, vWPos.y ), 0.0, 1.0 );\n' +
+					'\tfloat _haze = smoothstep( 240.0, 1500.0, length( vWPos - uCam ) ) * _low * uHazeAmt;\n' +
+					'\tgl_FragColor.rgb = mix( gl_FragColor.rgb, uHaze, _haze );' );
+		};
+		material.customProgramCacheKey = function () { return dust ? 'atmo_d' : 'atmo_h'; };
+		return material;
+	}
 
 	// A light source: a MeshBasic colour pushed past 1.0 (HDR) so ACES still
 	// leaves it hot enough to cross BLOOM.threshold — these are the meshes
@@ -2212,11 +2275,11 @@
 		}, [ 46, 33 ] );
 	}
 	// role materials — same tint as before, now with painted grain
-	function woodMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: woodTex( THREE ) } ); }
-	function barnMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: barnTex( THREE ) } ); }
-	function dirtMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: dirtTex( THREE ) } ); }
-	function metalMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: metalTex( THREE ) } ); }
-	function stoneMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: stoneTex( THREE ) } ); }
+	function woodMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: woodTex( THREE ) } ), true ); }
+	function barnMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: barnTex( THREE ) } ), true ); }
+	function dirtMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: dirtTex( THREE ) } ), true ); }
+	function metalMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: metalTex( THREE ) } ), true ); }
+	function stoneMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: stoneTex( THREE ) } ), true ); }
 
 	function addWindow( THREE, group, w, h, x, y, z, rotY ) {
 		var pane = new THREE.Mesh(
