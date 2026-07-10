@@ -1656,7 +1656,7 @@
 	// mounds, with lit lip markers so the take-off reads at night.
 	function buildJumps( THREE ) {
 		var dirt = new THREE.MeshLambertMaterial( { color: 0x4a3323, side: THREE.DoubleSide } );
-		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } );
+		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } );
 		JUMPS.forEach( function ( j ) {
 			var hw = j.w / 2, N = 20;
 			function pt( sd, t, y ) {
@@ -1694,7 +1694,7 @@
 		// world-space wedges that follow the terrain, matching rampAt()'s
 		// f² face exactly so the buggy rides the surface it sees
 		var dirt = new THREE.MeshLambertMaterial( { color: 0x5c4830, side: THREE.DoubleSide } );
-		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } );
+		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } );
 		RAMPS.forEach( function ( r ) {
 			var hw = r.w / 2;
 			function pt( sd, t, y ) {
@@ -1730,7 +1730,6 @@
 				lamp.position.set( at[ 0 ], at[ 1 ], at[ 2 ] );
 				scene.add( lamp );
 			} );
-			addGlowDisc( THREE, r.x, r.z, 18, 0.07 );
 		} );
 	}
 
@@ -2284,22 +2283,16 @@
 	function addWindow( THREE, group, w, h, x, y, z, rotY ) {
 		var pane = new THREE.Mesh(
 			new THREE.PlaneGeometry( w, h ),
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb65e, 1.7 ) } )
+			// 1.15: warm amber with a gentle halo — 1.7 blew out to white
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb65e, 1.15 ) } )
 		);
 		pane.position.set( x, y, z );
 		if ( rotY ) pane.rotation.y = rotY;
 		group.add( pane );
 	}
 
-	function addGlowDisc( THREE, x, z, r, opacity ) {
-		var disc = new THREE.Mesh(
-			new THREE.CircleGeometry( r, 24 ),
-			new THREE.MeshBasicMaterial( { color: 0xff9c46, transparent: true, opacity: opacity } )
-		);
-		disc.rotation.x = -Math.PI / 2;
-		disc.position.set( x, hillsAt( x, z ) + 0.5, z );
-		scene.add( disc );
-	}
+	// (the addGlowDisc fake light-pools are GONE — they predated bloom and
+	// read as leftover blob shadows once the lights actually glowed)
 
 	function gableRoof( THREE, len, halfWidth, color ) {
 		var geo = new THREE.CylinderGeometry( halfWidth, halfWidth, len, 3 );
@@ -2368,8 +2361,9 @@
 			if ( side < 0 ) face.rotation.y = Math.PI;
 			g.add( face );
 		} );
-		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 3.8, 3.4 ),
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } ) );
+		// a round bulb, softly lit — the glowing box read as a "light cube"
+		var lantern = new THREE.Mesh( new THREE.SphereGeometry( 1.9, 10, 8 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.35 ) } ) );
 		lantern.position.y = beamY + bh / 2 + 3.4;
 		g.add( lantern );
 		var cap = new THREE.Mesh( new THREE.ConeGeometry( 3.2, 2.8, 4 ), mat( THREE, 0x1c1512 ) );
@@ -2380,7 +2374,6 @@
 		g.position.set( px, hillsAt( px, pz ), pz );
 		g.rotation.y = Math.atan2( faceX - px, faceZ - pz );
 		scene.add( g );
-		addGlowDisc( THREE, px, pz, 16, 0.09 );
 		return g;
 	}
 
@@ -2456,11 +2449,10 @@
 		buildSign( THREE, 'the treehouses · family only',
 			COMPOUND.x1 + 26, COMPOUND.gateZ0 - 14, HUB.x + 40, HUB.y );
 
-		var lamp = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 4, 3.4 ),
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } ) );
+		var lamp = new THREE.Mesh( new THREE.SphereGeometry( 1.9, 10, 8 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.35 ) } ) );
 		lamp.position.set( COMPOUND.x1, gateH + 22, COMPOUND.gateZ0 );
 		scene.add( lamp );
-		addGlowDisc( THREE, GATE.x + 8, GATE.z, 26, 0.08 );
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -2560,7 +2552,6 @@
 			g.add( shrub );
 		} );
 
-		addGlowDisc( THREE, lm.x + 30, lm.y + 145, 130, 0.10 ); // porch pool
 		return g;
 	}
 
@@ -2577,7 +2568,6 @@
 		g.add( chim );
 		addWindow( THREE, g, 24, 12, 0, 14, 20.2 );
 		addWindow( THREE, g, 9, 9, -28.2, 13, 0, -Math.PI / 2 );
-		addGlowDisc( THREE, lm.x, lm.y + 90, 95, 0.10 );
 		return g;
 	}
 
@@ -2597,7 +2587,6 @@
 		g.add( silo );
 		addWindow( THREE, g, 8, 10, 0, 96, 23.2 );
 		addWindow( THREE, g, 12, 14, 0, 12, 23.2 );
-		addGlowDisc( THREE, lm.x, lm.y + 51, 57, 0.09 );
 		return g;
 	}
 
@@ -2624,7 +2613,6 @@
 		addWindow( THREE, g, 8, 14, 23.2, 14, 0, Math.PI / 2 );
 		// front window on the TOWER face (z 48), not floating out at z 75
 		addWindow( THREE, g, 9, 15, 0, 30, 48.2 );
-		addGlowDisc( THREE, lm.x, lm.y + 125, 105, 0.10 );
 		return g;
 	}
 
@@ -2772,7 +2760,6 @@
 		addWindow( THREE, g, 10, 9, -34, 26, 33.2 );
 		addWindow( THREE, g, 10, 9, 34, 26, 33.2 );
 		addWindow( THREE, g, 9, 8, 50.2, 22, 0, Math.PI / 2 );
-		addGlowDisc( THREE, lm.x, lm.y + 74, 73, 0.10 );
 		return g;
 	}
 
@@ -3675,8 +3662,8 @@
 		addWindow( THREE, g, 10, 8, 0, 26, -48.8 );
 		// a lantern hangs from the ridge and lights the interior — no more
 		// black void when you wander in (glows under bloom)
-		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 5, 6, 5 ),
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.8 ) } ) );
+		var lantern = new THREE.Mesh( new THREE.SphereGeometry( 2.8, 10, 8 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } ) );
 		lantern.position.set( 0, 41, -8 );
 		g.add( lantern );
 		var cap = new THREE.Mesh( new THREE.ConeGeometry( 4, 3, 4 ), mat( THREE, 0x1c1512 ) );
@@ -3980,8 +3967,8 @@
 			var post = new THREE.Mesh( new THREE.BoxGeometry( 3, 34, 3 ), mat( THREE, 0x3a2c1c ) );
 			post.position.set( START.x, hillsAt( START.x, pz ) + 17, pz );
 			scene.add( post );
-			var lamp = new THREE.Mesh( new THREE.BoxGeometry( 4, 4.5, 4 ),
-				new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } ) );
+			var lamp = new THREE.Mesh( new THREE.SphereGeometry( 2.2, 10, 8 ),
+				new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } ) );
 			lamp.position.set( START.x, hillsAt( START.x, pz ) + 37, pz );
 			scene.add( lamp );
 		} );
@@ -4227,11 +4214,10 @@
 		var bar = new THREE.Mesh( new THREE.BoxGeometry( 124, 3, 3 ), mat( THREE, 0x4a4034 ) );
 		bar.position.set( 2240, gh + 27, H - 6 );
 		scene.add( bar );
-		var lantern = new THREE.Mesh( new THREE.BoxGeometry( 4, 5, 4 ),
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0 ) } ) );
+		var lantern = new THREE.Mesh( new THREE.SphereGeometry( 2.2, 10, 8 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.35 ) } ) );
 		lantern.position.set( 2240, gh + 31, H - 6 );
 		scene.add( lantern );
-		addGlowDisc( THREE, 2240, H - 30, 34, 0.08 );
 	}
 
 	function makeBaleMesh( THREE ) {
