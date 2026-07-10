@@ -450,7 +450,7 @@
 		{ x: 3850, z: 1802, ri: 88, ro: 210 },
 		{ x: 2730, z: 630, ri: 70, ro: 160 }, // the old pull-off (tractor spawn)
 		{ x: 4135, z: 335, ri: 100, ro: 210 }, // chicken coop yard (NE corner)
-		{ x: 2620, z: 985, ri: 110, ro: 220 }, // pig pen + mud pit
+		{ x: 2620, z: 985, ri: 150, ro: 270 }, // pig pen (2×) + mud pit
 		{ x: 1600, z: 795, ri: 130, ro: 240 }, // the firepit hangout + camper
 		{ x: 2900, z: 1550, ri: 130, ro: 260 } // the stock barn yard
 	];
@@ -501,8 +501,13 @@
 		addJump( -170, 700, Z, 'table', { h: 30, up: 54, flat: 22, down: 28 } );
 		addJump( -170, 1280, Z, 'table', { h: 26, up: 52, flat: 34, down: 38 } );
 		addJump( -170, 1860, Z, 'table', { h: 36, up: 56, flat: 18, down: 26 } );
-		// NORTH straight: WHOOPS — rounded washboard (small faceted mounds)
-		for ( var nx = 3550; nx >= 1050; nx -= 178 ) MOUNDS.push( { x: nx, z: -170, a: 14, r: 46 } );
+		// NORTH straight: SPEED BUMPS in front of the grandstands — a tight
+		// low washboard (the old tall whoops read as random mounds), with a
+		// gap where the MEGA ramp stands
+		for ( var nx = 3550; nx >= 1050; nx -= 90 ) {
+			if ( nx > 1980 && nx < 2520 ) continue; // the MEGA ramp + its pad
+			MOUNDS.push( { x: nx, z: -170, a: 6, r: 22 } );
+		}
 	}
 	// Kicker ramps — a steepening face that ends in a lip. The launch is
 	// terrain-honest (vertical speed = climb rate at the lip), so speed
@@ -519,6 +524,11 @@
 		r.cx = r.dir.x / dl;
 		r.cz = r.dir.z / dl;
 	} );
+	// THE MEGA RAMP: a gold boost pad on the north straight feeds a
+	// near-vertical face between the grandstands. The launch itself is
+	// SCRIPTED in control() (terrain can't express a wall); a clean landing
+	// pays huge turbo + a wheelie + fireworks in front of the crowd.
+	var MEGA = { x: 2240, z: -170, padX: 2470, w: 116, h: 96 };
 	var PADS = [
 		{ x: 2188, z: 2065 }, { x: 2258, z: 1155 },
 		{ x: 2625, z: 1750 }, { x: 3693, z: 1960 },
@@ -527,7 +537,9 @@
 		{ x: 2420, z: 2690, rot: -Math.PI / 2 },
 		{ x: 4650, z: 950, rot: 0 },
 		{ x: 750, z: -170, rot: Math.PI / 2 },
-		{ x: -170, z: 470, rot: Math.PI }
+		{ x: -170, z: 470, rot: Math.PI },
+		// the MEGA pad — gold, bigger boost, feeds the mega ramp
+		{ x: MEGA.padX, z: -170, rot: Math.PI / 2, mega: true }
 	];
 	var TOKENS = [
 		{ x: 350, z: 350 }, { x: 4200, z: 315 }, { x: 315, z: 2188 },
@@ -577,6 +589,7 @@
 	var airTime = 0; // seconds aloft — big air pays boost on the landing
 	var airPitch = 0, jumpCooldown = 0;
 	var boostT = 0, padCooldown = [];
+	var megaAir = false, megaCd = 0, wheelieT = 0; // the MEGA ramp state
 	var inWater = false, inMud = false, inCreek = false;
 	var chickens = [], pigs = [];
 	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
@@ -1038,6 +1051,7 @@
 		buildMounds( THREE );
 		buildRamps( THREE );
 		buildJumps( THREE );
+		buildMegaRamp( THREE );
 		buildPads( THREE );
 
 		// ---------- physics ----------
@@ -1368,6 +1382,21 @@
 
 		// ---- vertical: terrain, ramps, Space-jumps, mid-air FLIPS ----
 		var gy = heightAt( rx, rz );
+		if ( megaCd > 0 ) megaCd -= dt;
+		if ( wheelieT > 0 ) wheelieT -= dms;
+		if ( ! airborne && megaCd <= 0 && ! inWater &&
+			Math.abs( rx - MEGA.x ) < 46 && Math.abs( rz - MEGA.z ) < 60 ) {
+			// THE MEGA RAMP — scripted, nearly straight up (terrain can't be
+			// a wall). Speed in buys height; the pad makes sure you have it.
+			airborne = true;
+			megaAir = true;
+			megaCd = 4.5;
+			vAlt = Math.min( 560, 220 + sp * 26 );
+			worldY = gy;
+			Matter.Body.setVelocity( b, { x: b.velocity.x * 0.22, y: b.velocity.y * 0.22 } );
+			flashChip( 'MEGA RAMP — send it to the sky ⬆' );
+			if ( audio.on ) whoosh();
+		}
 		if ( ! airborne ) {
 			var groundRate = ( gy - prevGy ) / Math.max( dt, 0.001 );
 			// remember how hard we were climbing — that's the honest launch
@@ -1412,7 +1441,17 @@
 					for ( var cd = 0; cd < 10; cd++ ) spawnDust( wheelWorld( -10 + Math.random() * 20, -14 + Math.random() * 28 ), 6 );
 					flashChip( 'Ate dirt — square the landing next time' );
 				} else {
-					if ( Math.abs( airPitch ) > 11.5 ) { // stuck a DOUBLE
+					if ( megaAir ) {
+						// stuck the MEGA landing — huge turbo, pop a wheelie,
+						// fireworks over the grandstands
+						boostT = 2200;
+						wheelieT = 950;
+						megaCelebration( rx, worldY, rz );
+						flashChip( 'MEGA AIR — wheelie money! 🎆' );
+						if ( audio.on ) whoosh();
+						var mha = b.angle;
+						Matter.Body.setVelocity( b, { x: Math.cos( mha ) * 10, y: Math.sin( mha ) * 10 } );
+					} else if ( Math.abs( airPitch ) > 11.5 ) { // stuck a DOUBLE
 						boostT = 1600;
 						flashChip( 'DOUBLE FLIP! — full send 🛞🛞' );
 						if ( audio.on ) whoosh();
@@ -1430,6 +1469,7 @@
 				}
 				airPitch = 0;
 				airTime = 0;
+				megaAir = false;
 			}
 		}
 		prevGy = gy;
@@ -1450,7 +1490,9 @@
 		var af = airborne ? 0 : 1;                          // aloft, airPitch owns the pose
 		groupPitchS += ( af * Math.atan( fwdSlope ) - groupPitchS ) * 0.18;
 		groupRollS += ( af * -Math.atan( latSlope ) - groupRollS ) * 0.18;
-		buggyGroup.rotation.z = airPitch + groupPitchS;
+		// the wheelie: a nose-up arc that rises fast and settles (mega landing)
+		var wheelie = wheelieT > 0 ? Math.sin( Math.min( 1, wheelieT / 950 ) * Math.PI ) * 0.52 : 0;
+		buggyGroup.rotation.z = airPitch + groupPitchS + wheelie;
 		buggyGroup.rotation.x = groupRollS;
 		var tRoll = af * steerVal * -0.17 * Math.min( 1, sp / 4 ); // lean OUT of the turn
 		var tPitch = af * throttleInput * 0.06;                    // squat on gas / dive on brake
@@ -1651,7 +1693,8 @@
 	// exactly (so the buggy rides the surface it sees), faceted like the
 	// mounds, with lit lip markers so the take-off reads at night.
 	function buildJumps( THREE ) {
-		var dirt = new THREE.MeshLambertMaterial( { color: 0x4a3323, side: THREE.DoubleSide } );
+		var dirt = applyAtmosphere( new THREE.MeshLambertMaterial( {
+			color: 0x4a3323, map: dirtTex( THREE ), side: THREE.DoubleSide } ), true );
 		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } );
 		JUMPS.forEach( function ( j ) {
 			var hw = j.w / 2, N = 20;
@@ -1673,6 +1716,7 @@
 			}
 			var geo = new THREE.BufferGeometry();
 			geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( tris ), 3 ) );
+			dirtUVs( THREE, geo, tris );
 			geo.computeVertexNormals();
 			scene.add( new THREE.Mesh( geo, dirt ) );
 			// lit markers at the take-off lip
@@ -1686,10 +1730,72 @@
 		} );
 	}
 
+	// planar UVs from world x/z so the sculpted dirt features can carry
+	// dirtTex — they were built without UVs (single-texel smear otherwise)
+	function dirtUVs( THREE, geo, tris ) {
+		var uv = new Float32Array( tris.length / 3 * 2 );
+		for ( var i = 0, j = 0; i < tris.length; i += 3 ) {
+			uv[ j++ ] = tris[ i ] / 26;
+			uv[ j++ ] = tris[ i + 2 ] / 26;
+		}
+		geo.setAttribute( 'uv', new THREE.BufferAttribute( uv, 2 ) );
+		return geo;
+	}
+
+	// THE MEGA RAMP mesh — a curved face that goes near-vertical, wooden
+	// side walls, lit lip. Physics is the scripted launch in control(); the
+	// mesh just has to LOOK like the thing that threw you into the sky.
+	function buildMegaRamp( THREE ) {
+		var hw = MEGA.w / 2, N = 22, LEN = 68, baseX = MEGA.x + 58;
+		var gy = hillsAt( MEGA.x, MEGA.z );
+		function py( t ) { return MEGA.h * Math.pow( t / LEN, 2.6 ); }
+		var tris = [];
+		function push3( a, b, c ) { tris.push( a[0],a[1],a[2], b[0],b[1],b[2], c[0],c[1],c[2] ); }
+		function quad( a, b, c, d ) { push3( a, b, c ); push3( a, c, d ); }
+		for ( var k = 0; k < N; k++ ) {
+			var t0 = LEN * k / N, t1 = LEN * ( k + 1 ) / N;
+			var x0 = baseX - t0, x1 = baseX - t1;
+			var y0 = gy + py( t0 ), y1 = gy + py( t1 );
+			// the riding face
+			quad( [ x0, y0, MEGA.z - hw ], [ x0, y0, MEGA.z + hw ],
+			      [ x1, y1, MEGA.z + hw ], [ x1, y1, MEGA.z - hw ] );
+			// side walls
+			quad( [ x0, gy, MEGA.z - hw ], [ x0, y0, MEGA.z - hw ],
+			      [ x1, y1, MEGA.z - hw ], [ x1, gy, MEGA.z - hw ] );
+			quad( [ x0, gy, MEGA.z + hw ], [ x1, gy, MEGA.z + hw ],
+			      [ x1, y1, MEGA.z + hw ], [ x0, y0, MEGA.z + hw ] );
+		}
+		// the back drops straight down
+		var topX = baseX - LEN, topY = gy + MEGA.h;
+		quad( [ topX, topY, MEGA.z - hw ], [ topX, topY, MEGA.z + hw ],
+		      [ topX, gy, MEGA.z + hw ], [ topX, gy, MEGA.z - hw ] );
+		var geo = new THREE.BufferGeometry();
+		geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( tris ), 3 ) );
+		var uv = new Float32Array( tris.length / 3 * 2 );
+		for ( var ui = 0, uj = 0; ui < tris.length; ui += 3 ) {
+			uv[ uj++ ] = tris[ ui ] / 26;
+			uv[ uj++ ] = ( tris[ ui + 1 ] + tris[ ui + 2 ] ) / 26;
+		}
+		geo.setAttribute( 'uv', new THREE.BufferAttribute( uv, 2 ) );
+		geo.computeVertexNormals();
+		var face = new THREE.Mesh( geo, applyAtmosphere( new THREE.MeshLambertMaterial( {
+			color: 0x5c4830, map: dirtTex( THREE ), side: THREE.DoubleSide } ), true ) );
+		scene.add( face );
+		// lit lip bulbs so the top edge reads at night
+		[ -1, 1 ].forEach( function ( sd ) {
+			var lamp = new THREE.Mesh( new THREE.SphereGeometry( 2.6, 10, 8 ),
+				new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd76a, 1.5 ) } ) );
+			lamp.position.set( topX, topY + 3, MEGA.z + sd * ( hw - 4 ) );
+			scene.add( lamp );
+		} );
+		buildSign( THREE, 'the mega ramp', MEGA.x + 150, MEGA.z - 96, MEGA.x, MEGA.z );
+	}
+
 	function buildRamps( THREE ) {
 		// world-space wedges that follow the terrain, matching rampAt()'s
 		// f² face exactly so the buggy rides the surface it sees
-		var dirt = new THREE.MeshLambertMaterial( { color: 0x5c4830, side: THREE.DoubleSide } );
+		var dirt = applyAtmosphere( new THREE.MeshLambertMaterial( {
+			color: 0x5c4830, map: dirtTex( THREE ), side: THREE.DoubleSide } ), true );
 		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } );
 		RAMPS.forEach( function ( r ) {
 			var hw = r.w / 2;
@@ -1717,6 +1823,7 @@
 			}
 			var geo = new THREE.BufferGeometry();
 			geo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( tris ), 3 ) );
+			dirtUVs( THREE, geo, tris );
 			geo.computeVertexNormals();
 			scene.add( new THREE.Mesh( geo, dirt ) );
 			// lit lip markers so the kicker reads at night
@@ -1731,13 +1838,17 @@
 
 	function buildPads( THREE ) {
 		var padMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0x8be9ff, 1.5 ), transparent: true, opacity: 0.5 } );
+		var megaMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd76a, 1.7 ), transparent: true, opacity: 0.6 } );
 		PADS.forEach( function ( p, i ) {
 			padCooldown[ i ] = 0;
 			var g = new THREE.Group();
+			var mScale = p.mega ? 1.7 : 1; // the mega pad reads BIG and gold
 			for ( var c = 0; c < 3; c++ ) {
-				var chev = new THREE.Mesh( new THREE.PlaneGeometry( 26 - c * 5, 8 ), padMat );
+				var chev = new THREE.Mesh(
+					new THREE.PlaneGeometry( ( 26 - c * 5 ) * mScale, 8 * mScale ),
+					p.mega ? megaMat : padMat );
 				chev.rotation.x = -Math.PI / 2;
-				chev.position.set( 0, 0.7 + c * 0.02, -c * 11 );
+				chev.position.set( 0, 0.7 + c * 0.02, -c * 11 * mScale );
 				g.add( chev );
 			}
 			g.position.set( p.x, hillsAt( p.x, p.z ), p.z );
@@ -1755,11 +1866,11 @@
 				ch.material.opacity = 0.35 + 0.3 * Math.sin( t * 5 - ci * 0.9 );
 			} );
 			if ( padCooldown[ i ] > t ) continue;
-			if ( Math.hypot( b.position.x - p.x, b.position.y - p.z ) < 30 ) {
+			if ( Math.hypot( b.position.x - p.x, b.position.y - p.z ) < ( p.mega ? 44 : 30 ) ) {
 				padCooldown[ i ] = t + 1.6;
-				boostT = 950;
+				boostT = p.mega ? 1800 : 950;
 				var a = b.angle;
-				var sp = Math.max( Math.hypot( b.velocity.x, b.velocity.y ), 9.4 );
+				var sp = Math.max( Math.hypot( b.velocity.x, b.velocity.y ), p.mega ? 13.5 : 9.4 );
 				Matter.Body.setVelocity( b, { x: Math.cos( a ) * sp, y: Math.sin( a ) * sp } );
 				if ( audio.on && audio.ctx ) whoosh();
 			}
@@ -2629,7 +2740,7 @@
 		var shrubMats = [ leafMat( THREE, 0x263f24 ), leafMat( THREE, 0x2e4a2a ) ];
 		[ [ -60, 38 ], [ -62, 8 ], [ -60, -26 ], [ 34, 52 ], [ 8, 54 ],
 		  [ 62, -38 ], [ 28, -40 ], [ -22, -40 ] ].forEach( function ( s, si ) {
-			var shrub = new THREE.Mesh( new THREE.SphereGeometry( 3 + Math.random() * 1.6, 6, 5 ),
+			var shrub = new THREE.Mesh( lumpy( new THREE.SphereGeometry( 3 + Math.random() * 1.6, 7, 6 ), 0.26 ),
 				shrubMats[ si % 2 ] );
 			shrub.scale.y = 0.75 + Math.random() * 0.25;
 			shrub.position.set( s[ 0 ], 3, s[ 1 ] );
@@ -2719,10 +2830,10 @@
 				new THREE.CylinderGeometry( t[ 2 ], t[ 3 ], t[ 4 ], 6 ), woodMat( THREE, bark ) );
 			trunk.position.set( t[ 0 ], t[ 4 ] / 2, t[ 1 ] );
 			g.add( trunk );
-			var f1 = new THREE.Mesh( new THREE.ConeGeometry( t[ 5 ], t[ 6 ], 7 ), lms[ ti % 4 ] );
+			var f1 = new THREE.Mesh( lumpy( new THREE.ConeGeometry( t[ 5 ], t[ 6 ], 7 ), 0.12 ), lms[ ti % 4 ] );
 			f1.position.set( t[ 0 ], t[ 4 ] - t[ 6 ] * 0.15, t[ 1 ] );
 			g.add( f1 );
-			var f2 = new THREE.Mesh( new THREE.ConeGeometry( t[ 5 ] * 0.68, t[ 6 ] * 0.68, 7 ), lms[ ( ti + 1 ) % 4 ] );
+			var f2 = new THREE.Mesh( lumpy( new THREE.ConeGeometry( t[ 5 ] * 0.68, t[ 6 ] * 0.68, 7 ), 0.14 ), lms[ ( ti + 1 ) % 4 ] );
 			f2.position.set( t[ 0 ], t[ 4 ] + t[ 6 ] * 0.28, t[ 1 ] );
 			g.add( f2 );
 		} );
@@ -3293,35 +3404,45 @@
 	}
 
 	function buildPigPen( THREE ) {
-		// pen open on the west side — straight into the mud pit
-		penRun( THREE, PIGPEN.x - 30, PIGPEN.z - 55, PIGPEN.x + 70, PIGPEN.z - 55 );
-		penRun( THREE, PIGPEN.x + 70, PIGPEN.z - 55, PIGPEN.x + 70, PIGPEN.z + 55 );
-		penRun( THREE, PIGPEN.x - 30, PIGPEN.z + 55, PIGPEN.x + 70, PIGPEN.z + 55 );
-		var shed = new THREE.Mesh( new THREE.BoxGeometry( 24, 10, 16 ), mat( THREE, 0x54402a ) );
-		shed.position.set( PIGPEN.x + 52, hillsAt( PIGPEN.x + 52, PIGPEN.z - 38 ) + 5, PIGPEN.z - 38 );
-		scene.add( shed );
-		var shedRoof = new THREE.Mesh( new THREE.BoxGeometry( 28, 1.6, 20 ), mat( THREE, 0x3a2c1c ) );
-		shedRoof.position.set( PIGPEN.x + 52, hillsAt( PIGPEN.x + 52, PIGPEN.z - 38 ) + 11, PIGPEN.z - 38 );
-		shedRoof.rotation.z = 0.12;
-		scene.add( shedRoof );
-		Matter.Composite.add( engine.world, Matter.Bodies.rectangle(
-			PIGPEN.x + 52, PIGPEN.z - 38, 24, 16, { isStatic: true } ) );
+		// the pen at 2× — open on the west side, straight into the mud pit
+		penRun( THREE, PIGPEN.x - 45, PIGPEN.z - 78, PIGPEN.x + 100, PIGPEN.z - 78 );
+		penRun( THREE, PIGPEN.x + 100, PIGPEN.z - 78, PIGPEN.x + 100, PIGPEN.z + 78 );
+		penRun( THREE, PIGPEN.x - 45, PIGPEN.z + 78, PIGPEN.x + 100, PIGPEN.z + 78 );
+		// two huts — the herd grew
+		[ [ 78, -56 ], [ 72, 54 ] ].forEach( function ( hp ) {
+			var hx = PIGPEN.x + hp[ 0 ], hz = PIGPEN.z + hp[ 1 ];
+			var shed = new THREE.Mesh( new THREE.BoxGeometry( 24, 10, 16 ), woodMat( THREE, 0x54402a ) );
+			shed.position.set( hx, hillsAt( hx, hz ) + 5, hz );
+			scene.add( shed );
+			var shedRoof = new THREE.Mesh( new THREE.BoxGeometry( 28, 1.6, 20 ), mat( THREE, 0x3a2c1c ) );
+			shedRoof.position.set( hx, hillsAt( hx, hz ) + 11, hz );
+			shedRoof.rotation.z = 0.12;
+			scene.add( shedRoof );
+			Matter.Composite.add( engine.world, Matter.Bodies.rectangle(
+				hx, hz, 24, 16, { isStatic: true } ) );
+		} );
 		// the mud pit — layered, rutted, glinting wet
 		buildMudPatch( THREE, MUD.x, MUD.z, MUD.r * 1.3, MUD.r, 0 );
-		for ( var i = 0; i < 4; i++ ) {
-			addPig( THREE, PIGPEN.x - 10 + Math.random() * 60, PIGPEN.z - 30 + Math.random() * 60 );
+		for ( var i = 0; i < 9; i++ ) {
+			addPig( THREE, PIGPEN.x - 30 + Math.random() * 115, PIGPEN.z - 60 + Math.random() * 120 );
 		}
+		// four piglets in their own little colors, tumbling near the huts
+		[ 0xe0a0b8, 0x6a5a4c, 0x3a332e, 0xdca878 ].forEach( function ( pc, pi ) {
+			addPig( THREE, PIGPEN.x + 40 + Math.random() * 50,
+				PIGPEN.z - 40 + pi * 26, { coat: pc, scale: 0.48 } );
+		} );
 		PROMPTS.push( { id: 'pigpen', name: 'the pig pen', x: PIGPEN.x, y: PIGPEN.z, href: null,
 			prompt: 'The pig pen — the mud is deep and they love it' } );
 	}
 
-	function addPig( THREE, x, z ) {
+	function addPig( THREE, x, z, opts ) {
+		opts = opts || {};
 		var g = new THREE.Group();
-		// each pig its own shade of pink, mud-mottled
+		// each pig its own shade of pink, mud-mottled; piglets pass a coat
 		var pigCoats = [ 0xc98d84, 0xb87f72, 0xd49a8e, 0xa8756a ];
-		var coat = pigCoats[ ( Math.random() * 4 ) | 0 ];
+		var coat = opts.coat || pigCoats[ ( Math.random() * 4 ) | 0 ];
 		var pink = skinMat( THREE, coat, hideTex( THREE ) );
-		var js = 0.85 + Math.random() * 0.3;
+		var js = opts.scale || ( 0.85 + Math.random() * 0.3 );
 		g.scale.set( js, js, js );
 		[ [ 1, 1 ], [ 1, -1 ], [ -1, 1 ], [ -1, -1 ] ].forEach( function ( c ) {
 			var leg = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 3.5, 1.4 ), pink );
@@ -3343,7 +3464,7 @@
 			g.add( ear );
 		} );
 		scene.add( g );
-		var body2d = Matter.Bodies.circle( x, z, 6, { frictionAir: 0.18, density: 0.002 } );
+		var body2d = Matter.Bodies.circle( x, z, Math.max( 3, 6 * js ), { frictionAir: 0.18, density: 0.002 } );
 		Matter.Composite.add( engine.world, body2d );
 		pigs.push( { g: g, body: body2d, wanderT: 600 + Math.random() * 2000, cd: 0 } );
 	}
@@ -3358,7 +3479,7 @@
 			if ( p.wanderT <= 0 ) {
 				p.wanderT = 1600 + Math.random() * 2600;
 				var dir;
-				if ( Math.hypot( px - PIGPEN.x, pz - PIGPEN.z ) > 150 ) {
+				if ( Math.hypot( px - PIGPEN.x, pz - PIGPEN.z ) > 190 ) {
 					dir = Math.atan2( PIGPEN.z - pz, PIGPEN.x - px );
 				} else if ( Math.random() < 0.4 ) {
 					// pigs love the mud
@@ -3871,7 +3992,10 @@
 		var col = new THREE.Color();
 
 		var greens = [ 0x263f24, 0x2e4a2a, 0x22422c ];
-		var bushInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 7, 7, 5 ),
+		var bushInst = new THREE.InstancedMesh( lumpy( new THREE.SphereGeometry( 7, 8, 6 ), 0.24 ),
+			leafMat( THREE, 0xffffff ), bushes.length );
+		// each bush also grows an off-centre lobe — no more perfect balls
+		var lobeInst = new THREE.InstancedMesh( lumpy( new THREE.SphereGeometry( 4.2, 7, 5 ), 0.3 ),
 			leafMat( THREE, 0xffffff ), bushes.length );
 		bushes.forEach( function ( s, i3 ) {
 			var sc = 1.2 + Math.random();
@@ -3882,11 +4006,21 @@
 			bushInst.setMatrixAt( i3, dummy.matrix );
 			col.setHex( greens[ i3 % 3 ] );
 			bushInst.setColorAt( i3, col );
+			var la = Math.random() * Math.PI * 2;
+			dummy.position.set( s.x + Math.cos( la ) * 5.5 * sc,
+				s.gy + 2.6 * sc, s.z + Math.sin( la ) * 5.5 * sc );
+			dummy.scale.set( sc * 0.9, sc * 0.7, sc * 0.9 );
+			dummy.rotation.y = Math.random() * Math.PI;
+			dummy.updateMatrix();
+			lobeInst.setMatrixAt( i3, dummy.matrix );
+			col.setHex( greens[ ( i3 + 1 ) % 3 ] );
+			lobeInst.setColorAt( i3, col );
 		} );
 		scene.add( bushInst );
+		scene.add( lobeInst );
 
 		// berry bushes — a lighter bush studded with bright berries
-		var bbInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 7, 7, 5 ),
+		var bbInst = new THREE.InstancedMesh( lumpy( new THREE.SphereGeometry( 7, 8, 6 ), 0.24 ),
 			leafMat( THREE, 0x33512e ), berries.length );
 		var berryInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 1.1, 5, 4 ),
 			new THREE.MeshBasicMaterial( { color: 0xc83a3a } ), berries.length * 5 );
@@ -3916,14 +4050,14 @@
 		// little apple trees — solid trunks, round canopies, hanging fruit
 		var trunkInst = new THREE.InstancedMesh( new THREE.CylinderGeometry( 1.6, 2.2, 14, 6 ),
 			woodMat( THREE, 0x4a3423 ), apples.length );
-		var canInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 10, 8, 6 ),
+		var canInst = new THREE.InstancedMesh( lumpy( new THREE.SphereGeometry( 10, 8, 6 ), 0.2 ),
 			leafMat( THREE, 0xffffff ), apples.length );
 		var appleInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 1.2, 5, 4 ),
 			new THREE.MeshBasicMaterial( { color: 0xd84a30 } ), apples.length * 4 );
 		var canGreens = [ 0x2e5a30, 0x37623a, 0x2a5230 ];
 		var ai2 = 0;
 		apples.forEach( function ( s, i5 ) {
-			var sc = 0.9 + Math.random() * 0.5;
+			var sc = 1.8 + Math.random(); // 2× — proper orchard trees now
 			dummy.rotation.y = 0;
 			dummy.scale.set( sc, sc, sc );
 			dummy.position.set( s.x, s.gy + 7 * sc, s.z );
@@ -3945,11 +4079,25 @@
 				dummy.updateMatrix();
 				appleInst.setMatrixAt( ai2++, dummy.matrix );
 			}
-			Matter.Composite.add( engine.world, Matter.Bodies.circle( s.x, s.z, 5, { isStatic: true } ) );
+			Matter.Composite.add( engine.world, Matter.Bodies.circle( s.x, s.z, 5 * sc, { isStatic: true } ) );
 		} );
 		scene.add( trunkInst );
 		scene.add( canInst );
 		scene.add( appleInst );
+	}
+
+	// bake organic wobble into foliage geometry — perfect spheres and cones
+	// read as plastic; real bushes and crowns have lumps. Deterministic per
+	// position, so seam vertices stay welded.
+	function lumpy( geo, amt ) {
+		var pos = geo.attributes.position;
+		for ( var i = 0; i < pos.count; i++ ) {
+			var x = pos.getX( i ), y = pos.getY( i ), z = pos.getZ( i );
+			var s = 1 + amt * Math.sin( x * 2.3 + z * 1.9 ) * Math.cos( y * 1.7 + z * 0.9 );
+			pos.setXYZ( i, x * s, y * s, z * s );
+		}
+		geo.computeVertexNormals();
+		return geo;
 	}
 
 	// shared foliage palette — a few materials, picked per tree, so the
@@ -3961,6 +4109,21 @@
 			} );
 		}
 		return _texCache.leafMats;
+	}
+
+	// a little side branch poking out of the lower canopy — about half the
+	// trees get one, tilted outward; kills the perfect-cone read
+	function addOffshoot( THREE, lm, x, z, footY, h, r ) {
+		if ( Math.random() > 0.55 ) return;
+		var oa = Math.random() * Math.PI * 2;
+		var dx = Math.cos( oa ), dz = Math.sin( oa );
+		var off = new THREE.Mesh(
+			lumpy( new THREE.ConeGeometry( r * 0.34, h * 0.3, 6 ), 0.15 ),
+			lm[ ( Math.random() * 4 ) | 0 ] );
+		off.position.set( x + dx * r * 0.72, footY + h * 0.28, z + dz * r * 0.72 );
+		off.rotation.x = dz * 0.5;
+		off.rotation.z = -dx * 0.5;
+		scene.add( off );
 	}
 
 	function buildWindbreak( THREE ) {
@@ -3984,14 +4147,15 @@
 			scene.add( trunk );
 			// two stacked cones — a stepped spruce silhouette, not a witch hat
 			var h = 75 + Math.random() * 40, r = 17 + Math.random() * 7;
-			var cone = new THREE.Mesh( new THREE.ConeGeometry( r, h, 7 ), lm[ i % 4 ] );
+			var cone = new THREE.Mesh( lumpy( new THREE.ConeGeometry( r, h, 7 ), 0.11 ), lm[ i % 4 ] );
 			cone.position.set( x, gy + 28 + h / 2, z );
 			cone.rotation.y = Math.random() * Math.PI;
 			scene.add( cone );
-			var cone2 = new THREE.Mesh( new THREE.ConeGeometry( r * 0.6, h * 0.5, 7 ), lm[ ( i + 1 ) % 4 ] );
+			var cone2 = new THREE.Mesh( lumpy( new THREE.ConeGeometry( r * 0.6, h * 0.5, 7 ), 0.13 ), lm[ ( i + 1 ) % 4 ] );
 			cone2.position.set( x, gy + 28 + h * 0.78, z );
 			cone2.rotation.y = Math.random() * Math.PI;
 			scene.add( cone2 );
+			addOffshoot( THREE, lm, x, z, gy + 28, h, r );
 			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 11, { isStatic: true } ) );
 		}
 	}
@@ -4020,14 +4184,15 @@
 			trunk.position.set( x, gy + 15, z );
 			scene.add( trunk );
 			var h = 70 + Math.random() * 60, r = 16 + Math.random() * 9;
-			var cone = new THREE.Mesh( new THREE.ConeGeometry( r, h, 7 ), lm[ spots.length % 4 ] );
+			var cone = new THREE.Mesh( lumpy( new THREE.ConeGeometry( r, h, 7 ), 0.11 ), lm[ spots.length % 4 ] );
 			cone.position.set( x, gy + 30 + h / 2, z );
 			cone.rotation.y = Math.random() * Math.PI;
 			scene.add( cone );
-			var cone2 = new THREE.Mesh( new THREE.ConeGeometry( r * 0.6, h * 0.5, 7 ), lm[ ( spots.length + 2 ) % 4 ] );
+			var cone2 = new THREE.Mesh( lumpy( new THREE.ConeGeometry( r * 0.6, h * 0.5, 7 ), 0.13 ), lm[ ( spots.length + 2 ) % 4 ] );
 			cone2.position.set( x, gy + 30 + h * 0.78, z );
 			cone2.rotation.y = Math.random() * Math.PI;
 			scene.add( cone2 );
+			addOffshoot( THREE, lm, x, z, gy + 30, h, r );
 			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 10, { isStatic: true } ) );
 		}
 	}
@@ -4047,11 +4212,11 @@
 			trunk.position.set( x, gy + 22, z );
 			scene.add( trunk );
 			// two offset lobes — a poplar crown, not a green pill
-			var canopy = new THREE.Mesh( new THREE.SphereGeometry( 12, 8, 8 ), lm[ 1 ] );
+			var canopy = new THREE.Mesh( lumpy( new THREE.SphereGeometry( 12, 8, 8 ), 0.16 ), lm[ 1 ] );
 			canopy.scale.set( 1, 3.4, 1 );
 			canopy.position.set( x, gy + 44 + 34, z );
 			scene.add( canopy );
-			var lobe = new THREE.Mesh( new THREE.SphereGeometry( 8, 7, 6 ), lm[ 3 ] );
+			var lobe = new THREE.Mesh( lumpy( new THREE.SphereGeometry( 8, 7, 6 ), 0.2 ), lm[ 3 ] );
 			lobe.scale.set( 1, 2.2, 1 );
 			lobe.position.set( x + 6, gy + 44 + 20, z + 3 );
 			scene.add( lobe );
@@ -4061,12 +4226,18 @@
 
 	function fenceRun( THREE, x0, z0, x1, z1 ) {
 		var postMat = barnMat( THREE, 0x4a4034 );
+		var postMat2 = barnMat( THREE, 0x554a3c ); // sun hits some posts differently
 		var dx = x1 - x0, dz = z1 - z0;
 		var len = Math.hypot( dx, dz ), n = Math.max( 1, Math.floor( len / 60 ) );
 		for ( var i = 0; i <= n; i++ ) {
 			var px = x0 + dx * ( i / n ), pz = z0 + dz * ( i / n );
-			var p = new THREE.Mesh( new THREE.BoxGeometry( 3, 16, 3 ), postMat );
-			p.position.set( px, hillsAt( px, pz ) + 8, pz );
+			// no two posts alike: height + lean jitter, alternating weathering
+			var ph = 15 + Math.random() * 3.5;
+			var p = new THREE.Mesh( new THREE.BoxGeometry( 3, ph, 3 ),
+				i % 2 ? postMat2 : postMat );
+			p.position.set( px, hillsAt( px, pz ) + ph / 2, pz );
+			p.rotation.x = ( Math.random() - 0.5 ) * 0.07;
+			p.rotation.z = ( Math.random() - 0.5 ) * 0.07;
 			scene.add( p );
 		}
 		var midY = hillsAt( ( x0 + x1 ) / 2, ( z0 + z1 ) / 2 );
@@ -4182,9 +4353,14 @@
 	}
 
 	function buildGrandstands( THREE ) {
-		// two stands on the far straight, packed with a bobbing crowd
-		var frame = mat( THREE, 0x3a3630 );
-		var seatMat = mat( THREE, 0x4a443c );
+		// two stands on the far straight, packed with a bobbing crowd.
+		// Upgraded: SOLID stepped bleachers (risers meet — no floating
+		// slabs), painted bench rows, a centre stair aisle, a barn-board
+		// back wall, white roof fascia, and pennants off the roof corners.
+		var frame = woodMat( THREE, 0x3a3630 );
+		var benchA = woodMat( THREE, 0x7a3a30 ); // painted red benches
+		var benchB = woodMat( THREE, 0x565048 ); // weathered grey
+		var stairMat = woodMat( THREE, 0x8a8078 );
 		var stands = [ { x: 1900, z: -300 }, { x: 2580, z: -300 } ];
 		var ROWS = 5, SEATS = 20;
 		crowdDummy = new THREE.Object3D();
@@ -4200,8 +4376,10 @@
 		stands.forEach( function ( st ) {
 			var baseY = hillsAt( st.x, st.z );
 			for ( var r = 0; r < ROWS; r++ ) {
-				var tier = new THREE.Mesh( new THREE.BoxGeometry( 310, 10, 24 ), seatMat );
-				tier.position.set( st.x, baseY + r * 13 + 5, st.z - r * 24 );
+				// riser-height boxes so each step meets the one below
+				var tier = new THREE.Mesh( new THREE.BoxGeometry( 310, 14, 26 ),
+					r % 2 ? benchB : benchA );
+				tier.position.set( st.x, baseY + r * 13 + 7, st.z - r * 24 );
 				scene.add( tier );
 				for ( var s2 = 0; s2 < SEATS; s2++ ) {
 					var px = st.x - 133 + s2 * 14;
@@ -4216,16 +4394,39 @@
 						ph: Math.random() * Math.PI * 2, sp: 2.2 + Math.random() * 1.6 } );
 					idx++;
 				}
+				// the centre stair aisle climbs the middle
+				var stair = new THREE.Mesh( new THREE.BoxGeometry( 22, 14.6, 26 ), stairMat );
+				stair.position.set( st.x, baseY + r * 13 + 7.4, st.z - r * 24 );
+				scene.add( stair );
 			}
+			// barn-board back wall up to the roof
+			var back = new THREE.Mesh( new THREE.BoxGeometry( 310, 36, 6 ),
+				barnMat( THREE, 0x5a4a3a ) );
+			back.position.set( st.x, baseY + ROWS * 13 + 14, st.z - ROWS * 24 - 10 );
+			scene.add( back );
 			var roof = new THREE.Mesh( new THREE.BoxGeometry( 320, 4, 110 ), frame );
 			roof.position.set( st.x, baseY + 96, st.z - 48 );
 			scene.add( roof );
+			// white fascia along the roof's front edge
+			var fascia = new THREE.Mesh( new THREE.BoxGeometry( 320, 7, 3 ),
+				woodMat( THREE, 0xd8d3c4 ) );
+			fascia.position.set( st.x, baseY + 93, st.z + 7 );
+			scene.add( fascia );
 			[ -152, 152 ].forEach( function ( ox ) {
 				[ 6, -100 ].forEach( function ( oz ) {
 					var post = new THREE.Mesh( new THREE.BoxGeometry( 4, 96, 4 ), frame );
 					post.position.set( st.x + ox, baseY + 48, st.z + oz );
 					scene.add( post );
 				} );
+				// pennants fly off the roof's front corners
+				var pole = new THREE.Mesh( new THREE.CylinderGeometry( 0.9, 0.9, 22, 5 ), frame );
+				pole.position.set( st.x + ox, baseY + 107, st.z + 4 );
+				scene.add( pole );
+				var pennant = new THREE.Mesh( new THREE.PlaneGeometry( 13, 6 ),
+					new THREE.MeshBasicMaterial( {
+						color: ox < 0 ? 0xc84a3a : 0xd8b25e, side: THREE.DoubleSide } ) );
+				pennant.position.set( st.x + ox + 7.5, baseY + 114, st.z + 4 );
+				scene.add( pennant );
 			} );
 			Matter.Composite.add( engine.world,
 				Matter.Bodies.rectangle( st.x, st.z - 48, 330, 130, { isStatic: true } ) );
@@ -4249,7 +4450,9 @@
 
 	function loadLaps() {
 		if ( ghostStore ) return ghostStore;
-		try { ghostStore = JSON.parse( window.localStorage.getItem( 'tcBqLaps_v2' ) || 'null' ); } catch ( err ) {}
+		// v3: the north straight changed (speed bumps + the MEGA ramp) — old
+		// ghosts ran different ground, fresh records only
+		try { ghostStore = JSON.parse( window.localStorage.getItem( 'tcBqLaps_v3' ) || 'null' ); } catch ( err ) {}
 		if ( ! ghostStore || typeof ghostStore !== 'object' ) ghostStore = { best: null, recent: [] };
 		if ( ! ghostStore.recent ) ghostStore.recent = [];
 		return ghostStore;
@@ -4257,7 +4460,7 @@
 
 	function saveLaps( st ) {
 		ghostStore = st;
-		try { window.localStorage.setItem( 'tcBqLaps_v2', JSON.stringify( st ) ); } catch ( err ) {}
+		try { window.localStorage.setItem( 'tcBqLaps_v3', JSON.stringify( st ) ); } catch ( err ) {}
 	}
 
 	function fmtLap( ms ) {
@@ -4552,6 +4755,18 @@
 			p.vx = Math.cos( th ) * Math.sin( ph ) * sp2;
 			p.vz = Math.sin( th ) * Math.sin( ph ) * sp2;
 			p.vy = Math.abs( Math.cos( ph ) ) * sp2 * 0.9 + 25;
+		}
+	}
+
+	// the MEGA landing: three quick bursts over the buggy, kid colors + gold
+	function megaCelebration( x, y, z ) {
+		var cols = [ 0xffd76a, 0xff9ecb, 0x8fd0ff ];
+		for ( var i = 0; i < 3; i++ ) {
+			fireworkBurst(
+				x - 50 + Math.random() * 100,
+				y + 70 + Math.random() * 60,
+				z - 50 + Math.random() * 100,
+				cols[ i ] );
 		}
 	}
 
