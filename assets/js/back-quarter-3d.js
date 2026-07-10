@@ -1629,26 +1629,22 @@
 		} );
 	}
 
-	// procedural straw for the hay mounds — golden base, scattered strands
+	// procedural straw for the hay mounds + bale sides — golden, stranded
 	function makeHayTexture( THREE ) {
-		var c = document.createElement( 'canvas' );
-		c.width = c.height = 64;
-		var x = c.getContext( '2d' );
-		x.fillStyle = '#c9a94e';
-		x.fillRect( 0, 0, 64, 64 );
-		for ( var i = 0; i < 200; i++ ) {
-			var gx = Math.random() * 64, gy = Math.random() * 64;
-			var len = 4 + Math.random() * 9, ang = ( Math.random() - 0.5 ) * 1.1;
-			x.strokeStyle = Math.random() < 0.5 ? 'rgba(120, 92, 40, 0.5)' : 'rgba(236, 214, 156, 0.6)';
-			x.lineWidth = 1;
-			x.beginPath();
-			x.moveTo( gx, gy );
-			x.lineTo( gx + Math.cos( ang ) * len, gy + Math.sin( ang ) * len );
-			x.stroke();
-		}
-		var t = new THREE.CanvasTexture( c );
-		t.wrapS = t.wrapT = THREE.RepeatWrapping;
-		return t;
+		return cacheTex( THREE, 'hay', function ( x ) {
+			x.fillStyle = '#c9a94e';
+			x.fillRect( 0, 0, 128, 128 );
+			for ( var i = 0; i < 420; i++ ) {
+				var gx = Math.random() * 128, gy = Math.random() * 128;
+				var len = 6 + Math.random() * 15, ang = ( Math.random() - 0.5 ) * 1.1;
+				x.strokeStyle = Math.random() < 0.5 ? 'rgba(120, 92, 40, 0.5)' : 'rgba(236, 214, 156, 0.6)';
+				x.lineWidth = 1;
+				x.beginPath();
+				x.moveTo( gx, gy );
+				x.lineTo( gx + Math.cos( ang ) * len, gy + Math.sin( ang ) * len );
+				x.stroke();
+			}
+		} );
 	}
 
 	// The section-road jumps: shaped dirt features that follow jumpProfile()
@@ -2112,7 +2108,12 @@
 			shader.uniforms.uCam = atmo.cam;
 			shader.vertexShader = 'varying vec3 vWPos;\nvarying float vUpN;\n' + shader.vertexShader
 				.replace( '#include <begin_vertex>',
-					'#include <begin_vertex>\n\tvWPos = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;' )
+					'#include <begin_vertex>\n' +
+					'#ifdef USE_INSTANCING\n' +
+					'\tvWPos = ( modelMatrix * instanceMatrix * vec4( transformed, 1.0 ) ).xyz;\n' +
+					'#else\n' +
+					'\tvWPos = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;\n' +
+					'#endif' )
 				.replace( '#include <beginnormal_vertex>',
 					'#include <beginnormal_vertex>\n\tvUpN = normalize( mat3( modelMatrix ) * objectNormal ).y;' );
 			shader.fragmentShader = 'uniform vec3 uHaze;\nuniform float uHazeAmt;\nuniform vec3 uCam;\n' +
@@ -2274,11 +2275,82 @@
 		}, [ 46, 33 ] );
 	}
 	// role materials — same tint as before, now with painted grain
+	// foliage mottle — leafy dabs of dark + light so canopies stop being flat
+	function leafTex( THREE ) {
+		return cacheTex( THREE, 'leaf', function ( x ) {
+			x.fillStyle = '#e4e8d8'; x.fillRect( 0, 0, 128, 128 );
+			for ( var i = 0; i < 260; i++ ) {
+				x.fillStyle = Math.random() < 0.5 ? 'rgba(60,90,50,0.26)' : 'rgba(242,248,222,0.30)';
+				x.beginPath();
+				x.arc( Math.random() * 128, Math.random() * 128, 2 + Math.random() * 5, 0, 7 );
+				x.fill();
+			}
+		}, [ 2, 2 ] );
+	}
+	// cattle hide — big soft blotches (holstein-ish under a brown tint)
+	function hideTex( THREE ) {
+		return cacheTex( THREE, 'hide', function ( x ) {
+			x.fillStyle = '#efe9e0'; x.fillRect( 0, 0, 128, 128 );
+			for ( var i = 0; i < 9; i++ ) {
+				x.fillStyle = 'rgba(52,40,30,0.36)';
+				x.beginPath();
+				x.ellipse( Math.random() * 128, Math.random() * 128,
+					10 + Math.random() * 20, 8 + Math.random() * 16,
+					Math.random() * 3, 0, 7 );
+				x.fill();
+			}
+			for ( var j = 0; j < 5; j++ ) {
+				x.fillStyle = 'rgba(248,244,236,0.4)';
+				x.beginPath();
+				x.arc( Math.random() * 128, Math.random() * 128, 8 + Math.random() * 14, 0, 7 );
+				x.fill();
+			}
+		}, [ 1, 1 ] );
+	}
+	// wool — dense tiny nubs
+	function woolTex( THREE ) {
+		return cacheTex( THREE, 'wool', function ( x ) {
+			x.fillStyle = '#ece8de'; x.fillRect( 0, 0, 128, 128 );
+			for ( var i = 0; i < 340; i++ ) {
+				x.fillStyle = Math.random() < 0.5 ? 'rgba(150,142,124,0.20)' : 'rgba(252,250,244,0.30)';
+				x.beginPath();
+				x.arc( Math.random() * 128, Math.random() * 128, 1.5 + Math.random() * 3, 0, 7 );
+				x.fill();
+			}
+		}, [ 2, 2 ] );
+	}
+	// the rolled-bale END — an archimedean spiral, so a bale never again
+	// reads as a giant gold token in the headlights
+	function baleEndTex( THREE ) {
+		return cacheTex( THREE, 'baleEnd', function ( x ) {
+			x.fillStyle = '#cbb070'; x.fillRect( 0, 0, 128, 128 );
+			x.strokeStyle = 'rgba(110,84,38,0.6)';
+			x.lineWidth = 2.6;
+			x.beginPath();
+			x.moveTo( 64, 64 );
+			for ( var a = 0; a < Math.PI * 12; a += 0.09 ) {
+				var r = 2 + a * 1.55;
+				x.lineTo( 64 + Math.cos( a ) * r, 64 + Math.sin( a ) * r );
+			}
+			x.stroke();
+			x.strokeStyle = 'rgba(236,214,156,0.4)';
+			x.lineWidth = 1.2;
+			x.beginPath();
+			x.moveTo( 64, 64 );
+			for ( var a2 = 0.4; a2 < Math.PI * 12; a2 += 0.09 ) {
+				var r2 = 2 + a2 * 1.55;
+				x.lineTo( 64 + Math.cos( a2 ) * r2, 64 + Math.sin( a2 ) * r2 );
+			}
+			x.stroke();
+		} );
+	}
 	function woodMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: woodTex( THREE ) } ), true ); }
 	function barnMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: barnTex( THREE ) } ), true ); }
 	function dirtMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: dirtTex( THREE ) } ), true ); }
 	function metalMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: metalTex( THREE ) } ), true ); }
 	function stoneMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: stoneTex( THREE ) } ), true ); }
+	function leafMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: leafTex( THREE ) } ), true ); }
+	function skinMat( THREE, color, tex ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: tex } ), true ); }
 
 	function addWindow( THREE, group, w, h, x, y, z, rotY ) {
 		var pane = new THREE.Mesh(
@@ -2530,24 +2602,36 @@
 		addWindow( THREE, g, 10, 9, 55.2, 17, 0, Math.PI / 2 );
 		addWindow( THREE, g, 9, 8, 40.2, 43, -3, Math.PI / 2 );
 
-		// the big garden out back: tilled rows + greens
-		var soilMat = mat( THREE, 0x33261a );
-		var greenMat = mat( THREE, 0x2f4a2a );
+		// the big garden out back: tilled soil beds + a REAL mixed crop —
+		// row greens, cabbages, pumpkins — not seven identical spheres
+		var soilMat = dirtMat( THREE, 0x33261a );
+		var cropMats = [
+			leafMat( THREE, 0x2f4a2a ),   // leafy row greens
+			leafMat( THREE, 0x3c5a2e ),   // brighter greens
+			leafMat( THREE, 0x53705c ),   // blue-green cabbage
+			skinMat( THREE, 0xb06a28, dirtTex( THREE ) ) // pumpkin
+		];
 		for ( var row = 0; row < 3; row++ ) {
 			var bed = new THREE.Mesh( new THREE.BoxGeometry( 84, 2, 7 ), soilMat );
 			bed.position.set( -8, 1, -44 - row * 11 );
 			g.add( bed );
 			for ( var vi2 = 0; vi2 < 7; vi2++ ) {
-				var veg = new THREE.Mesh( new THREE.SphereGeometry( 2.4, 6, 5 ), greenMat );
-				veg.position.set( -44 + vi2 * 12 + ( Math.random() - 0.5 ) * 3, 3.4, -44 - row * 11 );
+				var kind = ( vi2 + row ) % 4;
+				var vr = kind === 3 ? 2.9 : 2 + Math.random() * 1.1;
+				var veg = new THREE.Mesh( new THREE.SphereGeometry( vr, 6, 5 ), cropMats[ kind ] );
+				if ( kind === 3 ) veg.scale.y = 0.7; // pumpkins squat
+				veg.position.set( -44 + vi2 * 12 + ( Math.random() - 0.5 ) * 3,
+					kind === 3 ? 2.6 : 3.4, -44 - row * 11 );
 				g.add( veg );
 			}
 		}
-		// shrubs hugging the walls
+		// shrubs hugging the walls — mixed greens, mottled, squashed a touch
+		var shrubMats = [ leafMat( THREE, 0x263f24 ), leafMat( THREE, 0x2e4a2a ) ];
 		[ [ -60, 38 ], [ -62, 8 ], [ -60, -26 ], [ 34, 52 ], [ 8, 54 ],
-		  [ 62, -38 ], [ 28, -40 ], [ -22, -40 ] ].forEach( function ( s ) {
+		  [ 62, -38 ], [ 28, -40 ], [ -22, -40 ] ].forEach( function ( s, si ) {
 			var shrub = new THREE.Mesh( new THREE.SphereGeometry( 3 + Math.random() * 1.6, 6, 5 ),
-				mat( THREE, 0x263f24 ) );
+				shrubMats[ si % 2 ] );
+			shrub.scale.y = 0.75 + Math.random() * 0.25;
 			shrub.position.set( s[ 0 ], 3, s[ 1 ] );
 			g.add( shrub );
 		} );
@@ -2623,21 +2707,22 @@
 		// the ground — not stuck on the wall.
 		var g = new THREE.Group();
 		var kidColor = ( lm && lm.kidColor ) || 0x33261a;
-		var bark = 0x2c2418, foliage = 0x1d3a26;
+		var bark = 0x2c2418;
+		var lms = leafMats( THREE );
 
 		// the trees it nests in — a big one behind + two flanking, canopies
 		// rising above and around the roof so the cabin reads as tucked in
 		[ [ 0, -13, 3.6, 4.8, 88, 15, 54 ],
 		  [ -17, 7, 2.6, 3.6, 72, 11, 44 ],
-		  [ 16, 9, 2.6, 3.6, 68, 11, 42 ] ].forEach( function ( t ) {
+		  [ 16, 9, 2.6, 3.6, 68, 11, 42 ] ].forEach( function ( t, ti ) {
 			var trunk = new THREE.Mesh(
-				new THREE.CylinderGeometry( t[ 2 ], t[ 3 ], t[ 4 ], 6 ), mat( THREE, bark ) );
+				new THREE.CylinderGeometry( t[ 2 ], t[ 3 ], t[ 4 ], 6 ), woodMat( THREE, bark ) );
 			trunk.position.set( t[ 0 ], t[ 4 ] / 2, t[ 1 ] );
 			g.add( trunk );
-			var f1 = new THREE.Mesh( new THREE.ConeGeometry( t[ 5 ], t[ 6 ], 7 ), mat( THREE, foliage ) );
+			var f1 = new THREE.Mesh( new THREE.ConeGeometry( t[ 5 ], t[ 6 ], 7 ), lms[ ti % 4 ] );
 			f1.position.set( t[ 0 ], t[ 4 ] - t[ 6 ] * 0.15, t[ 1 ] );
 			g.add( f1 );
-			var f2 = new THREE.Mesh( new THREE.ConeGeometry( t[ 5 ] * 0.68, t[ 6 ] * 0.68, 7 ), mat( THREE, foliage ) );
+			var f2 = new THREE.Mesh( new THREE.ConeGeometry( t[ 5 ] * 0.68, t[ 6 ] * 0.68, 7 ), lms[ ( ti + 1 ) % 4 ] );
 			f2.position.set( t[ 0 ], t[ 4 ] + t[ 6 ] * 0.28, t[ 1 ] );
 			g.add( f2 );
 		} );
@@ -2880,9 +2965,21 @@
 		var bull = type === 'bull';
 		var horse = type === 'horse';
 		var cow = type === 'cow' || bull;
-		var bodyC = bull ? 0x14100d : ( horse ? 0x5a3d28 : ( cow ? 0x6f4a33 : 0xd8d3c4 ) );
-		var headC = bull ? 0x0d0a08 : ( horse ? 0x4a2f1e : ( cow ? 0x543527 : 0x2a2420 ) );
-		var legC = bull ? 0x0d0a08 : ( horse ? 0x3a2517 : ( cow ? 0x452c1f : 0xbdb7a6 ) );
+		// a HERD, not clones: each animal draws a coat from its breed's
+		// palette, wears a hide/wool texture, and comes out its own size
+		var cowCoats = [ 0x6f4a33, 0x3a2a1e, 0x8a6a4a, 0xb8a890 ];
+		var horseCoats = [ 0x5a3d28, 0x261b12 ];
+		var sheepCoats = [ 0xd8d3c4, 0xcac2ae ];
+		var bodyC = bull ? 0x14100d
+			: ( horse ? horseCoats[ ( Math.random() * 2 ) | 0 ]
+			: ( cow ? cowCoats[ ( Math.random() * 4 ) | 0 ]
+			: sheepCoats[ ( Math.random() * 2 ) | 0 ] ) );
+		var headC = bull ? 0x0d0a08
+			: ( ( cow || horse ) ? new THREE.Color( bodyC ).multiplyScalar( 0.72 ).getHex() : 0x2a2420 );
+		var legC = bull ? 0x0d0a08
+			: ( ( cow || horse ) ? new THREE.Color( bodyC ).multiplyScalar( 0.55 ).getHex() : 0xbdb7a6 );
+		var coatTex = cow ? hideTex( THREE ) : ( horse ? null : woolTex( THREE ) );
+		var bodyMat = coatTex ? skinMat( THREE, bodyC, coatTex ) : mat( THREE, bodyC );
 		var bw = horse ? 22 : ( cow ? 20 : 13 );
 		var bh = horse ? 11 : ( cow ? 11 : 8.5 );
 		var bd = horse ? 8 : ( cow ? 10 : 9 );
@@ -2892,13 +2989,40 @@
 			leg.position.set( c[ 0 ] * ( bw / 2 - 2 ), legH / 2, c[ 1 ] * ( bd / 2 - 1.5 ) );
 			g.add( leg );
 		} );
-		var body = new THREE.Mesh( new THREE.BoxGeometry( bw, bh, bd ), mat( THREE, bodyC ) );
+		var body = new THREE.Mesh( new THREE.BoxGeometry( bw, bh, bd ), bodyMat );
 		body.position.y = legH + bh / 2 - 0.5;
 		g.add( body );
 		var head = new THREE.Mesh(
 			new THREE.BoxGeometry( cow ? 7 : 5, cow ? 7 : 5, cow ? 6 : 4.5 ), mat( THREE, headC ) );
 		head.position.set( bw / 2 + 2, legH + bh - 1, 0 );
 		g.add( head );
+		if ( cow ) {
+			// snout, ears, tail — the details that make a box read as a cow
+			var snout = new THREE.Mesh( new THREE.BoxGeometry( 2.2, 3, 4.2 ),
+				mat( THREE, new THREE.Color( bodyC ).multiplyScalar( 1.35 ).getHex() ) );
+			snout.position.set( bw / 2 + 6.4, legH + bh - 2.6, 0 );
+			g.add( snout );
+			[ -1, 1 ].forEach( function ( sd ) {
+				var ear = new THREE.Mesh( new THREE.BoxGeometry( 1.2, 1.6, 2.8 ), mat( THREE, headC ) );
+				ear.position.set( bw / 2 + 2, legH + bh + 2.8, sd * 4.2 );
+				g.add( ear );
+			} );
+			var tail = new THREE.Mesh( new THREE.BoxGeometry( 1.1, 7, 1.1 ), mat( THREE, legC ) );
+			tail.position.set( -bw / 2 - 0.6, legH + bh - 3.2, 0 );
+			tail.rotation.z = 0.16;
+			g.add( tail );
+		}
+		if ( type === 'sheep' ) {
+			[ -1, 1 ].forEach( function ( sd ) {
+				var ear = new THREE.Mesh( new THREE.BoxGeometry( 1, 1.3, 2.2 ), mat( THREE, 0x2a2420 ) );
+				ear.position.set( bw / 2 + 2, legH + bh + 1.4, sd * 3 );
+				g.add( ear );
+			} );
+		}
+		if ( ! bull ) {
+			var js = 0.88 + Math.random() * 0.26; // size jitter — no clones
+			g.scale.set( js, js, js );
+		}
 		if ( horse ) {
 			// raised neck + head, mane ridge, tail
 			head.position.set( bw / 2 + 4.5, legH + bh + 6, 0 );
@@ -3193,7 +3317,12 @@
 
 	function addPig( THREE, x, z ) {
 		var g = new THREE.Group();
-		var pink = mat( THREE, 0xc98d84 );
+		// each pig its own shade of pink, mud-mottled
+		var pigCoats = [ 0xc98d84, 0xb87f72, 0xd49a8e, 0xa8756a ];
+		var coat = pigCoats[ ( Math.random() * 4 ) | 0 ];
+		var pink = skinMat( THREE, coat, hideTex( THREE ) );
+		var js = 0.85 + Math.random() * 0.3;
+		g.scale.set( js, js, js );
 		[ [ 1, 1 ], [ 1, -1 ], [ -1, 1 ], [ -1, -1 ] ].forEach( function ( c ) {
 			var leg = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 3.5, 1.4 ), pink );
 			leg.position.set( c[ 0 ] * 3.6, 1.75, c[ 1 ] * 2 );
@@ -3743,7 +3872,7 @@
 
 		var greens = [ 0x263f24, 0x2e4a2a, 0x22422c ];
 		var bushInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 7, 7, 5 ),
-			new THREE.MeshLambertMaterial( { color: 0xffffff } ), bushes.length );
+			leafMat( THREE, 0xffffff ), bushes.length );
 		bushes.forEach( function ( s, i3 ) {
 			var sc = 1.2 + Math.random();
 			dummy.position.set( s.x, s.gy + 4.5 * sc, s.z );
@@ -3758,7 +3887,7 @@
 
 		// berry bushes — a lighter bush studded with bright berries
 		var bbInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 7, 7, 5 ),
-			mat( THREE, 0x33512e ), berries.length );
+			leafMat( THREE, 0x33512e ), berries.length );
 		var berryInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 1.1, 5, 4 ),
 			new THREE.MeshBasicMaterial( { color: 0xc83a3a } ), berries.length * 5 );
 		var bi = 0;
@@ -3786,9 +3915,9 @@
 
 		// little apple trees — solid trunks, round canopies, hanging fruit
 		var trunkInst = new THREE.InstancedMesh( new THREE.CylinderGeometry( 1.6, 2.2, 14, 6 ),
-			mat( THREE, 0x4a3423 ), apples.length );
+			woodMat( THREE, 0x4a3423 ), apples.length );
 		var canInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 10, 8, 6 ),
-			new THREE.MeshLambertMaterial( { color: 0xffffff } ), apples.length );
+			leafMat( THREE, 0xffffff ), apples.length );
 		var appleInst = new THREE.InstancedMesh( new THREE.SphereGeometry( 1.2, 5, 4 ),
 			new THREE.MeshBasicMaterial( { color: 0xd84a30 } ), apples.length * 4 );
 		var canGreens = [ 0x2e5a30, 0x37623a, 0x2a5230 ];
@@ -3823,9 +3952,20 @@
 		scene.add( appleInst );
 	}
 
+	// shared foliage palette — a few materials, picked per tree, so the
+	// stands stop being one flat green (leafTex adds the mottle)
+	function leafMats( THREE ) {
+		if ( ! _texCache.leafMats ) {
+			_texCache.leafMats = [ 0x1d3a26, 0x254428, 0x1a3620, 0x2a4a2c ].map( function ( c ) {
+				return leafMat( THREE, c );
+			} );
+		}
+		return _texCache.leafMats;
+	}
+
 	function buildWindbreak( THREE ) {
-		var trunkMat = mat( THREE, 0x2c2418 );
-		var leafMat = mat( THREE, 0x1d3a26 );
+		var trunkMat = woodMat( THREE, 0x3a2c1e );
+		var lm = leafMats( THREE );
 		// keep clear of the treehouses — the kids' houses were getting lost
 		// in the windbreak; their own (bigger) trees carry them now
 		var TH = [ [ 1435, 1036 ], [ 1631, 1281 ], [ 1873, 1505 ] ];
@@ -3842,10 +3982,16 @@
 			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 4.2, 6, 28, 6 ), trunkMat );
 			trunk.position.set( x, gy + 14, z );
 			scene.add( trunk );
-			var h = 75 + Math.random() * 40;
-			var cone = new THREE.Mesh( new THREE.ConeGeometry( 17 + Math.random() * 7, h, 7 ), leafMat );
+			// two stacked cones — a stepped spruce silhouette, not a witch hat
+			var h = 75 + Math.random() * 40, r = 17 + Math.random() * 7;
+			var cone = new THREE.Mesh( new THREE.ConeGeometry( r, h, 7 ), lm[ i % 4 ] );
 			cone.position.set( x, gy + 28 + h / 2, z );
+			cone.rotation.y = Math.random() * Math.PI;
 			scene.add( cone );
+			var cone2 = new THREE.Mesh( new THREE.ConeGeometry( r * 0.6, h * 0.5, 7 ), lm[ ( i + 1 ) % 4 ] );
+			cone2.position.set( x, gy + 28 + h * 0.78, z );
+			cone2.rotation.y = Math.random() * Math.PI;
+			scene.add( cone2 );
 			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 11, { isStatic: true } ) );
 		}
 	}
@@ -3853,8 +3999,8 @@
 	function buildGrove( THREE ) {
 		// wind-rows: the northwest forest, DOUBLED — rolling over its own
 		// hills, still weavable at speed if you're brave
-		var trunkMat = mat( THREE, 0x2c2418 );
-		var leafMat = mat( THREE, 0x22422c );
+		var trunkMat = woodMat( THREE, 0x362a1c );
+		var lm = leafMats( THREE );
 		var spots = [], guard = 0;
 		while ( spots.length < 90 && guard++ < 1200 ) {
 			var x = 130 + Math.random() * 1000;
@@ -3873,10 +4019,15 @@
 			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 4, 5.8, 30, 6 ), trunkMat );
 			trunk.position.set( x, gy + 15, z );
 			scene.add( trunk );
-			var h = 70 + Math.random() * 60;
-			var cone = new THREE.Mesh( new THREE.ConeGeometry( 16 + Math.random() * 9, h, 7 ), leafMat );
+			var h = 70 + Math.random() * 60, r = 16 + Math.random() * 9;
+			var cone = new THREE.Mesh( new THREE.ConeGeometry( r, h, 7 ), lm[ spots.length % 4 ] );
 			cone.position.set( x, gy + 30 + h / 2, z );
+			cone.rotation.y = Math.random() * Math.PI;
 			scene.add( cone );
+			var cone2 = new THREE.Mesh( new THREE.ConeGeometry( r * 0.6, h * 0.5, 7 ), lm[ ( spots.length + 2 ) % 4 ] );
+			cone2.position.set( x, gy + 30 + h * 0.78, z );
+			cone2.rotation.y = Math.random() * Math.PI;
+			scene.add( cone2 );
 			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 10, { isStatic: true } ) );
 		}
 	}
@@ -3884,8 +4035,8 @@
 	function buildPoplars( THREE ) {
 		// a few big prairie poplars — tall columnar canopies you can see
 		// across the quarter
-		var trunkMat = mat( THREE, 0x3a2f20 );
-		var leafMat = mat( THREE, 0x2a4a30 );
+		var trunkMat = woodMat( THREE, 0x453a26 );
+		var lm = leafMats( THREE );
 		[ [ 950, 430 ], [ 2550, 330 ], [ 2950, 1620 ],
 		  [ 1150, 1900 ], [ 4000, 1500 ], [ 600, 2350 ] ].forEach( function ( p ) {
 			var x = p[ 0 ], z = p[ 1 ];
@@ -3895,10 +4046,15 @@
 			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 2.6, 3.6, 44, 6 ), trunkMat );
 			trunk.position.set( x, gy + 22, z );
 			scene.add( trunk );
-			var canopy = new THREE.Mesh( new THREE.SphereGeometry( 12, 8, 8 ), leafMat );
+			// two offset lobes — a poplar crown, not a green pill
+			var canopy = new THREE.Mesh( new THREE.SphereGeometry( 12, 8, 8 ), lm[ 1 ] );
 			canopy.scale.set( 1, 3.4, 1 );
 			canopy.position.set( x, gy + 44 + 34, z );
 			scene.add( canopy );
+			var lobe = new THREE.Mesh( new THREE.SphereGeometry( 8, 7, 6 ), lm[ 3 ] );
+			lobe.scale.set( 1, 2.2, 1 );
+			lobe.position.set( x + 6, gy + 44 + 20, z + 3 );
+			scene.add( lobe );
 			Matter.Composite.add( engine.world, Matter.Bodies.circle( x, z, 8, { isStatic: true } ) );
 		} );
 	}
@@ -4221,9 +4377,14 @@
 	}
 
 	function makeBaleMesh( THREE ) {
+		// side wears the straw wrap, the caps wear the rolled SPIRAL — after
+		// rotateZ the caps face ±x, right where headlights used to turn a
+		// bale into a giant gold token. Duller tint than the real tokens.
 		var baleGeo = new THREE.CylinderGeometry( 9, 9, 16, 12 );
 		baleGeo.rotateZ( Math.PI / 2 );
-		return new THREE.Mesh( baleGeo, mat( THREE, 0x8f7a3e ) );
+		var side = skinMat( THREE, 0x9a824a, makeHayTexture( THREE ) );
+		var ends = skinMat( THREE, 0xffffff, baleEndTex( THREE ) );
+		return new THREE.Mesh( baleGeo, [ side, ends, ends ] );
 	}
 
 	function addBale( THREE, x, z ) {
