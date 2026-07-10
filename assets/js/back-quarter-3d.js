@@ -2,6 +2,18 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * GRAPHICS PHASE 1 — THE PAINTED WORLD: the flat single-colour materials
+ * that read as "coloured plastic" now carry hand-painted grain. A
+ * procedural texture library (woodTex/barnTex/dirtTex/metalTex/stoneTex/
+ * groundTex, each drawn once on a near-white base and MULTIPLIED over the
+ * existing tint) feeds role materials (woodMat/barnMat/dirtMat/metalMat/
+ * stoneMat) wired into the buildings, fences and ground. The prairie
+ * palette shifted DRY OLIVE (grass is never emerald) with warmer ochre
+ * roads, shadows tinted toward violet (ambient), and a subtle color-grade
+ * ShaderPass after bloom (lift shadows to violet, warm-by-day/cool-by-
+ * night tint, gentle saturation) unifies the whole frame. Model: "carved
+ * from painted basswood, dusted with prairie, lit warm in a museum case."
+ *
  * GRAPHICS PHASE D — BLOOM + EMISSIVE: the scene renders through an
  * EffectComposer (vendored r128 postprocessing, assets/js/vendor/
  * three-r128-postfx.js, loaded by back-quarter.js) with an
@@ -532,6 +544,7 @@
 	var stage, hudEl, chipEl;
 	var renderer, scene, camera, clock;
 	var composer = null, bloomPass = null; // bloom stack — null renders plain
+	var gradePass = null, dayFactor = 1; // color grade + time-of-day (1=day)
 	var Matter, engine, buggyBody;
 	var buggyGroup, chassisGroup, wheels = [];
 	var bales = [];
@@ -796,6 +809,7 @@
 		var elev = Math.sin( phase * Math.PI * 2 ); // >0 sun up, <0 moon up
 		var df = Math.max( 0, Math.min( 1, ( elev + 0.08 ) / 0.45 ) );
 		df = df * df * ( 3 - 2 * df );
+		dayFactor = df; // the color grade follows dusk → night
 
 		skyMatRef.uniforms.topCol.value.copy( dnNight.top ).lerp( dnDay.top, df );
 		skyMatRef.uniforms.botCol.value.copy( dnNight.bot ).lerp( dnDay.bot, df );
@@ -883,11 +897,47 @@
 				new THREE.Vector2( stage.clientWidth, stage.clientHeight ),
 				BLOOM.strength, BLOOM.radius, BLOOM.threshold );
 			composer.addPass( bloomPass );
+
+			// color grade (graphics phase 1): unify the whole frame. Lift the
+			// shadows toward violet, warm the mids by day / cool to indigo by
+			// night, nudge saturation. Kept SUBTLE — a grade, not a filter.
+			if ( THREE.ShaderPass ) {
+				gradePass = new THREE.ShaderPass( {
+					uniforms: {
+						tDiffuse: { value: null },
+						night: { value: 0 }
+					},
+					vertexShader:
+						'varying vec2 vUv; void main(){ vUv = uv;' +
+						'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }',
+					fragmentShader: [
+						'uniform sampler2D tDiffuse;',
+						'uniform float night;',
+						'varying vec2 vUv;',
+						'void main(){',
+						'  vec4 src = texture2D( tDiffuse, vUv );',
+						'  vec3 col = src.rgb;',
+						// lift shadows toward violet (more indigo at night)
+						'  vec3 lift = mix( vec3(0.016,0.013,0.026), vec3(0.010,0.012,0.034), night );',
+						'  col += lift * ( 1.0 - col );',
+						// time-of-day tint: warm by day, cool by night
+						'  col *= mix( vec3(1.035,1.005,0.955), vec3(0.94,0.975,1.06), night );',
+						// gentle saturation lift
+						'  float l = dot( col, vec3(0.299,0.587,0.114) );',
+						'  col = mix( vec3(l), col, 1.06 );',
+						'  gl_FragColor = vec4( clamp( col, 0.0, 1.0 ), src.a );',
+						'}'
+					].join( '\n' )
+				} );
+				gradePass.renderToScreen = true;
+				composer.addPass( gradePass );
+			}
 		}
 
-		ambLight = new THREE.AmbientLight( 0x233248, 0.5 );
+		// shadows shift toward violet (painter's rule), not just darker
+		ambLight = new THREE.AmbientLight( 0x2f2748, 0.52 );
 		scene.add( ambLight );
-		hemiLight = new THREE.HemisphereLight( 0x3a5372, 0x121a12, 0.32 );
+		hemiLight = new THREE.HemisphereLight( 0x4a5878, 0x14160f, 0.32 );
 		scene.add( hemiLight );
 		moonLight = new THREE.DirectionalLight( 0xaecdf0, 0.6 );
 		moonLight.position.set( -700, 900, -600 );
@@ -939,8 +989,10 @@
 			var crk = dK <= 14 ? 1 : ( dK >= 26 ? 0 : 1 - ( dK - 14 ) / 12 );
 			var n = 0.5 + 0.5 * Math.sin( vx * 0.013 ) * Math.sin( vz * 0.017 );
 			var lift = 1 + ( vy - 20 ) * 0.006;
-			var fr = ( 0.085 + n * 0.02 ) * lift, fg = ( 0.14 + n * 0.03 ) * lift, fb = ( 0.10 + n * 0.02 ) * lift;
-			var rr = 0.30 * lift, rg = 0.24 * lift, rb = 0.165 * lift;
+			// prairie grass reads DRY OLIVE/SAGE, never emerald: R lifted
+			// toward G, blue pulled down (dry wheat), with n giving patchiness
+			var fr = ( 0.105 + n * 0.028 ) * lift, fg = ( 0.128 + n * 0.03 ) * lift, fb = ( 0.058 + n * 0.016 ) * lift;
+			var rr = 0.325 * lift, rg = 0.245 * lift, rb = 0.152 * lift;
 			var cr = fr + ( rr - fr ) * road, cg = fg + ( rg - fg ) * road, cb = fb + ( rb - fb ) * road;
 			// racing dirt: a shade redder + more packed than the farm roads
 			var kr = 0.335 * lift, kg = 0.245 * lift, kb = 0.175 * lift;
@@ -955,7 +1007,7 @@
 		groundGeo.setAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 		groundGeo.computeVertexNormals();
 		var groundMesh = new THREE.Mesh( groundGeo,
-			new THREE.MeshLambertMaterial( { vertexColors: true } ) );
+			new THREE.MeshLambertMaterial( { vertexColors: true, map: groundTex( THREE ) } ) );
 		groundMesh.receiveShadow = true;   // catches the buggy + building shadows
 		groundMesh.userData.noCast = true; // the ground itself never casts
 		scene.add( groundMesh );
@@ -1502,6 +1554,7 @@
 			moonLight.position.set( rx - 700, worldY + 1000, rz - 600 );
 		}
 
+		if ( gradePass ) gradePass.uniforms.night.value = 1 - dayFactor;
 		if ( composer ) composer.render();
 		else renderer.render( scene, camera );
 	}
@@ -2025,6 +2078,146 @@
 		return new THREE.Color( hex ).multiplyScalar( boost || 1.8 );
 	}
 
+	/* ------------------------------------------------------------------ *
+	 *  PAINTED-SURFACE MATERIAL LIBRARY (graphics phase 1)
+	 *  Every surface used to be one flat colour — reading "coloured plastic".
+	 *  These procedural canvas textures give each material family its own
+	 *  hand-painted grain, MULTIPLIED over the base colour (so the same call
+	 *  sites keep their tint, they just gain surface). Textures are drawn on
+	 *  a near-white base (~0.9) so the multiply barely dims — it adds detail,
+	 *  not darkness. Each is generated ONCE and shared across every instance.
+	 *  Model: "carved from painted basswood, dusted with prairie."
+	 * ------------------------------------------------------------------ */
+	var _texCache = {};
+	function cacheTex( THREE, key, draw, rep ) {
+		if ( _texCache[ key ] ) return _texCache[ key ];
+		var c = document.createElement( 'canvas' );
+		c.width = c.height = 128;
+		draw( c.getContext( '2d' ) );
+		var t = new THREE.CanvasTexture( c );
+		t.wrapS = t.wrapT = THREE.RepeatWrapping;
+		if ( rep ) t.repeat.set( rep[ 0 ], rep[ 1 ] );
+		_texCache[ key ] = t;
+		return t;
+	}
+	function strokes( x, n, cols, minL, maxL, vertical ) {
+		for ( var i = 0; i < n; i++ ) {
+			var gx = Math.random() * 128, gy = Math.random() * 128;
+			var len = minL + Math.random() * ( maxL - minL );
+			var ang = vertical ? Math.PI / 2 + ( Math.random() - 0.5 ) * 0.35
+				: ( Math.random() - 0.5 ) * 0.7;
+			x.strokeStyle = cols[ ( Math.random() * cols.length ) | 0 ];
+			x.lineWidth = 0.6 + Math.random() * 1.4;
+			x.beginPath();
+			x.moveTo( gx, gy );
+			x.lineTo( gx + Math.cos( ang ) * len, gy + Math.sin( ang ) * len );
+			x.stroke();
+		}
+	}
+	// warm cabin / painted wood — broad dry vertical brush drag
+	function woodTex( THREE ) {
+		return cacheTex( THREE, 'wood', function ( x ) {
+			x.fillStyle = '#e7d9c4'; x.fillRect( 0, 0, 128, 128 );
+			strokes( x, 70, [ 'rgba(150,116,74,0.35)', 'rgba(120,92,58,0.30)' ], 40, 120, true );
+			strokes( x, 40, [ 'rgba(240,224,196,0.55)' ], 30, 90, true );
+		}, [ 2, 2 ] );
+	}
+	// weathered barn wood — greyed, sun-bleached, knots + nail dots
+	function barnTex( THREE ) {
+		return cacheTex( THREE, 'barn', function ( x ) {
+			x.fillStyle = '#ded6c8'; x.fillRect( 0, 0, 128, 128 );
+			strokes( x, 90, [ 'rgba(120,110,96,0.34)', 'rgba(90,82,70,0.30)' ], 50, 128, true );
+			strokes( x, 34, [ 'rgba(238,232,220,0.5)' ], 30, 100, true );
+			for ( var k = 0; k < 5; k++ ) { // knots
+				x.fillStyle = 'rgba(96,80,60,0.4)';
+				x.beginPath();
+				x.ellipse( Math.random() * 128, Math.random() * 128, 2.5, 4.5, 0, 0, 7 );
+				x.fill();
+			}
+			for ( var d = 0; d < 10; d++ ) { // nail dots
+				x.fillStyle = 'rgba(70,64,56,0.5)';
+				x.beginPath();
+				x.arc( Math.random() * 128, Math.random() * 128, 1, 0, 7 );
+				x.fill();
+			}
+		}, [ 2, 2 ] );
+	}
+	// packed prairie dirt — sienna/ochre with lavender shadow + pebbles
+	function dirtTex( THREE ) {
+		return cacheTex( THREE, 'dirt', function ( x ) {
+			x.fillStyle = '#e0cbaa'; x.fillRect( 0, 0, 128, 128 );
+			strokes( x, 60, [ 'rgba(150,110,70,0.28)', 'rgba(120,96,120,0.16)' ], 20, 70, false );
+			for ( var p = 0; p < 90; p++ ) { // pebbles
+				x.fillStyle = Math.random() < 0.5 ? 'rgba(120,96,66,0.4)' : 'rgba(236,224,196,0.5)';
+				x.beginPath();
+				x.arc( Math.random() * 128, Math.random() * 128, 0.7 + Math.random() * 1.6, 0, 7 );
+				x.fill();
+			}
+		}, [ 3, 3 ] );
+	}
+	// galvanized metal — cloudy zinc mottle, faint blue, rivet circles
+	function metalTex( THREE ) {
+		return cacheTex( THREE, 'metal', function ( x ) {
+			x.fillStyle = '#dfe2e4'; x.fillRect( 0, 0, 128, 128 );
+			for ( var m = 0; m < 26; m++ ) { // soft zinc clouds
+				var r = 12 + Math.random() * 30;
+				x.fillStyle = Math.random() < 0.5 ? 'rgba(150,160,172,0.12)' : 'rgba(236,240,244,0.14)';
+				x.beginPath();
+				x.arc( Math.random() * 128, Math.random() * 128, r, 0, 7 );
+				x.fill();
+			}
+			strokes( x, 20, [ 'rgba(150,166,186,0.12)' ], 40, 110, true ); // faint blue streak
+			for ( var v = 0; v < 8; v++ ) { // rivets down a seam
+				x.fillStyle = 'rgba(150,158,168,0.5)';
+				x.beginPath();
+				x.arc( 20 + ( v % 2 ) * 88, 8 + v * 15, 1.4, 0, 7 );
+				x.fill();
+			}
+		}, [ 1, 3 ] );
+	}
+	// fieldstone — rounded muted cobbles, faint lichen tint
+	function stoneTex( THREE ) {
+		return cacheTex( THREE, 'stone', function ( x ) {
+			x.fillStyle = '#dedacf'; x.fillRect( 0, 0, 128, 128 );
+			for ( var s = 0; s < 22; s++ ) {
+				var sx = Math.random() * 128, sy = Math.random() * 128, r = 8 + Math.random() * 16;
+				x.fillStyle = Math.random() < 0.5 ? 'rgba(150,146,134,0.22)' : 'rgba(238,236,228,0.28)';
+				x.beginPath();
+				x.arc( sx, sy, r, 0, 7 );
+				x.fill();
+				x.strokeStyle = 'rgba(120,116,104,0.3)';
+				x.lineWidth = 1;
+				x.stroke();
+				if ( Math.random() < 0.3 ) { // lichen fleck
+					x.fillStyle = 'rgba(150,160,120,0.22)';
+					x.beginPath();
+					x.arc( sx + ( Math.random() - 0.5 ) * r, sy + ( Math.random() - 0.5 ) * r, 2, 0, 7 );
+					x.fill();
+				}
+			}
+		}, [ 2, 2 ] );
+	}
+	// generic ground detail — subtle speckle multiplied over the vertex
+	// colours of the terrain (near-white so it doesn't recolour the roads)
+	function groundTex( THREE ) {
+		return cacheTex( THREE, 'ground', function ( x ) {
+			x.fillStyle = '#efe9df'; x.fillRect( 0, 0, 128, 128 );
+			for ( var i = 0; i < 320; i++ ) {
+				x.fillStyle = Math.random() < 0.5 ? 'rgba(140,130,110,0.16)' : 'rgba(255,252,244,0.22)';
+				x.beginPath();
+				x.arc( Math.random() * 128, Math.random() * 128, 0.6 + Math.random() * 1.8, 0, 7 );
+				x.fill();
+			}
+			strokes( x, 40, [ 'rgba(150,140,116,0.12)' ], 14, 44, false );
+		}, [ 46, 33 ] );
+	}
+	// role materials — same tint as before, now with painted grain
+	function woodMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: woodTex( THREE ) } ); }
+	function barnMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: barnTex( THREE ) } ); }
+	function dirtMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: dirtTex( THREE ) } ); }
+	function metalMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: metalTex( THREE ) } ); }
+	function stoneMat( THREE, color ) { return new THREE.MeshLambertMaterial( { color: color, map: stoneTex( THREE ) } ); }
+
 	function addWindow( THREE, group, w, h, x, y, z, rotY ) {
 		var pane = new THREE.Mesh(
 			new THREE.PlaneGeometry( w, h ),
@@ -2215,8 +2408,8 @@
 		// sides, a second-floor balcony, garden beds behind, shrubs all
 		// around. Everything local — the group scales as one.
 		var g = new THREE.Group();
-		var wallMat = mat( THREE, 0x4a3a2c );
-		var trimMat = mat( THREE, 0x3a2e22 );
+		var wallMat = woodMat( THREE, 0x4a3a2c );
+		var trimMat = woodMat( THREE, 0x3a2e22 );
 		var walls = new THREE.Mesh( new THREE.BoxGeometry( 110, 30, 64 ), wallMat );
 		walls.position.y = 15;
 		g.add( walls );
@@ -2310,7 +2503,7 @@
 
 	function buildCookshack( THREE, lm ) {
 		var g = new THREE.Group();
-		var walls = new THREE.Mesh( new THREE.BoxGeometry( 56, 26, 40 ), mat( THREE, 0x54402e ) );
+		var walls = new THREE.Mesh( new THREE.BoxGeometry( 56, 26, 40 ), woodMat( THREE, 0x54402e ) );
 		walls.position.y = 13;
 		g.add( walls );
 		var roof = gableRoof( THREE, 62, 26, 0x33261a );
@@ -2327,16 +2520,16 @@
 
 	function buildElevator( THREE, lm ) {
 		var g = new THREE.Group();
-		var tower = new THREE.Mesh( new THREE.BoxGeometry( 46, 120, 46 ), mat( THREE, 0x4e4438 ) );
+		var tower = new THREE.Mesh( new THREE.BoxGeometry( 46, 120, 46 ), woodMat( THREE, 0x4e4438 ) );
 		tower.position.y = 60;
 		g.add( tower );
 		var cap = gableRoof( THREE, 50, 30, 0x2f281f );
 		cap.position.y = 130;
 		g.add( cap );
-		var annex = new THREE.Mesh( new THREE.BoxGeometry( 34, 44, 30 ), mat( THREE, 0x453b30 ) );
+		var annex = new THREE.Mesh( new THREE.BoxGeometry( 34, 44, 30 ), woodMat( THREE, 0x453b30 ) );
 		annex.position.set( 34, 22, 10 );
 		g.add( annex );
-		var silo = new THREE.Mesh( new THREE.CylinderGeometry( 12, 12, 52, 10 ), mat( THREE, 0x5a5148 ) );
+		var silo = new THREE.Mesh( new THREE.CylinderGeometry( 12, 12, 52, 10 ), metalMat( THREE, 0x8a8f92 ) );
 		silo.position.set( -36, 26, 14 );
 		g.add( silo );
 		addWindow( THREE, g, 8, 10, 0, 96, 23.2 );
@@ -2350,14 +2543,14 @@
 		// the old decorative base mound, whose removal left the church
 		// floating at 2.4×)
 		var g = new THREE.Group();
-		var nave = new THREE.Mesh( new THREE.BoxGeometry( 46, 30, 70 ), mat( THREE, 0xcfd2cd ) );
+		var nave = new THREE.Mesh( new THREE.BoxGeometry( 46, 30, 70 ), stoneMat( THREE, 0xcfd2cd ) );
 		nave.position.y = 15;
 		g.add( nave );
 		var roof = gableRoof( THREE, 76, 26, 0x3a4048 );
 		roof.position.y = 34;
 		roof.rotation.y = Math.PI / 2;
 		g.add( roof );
-		var tower = new THREE.Mesh( new THREE.BoxGeometry( 16, 34, 16 ), mat( THREE, 0xcfd2cd ) );
+		var tower = new THREE.Mesh( new THREE.BoxGeometry( 16, 34, 16 ), stoneMat( THREE, 0xcfd2cd ) );
 		tower.position.set( 0, 32, 40 );
 		g.add( tower );
 		var spire = new THREE.Mesh( new THREE.ConeGeometry( 11, 22, 4 ), mat( THREE, 0x3a4048 ) );
@@ -2427,7 +2620,7 @@
 		} );
 
 		// the cabin: a clear little house sitting on the deck
-		var cabin = new THREE.Mesh( new THREE.BoxGeometry( 22, 17, 18 ), mat( THREE, 0x6b5236 ) );
+		var cabin = new THREE.Mesh( new THREE.BoxGeometry( 22, 17, 18 ), woodMat( THREE, 0x6b5236 ) );
 		cabin.position.y = deckTop + 8.5;
 		g.add( cabin );
 		var roof = gableRoof( THREE, 26, 13, kidColor );
@@ -2504,7 +2697,7 @@
 
 	function buildBarnHouse( THREE, lm ) {
 		var g = new THREE.Group();
-		var walls = new THREE.Mesh( new THREE.BoxGeometry( 100, 40, 66 ), mat( THREE, 0x7a2b22 ) );
+		var walls = new THREE.Mesh( new THREE.BoxGeometry( 100, 40, 66 ), barnMat( THREE, 0x7a2b22 ) );
 		walls.position.y = 20;
 		g.add( walls );
 		var roof = gableRoof( THREE, 108, 42, 0x3a2c24 );
@@ -2522,7 +2715,7 @@
 
 	function buildShed( THREE ) {
 		var g = new THREE.Group();
-		var walls = new THREE.Mesh( new THREE.BoxGeometry( 48, 22, 36 ), mat( THREE, 0x3c342a ) );
+		var walls = new THREE.Mesh( new THREE.BoxGeometry( 48, 22, 36 ), barnMat( THREE, 0x3c342a ) );
 		walls.position.y = 11;
 		g.add( walls );
 		var roof = gableRoof( THREE, 54, 22, 0x2a231b );
@@ -3388,7 +3581,7 @@
 	function buildStockBarn( THREE ) {
 		var BX = 2900, BZ = 1550;
 		var g = new THREE.Group();
-		var red = mat( THREE, 0x6e2a20 );
+		var red = barnMat( THREE, 0x6e2a20 );
 		var back = new THREE.Mesh( new THREE.BoxGeometry( 170, 40, 6 ), red );
 		back.position.set( 0, 20, -52 );
 		g.add( back );
@@ -3661,7 +3854,7 @@
 	}
 
 	function fenceRun( THREE, x0, z0, x1, z1 ) {
-		var postMat = mat( THREE, 0x4a4034 );
+		var postMat = barnMat( THREE, 0x4a4034 );
 		var dx = x1 - x0, dz = z1 - z0;
 		var len = Math.hypot( dx, dz ), n = Math.max( 1, Math.floor( len / 60 ) );
 		for ( var i = 0; i <= n; i++ ) {
