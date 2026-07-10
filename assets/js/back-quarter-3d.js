@@ -2455,6 +2455,62 @@
 			x.stroke();
 		} );
 	}
+	// knobby tire tread wrapping the barrel — chunky alternating lugs
+	function treadTex( THREE ) {
+		return cacheTex( THREE, 'tread', function ( x ) {
+			x.fillStyle = '#16130f'; x.fillRect( 0, 0, 128, 128 );
+			var lugs = 16, w = 128 / lugs;
+			for ( var i = 0; i < lugs; i++ ) {
+				x.fillStyle = i % 2 ? '#2e2924' : '#262019';
+				x.fillRect( i * w + 1, i % 2 ? 0 : 14, w - 3, 100 );
+			}
+		} );
+	}
+	// a wheel's face: rubber ring with tread blocks, painted rim, spoke
+	// shadows, lug nuts + centre cap — the caps of the tire cylinder
+	function wheelFaceTex( THREE, key, rimCss, lugCss ) {
+		return cacheTex( THREE, key, function ( x ) {
+			x.fillStyle = '#16130f'; x.fillRect( 0, 0, 128, 128 );
+			for ( var a = 0; a < 22; a++ ) {
+				x.save();
+				x.translate( 64, 64 );
+				x.rotate( a / 22 * Math.PI * 2 );
+				x.fillStyle = a % 2 ? '#292420' : '#211c16';
+				x.fillRect( 44, -8, 20, 16 );
+				x.restore();
+			}
+			x.fillStyle = rimCss;
+			x.beginPath(); x.arc( 64, 64, 37, 0, 7 ); x.fill();
+			x.strokeStyle = 'rgba(0,0,0,0.4)'; x.lineWidth = 3;
+			x.beginPath(); x.arc( 64, 64, 37, 0, 7 ); x.stroke();
+			x.fillStyle = 'rgba(18,14,10,0.5)'; // the gaps between five spokes
+			for ( var s = 0; s < 5; s++ ) {
+				x.save();
+				x.translate( 64, 64 );
+				x.rotate( s / 5 * Math.PI * 2 );
+				x.beginPath(); x.ellipse( 23, 0, 9.5, 7, 0, 0, 7 ); x.fill();
+				x.restore();
+			}
+			x.fillStyle = lugCss;
+			for ( var l = 0; l < 5; l++ ) {
+				var la = l / 5 * Math.PI * 2 + 0.63;
+				x.beginPath();
+				x.arc( 64 + Math.cos( la ) * 10.5, 64 + Math.sin( la ) * 10.5, 3, 0, 7 );
+				x.fill();
+			}
+			x.beginPath(); x.arc( 64, 64, 5.5, 0, 7 ); x.fill();
+		} );
+	}
+	// a REAL wheel: treaded barrel + spoked rim faces + protruding hub.
+	// One mesh, so the existing rotation.z spin keeps working; the rim
+	// face visibly rotates with it.
+	function makeWheel( THREE, r, w, key, rimCss, lugCss ) {
+		var geo = new THREE.CylinderGeometry( r, r, w, 14 );
+		geo.rotateX( Math.PI / 2 );
+		var side = applyAtmosphere( new THREE.MeshLambertMaterial( { map: treadTex( THREE ) } ), true );
+		var face = applyAtmosphere( new THREE.MeshLambertMaterial( { map: wheelFaceTex( THREE, key, rimCss, lugCss ) } ), true );
+		return new THREE.Mesh( geo, [ side, face, face ] );
+	}
 	function woodMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: woodTex( THREE ) } ), true ); }
 	function barnMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: barnTex( THREE ) } ), true ); }
 	function dirtMat( THREE, color ) { return applyAtmosphere( new THREE.MeshLambertMaterial( { color: color, map: dirtTex( THREE ) } ), true ); }
@@ -3202,20 +3258,21 @@
 	var tractor = null;
 
 	function buildTractor( THREE ) {
+		// the old girl, levelled up: weathered two-tone paint, lugged rear
+		// wheels with red rims, a proper stack with a rain cap, fenders,
+		// pan seat + steering wheel, front weights, canopy, amber beacon
 		var g = new THREE.Group();
-		var red = mat( THREE, 0x9a3f2e );
+		var red = skinMat( THREE, 0x9a3f2e, metalTex( THREE ) );   // worn paint
+		var redDark = skinMat( THREE, 0x7e3225, metalTex( THREE ) );
+		var creamT = skinMat( THREE, 0xd8cdb0, metalTex( THREE ) );
 		var darkMat = mat( THREE, 0x1c1512 );
 		var tWheels = [];
-		var rearGeo = new THREE.CylinderGeometry( 11, 11, 5, 12 );
-		rearGeo.rotateX( Math.PI / 2 );
-		var frontGeo = new THREE.CylinderGeometry( 6.5, 6.5, 4, 10 );
-		frontGeo.rotateX( Math.PI / 2 );
 		[ 13, -13 ].forEach( function ( z ) {
-			var rw = new THREE.Mesh( rearGeo, darkMat );
+			var rw = makeWheel( THREE, 11, 5.5, 'wheelTracR', '#a83a28', '#d8cdb0' );
 			rw.position.set( -10, 11, z );
 			g.add( rw );
 			tWheels.push( rw );
-			var fw = new THREE.Mesh( frontGeo, darkMat );
+			var fw = makeWheel( THREE, 6.5, 4, 'wheelTracF', '#a83a28', '#d8cdb0' );
 			fw.position.set( 14, 6.5, z * 0.8 );
 			g.add( fw );
 			tWheels.push( fw );
@@ -3223,15 +3280,86 @@
 		var chassis = new THREE.Mesh( new THREE.BoxGeometry( 34, 8, 18 ), red );
 		chassis.position.set( 2, 14, 0 );
 		g.add( chassis );
-		var hood = new THREE.Mesh( new THREE.BoxGeometry( 16, 10, 14 ), mat( THREE, 0x7e3225 ) );
+		var hood = new THREE.Mesh( new THREE.BoxGeometry( 16, 10, 14 ), redDark );
 		hood.position.set( 10, 20, 0 );
 		g.add( hood );
-		var seatBack = new THREE.Mesh( new THREE.BoxGeometry( 3, 10, 12 ), darkMat );
-		seatBack.position.set( -14, 22, 0 );
-		g.add( seatBack );
-		var pipe = new THREE.Mesh( new THREE.CylinderGeometry( 1.2, 1.2, 9, 6 ), darkMat );
-		pipe.position.set( 15, 29, 4 );
-		g.add( pipe );
+		// cream side stripe along the hood — the classic livery line
+		[ -1, 1 ].forEach( function ( sd ) {
+			var st = new THREE.Mesh( new THREE.BoxGeometry( 15.6, 1.6, 0.5 ), creamT );
+			st.position.set( 10, 21.5, sd * 7.1 );
+			g.add( st );
+		} );
+		// grille slats on the nose
+		var gc2 = document.createElement( 'canvas' );
+		gc2.width = 32; gc2.height = 64;
+		var gx2 = gc2.getContext( '2d' );
+		gx2.fillStyle = '#241f1a'; gx2.fillRect( 0, 0, 32, 64 );
+		gx2.fillStyle = '#3a342c';
+		for ( var gi2 = 2; gi2 < 64; gi2 += 8 ) gx2.fillRect( 2, gi2, 28, 4 );
+		var grille2 = new THREE.Mesh( new THREE.PlaneGeometry( 11, 8 ),
+			new THREE.MeshLambertMaterial( { map: new THREE.CanvasTexture( gc2 ) } ) );
+		grille2.position.set( 18.06, 19.5, 0 );
+		grille2.rotation.y = Math.PI / 2;
+		g.add( grille2 );
+		// fenders arch over the rear wheels
+		[ 13, -13 ].forEach( function ( z ) {
+			var fen = new THREE.Mesh( new THREE.BoxGeometry( 15, 2, 6.5 ), redDark );
+			fen.position.set( -10, 23.4, z );
+			g.add( fen );
+			var fenB = new THREE.Mesh( new THREE.BoxGeometry( 2, 6, 6.5 ), redDark );
+			fenB.position.set( -17.5, 20.5, z );
+			g.add( fenB );
+		} );
+		// pan seat on a sprung post + steering wheel off the dash
+		var post = new THREE.Mesh( new THREE.CylinderGeometry( 1, 1.4, 6, 6 ), darkMat );
+		post.position.set( -12, 21, 0 );
+		g.add( post );
+		var pan = new THREE.Mesh( new THREE.CylinderGeometry( 4.2, 3.4, 1.6, 10 ), darkMat );
+		pan.position.set( -12, 24.4, 0 );
+		g.add( pan );
+		var col2 = new THREE.Mesh( new THREE.CylinderGeometry( 0.6, 0.6, 7, 6 ), darkMat );
+		col2.position.set( -3, 22.5, 0 );
+		col2.rotation.z = 0.7;
+		g.add( col2 );
+		var sw = new THREE.Mesh( new THREE.TorusGeometry( 3, 0.5, 6, 12 ), darkMat );
+		sw.position.set( -5, 25, 0 );
+		sw.rotation.y = Math.PI / 2;
+		sw.rotation.z = 0.7;
+		g.add( sw );
+		// the STACK — vertical exhaust with a tilted rain cap, plus the
+		// air-cleaner canister beside it
+		var stack = new THREE.Mesh( new THREE.CylinderGeometry( 1.2, 1.4, 14, 6 ), darkMat );
+		stack.position.set( 13, 32, 3.5 );
+		g.add( stack );
+		var rainCap = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 0.8, 2.4 ), darkMat );
+		rainCap.position.set( 13, 39.4, 3.5 );
+		rainCap.rotation.z = 0.5;
+		g.add( rainCap );
+		var airC = new THREE.Mesh( new THREE.CylinderGeometry( 1.6, 1.6, 5, 6 ), darkMat );
+		airC.position.set( 9, 27.5, -3.5 );
+		g.add( airC );
+		// front suitcase weights
+		var weights = new THREE.Mesh( new THREE.BoxGeometry( 3.5, 6, 10 ), darkMat );
+		weights.position.set( 20.5, 11, 0 );
+		g.add( weights );
+		// open-station canopy on four posts, cream — prairie sun is real
+		[ [ -2, 8 ], [ -2, -8 ], [ -17, 8 ], [ -17, -8 ] ].forEach( function ( cp ) {
+			var cpost = new THREE.Mesh( new THREE.CylinderGeometry( 0.6, 0.6, 14, 5 ), darkMat );
+			cpost.position.set( cp[ 0 ], 30, cp[ 1 ] );
+			g.add( cpost );
+		} );
+		var canopy = new THREE.Mesh( new THREE.BoxGeometry( 22, 1.6, 20 ), creamT );
+		canopy.position.set( -9.5, 37.5, 0 );
+		g.add( canopy );
+		// amber beacon on the canopy lip — blinks alive under bloom
+		var beacon = new THREE.Mesh( new THREE.SphereGeometry( 1.3, 8, 6 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffa03a, 1.6 ) } ) );
+		beacon.position.set( -9.5, 39, 8 );
+		g.add( beacon );
+		// rear drawbar hitch
+		var hitch = new THREE.Mesh( new THREE.BoxGeometry( 6, 1.6, 3 ), darkMat );
+		hitch.position.set( -18, 12, 0 );
+		g.add( hitch );
 
 		var lm = { id: 'tractor', name: 'the old tractor', x: 2730, y: 630, href: null,
 			prompt: 'The old girl still runs — she does her own rounds now' };
@@ -5353,6 +5481,11 @@
 	/* ------------------------------------------------------------------ *
 	 *  The buggy
 	 * ------------------------------------------------------------------ */
+	// THE BUGGY — pimped. Fresh two-tone paint over a real tube cage,
+	// knobby wheels with spoked rims, bull bar + grille, bucket seat,
+	// steering wheel, mirrors, mud flaps, spare on the back, taillights
+	// that bloom, and a pennant whip in the kids' gold. Same footprint,
+	// same pose rig (chassisGroup leans, wheels ride the group).
 	function buildBuggy( THREE ) {
 		var g = new THREE.Group();
 
@@ -5360,40 +5493,187 @@
 		chassisGroup.position.y = 10;
 		g.add( chassisGroup );
 
-		var bodyMat = mat( THREE, 0x8a3a22 );
+		// fresh paint (Phong so it catches highlights); the trims stay matte
+		var paint = applyAtmosphere( new THREE.MeshPhongMaterial( {
+			color: 0xb0472a, shininess: 46, specular: 0x4a2a1a } ), true );
+		var cream = applyAtmosphere( new THREE.MeshPhongMaterial( {
+			color: 0xe8dcc0, shininess: 30, specular: 0x333026 } ), true );
 		var darkMat = mat( THREE, 0x1c1512 );
-		var chassis = new THREE.Mesh( new THREE.BoxGeometry( 44, 10, 26 ), bodyMat );
-		chassis.position.y = 2;
-		chassisGroup.add( chassis );
-		var hood = new THREE.Mesh( new THREE.BoxGeometry( 16, 7, 22 ), bodyMat );
-		hood.position.set( 13, 6, 0 );
-		chassisGroup.add( hood );
-		var cage = new THREE.Mesh( new THREE.BoxGeometry( 16, 14, 20 ), mat( THREE, 0x2a211b ) );
-		cage.position.set( -6, 12, 0 );
-		chassisGroup.add( cage );
-		var seat = new THREE.Mesh( new THREE.BoxGeometry( 10, 4, 12 ), mat( THREE, 0x3a2c20 ) );
-		seat.position.set( -6, 8, 0 );
-		chassisGroup.add( seat );
+		var tube = mat( THREE, 0x2a2624 );
+		var chrome = metalMat( THREE, 0xb8bec2 );
 
-		var wheelGeo = new THREE.CylinderGeometry( 8, 8, 6, 12 );
-		wheelGeo.rotateX( Math.PI / 2 );
-		[ [ 15, 8, 15 ], [ 15, 8, -15 ], [ -15, 8, 15 ], [ -15, 8, -15 ] ].forEach( function ( p ) {
-			var w = new THREE.Mesh( wheelGeo, darkMat );
-			w.position.set( p[ 0 ], p[ 1 ], p[ 2 ] );
-			g.add( w );
-			wheels.push( w );
+		// the tub + sloped hood + nose
+		var tub = new THREE.Mesh( new THREE.BoxGeometry( 40, 8, 26 ), paint );
+		tub.position.set( -2, 1, 0 );
+		chassisGroup.add( tub );
+		var hood = new THREE.Mesh( new THREE.BoxGeometry( 15, 5.5, 24 ), paint );
+		hood.position.set( 14, 4.6, 0 );
+		hood.rotation.z = -0.14;
+		chassisGroup.add( hood );
+		var nose = new THREE.Mesh( new THREE.BoxGeometry( 4, 7, 25 ), paint );
+		nose.position.set( 21.5, 1.2, 0 );
+		chassisGroup.add( nose );
+		var deck = new THREE.Mesh( new THREE.BoxGeometry( 8, 5, 24 ), applyAtmosphere(
+			new THREE.MeshPhongMaterial( { color: 0x8a3520, shininess: 30, specular: 0x3a2418 } ), true ) );
+		deck.position.set( -19, 1.8, 0 );
+		chassisGroup.add( deck );
+		// cream racing stripe up the hood + over the tub
+		var stripe = new THREE.Mesh( new THREE.BoxGeometry( 38, 0.6, 6 ), cream );
+		stripe.position.set( 1.5, 5.35, 0 );
+		stripe.rotation.z = -0.035;
+		chassisGroup.add( stripe );
+		// skid plate under the nose
+		var skid = new THREE.Mesh( new THREE.BoxGeometry( 10, 1.2, 20 ), chrome );
+		skid.position.set( 18, -3.2, 0 );
+		chassisGroup.add( skid );
+
+		// side livery: cream roundel with the "3" (one per kid) both doors
+		var lc = document.createElement( 'canvas' );
+		lc.width = lc.height = 64;
+		var lx = lc.getContext( '2d' );
+		lx.fillStyle = '#e8dcc0';
+		lx.beginPath(); lx.arc( 32, 32, 26, 0, 7 ); lx.fill();
+		lx.strokeStyle = '#7a2a18'; lx.lineWidth = 4;
+		lx.beginPath(); lx.arc( 32, 32, 26, 0, 7 ); lx.stroke();
+		lx.fillStyle = '#7a2a18';
+		lx.font = '700 38px Georgia, serif';
+		lx.textAlign = 'center';
+		lx.fillText( '3', 32, 45 );
+		var roundelTex = new THREE.CanvasTexture( lc );
+		[ 1, -1 ].forEach( function ( sd ) {
+			var plate = new THREE.Mesh( new THREE.PlaneGeometry( 7.5, 7.5 ),
+				new THREE.MeshLambertMaterial( { map: roundelTex, transparent: true } ) );
+			plate.position.set( 0, 1.6, sd * 13.06 );
+			plate.rotation.y = sd > 0 ? 0 : Math.PI;
+			chassisGroup.add( plate );
 		} );
 
-		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffe9c9, 2.0 ) } );
+		// the ROLL CAGE — real tubes, not a box
+		function bar( x0, y0, z0, x1, y1, z1, r ) {
+			var dx = x1 - x0, dy = y1 - y0, dz = z1 - z0;
+			var len = Math.sqrt( dx * dx + dy * dy + dz * dz );
+			var m = new THREE.Mesh( new THREE.CylinderGeometry( r || 0.9, r || 0.9, len, 6 ), tube );
+			m.position.set( ( x0 + x1 ) / 2, ( y0 + y1 ) / 2, ( z0 + z1 ) / 2 );
+			m.quaternion.setFromUnitVectors( new THREE.Vector3( 0, 1, 0 ),
+				new THREE.Vector3( dx / len, dy / len, dz / len ) );
+			chassisGroup.add( m );
+			return m;
+		}
+		[ -1, 1 ].forEach( function ( sd ) {
+			var z = sd * 10;
+			bar( 3, 5, z, 3, 15, z );          // front uprights
+			bar( -13, 5, z, -13, 14, z );      // rear uprights
+			bar( 3, 15, z, -13, 14, z );       // top side rails
+			bar( -13, 14, z, -20, 4.5, z );    // rear diagonals
+		} );
+		bar( 3, 15, -10, 3, 15, 10 );          // front cross
+		bar( -13, 14, -10, -13, 14, 10 );      // rear cross
+		bar( 3, 15, -10, -13, 14, 10, 0.7 );   // X-brace
+		bar( 3, 15, 10, -13, 14, -10, 0.7 );
+
+		// bucket seat + headrest + steering wheel on a column
+		var seatMat2 = mat( THREE, 0x6e4226 );
+		var seatBase = new THREE.Mesh( new THREE.BoxGeometry( 9, 2.6, 10 ), seatMat2 );
+		seatBase.position.set( -6, 4.4, 0 );
+		chassisGroup.add( seatBase );
+		var seatBack = new THREE.Mesh( new THREE.BoxGeometry( 2.6, 9, 10 ), seatMat2 );
+		seatBack.position.set( -10.6, 8.6, 0 );
+		seatBack.rotation.z = -0.14;
+		chassisGroup.add( seatBack );
+		var headrest = new THREE.Mesh( new THREE.BoxGeometry( 2.4, 3.2, 6 ), seatMat2 );
+		headrest.position.set( -11.8, 13.2, 0 );
+		chassisGroup.add( headrest );
+		var column = new THREE.Mesh( new THREE.CylinderGeometry( 0.6, 0.6, 6, 6 ), darkMat );
+		column.position.set( 3.5, 6.8, 0 );
+		column.rotation.z = 0.9;
+		chassisGroup.add( column );
+		var wheelRim = new THREE.Mesh( new THREE.TorusGeometry( 2.6, 0.5, 6, 14 ), darkMat );
+		wheelRim.position.set( 1.6, 9, 0 );
+		wheelRim.rotation.y = Math.PI / 2;
+		wheelRim.rotation.z = 0.9;
+		chassisGroup.add( wheelRim );
+
+		// bull bar + grille + round headlights in chrome rings
+		bar( 24.2, -2, -8, 24.2, 6, -8, 0.8 );
+		bar( 24.2, -2, 8, 24.2, 6, 8, 0.8 );
+		bar( 24.2, 5.4, -9, 24.2, 5.4, 9, 0.8 );
+		bar( 24.2, 0, -9, 24.2, 0, 9, 0.8 );
+		var gc = document.createElement( 'canvas' );
+		gc.width = 64; gc.height = 32;
+		var gx = gc.getContext( '2d' );
+		gx.fillStyle = '#241f1a'; gx.fillRect( 0, 0, 64, 32 );
+		gx.fillStyle = '#3a342c';
+		for ( var gi = 2; gi < 32; gi += 6 ) gx.fillRect( 2, gi, 60, 3 );
+		var grille = new THREE.Mesh( new THREE.PlaneGeometry( 14, 5 ),
+			new THREE.MeshLambertMaterial( { map: new THREE.CanvasTexture( gc ) } ) );
+		grille.position.set( 23.56, 1.4, 0 );
+		grille.rotation.y = Math.PI / 2;
+		chassisGroup.add( grille );
+		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffe9c9, 1.7 ) } );
 		[ -8, 8 ].forEach( function ( z ) {
-			var lamp = new THREE.Mesh( new THREE.BoxGeometry( 2.5, 3, 4 ), lampMat );
-			lamp.position.set( 22, 10, z );
-			g.add( lamp );
+			var ring = new THREE.Mesh( new THREE.CylinderGeometry( 2.2, 2.2, 1.6, 10 ), chrome );
+			ring.rotation.z = Math.PI / 2;
+			ring.position.set( 23.4, 4.4, z );
+			chassisGroup.add( ring );
+			var bulb = new THREE.Mesh( new THREE.SphereGeometry( 1.6, 8, 8 ), lampMat );
+			bulb.position.set( 24.2, 4.4, z );
+			chassisGroup.add( bulb );
 			var spot = new THREE.SpotLight( 0xffd9a0, 1.1, 500, 0.5, 0.55, 1.2 );
 			spot.position.set( 22, 12, z );
 			spot.target.position.set( 300, -4, z * 3 );
 			g.add( spot );
 			g.add( spot.target );
+		} );
+
+		// taillights (they bloom), exhaust with a chrome tip, mud flaps
+		var tailMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xff3b30, 1.5 ) } );
+		[ -9, 9 ].forEach( function ( z ) {
+			var tail = new THREE.Mesh( new THREE.BoxGeometry( 1, 2, 3.4 ), tailMat );
+			tail.position.set( -23.2, 1.6, z );
+			chassisGroup.add( tail );
+		} );
+		var pipe = new THREE.Mesh( new THREE.CylinderGeometry( 1, 1.2, 9, 6 ), darkMat );
+		pipe.position.set( -20.5, 6.5, -8 );
+		pipe.rotation.z = 0.5;
+		chassisGroup.add( pipe );
+		var tip = new THREE.Mesh( new THREE.CylinderGeometry( 1.4, 1.4, 2.4, 8 ), chrome );
+		tip.position.set( -22.6, 10.2, -8 );
+		tip.rotation.z = 0.5;
+		chassisGroup.add( tip );
+		[ -13.5, 13.5 ].forEach( function ( z ) {
+			var flap = new THREE.Mesh( new THREE.BoxGeometry( 0.8, 5, 6 ), darkMat );
+			flap.position.set( -21.5, -2.4, z );
+			chassisGroup.add( flap );
+		} );
+
+		// mirrors + the whip antenna flying the kids' gold pennant
+		[ -12, 12 ].forEach( function ( z ) {
+			bar( 9, 8, z * 0.83, 9, 12.5, z, 0.4 );
+			var mir = new THREE.Mesh( new THREE.BoxGeometry( 0.8, 2.2, 3 ), cream );
+			mir.position.set( 9, 13.4, z );
+			chassisGroup.add( mir );
+		} );
+		var whip = new THREE.Mesh( new THREE.CylinderGeometry( 0.25, 0.4, 13, 5 ), darkMat );
+		whip.position.set( -19, 14, 10 );
+		whip.rotation.x = 0.12;
+		chassisGroup.add( whip );
+		var pennant = new THREE.Mesh( new THREE.PlaneGeometry( 4.6, 2.4 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd76a, 1.2 ), side: THREE.DoubleSide } ) );
+		pennant.position.set( -16.6, 19.6, 10.8 );
+		chassisGroup.add( pennant );
+
+		// the spare on the back — every farm rig carries one
+		var spare = makeWheel( THREE, 5.5, 4, 'wheelSpare', '#c8beac', '#7a2a18' );
+		spare.rotation.y = Math.PI / 2;
+		spare.position.set( -17.5, 9, 3 );
+		chassisGroup.add( spare );
+
+		// knobby wheels with cream five-spoke rims + protruding hubs
+		[ [ 15, 8, 15 ], [ 15, 8, -15 ], [ -15, 8, 15 ], [ -15, 8, -15 ] ].forEach( function ( p ) {
+			var w = makeWheel( THREE, 8, 6.5, 'wheelBuggy', '#c8beac', '#7a2a18' );
+			w.position.set( p[ 0 ], p[ 1 ], p[ 2 ] );
+			g.add( w );
+			wheels.push( w );
 		} );
 
 		return g;
