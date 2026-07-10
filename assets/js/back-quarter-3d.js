@@ -391,6 +391,14 @@
 	var MUD = { x: 2545, z: 985, r: 75 };
 	// THE BOG — a long rutted wallow in the south field, for mudbogging
 	var BOG = { x: 1900, z: 2250, rx: 170, rz: 70, rot: 0.5 };
+	// the bog is DUG IN: three soft bowls along its axis, baked into
+	// hillsAt so the ground mesh, the physics and the mud all agree —
+	// you drop in, wallow through the goo, and climb out the far side
+	var BOG_BOWLS = [
+		{ x: 1839, z: 2216, a: -5, r: 44 },
+		{ x: 1904, z: 2252, a: -6.5, r: 50 },
+		{ x: 1966, z: 2286, a: -5, r: 42 }
+	];
 	function inMudArea( x, z, pad ) {
 		pad = pad || 0;
 		if ( Math.hypot( x - MUD.x, z - MUD.z ) < MUD.r + pad ) return true;
@@ -634,6 +642,10 @@
 			w = w * w * ( 3 - 2 * w );
 			if ( f.h === undefined ) f.h = rawHills( f.x, f.z );
 			y = y * ( 1 - w ) + f.h * w;
+		}
+		// the bog's dug-in bowls (bbox early-out keeps this free elsewhere)
+		if ( x > 1720 && x < 2090 && z > 2120 && z < 2380 ) {
+			for ( var bi = 0; bi < BOG_BOWLS.length; bi++ ) y += gauss( x, z, BOG_BOWLS[ bi ] );
 		}
 		return y;
 	}
@@ -1035,6 +1047,20 @@
 			cr = cr + ( kr - cr ) * trk;
 			cg = cg + ( kg - cg ) * trk;
 			cb = cb + ( kb - cb ) * trk;
+			// the BOG painted into the ground like the creek: wet chocolate
+			// mud, darkening toward the bowl bottoms where the goo stands
+			if ( inMudArea( vx, vz, 26 ) ) {
+				var bogW = inMudArea( vx, vz, 0 ) ? 1 : 0.45;
+				var bogDeep = 0;
+				for ( var bw2 = 0; bw2 < BOG_BOWLS.length; bw2++ ) bogDeep -= gauss( vx, vz, BOG_BOWLS[ bw2 ] );
+				var deep = Math.max( 0, Math.min( 1, bogDeep / 6 ) );
+				var mr = ( 0.17 - deep * 0.08 ) * lift;
+				var mg = ( 0.121 - deep * 0.058 ) * lift;
+				var mb = ( 0.078 - deep * 0.038 ) * lift;
+				cr = cr + ( mr - cr ) * bogW;
+				cg = cg + ( mg - cg ) * bogW;
+				cb = cb + ( mb - cb ) * bogW;
+			}
 			// creek water: cool blue-green, brightest mid-channel
 			colors[ vi * 3 ] = cr + ( 0.06 * lift - cr ) * crk;
 			colors[ vi * 3 + 1 ] = cg + ( 0.15 * lift - cg ) * crk;
@@ -1559,9 +1585,13 @@
 			spawnSplash( wheelWorld( 10, 12 ), sp );
 			spawnSplash( wheelWorld( 10, -12 ), sp );
 		} else if ( inMud && sp > 1.2 ) {
-			// mud kicks up HIGH
+			// ROOST: all four corners sling mud, harder with speed
 			spawnMud( wheelWorld( -14, 10 ), sp );
 			spawnMud( wheelWorld( -14, -10 ), sp );
+			if ( Math.random() < Math.min( 0.9, 0.25 + sp * 0.08 ) ) {
+				spawnMud( wheelWorld( 10, 12 ), sp * 0.8 );
+				spawnMud( wheelWorld( 10, -12 ), sp * 0.8 );
+			}
 		} else if ( inCreek && sp > 1.5 ) {
 			spawnSplash( wheelWorld( 8, ( Math.random() < 0.5 ? 11 : -11 ) ), sp * 0.7 );
 		} else if ( ! airborne && sp > 1.6 && Math.random() < Math.min( 0.55, 0.1 + sp * 0.04 + Math.abs( steerInput ) * 0.2 ) ) {
@@ -3936,7 +3966,44 @@
 	}
 
 	function buildBog( THREE ) {
-		buildMudPatch( THREE, BOG.x, BOG.z, BOG.rx, BOG.rz, BOG.rot );
+		// the bog is dug in (BOG_BOWLS) and painted into the terrain itself
+		// — the dressing is what sits IN it: standing-goo sheen pooled in
+		// each bowl bottom, tire ruts, and clods thrown around the rims.
+		// (The old flat mud discs would float over the dip — gone.)
+		var glintMat = new THREE.MeshBasicMaterial( { color: 0x8fa8b8, transparent: true, opacity: 0.16 } );
+		BOG_BOWLS.forEach( function ( bw ) {
+			var glint = new THREE.Mesh( new THREE.CircleGeometry( bw.r * 0.52, 16 ), glintMat );
+			glint.rotation.x = -Math.PI / 2;
+			glint.rotation.z = BOG.rot;
+			glint.scale.set( 1.5, 1, 1 );
+			glint.position.set( bw.x, hillsAt( bw.x, bw.z ) + 0.6, bw.z );
+			scene.add( glint );
+		} );
+		var rutMat = mat( THREE, 0x1c130b );
+		var ca = Math.cos( BOG.rot ), sa = Math.sin( BOG.rot );
+		for ( var ri = 0; ri < 7; ri++ ) {
+			var t = -BOG.rx * 0.8 + Math.random() * BOG.rx * 1.6;
+			var off = ( Math.random() - 0.5 ) * BOG.rz * 1.1;
+			var px = BOG.x + ca * t - sa * off;
+			var pz = BOG.z + sa * t + ca * off;
+			var rut = new THREE.Mesh( new THREE.PlaneGeometry( 4, 24 ), rutMat );
+			rut.rotation.x = -Math.PI / 2;
+			rut.rotation.z = BOG.rot + Math.PI / 2 + ( Math.random() - 0.5 ) * 0.5;
+			rut.position.set( px, hillsAt( px, pz ) + 0.45, pz );
+			scene.add( rut );
+		}
+		// clods slung out around the rims
+		var clodMat = mat( THREE, 0x241a0e );
+		for ( var ci = 0; ci < 10; ci++ ) {
+			var an = Math.random() * Math.PI * 2;
+			var bwl = BOG_BOWLS[ ci % 3 ];
+			var cxp = bwl.x + Math.cos( an ) * bwl.r * ( 0.9 + Math.random() * 0.5 );
+			var czp = bwl.z + Math.sin( an ) * bwl.r * ( 0.9 + Math.random() * 0.5 );
+			var clod = new THREE.Mesh( lumpy( new THREE.SphereGeometry( 1.6 + Math.random() * 2, 6, 5 ), 0.3 ), clodMat );
+			clod.scale.y = 0.6;
+			clod.position.set( cxp, hillsAt( cxp, czp ) + 0.8, czp );
+			scene.add( clod );
+		}
 		buildSign( THREE, 'the bog — send it', BOG.x + 150, BOG.z - 130, BOG.x, BOG.z );
 		PROMPTS.push( { id: 'bog', name: 'the bog', x: BOG.x, y: BOG.z, href: null,
 			prompt: 'The bog — mudbogging country. Keep your momentum up' } );
@@ -4806,7 +4873,7 @@
 
 	function initDust( THREE ) { initPool( THREE, dustPool, 44, makePuffTexture( THREE, 158, 138, 106 ) ); }
 	function initSplash( THREE ) { initPool( THREE, splashPool, 20, makePuffTexture( THREE, 140, 180, 214 ) ); }
-	function initMud( THREE ) { initPool( THREE, mudPool, 22, makePuffTexture( THREE, 96, 74, 52 ) ); }
+	function initMud( THREE ) { initPool( THREE, mudPool, 44, makePuffTexture( THREE, 74, 56, 38 ) ); }
 
 	function spawnFrom( pool, at, sp ) {
 		for ( var i = 0; i < pool.length; i++ ) {
@@ -4819,6 +4886,7 @@
 					py + 3,
 					at.y + ( Math.random() - 0.5 ) * 8 );
 				p.vy = 8 + Math.random() * 8;
+				p.vx = 0; p.vz = 0;
 				p.grow = 10 + sp * 2.4;
 				return p;
 			}
@@ -4830,8 +4898,10 @@
 	function spawnMud( at, sp ) {
 		var p = spawnFrom( mudPool, at, sp );
 		if ( p ) {
-			p.vy = 26 + Math.random() * 28; // mud flies HIGH
-			p.grow = 14 + sp * 2;
+			p.vy = 30 + Math.random() * 34;          // mud flies HIGH
+			p.vx = ( Math.random() - 0.5 ) * ( 14 + sp * 4 ); // and SIDEWAYS —
+			p.vz = ( Math.random() - 0.5 ) * ( 14 + sp * 4 ); // a proper roost
+			p.grow = 16 + sp * 2.4;
 		}
 	}
 
@@ -4843,6 +4913,8 @@
 			var f = Math.max( 0, p.life / p.max );
 			p.spr.material.opacity = baseOpacity * f;
 			p.spr.position.y += p.vy * ( dms / 1000 );
+			p.spr.position.x += ( p.vx || 0 ) * ( dms / 1000 );
+			p.spr.position.z += ( p.vz || 0 ) * ( dms / 1000 );
 			var s = 8 + ( 1 - f ) * p.grow;
 			p.spr.scale.set( s, s, 1 );
 		}
