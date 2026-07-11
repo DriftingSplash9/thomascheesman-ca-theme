@@ -1167,6 +1167,7 @@
 		buildBog( THREE );
 		buildHangout( THREE );
 		buildStockBarn( THREE );
+		buildGrainBins( THREE );
 		buildShrubs( THREE );
 		buildBales( THREE );
 		buildStacks( THREE );
@@ -3049,9 +3050,7 @@
 		var annex = new THREE.Mesh( new THREE.BoxGeometry( 34, 44, 30 ), woodMat( THREE, 0x453b30 ) );
 		annex.position.set( 34, 22, 10 );
 		g.add( annex );
-		var silo = new THREE.Mesh( new THREE.CylinderGeometry( 12, 12, 52, 10 ), metalMat( THREE, 0x8a8f92 ) );
-		silo.position.set( -36, 26, 14 );
-		g.add( silo );
+		// (the little silo moved off with the grain bins — buildGrainBins)
 		addWindow( THREE, g, 8, 10, 0, 96, 23.2 );
 		addWindow( THREE, g, 12, 14, 0, 12, 23.2 );
 		return g;
@@ -3691,13 +3690,24 @@
 		var hitch = new THREE.Mesh( new THREE.BoxGeometry( 6, 1.6, 3 ), darkMat );
 		hitch.position.set( -18, 12, 0 );
 		g.add( hitch );
-		// she hauls a round bale on the rear spike now — her rounds have
-		// PURPOSE (spiral ends facing fore-aft)
-		var spike = new THREE.Mesh( new THREE.BoxGeometry( 12, 1.8, 1.8 ), darkMat );
-		spike.position.set( -22, 10, 0 );
-		g.add( spike );
+		// she hauls a round bale on the FRONT LOADER — arms up from the
+		// chassis, crossbar, spear, bale held proud out front
+		[ -6, 6 ].forEach( function ( az2 ) {
+			var arm2 = new THREE.Mesh( new THREE.BoxGeometry( 22, 2, 2 ), redDark );
+			arm2.position.set( 12, 20, az2 );
+			arm2.rotation.z = 0.35;
+			g.add( arm2 );
+		} );
+		var crossbar = new THREE.Mesh( new THREE.BoxGeometry( 2, 2, 14 ), darkMat );
+		crossbar.position.set( 22, 23.5, 0 );
+		g.add( crossbar );
+		var spear = new THREE.Mesh( new THREE.CylinderGeometry( 0.8, 0.4, 10, 5 ), darkMat );
+		spear.rotation.z = Math.PI / 2;
+		spear.position.set( 27, 22, 0 );
+		g.add( spear );
 		var haul = makeBaleMesh( THREE );
-		haul.position.set( -27, 13.5, 0 );
+		haul.rotation.y = Math.PI / 2; // spiral ends face the sides, like the photo
+		haul.position.set( 31, 22, 0 );
 		g.add( haul );
 
 		var lm = { id: 'tractor', name: 'the old tractor', x: 2730, y: 630, href: null,
@@ -3941,8 +3951,8 @@
 		mary.lm = { id: 'dogyard', name: 'Mary', x: 2860, y: 1480, href: null,
 			prompt: 'Mary — the old lab-cross, keeping the herd honest' };
 		PROMPTS.push( mary.lm );
-		// CONE — the road dog; wherever you're going, he's coming
-		var cone = buildDog( THREE, SPAWN.x - 34, SPAWN.y + 22, 0x6b4a2e, 0xc9a878, 'road' );
+		// CONE — the white road dog; wherever you're going, he's coming
+		var cone = buildDog( THREE, SPAWN.x - 34, SPAWN.y + 22, 0xe8e4da, 0xcfc4ae, 'road' );
 		cone.lm = { id: 'dogroad', name: 'Cone', x: SPAWN.x - 34, y: SPAWN.y + 22, href: null,
 			prompt: 'Cone — wherever you’re going, he’s coming' };
 		PROMPTS.push( cone.lm );
@@ -4822,6 +4832,49 @@
 			prompt: 'The firepit — pull up a log, the night’s long' } );
 		PROMPTS.push( { id: 'camper', name: 'the camper', x: cx2, y: cz2, href: null,
 			prompt: 'The camper — half the summer lives in here' } );
+	}
+
+	// THE GRAIN BINS — the tallest, biggest structures on any farm, as they
+	// should be: three corrugated-steel giants in the old pen clearing,
+	// well away from the pond and the mill. Cone roofs, hatches, ladders.
+	function buildGrainBins( THREE ) {
+		var corr = cacheTex( THREE, 'bin', function ( x ) {
+			x.fillStyle = '#d4d8da'; x.fillRect( 0, 0, 128, 128 );
+			for ( var v3 = 0; v3 < 128; v3 += 7 ) {
+				x.fillStyle = 'rgba(120,128,134,0.4)';
+				x.fillRect( v3, 0, 2.4, 128 );
+				x.fillStyle = 'rgba(244,248,250,0.4)';
+				x.fillRect( v3 + 3.4, 0, 1.6, 128 );
+			}
+			// horizontal panel seams
+			for ( var h3 = 0; h3 < 128; h3 += 26 ) {
+				x.fillStyle = 'rgba(90,96,102,0.5)';
+				x.fillRect( 0, h3, 128, 1.8 );
+			}
+		}, [ 3, 2 ] );
+		var binMat = applyAtmosphere( new THREE.MeshLambertMaterial( { color: 0xb8bcbe, map: corr } ), true );
+		var roofMat = metalMat( THREE, 0x8a8f92 );
+		[ [ 2450, 880, 1 ], [ 2590, 850, 1.08 ], [ 2725, 890, 0.92 ] ].forEach( function ( bn ) {
+			var bx2 = bn[ 0 ], bz2 = bn[ 1 ], bs = bn[ 2 ];
+			var by = hillsAt( bx2, bz2 );
+			var drum2 = new THREE.Mesh( new THREE.CylinderGeometry( 40 * bs, 40 * bs, 170 * bs, 12 ), binMat );
+			drum2.position.set( bx2, by + 85 * bs, bz2 );
+			scene.add( drum2 );
+			var roof2 = new THREE.Mesh( new THREE.ConeGeometry( 44 * bs, 34 * bs, 12 ), roofMat );
+			roof2.position.set( bx2, by + ( 170 + 17 ) * bs, bz2 );
+			scene.add( roof2 );
+			var hatch2 = new THREE.Mesh( new THREE.CylinderGeometry( 4 * bs, 4 * bs, 4, 8 ), mat( THREE, 0x3a3630 ) );
+			hatch2.position.set( bx2, by + ( 170 + 32 ) * bs, bz2 );
+			scene.add( hatch2 );
+			// ladder strip up the face
+			var lad = new THREE.Mesh( new THREE.BoxGeometry( 2.4, 168 * bs, 0.8 ), mat( THREE, 0x5a6064 ) );
+			lad.position.set( bx2, by + 84 * bs, bz2 + 40 * bs + 0.6 );
+			scene.add( lad );
+			Matter.Composite.add( engine.world,
+				Matter.Bodies.circle( bx2, bz2, 44 * bs, { isStatic: true } ) );
+		} );
+		PROMPTS.push( { id: 'bins', name: 'the grain bins', x: 2590, y: 870, href: null,
+			prompt: 'The grain bins — a good year lives in there' } );
 	}
 
 	// the open stock barn: three walls + a big roof, open to the south so
