@@ -627,7 +627,8 @@
 	var ambLight = null, hemiLight = null;
 	var skyMatRef = null, starMatRef = null, sunBall = null, sunHalo = null, moonBall = null, moonHalo = null;
 	var DAY_CYCLE = 480; // seconds for a full day+night, Minecraft-style
-	var DAY_START = 0.62; // begin in the evening — the farm's identity is dusk
+	var DAY_START = 0.2; // open mid-morning: ~2.5 min of daylight, then the
+	                     // farm rolls into its sunset — the show, not the start
 	// Bloom knobs. Threshold is POST-tone-mapping luminance: ACES lands the
 	// day sky around ~0.6 and moonlit ground far lower, so 0.72 catches only
 	// the boosted glow() materials, the sun/moon discs and the fireworks.
@@ -1625,6 +1626,11 @@
 				spawnSplash( wheelWorld( -12, 12 ), sp + spinRate * 55 );
 				spawnSplash( wheelWorld( -12, -12 ), sp + spinRate * 55 );
 			}
+			// ripping flat-out throws a proper ROOSTERTAIL behind
+			if ( sp > 5 ) {
+				spawnSplash( wheelWorld( -18, 4 ), sp * 1.3 );
+				spawnSplash( wheelWorld( -18, -4 ), sp * 1.3 );
+			}
 		} else if ( inMud && sp > 1.2 ) {
 			// ROOST: all four corners sling mud, harder with speed
 			spawnMud( wheelWorld( -14, 10 ), sp );
@@ -1632,6 +1638,10 @@
 			if ( Math.random() < Math.min( 0.9, 0.25 + sp * 0.08 ) ) {
 				spawnMud( wheelWorld( 10, 12 ), sp * 0.8 );
 				spawnMud( wheelWorld( 10, -12 ), sp * 0.8 );
+			}
+			if ( sp > 5 ) {
+				spawnMud( wheelWorld( -18, 4 ), sp * 1.3 );
+				spawnMud( wheelWorld( -18, -4 ), sp * 1.3 );
 			}
 		} else if ( inCreek && sp > 1.5 ) {
 			spawnSplash( wheelWorld( 8, ( Math.random() < 0.5 ? 11 : -11 ) ), sp * 0.7 );
@@ -3406,10 +3416,14 @@
 	var animals = [], trumacRef = null;
 
 	function buildAnimals( THREE ) {
+		// the herd doubled, six more sheep, five horses now
 		var cows = [ [ 3063, 1365 ], [ 1575, 2013 ], [ 2713, 910 ], [ 3763, 1540 ],
-			[ 2050, 2200 ], [ 2900, 1350 ], [ 1700, 2150 ] ];
-		var sheep = [ [ 875, 1050 ], [ 2538, 2188 ], [ 1838, 613 ], [ 3938, 735 ], [ 1225, 1750 ] ];
-		var horses = [ [ 1950, 2080 ], [ 3350, 1750 ] ];
+			[ 2050, 2200 ], [ 2900, 1350 ], [ 1700, 2150 ],
+			[ 3400, 1200 ], [ 3050, 1700 ], [ 2500, 1450 ], [ 1450, 1550 ],
+			[ 3900, 1900 ], [ 2750, 2050 ], [ 3300, 620 ] ];
+		var sheep = [ [ 875, 1050 ], [ 2538, 2188 ], [ 1838, 613 ], [ 3938, 735 ], [ 1225, 1750 ],
+			[ 1000, 2100 ], [ 700, 1500 ], [ 2950, 2450 ], [ 3600, 2200 ], [ 1850, 900 ], [ 2450, 300 ] ];
+		var horses = [ [ 1950, 2080 ], [ 3350, 1750 ], [ 2900, 1250 ], [ 1350, 1900 ], [ 4150, 1650 ] ];
 		cows.forEach( function ( p ) { addAnimal( THREE, 'cow', p[ 0 ], p[ 1 ] ); } );
 		sheep.forEach( function ( p ) { addAnimal( THREE, 'sheep', p[ 0 ], p[ 1 ] ); } );
 		horses.forEach( function ( p ) { addAnimal( THREE, 'horse', p[ 0 ], p[ 1 ] ); } );
@@ -3450,9 +3464,26 @@
 			leg.position.set( c[ 0 ] * ( bw / 2 - 2 ), legH / 2, c[ 1 ] * ( bd / 2 - 1.5 ) );
 			g.add( leg );
 		} );
-		var body = new THREE.Mesh( new THREE.BoxGeometry( bw, bh, bd ), bodyMat );
+		// sheep are WOOLLY now — a lumpy fleece blob, not a crate; cattle
+		// and horses get rounded chest + rump so the silhouette reads flesh
+		var body;
+		if ( type === 'sheep' ) {
+			body = new THREE.Mesh( lumpy( new THREE.SphereGeometry( bw * 0.62, 9, 7 ), 0.24 ), bodyMat );
+			body.scale.set( 1.15, 0.85, 0.8 );
+		} else {
+			body = new THREE.Mesh( new THREE.BoxGeometry( bw, bh, bd ), bodyMat );
+		}
 		body.position.y = legH + bh / 2 - 0.5;
 		g.add( body );
+		if ( cow || horse ) {
+			var chest = new THREE.Mesh( new THREE.SphereGeometry( bd * 0.55, 9, 7 ), bodyMat );
+			chest.scale.set( 1.05, ( bh / bd ) * 0.92, 1 );
+			chest.position.set( bw / 2 - 2.5, legH + bh / 2 - 0.5, 0 );
+			g.add( chest );
+			var rump = chest.clone();
+			rump.position.x = -bw / 2 + 2.5;
+			g.add( rump );
+		}
 		var head = new THREE.Mesh(
 			new THREE.BoxGeometry( cow ? 7 : 5, cow ? 7 : 5, cow ? 6 : 4.5 ), mat( THREE, headC ) );
 		head.position.set( bw / 2 + 2, legH + bh - 1, 0 );
@@ -3481,7 +3512,9 @@
 			} );
 		}
 		if ( ! bull ) {
-			var js = 0.88 + Math.random() * 0.26; // size jitter — no clones
+			// horses stand a real head taller than everything now (they were
+			// reading pig-sized); the rest keep their gentle jitter
+			var js = horse ? 1.55 + Math.random() * 0.35 : 0.88 + Math.random() * 0.26;
 			g.scale.set( js, js, js );
 		}
 		if ( horse ) {
@@ -3510,7 +3543,7 @@
 			g.scale.set( 1.3, 1.3, 1.3 );
 		}
 		scene.add( g );
-		var body2d = Matter.Bodies.circle( x, z, bull ? 15 : ( horse ? 12 : ( cow ? 11 : 7 ) ),
+		var body2d = Matter.Bodies.circle( x, z, bull ? 15 : ( horse ? 21 : ( cow ? 11 : 7 ) ),
 			{ frictionAir: 0.18, density: bull ? 0.006 : ( horse ? 0.0035 : 0.003 ) } );
 		Matter.Composite.add( engine.world, body2d );
 		var entry = { g: g, body: body2d, type: type, wanderT: 800 + Math.random() * 2400 };
@@ -3658,6 +3691,14 @@
 		var hitch = new THREE.Mesh( new THREE.BoxGeometry( 6, 1.6, 3 ), darkMat );
 		hitch.position.set( -18, 12, 0 );
 		g.add( hitch );
+		// she hauls a round bale on the rear spike now — her rounds have
+		// PURPOSE (spiral ends facing fore-aft)
+		var spike = new THREE.Mesh( new THREE.BoxGeometry( 12, 1.8, 1.8 ), darkMat );
+		spike.position.set( -22, 10, 0 );
+		g.add( spike );
+		var haul = makeBaleMesh( THREE );
+		haul.position.set( -27, 13.5, 0 );
+		g.add( haul );
 
 		var lm = { id: 'tractor', name: 'the old tractor', x: 2730, y: 630, href: null,
 			prompt: 'The old girl still runs — she does her own rounds now' };
@@ -3893,16 +3934,18 @@
 	}
 
 	function buildDogs( THREE ) {
-		// the yard dog — black & white, patrols the stock barn + pens
-		var yard = buildDog( THREE, 2860, 1480, 0x1c1815, 0xd8d3c4, 'yard' );
-		yard.lm = { id: 'dogyard', name: 'the yard dog', x: 2860, y: 1480, href: null,
-			prompt: 'The yard dog — keeping the herd honest' };
-		PROMPTS.push( yard.lm );
-		// the road dog — a brown farm mutt who comes along, obviously
-		var road = buildDog( THREE, SPAWN.x - 34, SPAWN.y + 22, 0x6b4a2e, 0xc9a878, 'road' );
-		road.lm = { id: 'dogroad', name: 'the road dog', x: SPAWN.x - 34, y: SPAWN.y + 22, href: null,
-			prompt: 'The road dog — wherever you’re going, she’s coming' };
-		PROMPTS.push( road.lm );
+		// MARY — the old brown lab-cross (with some pitbull in the chest),
+		// stockier than a farm dog has any right to be; holds the pens
+		var mary = buildDog( THREE, 2860, 1480, 0x7a5638, 0x9a7a52, 'yard' );
+		mary.g.scale.set( 1.15, 1.02, 1.3 ); // broad through the shoulders
+		mary.lm = { id: 'dogyard', name: 'Mary', x: 2860, y: 1480, href: null,
+			prompt: 'Mary — the old lab-cross, keeping the herd honest' };
+		PROMPTS.push( mary.lm );
+		// CONE — the road dog; wherever you're going, he's coming
+		var cone = buildDog( THREE, SPAWN.x - 34, SPAWN.y + 22, 0x6b4a2e, 0xc9a878, 'road' );
+		cone.lm = { id: 'dogroad', name: 'Cone', x: SPAWN.x - 34, y: SPAWN.y + 22, href: null,
+			prompt: 'Cone — wherever you’re going, he’s coming' };
+		PROMPTS.push( cone.lm );
 	}
 
 	function updateDogs( dms, t ) {
@@ -5627,8 +5670,8 @@
 	}
 
 	function initDust( THREE ) { initPool( THREE, dustPool, 44, makePuffTexture( THREE, 158, 138, 106 ) ); }
-	function initSplash( THREE ) { initPool( THREE, splashPool, 44, makePuffTexture( THREE, 140, 180, 214 ) ); }
-	function initMud( THREE ) { initPool( THREE, mudPool, 44, makePuffTexture( THREE, 74, 56, 38 ) ); }
+	function initSplash( THREE ) { initPool( THREE, splashPool, 60, makePuffTexture( THREE, 140, 180, 214 ) ); }
+	function initMud( THREE ) { initPool( THREE, mudPool, 60, makePuffTexture( THREE, 74, 56, 38 ) ); }
 
 	function spawnFrom( pool, at, sp ) {
 		for ( var i = 0; i < pool.length; i++ ) {
