@@ -869,11 +869,19 @@
 			atmo.haze.value.copy( scene.fog.color );
 			atmo.amt.value = 0.42 + ( 1 - df ) * 0.18; // heavier at night
 		}
-		ambLight.intensity = 0.5 + df * 0.45;
-		hemiLight.intensity = 0.32 + df * 0.35;
-		moonLight.intensity = 0.6 + df * 0.45;
+		// day stack trimmed — the old sums clipped white walls to paper
+		ambLight.intensity = 0.5 + df * 0.32;
+		hemiLight.intensity = 0.32 + df * 0.26;
+		moonLight.intensity = 0.6 + df * 0.36;
 		moonLight.color.copy( dnNight.sun ).lerp( dnDay.sun, df );
 		starMatRef.opacity = 0.9 * ( 1 - df );
+		// bloom is a NIGHT instrument: by day the threshold rises past any
+		// sunlit wall (the white church was glowing like a lamp) and the
+		// strength eases off — lights still bloom at dusk, walls never do
+		if ( bloomPass ) {
+			bloomPass.threshold = BLOOM.threshold + df * 0.16;
+			bloomPass.strength = BLOOM.strength * ( 1 - df * 0.4 );
+		}
 
 		// the rooster greets the sunrise from the coop
 		if ( dnPrevElev !== null && dnPrevElev <= 0.08 && elev > 0.08 ) {
@@ -2890,14 +2898,14 @@
 		// the old decorative base mound, whose removal left the church
 		// floating at 2.4×)
 		var g = new THREE.Group();
-		var nave = new THREE.Mesh( new THREE.BoxGeometry( 46, 30, 70 ), stoneMat( THREE, 0xcfd2cd ) );
+		var nave = new THREE.Mesh( new THREE.BoxGeometry( 46, 30, 70 ), stoneMat( THREE, 0xc0c4bb ) );
 		nave.position.y = 15;
 		g.add( nave );
 		var roof = gableRoof( THREE, 76, 26, 0x3a4048 );
 		roof.position.y = 34;
 		roof.rotation.y = Math.PI / 2;
 		g.add( roof );
-		var tower = new THREE.Mesh( new THREE.BoxGeometry( 16, 34, 16 ), stoneMat( THREE, 0xcfd2cd ) );
+		var tower = new THREE.Mesh( new THREE.BoxGeometry( 16, 34, 16 ), stoneMat( THREE, 0xc0c4bb ) );
 		tower.position.set( 0, 32, 40 );
 		g.add( tower );
 		var spire = new THREE.Mesh( new THREE.ConeGeometry( 11, 22, 4 ), mat( THREE, 0x3a4048 ) );
