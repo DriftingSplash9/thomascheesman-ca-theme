@@ -2,6 +2,14 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * ANIMAL LIFE PASS (1.0.733): horses downsized 1.55–1.9 → 1.18–1.35
+ * (that range was tuned for the old plank build — with real necks and
+ * heads they'd grown into giraffes; physics radius 21 → 17). And the
+ * herd MOVES now: legs swing in diagonal trot pairs while walking (with
+ * a slight body bob), settle to neutral on stop, then the whole animal
+ * eases into a nose-down graze lean for a spell (rotation order YZX so
+ * the lean tracks heading; Trumac doesn't bow).
+ *
  * ANIMAL ART PASS (1.0.732): "at least they're not Minecraft" — the herd
  * loses its crates. Ellipsoid barrels on cattle/horses/pigs (the chest/
  * rump spheres finish the rounding), dark hooves; horse heads rebuilt
@@ -3521,11 +3529,16 @@
 		var bh = horse ? 11 : ( cow ? 11 : 8.5 );
 		var bd = horse ? 8 : ( cow ? 10 : 9 );
 		var legH = horse ? 9 : ( cow ? 6 : 4 );
+		// yaw (heading) first, then z-pitch in the yawed frame — the graze
+		// lean below stays nose-down whichever way the animal faces
+		g.rotation.order = 'YZX';
+		var legs = [];
 		[ [ 1, 1 ], [ 1, -1 ], [ -1, 1 ], [ -1, -1 ] ].forEach( function ( c ) {
 			var lx = c[ 0 ] * ( bw / 2 - 2 ), lz = c[ 1 ] * ( bd / 2 - 1.5 );
 			var leg = new THREE.Mesh( new THREE.BoxGeometry( 1.6, legH, 1.6 ), mat( THREE, legC ) );
 			leg.position.set( lx, legH / 2, lz );
 			g.add( leg );
+			legs.push( leg );
 			// dark hooves ground the cattle + horses
 			if ( cow || horse ) {
 				var hoof = new THREE.Mesh( new THREE.BoxGeometry( 2, 1.4, 2 ), mat( THREE, 0x181410 ) );
@@ -3606,9 +3619,10 @@
 			g.add( stub );
 		}
 		if ( ! bull ) {
-			// horses stand a real head taller than everything now (they were
-			// reading pig-sized); the rest keep their gentle jitter
-			var js = horse ? 1.55 + Math.random() * 0.35 : 0.88 + Math.random() * 0.26;
+			// horses run a head taller than the cattle — no more (the old
+			// 1.55–1.9 was sized for the plank build; with the real neck +
+			// head they'd grown into giraffes)
+			var js = horse ? 1.18 + Math.random() * 0.17 : 0.88 + Math.random() * 0.26;
 			g.scale.set( js, js, js );
 		}
 		if ( horse ) {
@@ -3654,10 +3668,12 @@
 			g.scale.set( 1.3, 1.3, 1.3 );
 		}
 		scene.add( g );
-		var body2d = Matter.Bodies.circle( x, z, bull ? 15 : ( horse ? 21 : ( cow ? 11 : 7 ) ),
+		var body2d = Matter.Bodies.circle( x, z, bull ? 15 : ( horse ? 17 : ( cow ? 11 : 7 ) ),
 			{ frictionAir: 0.18, density: bull ? 0.006 : ( horse ? 0.0035 : 0.003 ) } );
 		Matter.Composite.add( engine.world, body2d );
-		var entry = { g: g, body: body2d, type: type, wanderT: 800 + Math.random() * 2400 };
+		var entry = { g: g, body: body2d, type: type, wanderT: 800 + Math.random() * 2400,
+			legs: legs, phase: Math.random() * 6.28,
+			grazeT: 1500 + Math.random() * 4000, graze: 0, grazeOn: false };
 		animals.push( entry );
 		return entry;
 	}
@@ -3686,9 +3702,33 @@
 				a.g.position.set( px, heightAt( px, pz ), pz );
 			}
 			var v = a.body.velocity;
-			if ( Math.hypot( v.x, v.y ) > 0.15 ) {
+			var s = Math.hypot( v.x, v.y );
+			if ( s > 0.15 ) {
 				a.g.rotation.y = -Math.atan2( v.y, v.x );
 			}
+			// gait + grazing — the herd moves like it's alive now. Walking
+			// swings the legs in diagonal (trot) pairs with a slight body
+			// bob; standing settles the legs, then the head drops into a
+			// nose-down graze lean for a while
+			if ( s > 0.15 ) {
+				a.phase += dms * ( 0.011 + s * 0.004 );
+				a.graze = Math.max( 0, a.graze - dms * 0.004 );
+				a.g.position.y += Math.abs( Math.sin( a.phase ) ) * 0.6;
+			} else {
+				a.phase += ( Math.round( a.phase / Math.PI ) * Math.PI - a.phase ) * 0.2;
+				a.grazeT -= dms;
+				if ( a.grazeT <= 0 ) {
+					a.grazeT = 2200 + Math.random() * 5200;
+					a.grazeOn = ! a.grazeOn && a.type !== 'bull'; // Trumac doesn't bow
+				}
+				a.graze += ( ( a.grazeOn ? 1 : 0 ) - a.graze ) * Math.min( 1, dms * 0.003 );
+			}
+			var sw = Math.sin( a.phase ) * Math.min( 0.38, s * 0.5 );
+			for ( var li = 0; li < a.legs.length; li++ ) {
+				a.legs[ li ].rotation.z = ( li === 0 || li === 3 ) ? sw : -sw;
+			}
+			a.g.rotation.z = -a.graze * 0.14;
+			a.g.position.y -= a.graze * 1.2;
 		}
 	}
 
