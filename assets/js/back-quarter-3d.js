@@ -393,7 +393,7 @@
 	var MUD = { x: 1885, z: 2185, r: 75 };
 	// THE BOG — 3× long: a wallow RUN arcing across the whole south field
 	// (extended west; the east tip stays clear of the gate road)
-	var BOG = { x: 1689, z: 2135, rx: 510, rz: 70, rot: 0.5 };
+	var BOG = { x: 1689, z: 2135, rx: 510, rz: 95, rot: 0.5 };
 	// the bog is DUG IN: a chain of soft bowls along its axis, baked into
 	// hillsAt so the ground mesh, the physics and the mud all agree —
 	// you drop in, wallow through the goo, and climb out the far side
@@ -405,7 +405,11 @@
 		{ x: 1742, z: 2164, a: -5.5, r: 46 },
 		{ x: 1851, z: 2224, a: -6, r: 50 },
 		{ x: 1961, z: 2284, a: -5, r: 44 },
-		{ x: 2071, z: 2344, a: -6.5, r: 52 }
+		{ x: 2071, z: 2344, a: -6.5, r: 52 },
+		// side lobes — the run widens into pockets you can dip through
+		{ x: 1443, z: 2064, a: -5.5, r: 46 },
+		{ x: 1759, z: 2111, a: -5, r: 44 },
+		{ x: 1882, z: 2303, a: -6, r: 48 }
 	];
 	function inMudArea( x, z, pad ) {
 		pad = pad || 0;
@@ -588,6 +592,7 @@
 	var composer = null, bloomPass = null; // bloom stack — null renders plain
 	var gradePass = null, dayFactor = 1; // color grade + time-of-day (1=day)
 	var atmo = null; // shared prairie-dust + ground-haze uniforms (phase 2)
+	var waterMat = null; // the slough's animated ripple shader
 	var Matter, engine, buggyBody;
 	var buggyGroup, chassisGroup, wheels = [];
 	var frontSteer = []; // the front wheels' yaw pivots — they steer visibly
@@ -1605,9 +1610,15 @@
 		}
 
 		// juice
-		if ( inWater && sp > 1.4 ) {
-			spawnSplash( wheelWorld( 10, 12 ), sp );
-			spawnSplash( wheelWorld( 10, -12 ), sp );
+		var spinRate = Math.abs( b.angularVelocity );
+		if ( inWater && ( sp > 1.4 || spinRate > 0.03 ) ) {
+			// churn: bow wake at speed, and spinning out whips a spray ring
+			spawnSplash( wheelWorld( 10, 12 ), sp + spinRate * 70 );
+			spawnSplash( wheelWorld( 10, -12 ), sp + spinRate * 70 );
+			if ( spinRate > 0.028 || Math.random() < Math.min( 0.9, sp * 0.09 ) ) {
+				spawnSplash( wheelWorld( -12, 12 ), sp + spinRate * 55 );
+				spawnSplash( wheelWorld( -12, -12 ), sp + spinRate * 55 );
+			}
 		} else if ( inMud && sp > 1.2 ) {
 			// ROOST: all four corners sling mud, harder with speed
 			spawnMud( wheelWorld( -14, 10 ), sp );
@@ -1676,6 +1687,10 @@
 		}
 
 		if ( gradePass ) gradePass.uniforms.night.value = 1 - dayFactor;
+		if ( waterMat ) {
+			waterMat.uniforms.t.value = t;
+			waterMat.uniforms.night.value = 1 - dayFactor;
+		}
 		if ( atmo ) atmo.cam.value.copy( camera.position );
 		if ( composer ) composer.render();
 		else renderer.render( scene, camera );
@@ -3194,18 +3209,33 @@
 		}
 		var geo = new THREE.ShapeGeometry( shape );
 		geo.rotateX( -Math.PI / 2 );
-		var water = new THREE.Mesh( geo,
-			new THREE.MeshLambertMaterial( { color: 0x0c2232, emissive: 0x050f18 } ) );
+		// LIVING WATER: layered moving ripples, crest sparkles, day/night
+		// palette — replaces the flat blue + static glint blobs
+		waterMat = new THREE.ShaderMaterial( {
+			uniforms: { t: { value: 0 }, night: { value: 0 } },
+			vertexShader:
+				'varying vec3 vPos; void main(){ vPos = position;' +
+				'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }',
+			fragmentShader: [
+				'uniform float t; uniform float night;',
+				'varying vec3 vPos;',
+				'void main(){',
+				'  float w1 = sin( vPos.x * 0.055 + t * 0.9 ) * sin( vPos.z * 0.047 - t * 0.7 );',
+				'  float w2 = sin( ( vPos.x + vPos.z ) * 0.085 - t * 1.25 );',
+				'  float w3 = sin( ( vPos.x - vPos.z * 1.3 ) * 0.03 + t * 0.5 );',
+				'  float rip = w1 * 0.42 + w2 * 0.36 + w3 * 0.22;',
+				'  vec3 deep = mix( vec3(0.085,0.20,0.27), vec3(0.028,0.065,0.10), night );',
+				'  vec3 lite = mix( vec3(0.26,0.44,0.50), vec3(0.085,0.15,0.20), night );',
+				'  vec3 col = mix( deep, lite, rip * 0.5 + 0.5 );',
+				'  float sprk = smoothstep( 0.82, 0.98, rip );',
+				'  col += sprk * mix( vec3(0.42,0.46,0.42), vec3(0.20,0.26,0.30), night );',
+				'  gl_FragColor = vec4( col, 1.0 );',
+				'}'
+			].join( '\n' )
+		} );
+		var water = new THREE.Mesh( geo, waterMat );
 		water.position.set( POND.x, POND.waterY, POND.z );
 		scene.add( water );
-		var glintMat = new THREE.MeshBasicMaterial( { color: 0xbcd6ea, transparent: true, opacity: 0.14 } );
-		[ { x: -70, z: -55, r: 34 }, { x: 60, z: 40, r: 26 }, { x: -10, z: 90, r: 20 } ].forEach( function ( gl ) {
-			var glint = new THREE.Mesh( new THREE.CircleGeometry( gl.r, 12 ), glintMat );
-			glint.rotation.x = -Math.PI / 2;
-			glint.position.set( POND.x + gl.x, POND.waterY + 0.2, POND.z + gl.z );
-			glint.scale.x = 1.9;
-			scene.add( glint );
-		} );
 	}
 
 	/* ---- livestock ---- */
@@ -5075,7 +5105,7 @@
 	}
 
 	function initDust( THREE ) { initPool( THREE, dustPool, 44, makePuffTexture( THREE, 158, 138, 106 ) ); }
-	function initSplash( THREE ) { initPool( THREE, splashPool, 20, makePuffTexture( THREE, 140, 180, 214 ) ); }
+	function initSplash( THREE ) { initPool( THREE, splashPool, 44, makePuffTexture( THREE, 140, 180, 214 ) ); }
 	function initMud( THREE ) { initPool( THREE, mudPool, 44, makePuffTexture( THREE, 74, 56, 38 ) ); }
 
 	function spawnFrom( pool, at, sp ) {
@@ -5097,7 +5127,15 @@
 		return null;
 	}
 	function spawnDust( at, sp ) { return spawnFrom( dustPool, at, sp ); }
-	function spawnSplash( at, sp ) { return spawnFrom( splashPool, at, sp * 0.8 ); }
+	function spawnSplash( at, sp ) {
+		var p = spawnFrom( splashPool, at, sp * 0.8 );
+		if ( p ) {
+			p.vy = 16 + Math.random() * 18; // water throws UP…
+			p.vx = ( Math.random() - 0.5 ) * ( 10 + sp * 3 ); // …and OUT
+			p.vz = ( Math.random() - 0.5 ) * ( 10 + sp * 3 );
+		}
+		return p;
+	}
 	function spawnMud( at, sp ) {
 		var p = spawnFrom( mudPool, at, sp );
 		if ( p ) {
