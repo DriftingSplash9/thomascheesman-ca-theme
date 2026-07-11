@@ -1153,6 +1153,7 @@
 		buildCoop( THREE );
 		buildChickens( THREE );
 		buildPeacock( THREE );
+		buildDogs( THREE );
 		buildPigPen( THREE );
 		buildTractor( THREE );
 		buildWindmill( THREE );
@@ -1580,6 +1581,7 @@
 		updateTractor();
 		updateChickens( dms, t );
 		updatePeacock( dms );
+		updateDogs( dms, t );
 		updatePigs( dms );
 		updateDucks( dms, t );
 		updateScenery( dms, t );
@@ -1870,7 +1872,6 @@
 			lamp.position.set( topX, topY + 3, MEGA.z + sd * ( hw - 4 ) );
 			scene.add( lamp );
 		} );
-		buildSign( THREE, 'the mega ramp', MEGA.x + 150, MEGA.z - 96, MEGA.x, MEGA.z );
 	}
 
 	function buildRamps( THREE ) {
@@ -2121,8 +2122,6 @@
 		ring.position.copy( pad.position );
 		ring.position.y += 0.6;
 		scene.add( ring );
-		buildSign( THREE, 'restack the bales', restackPad.x + 52, restackPad.z,
-			restackPad.x, restackPad.z );
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -2803,27 +2802,16 @@
 		scene.add( g );
 		clickables.push( g );
 
-		if ( lm.signTo ) {
-			var dx = lm.signTo.x - lm.x, dz = lm.signTo.y - lm.y;
-			var dl = Math.hypot( dx, dz ) || 1;
-			var off = Math.max( lm.w, lm.h ) * s / 2 + 30;
-			var sign = buildSign( THREE, lm.name,
-				lm.x + ( dx / dl ) * off, lm.y + ( dz / dl ) * off,
-				lm.signTo.x, lm.signTo.y );
-			sign.userData.lm = lm;
-			clickables.push( sign );
-		}
+		// (the landmark signposts are retired — the buildings speak for
+		// themselves now; only the kids' treehouse nameplates remain)
 	}
 
 	/* ------------------------------------------------------------------ *
 	 *  The family compound
 	 * ------------------------------------------------------------------ */
 	function buildCompound( THREE ) {
-		// the fence + pay barrier are GONE (Thomas, 2026-07-10) — the kids'
-		// pages are gated by the family LOGIN itself, so the world stays
-		// open to drive. Only the sign remains, pointing the way.
-		buildSign( THREE, 'the treehouses · family only',
-			COMPOUND.x1 + 26, COMPOUND.gateZ0 - 14, HUB.x + 40, HUB.y );
+		// the fence, barrier AND sign are all gone — the kids' pages carry
+		// the family login themselves, and their treehouses carry the names
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -3773,6 +3761,108 @@
 		}
 	}
 
+	/* ---- the farm dogs: the yard dog holds the pens, the road dog
+	 *      tags along after the buggy — every farm has a couple ---- */
+	var dogs = [];
+
+	function buildDog( THREE, x, z, coat, chest, role ) {
+		var g = new THREE.Group();
+		var coatM = skinMat( THREE, coat, hideTex( THREE ) );
+		var chestM = mat( THREE, chest );
+		[ [ 1, 1 ], [ 1, -1 ], [ -1, 1 ], [ -1, -1 ] ].forEach( function ( c ) {
+			var leg = new THREE.Mesh( new THREE.BoxGeometry( 1.1, 3.6, 1.1 ), coatM );
+			leg.position.set( c[ 0 ] * 3.2, 1.8, c[ 1 ] * 1.7 );
+			g.add( leg );
+		} );
+		var body = new THREE.Mesh( new THREE.BoxGeometry( 9.5, 4.6, 4 ), coatM );
+		body.position.y = 5.6;
+		g.add( body );
+		var bib = new THREE.Mesh( new THREE.BoxGeometry( 2.2, 3.4, 3.4 ), chestM ); // white chest
+		bib.position.set( 4.4, 5, 0 );
+		g.add( bib );
+		var head = new THREE.Mesh( new THREE.BoxGeometry( 3.6, 3.4, 3.2 ), coatM );
+		head.position.set( 5.6, 8.6, 0 );
+		g.add( head );
+		var snout = new THREE.Mesh( new THREE.BoxGeometry( 2.2, 1.6, 1.8 ), chestM );
+		snout.position.set( 7.7, 7.8, 0 );
+		g.add( snout );
+		[ -1, 1 ].forEach( function ( sd ) {
+			var ear = new THREE.Mesh( new THREE.BoxGeometry( 1.2, 1.7, 0.9 ), coatM );
+			ear.position.set( 5, 10.7, sd * 1.4 );
+			ear.rotation.x = sd * 0.4; // floppy
+			g.add( ear );
+		} );
+		// the tail — pivot at its base, wagged every frame in updateDogs
+		var tail = new THREE.Mesh( new THREE.BoxGeometry( 4.5, 1.1, 1.1 ), chestM );
+		tail.geometry.translate( -2, 0, 0 );
+		tail.position.set( -4.6, 7.4, 0 );
+		tail.rotation.z = 0.5;
+		g.add( tail );
+		scene.add( g );
+		var body2d = Matter.Bodies.circle( x, z, 5, { frictionAir: 0.2, density: 0.001 } );
+		Matter.Composite.add( engine.world, body2d );
+		var dog = { g: g, body: body2d, tail: tail, role: role,
+			homeX: x, homeZ: z, wanderT: 600, ph: Math.random() * 7 };
+		dogs.push( dog );
+		return dog;
+	}
+
+	function buildDogs( THREE ) {
+		// the yard dog — black & white, patrols the stock barn + pens
+		var yard = buildDog( THREE, 2860, 1480, 0x1c1815, 0xd8d3c4, 'yard' );
+		yard.lm = { id: 'dogyard', name: 'the yard dog', x: 2860, y: 1480, href: null,
+			prompt: 'The yard dog — keeping the herd honest' };
+		PROMPTS.push( yard.lm );
+		// the road dog — a brown farm mutt who comes along, obviously
+		var road = buildDog( THREE, SPAWN.x - 34, SPAWN.y + 22, 0x6b4a2e, 0xc9a878, 'road' );
+		road.lm = { id: 'dogroad', name: 'the road dog', x: SPAWN.x - 34, y: SPAWN.y + 22, href: null,
+			prompt: 'The road dog — wherever you’re going, she’s coming' };
+		PROMPTS.push( road.lm );
+	}
+
+	function updateDogs( dms, t ) {
+		var b = buggyBody;
+		var bsp = Math.hypot( b.velocity.x, b.velocity.y );
+		for ( var i = 0; i < dogs.length; i++ ) {
+			var d = dogs[ i ];
+			d.wanderT -= dms;
+			var px = d.body.position.x, pz = d.body.position.y;
+			var toBuggy = Math.hypot( b.position.x - px, b.position.y - pz );
+			if ( d.role === 'road' ) {
+				// loose follow: amble after the buggy when it drifts off,
+				// settle nearby, hop clear when it's about to run her over
+				if ( toBuggy < 26 && bsp > 2 ) {
+					var fa = Math.atan2( pz - b.position.y, px - b.position.x );
+					Matter.Body.setVelocity( d.body, { x: Math.cos( fa ) * 2.4, y: Math.sin( fa ) * 2.4 } );
+				} else if ( toBuggy > 90 ) {
+					var ca2 = Math.atan2( b.position.y - pz, b.position.x - px );
+					var chase = Math.min( 1.7, 0.5 + toBuggy * 0.004 );
+					Matter.Body.setVelocity( d.body, { x: Math.cos( ca2 ) * chase, y: Math.sin( ca2 ) * chase } );
+				} else if ( d.wanderT <= 0 ) {
+					d.wanderT = 900 + Math.random() * 1600;
+					var ra2 = Math.random() * Math.PI * 2;
+					Matter.Body.setVelocity( d.body, { x: Math.cos( ra2 ) * 0.4, y: Math.sin( ra2 ) * 0.4 } );
+				}
+			} else if ( d.wanderT <= 0 ) {
+				// the yard dog patrols home turf
+				d.wanderT = 1200 + Math.random() * 2200;
+				var dir = Math.hypot( px - d.homeX, pz - d.homeZ ) > 160
+					? Math.atan2( d.homeZ - pz, d.homeX - px )
+					: Math.random() * Math.PI * 2;
+				Matter.Body.setVelocity( d.body, { x: Math.cos( dir ) * 0.7, y: Math.sin( dir ) * 0.7 } );
+			}
+			d.g.position.set( px, heightAt( px, pz ), pz );
+			var v = d.body.velocity;
+			var mv = Math.hypot( v.x, v.y );
+			if ( mv > 0.12 ) d.g.rotation.y = -Math.atan2( v.y, v.x );
+			// the wag never stops — it just gets faster when she's moving
+			// or you're close
+			var wag = 6 + ( mv > 0.3 || toBuggy < 60 ? 10 : 0 );
+			d.tail.rotation.y = Math.sin( t * wag + d.ph ) * 0.55;
+			if ( d.lm ) { d.lm.x = px; d.lm.y = pz; }
+		}
+	}
+
 	function buildChickens( THREE ) {
 		for ( var i = 0; i < 12; i++ ) {
 			var an = Math.random() * Math.PI * 2;
@@ -4420,7 +4510,6 @@
 			clod.position.set( cxp, hillsAt( cxp, czp ) + 0.8, czp );
 			scene.add( clod );
 		}
-		buildSign( THREE, 'the bog — send it', BOG.x + 150, BOG.z - 130, BOG.x, BOG.z );
 		PROMPTS.push( { id: 'bog', name: 'the bog', x: BOG.x, y: BOG.z, href: null,
 			prompt: 'The bog — mudbogging country. Keep your momentum up' } );
 	}
@@ -5079,7 +5168,6 @@
 			scene.add( lamp );
 		} );
 
-		buildSign( THREE, 'the section road — timed laps', 2085, 2590, START.x, START.z );
 		PROMPTS.push( { id: 'raceline', name: 'the section road', x: START.x, y: START.z, href: null,
 			prompt: 'The section road — cross the line to race the clock (and your ghosts)' } );
 
