@@ -2,6 +2,16 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * FEEDBACK PASS (1.0.731): the grain elevator RETIRES — the /hcs landmark
+ * is now a MEDIC HUT in the open field west of the old site (white canvas,
+ * red cross on all four walls + the medic flag overhead; the "one of fewer
+ * than fifty" line rides along). Horse herd recoloured NO BROWNS (white/
+ * dapple-grey/black/palomino, manes+tails matched to coat, new pricked
+ * ears); the pen-squatter horse rehomed to the southeast pasture. The pig-
+ * pit mud dressing conforms to the dug-in bog terrain (the flat brown
+ * ellipse discs floated over the bowls — gone). The slough ramp backed off
+ * the water + steepened into the belly-flop board (lip ~30 shy of shore).
+ *
  * GRAPHICS PHASE 2 — COHESION & DEPTH: one shader injection (applyAtmosphere,
  * via onBeforeCompile on every Lambert surface) does two "one world" jobs at
  * once. DUST: near-ground fragments drift toward warm prairie dust + up-faces
@@ -235,9 +245,9 @@
 		{ id: 'cookshack', name: 'the cookshack', x: 2240, y: 462, w: 70, h: 50, scale: 2.8,
 		  href: '/about', build: 'cookshack', signTo: { x: 2205, y: 578 },
 		  prompt: 'The cookshack — my life on the line' },
-		{ id: 'elevator', name: 'the grain elevator', x: 3136, y: 686, w: 70, h: 70, scale: 1.5,
-		  href: '/hcs', build: 'elevator', signTo: { x: 3045, y: 753 },
-		  prompt: 'The grain elevator — one of fewer than fifty' },
+		{ id: 'medic', name: 'the medic hut', x: 2960, y: 810, w: 64, h: 48, scale: 1.5,
+		  href: '/hcs', build: 'medic', signTo: { x: 3045, y: 753 },
+		  prompt: 'The medic hut — one of fewer than fifty' },
 		{ id: 'church', name: 'the church', x: 693, y: 1302, w: 70, h: 90, scale: 2.4,
 		  href: '/heritage', build: 'church', signTo: { x: 875, y: 1383 },
 		  prompt: 'The church on the hill — eight family lines' },
@@ -468,7 +478,7 @@
 	var FLAT = [
 		{ x: 1211, z: 588, ri: 260, ro: 460 },
 		{ x: 2240, z: 462, ri: 170, ro: 340 },
-		{ x: 3136, z: 686, ri: 140, ro: 300 },
+		{ x: 2960, z: 810, ri: 120, ro: 260 }, // the medic hut (the elevator's old pad retired with it)
 		{ x: 693, z: 1302, ri: 230, ro: 400 },
 		{ x: 3539, z: 1435, ri: 158, ro: 315 },
 		{ x: 651, z: 1932, ri: 160, ro: 330 },
@@ -546,10 +556,10 @@
 	// matters: hit them flat-out, hit them boosted.
 	var RAMPS = [
 		{ x: 2180, z: 2010, dir: { x: 30, z: -380 }, w: 70, l: 110, h: 28 },   // entry straight — the pad feeds it
-		{ x: 2835, z: 613, dir: { x: 420, z: 280 }, w: 70, l: 120, h: 34 },    // cookshack → elevator run
-		{ x: 3283, z: 1210, dir: { x: 70, z: 455 }, w: 70, l: 120, h: 36 },    // elevator → barn run (moved off the barn wall)
+		{ x: 2835, z: 613, dir: { x: 420, z: 280 }, w: 70, l: 120, h: 34 },    // cookshack → medic-hut run
+		{ x: 3283, z: 1210, dir: { x: 70, z: 455 }, w: 70, l: 120, h: 36 },    // medic hut → barn run (moved off the barn wall)
 		{ x: 1242, z: 1698, dir: { x: -315, z: -140 }, w: 70, l: 110, h: 30 }, // west run below the compound
-		{ x: 3390, z: 990, dir: { x: 1, z: 0 }, w: 76, l: 100, h: 14 }         // the slough jump — splash-down
+		{ x: 3270, z: 990, dir: { x: 1, z: 0 }, w: 76, l: 90, h: 34 }          // the belly-flop board — backed off the water + steepened, lip ~30 shy of the shore
 	];
 	RAMPS.forEach( function ( r ) {
 		var dl = Math.hypot( r.dir.x, r.dir.z ) || 1;
@@ -2845,7 +2855,7 @@
 		switch ( lm.build ) {
 			case 'farmhouse': g = buildFarmhouse( THREE, lm ); break;
 			case 'cookshack': g = buildCookshack( THREE, lm ); break;
-			case 'elevator': g = buildElevator( THREE, lm ); break;
+			case 'medic': g = buildMedic( THREE, lm ); break;
 			case 'church': g = buildChurch( THREE, lm ); break;
 			case 'treehouse': g = buildTreehouse( THREE, lm ); break;
 			case 'mast': g = buildMast( THREE ); break;
@@ -3039,20 +3049,58 @@
 		return g;
 	}
 
-	function buildElevator( THREE, lm ) {
+	function buildMedic( THREE, lm ) {
+		// the HCS landmark: a field-hospital hut — white canvas over a
+		// timber frame, a red cross on every wall that reads from the road,
+		// and the white medic flag flying overhead (red cross on white =
+		// "help lives here" the world over)
 		var g = new THREE.Group();
-		var tower = new THREE.Mesh( new THREE.BoxGeometry( 46, 120, 46 ), woodMat( THREE, 0x4e4438 ) );
-		tower.position.y = 60;
-		g.add( tower );
-		var cap = gableRoof( THREE, 50, 30, 0x2f281f );
-		cap.position.y = 130;
-		g.add( cap );
-		var annex = new THREE.Mesh( new THREE.BoxGeometry( 34, 44, 30 ), woodMat( THREE, 0x453b30 ) );
-		annex.position.set( 34, 22, 10 );
-		g.add( annex );
-		// (the little silo moved off with the grain bins — buildGrainBins)
-		addWindow( THREE, g, 8, 10, 0, 96, 23.2 );
-		addWindow( THREE, g, 12, 14, 0, 12, 23.2 );
+		var canvas = mat( THREE, 0xe2ddcf );
+		var red = mat( THREE, 0xc0392b );
+		function cross( w, t, d ) {
+			var c = new THREE.Group();
+			c.add( new THREE.Mesh( new THREE.BoxGeometry( t, w, d ), red ) );
+			c.add( new THREE.Mesh( new THREE.BoxGeometry( w, t, d ), red ) );
+			return c;
+		}
+		var hut = new THREE.Mesh( new THREE.BoxGeometry( 50, 26, 38 ), canvas );
+		hut.position.y = 13;
+		g.add( hut );
+		var roof = gableRoof( THREE, 56, 21, 0xcfc9b8 );
+		roof.position.y = 31; // eaves (−0.5·hw) overlap the wall top at 26
+		g.add( roof );
+		// dark doorway on the road (north) face, cross above it
+		var door = new THREE.Mesh( new THREE.BoxGeometry( 10, 16, 1 ), mat( THREE, 0x241f18 ) );
+		door.position.set( -14, 8, -19.2 );
+		g.add( door );
+		// crosses on all four walls — prominent, proud of the canvas
+		var cn = cross( 13, 4.4, 1.4 ); cn.position.set( 6, 15, -19.4 ); g.add( cn );
+		var cs = cross( 13, 4.4, 1.4 ); cs.position.set( 0, 15, 19.4 ); g.add( cs );
+		var cw = cross( 13, 4.4, 1.4 ); cw.rotation.y = Math.PI / 2; cw.position.set( -25.4, 15, 0 ); g.add( cw );
+		var ce = cross( 13, 4.4, 1.4 ); ce.rotation.y = Math.PI / 2; ce.position.set( 25.4, 15, 0 ); g.add( ce );
+		// canvas awning sheltering the door, on two lashed poles
+		var awn = new THREE.Mesh( new THREE.BoxGeometry( 22, 1, 14 ), canvas );
+		awn.position.set( -14, 19, -26 );
+		awn.rotation.x = 0.18;
+		g.add( awn );
+		[ -23, -5 ].forEach( function ( px ) {
+			var apole = new THREE.Mesh( new THREE.CylinderGeometry( 0.7, 0.9, 17, 5 ), woodMat( THREE, 0x6b5a44 ) );
+			apole.position.set( px, 8.5, -31 );
+			g.add( apole );
+		} );
+		// the medic flag: white field, red cross standing proud of BOTH
+		// faces so it reads from every approach
+		var pole = new THREE.Mesh( new THREE.CylinderGeometry( 0.8, 1.2, 64, 6 ), mat( THREE, 0x6b6257 ) );
+		pole.position.set( 29, 32, 13 );
+		g.add( pole );
+		var flagMat = mat( THREE, 0xf2ede0 );
+		flagMat.side = THREE.DoubleSide;
+		var flag = new THREE.Mesh( new THREE.PlaneGeometry( 19, 12 ), flagMat );
+		flag.position.set( 38.5, 57, 13 );
+		g.add( flag );
+		var fc = cross( 7.5, 2.6, 0.7 );
+		fc.position.set( 38.5, 57, 13 );
+		g.add( fc );
 		return g;
 	}
 
@@ -3422,7 +3470,9 @@
 			[ 3900, 1900 ], [ 2750, 2050 ], [ 3300, 620 ] ];
 		var sheep = [ [ 875, 1050 ], [ 2538, 2188 ], [ 1838, 613 ], [ 3938, 735 ], [ 1225, 1750 ],
 			[ 1000, 2100 ], [ 700, 1500 ], [ 2950, 2450 ], [ 3600, 2200 ], [ 1850, 900 ], [ 2450, 300 ] ];
-		var horses = [ [ 1950, 2080 ], [ 3350, 1750 ], [ 2900, 1250 ], [ 1350, 1900 ], [ 4150, 1650 ] ];
+		// (first horse used to spawn IN the pig pen and never left — it
+		// lives in the southeast pasture now)
+		var horses = [ [ 2560, 1660 ], [ 3350, 1750 ], [ 2900, 1250 ], [ 1350, 1900 ], [ 4150, 1650 ] ];
 		cows.forEach( function ( p ) { addAnimal( THREE, 'cow', p[ 0 ], p[ 1 ] ); } );
 		sheep.forEach( function ( p ) { addAnimal( THREE, 'sheep', p[ 0 ], p[ 1 ] ); } );
 		horses.forEach( function ( p ) { addAnimal( THREE, 'horse', p[ 0 ], p[ 1 ] ); } );
@@ -3442,10 +3492,14 @@
 		// a HERD, not clones: each animal draws a coat from its breed's
 		// palette, wears a hide/wool texture, and comes out its own size
 		var cowCoats = [ 0x6f4a33, 0x3a2a1e, 0x8a6a4a, 0xb8a890 ];
-		var horseCoats = [ 0x5a3d28, 0x261b12 ];
+		// NO brown horses (Thomas's call) — white, dapple grey, black,
+		// palomino, each with its true mane/tail (palomino flies a cream one)
+		var horseCoats = [ 0xe6e0d2, 0x9aa0a8, 0x23211f, 0xc9a35e ];
+		var horseManes = [ 0xb9b2a2, 0x50555c, 0x0f0d0b, 0xf0e6cc ];
+		var hIdx = ( Math.random() * 4 ) | 0;
 		var sheepCoats = [ 0xd8d3c4, 0xcac2ae ];
 		var bodyC = bull ? 0x14100d
-			: ( horse ? horseCoats[ ( Math.random() * 2 ) | 0 ]
+			: ( horse ? horseCoats[ hIdx ]
 			: ( cow ? cowCoats[ ( Math.random() * 4 ) | 0 ]
 			: sheepCoats[ ( Math.random() * 2 ) | 0 ] ) );
 		var headC = bull ? 0x0d0a08
@@ -3524,11 +3578,17 @@
 			neck.position.set( bw / 2 - 0.5, legH + bh + 2, 0 );
 			neck.rotation.z = -0.35;
 			g.add( neck );
-			var mane = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 9, 1.2 ), mat( THREE, 0x2a1a10 ) );
+			var mane = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 9, 1.2 ), mat( THREE, horseManes[ hIdx ] ) );
 			mane.position.set( bw / 2 - 2.4, legH + bh + 3.4, 0 );
 			mane.rotation.z = -0.35;
 			g.add( mane );
-			var tail = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 8, 1.6 ), mat( THREE, 0x2a1a10 ) );
+			// pricked ears — the silhouette detail the horses were missing
+			[ -1, 1 ].forEach( function ( sd ) {
+				var ear = new THREE.Mesh( new THREE.BoxGeometry( 1, 2.4, 1 ), mat( THREE, headC ) );
+				ear.position.set( bw / 2 + 3.6, legH + bh + 9, sd * 1.6 );
+				g.add( ear );
+			} );
+			var tail = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 8, 1.6 ), mat( THREE, horseManes[ hIdx ] ) );
 			tail.position.set( -bw / 2 - 0.5, legH + bh - 2, 0 );
 			tail.rotation.z = 0.4;
 			g.add( tail );
@@ -4588,42 +4648,31 @@
 		}
 	}
 
-	// layered wet-brown ellipses + tire ruts + glints — shared by the pig
-	// pit and the bog
+	// wet dressing for the pig pit. The dark mud ITSELF is painted into the
+	// dug-in bog terrain now — the old flat brown ellipses floated over the
+	// bowl curves and read wrong. Every glint and rut samples the ground
+	// under its own feet, same treatment as buildBog's goo.
 	function buildMudPatch( THREE, cx, cz, rx, rz, rot ) {
-		var gy = hillsAt( cx, cz );
-		[ { s: 1, c: 0x2c1f12, y: 0.35 },
-		  { s: 0.74, c: 0x382817, y: 0.5 },
-		  { s: 0.45, c: 0x241a0e, y: 0.65 } ].forEach( function ( ring ) {
-			var disc = new THREE.Mesh( new THREE.CircleGeometry( 1, 26 ), mat( THREE, ring.c ) );
-			disc.rotation.x = -Math.PI / 2;
-			disc.rotation.z = rot;
-			disc.scale.set( rx * ring.s, rz * ring.s, 1 );
-			disc.position.set( cx, gy + ring.y, cz );
-			scene.add( disc );
-		} );
-		// wet sheen
-		var glintMat = new THREE.MeshBasicMaterial( { color: 0x8fa8b8, transparent: true, opacity: 0.12 } );
-		for ( var gi = 0; gi < 3; gi++ ) {
-			var glint = new THREE.Mesh( new THREE.CircleGeometry( 8 + Math.random() * 10, 10 ), glintMat );
+		var glintMat = new THREE.MeshBasicMaterial( { color: 0x5a6f80, transparent: true, opacity: 0.13 } );
+		for ( var gi = 0; gi < 4; gi++ ) {
+			var gx = cx + ( Math.random() - 0.5 ) * rx;
+			var gz = cz + ( Math.random() - 0.5 ) * rz;
+			var glint = new THREE.Mesh( new THREE.CircleGeometry( 7 + Math.random() * 9, 10 ), glintMat );
 			glint.rotation.x = -Math.PI / 2;
-			glint.scale.x = 2;
-			glint.position.set(
-				cx + ( Math.random() - 0.5 ) * rx,
-				gy + 0.8,
-				cz + ( Math.random() - 0.5 ) * rz );
+			glint.rotation.z = rot;
+			glint.scale.x = 1.6;
+			glint.position.set( gx, hillsAt( gx, gz ) + 0.6, gz );
 			scene.add( glint );
 		}
-		// tire ruts carved through it
+		// tire ruts carved through it, each on its own patch of ground
 		var rutMat = mat( THREE, 0x1c130b );
 		for ( var ri = 0; ri < 4; ri++ ) {
-			var rut = new THREE.Mesh( new THREE.PlaneGeometry( 4, rx * 1.1 ), rutMat );
+			var px = cx + ( Math.random() - 0.5 ) * rx * 0.6;
+			var pz = cz + ( Math.random() - 0.5 ) * rz * 0.8;
+			var rut = new THREE.Mesh( new THREE.PlaneGeometry( 4, 26 ), rutMat );
 			rut.rotation.x = -Math.PI / 2;
 			rut.rotation.z = rot + Math.PI / 2 + ( Math.random() - 0.5 ) * 0.5;
-			rut.position.set(
-				cx + ( Math.random() - 0.5 ) * rx * 0.5,
-				gy + 0.78,
-				cz + ( Math.random() - 0.5 ) * rz * 0.8 );
+			rut.position.set( px, hillsAt( px, pz ) + 0.45, pz );
 			scene.add( rut );
 		}
 	}
