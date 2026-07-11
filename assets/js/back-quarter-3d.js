@@ -2,6 +2,15 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * WHEELSPIN PASS (1.0.734): throttle on mud/water/creek SPINS OUT — a
+ * `slip` factor (worst bogged near-still at full throttle, fading as
+ * ground speed comes up) revs the engine UP (it used to rev DOWN with
+ * the speed), whirls the wheel meshes far past ground speed, sprays
+ * mud/water CONES from the rear tires even at a standstill, and churns
+ * the tire-noise loop. Traction down to match: less drive (water 0.4×,
+ * mud 0.55×), less steering bite (0.036 vs 0.05), more lateral slide
+ * (grip 0.92–0.94 vs 0.84).
+ *
  * ANIMAL LIFE PASS (1.0.733): horses downsized 1.55–1.9 → 1.18–1.35
  * (that range was tuned for the old plank build — with real necks and
  * heads they'd grown into giraffes; physics radius 21 → 17). And the
@@ -647,6 +656,7 @@
 	var boostT = 0, padCooldown = [];
 	var megaAir = false, megaCd = 0, wheelieT = 0; // the MEGA ramp state
 	var inWater = false, inMud = false, inCreek = false;
+	var slip = 0; // wheelspin 0..1 — throttle on a soft surface, eased
 	var chickens = [], pigs = [];
 	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
 	var ghosts = [], ghostStore = null, prevSX = 0, lastHudTenth = -1;
@@ -1380,13 +1390,17 @@
 		// farm rig, not a go-kart (Thomas: "not so responsive")
 		steerVal += ( steerInput - steerVal ) * 0.11;
 		if ( ! steerInput && Math.abs( steerVal ) < 0.02 ) steerVal = 0;
-		Matter.Body.setAngularVelocity( b, steerVal * ( airborne ? 0.026 : 0.05 ) );
+		// spinning tires don't steer either — less bite in the wet stuff
+		Matter.Body.setAngularVelocity( b, steerVal *
+			( airborne ? 0.026 : ( inMud || inWater ? 0.036 : 0.05 ) ) );
 
 		var power = boostT > 0 ? 0.0078 : 0.0042;
 		if ( airborne ) power *= 0.25;
-		if ( inWater ) power *= 0.5;
-		if ( inMud ) power *= 0.75;
-		if ( inCreek ) power *= 0.85;
+		// soft ground: the tires SPIN instead of biting — less forward
+		// drive (the lost power goes to the wheelspin show below)
+		if ( inWater ) power *= 0.4;
+		if ( inMud ) power *= 0.55;
+		if ( inCreek ) power *= 0.8;
 		if ( throttleInput ) {
 			Matter.Body.applyForce( b, b.position,
 				{ x: heading.x * power * throttleInput * b.mass, y: heading.y * power * throttleInput * b.mass } );
@@ -1396,7 +1410,9 @@
 		var fwd = v.x * heading.x + v.y * heading.y;
 		var lat = { x: -heading.y, y: heading.x };
 		var latSpeed = v.x * lat.x + v.y * lat.y;
-		var grip = airborne ? 0.995 : 0.84; // looser — she slides now
+		// looser — she slides now; on soft ground the tires barely bite,
+		// so the sideways slop mostly survives (mud-bog traction)
+		var grip = airborne ? 0.995 : ( inWater ? 0.94 : ( inMud ? 0.92 : 0.84 ) );
 		var nvx = heading.x * fwd + lat.x * latSpeed * grip;
 		var nvy = heading.y * fwd + lat.y * latSpeed * grip;
 
@@ -1413,6 +1429,18 @@
 		if ( inMud ) cap *= 0.8;
 		var sp = Math.hypot( b.velocity.x, b.velocity.y );
 		if ( sp > cap ) Matter.Body.setVelocity( b, { x: b.velocity.x * cap / sp, y: b.velocity.y * cap / sp } );
+
+		// WHEELSPIN: throttle on a soft surface spins the tires out — worst
+		// when she's bogged near-still at full throttle, fading as the
+		// ground speed actually comes up. Drives the engine rev, the wheel
+		// spin and the roost cones.
+		var slipT = 0;
+		if ( ! airborne && throttleInput ) {
+			var soft = inMud ? 1 : ( inWater ? 0.9 : ( inCreek ? 0.5 : 0 ) );
+			slipT = soft * Math.abs( throttleInput ) *
+				( 1 - Math.min( 1, sp / ( cap * 1.15 ) ) * 0.65 );
+		}
+		slip += ( slipT - slip ) * 0.12;
 
 		if ( boostT > 0 ) boostT -= 16.666;
 		if ( jumpCooldown > 0 ) jumpCooldown -= 16.666;
@@ -1591,7 +1619,8 @@
 		chassisGroup.rotation.z += ( tPitch - chassisGroup.rotation.z ) * 0.18;
 		chassisDip += ( 0 - chassisDip ) * 0.2;             // suspension rebound
 		chassisGroup.position.y = 10 + chassisDip;
-		for ( var i = 0; i < wheels.length; i++ ) wheels[ i ].rotation.z -= sp * 0.09;
+		// wheelspin: spinning-out tires whirl far faster than the ground speed
+		for ( var i = 0; i < wheels.length; i++ ) wheels[ i ].rotation.z -= ( sp + slip * 12 ) * 0.09;
 		// the fronts steer with the input (right = clockwise from above)
 		for ( var fs = 0; fs < frontSteer.length; fs++ ) frontSteer[ fs ].rotation.y = -steerVal * 0.42;
 		// (the old circular blob shadow is gone — the moonlight's real
@@ -1646,32 +1675,42 @@
 
 		// juice
 		var spinRate = Math.abs( b.angularVelocity );
-		if ( inWater && ( sp > 1.4 || spinRate > 0.03 ) ) {
+		if ( inWater && ( sp > 1.4 || spinRate > 0.03 || slip > 0.25 ) ) {
 			// churn: bow wake at speed, and spinning out whips a spray ring
-			spawnSplash( wheelWorld( 10, 12 ), sp + spinRate * 70 );
-			spawnSplash( wheelWorld( 10, -12 ), sp + spinRate * 70 );
-			if ( spinRate > 0.028 || Math.random() < Math.min( 0.9, sp * 0.09 ) ) {
-				spawnSplash( wheelWorld( -12, 12 ), sp + spinRate * 55 );
-				spawnSplash( wheelWorld( -12, -12 ), sp + spinRate * 55 );
+			spawnSplash( wheelWorld( 10, 12 ), sp + spinRate * 70 + slip * 5 );
+			spawnSplash( wheelWorld( 10, -12 ), sp + spinRate * 70 + slip * 5 );
+			if ( spinRate > 0.028 || slip > 0.25 || Math.random() < Math.min( 0.9, sp * 0.09 ) ) {
+				spawnSplash( wheelWorld( -12, 12 ), sp + spinRate * 55 + slip * 5 );
+				spawnSplash( wheelWorld( -12, -12 ), sp + spinRate * 55 + slip * 5 );
 			}
 			// ripping flat-out throws a proper ROOSTERTAIL behind
 			if ( sp > 5 ) {
 				spawnSplash( wheelWorld( -18, 4 ), sp * 1.3 );
 				spawnSplash( wheelWorld( -18, -4 ), sp * 1.3 );
 			}
-		} else if ( inMud && sp > 1.2 ) {
+			// dug-in wheelspin: spray CONES fan out behind the rear tires
+			if ( slip > 0.45 ) {
+				spawnSplash( wheelWorld( -16 - Math.random() * 6, 7 + Math.random() * 7 ), 2 + slip * 6 );
+				spawnSplash( wheelWorld( -16 - Math.random() * 6, -7 - Math.random() * 7 ), 2 + slip * 6 );
+			}
+		} else if ( inMud && ( sp > 1.2 || slip > 0.25 ) ) {
 			// ROOST: all four corners sling mud, harder with speed
-			spawnMud( wheelWorld( -14, 10 ), sp );
-			spawnMud( wheelWorld( -14, -10 ), sp );
-			if ( Math.random() < Math.min( 0.9, 0.25 + sp * 0.08 ) ) {
-				spawnMud( wheelWorld( 10, 12 ), sp * 0.8 );
-				spawnMud( wheelWorld( 10, -12 ), sp * 0.8 );
+			spawnMud( wheelWorld( -14, 10 ), sp + slip * 5 );
+			spawnMud( wheelWorld( -14, -10 ), sp + slip * 5 );
+			if ( Math.random() < Math.min( 0.9, 0.25 + sp * 0.08 + slip * 0.5 ) ) {
+				spawnMud( wheelWorld( 10, 12 ), sp * 0.8 + slip * 4 );
+				spawnMud( wheelWorld( 10, -12 ), sp * 0.8 + slip * 4 );
 			}
 			if ( sp > 5 ) {
 				spawnMud( wheelWorld( -18, 4 ), sp * 1.3 );
 				spawnMud( wheelWorld( -18, -4 ), sp * 1.3 );
 			}
-		} else if ( inCreek && sp > 1.5 ) {
+			// dug-in wheelspin: mud CONES fan out behind the rear tires
+			if ( slip > 0.45 ) {
+				spawnMud( wheelWorld( -16 - Math.random() * 6, 7 + Math.random() * 7 ), 2 + slip * 6 );
+				spawnMud( wheelWorld( -16 - Math.random() * 6, -7 - Math.random() * 7 ), 2 + slip * 6 );
+			}
+		} else if ( inCreek && ( sp > 1.5 || slip > 0.3 ) ) {
 			spawnSplash( wheelWorld( 8, ( Math.random() < 0.5 ? 11 : -11 ) ), sp * 0.7 );
 		} else if ( ! airborne && sp > 1.6 && Math.random() < Math.min( 0.55, 0.1 + sp * 0.04 + Math.abs( steerInput ) * 0.2 ) ) {
 			spawnDust( wheelWorld( -16, steerInput >= 0 ? 13 : -13 ), sp );
@@ -6379,7 +6418,10 @@
 
 	function updateAudio( dms, sp ) {
 		if ( ! audio.on || ! audio.ctx || ! audio.engGain ) return;
-		var rev = Math.min( 1, sp / 9 ) + Math.abs( throttleInput ) * 0.25 + ( boostT > 0 ? 0.3 : 0 );
+		// wheelspin REVS the engine — bogged in mud at full throttle she
+		// screams while barely moving (it used to rev DOWN with the speed)
+		var rev = Math.min( 1, Math.min( 1, sp / 9 ) + slip * 0.85 )
+			+ Math.abs( throttleInput ) * 0.25 + ( boostT > 0 ? 0.3 : 0 );
 		audio.engOsc1.frequency.value = 52 + rev * 80;
 		audio.engOsc2.frequency.value = ( 52 + rev * 80 ) * 2.02;
 		// with the diesel sample running, the synth ducks to a bass layer.
@@ -6410,8 +6452,9 @@
 
 		// tire roll — louder/brighter with speed, muffled in water, gritty in mud
 		if ( audio.tireGain ) {
-			var roll = airborne ? 0 : Math.min( 1, sp / 9 ) * 0.055;
-			if ( inWater ) roll *= 0.35;
+			// spinning tires churn loud even when the truck barely moves
+			var roll = airborne ? 0 : Math.min( 1, sp / 9 + slip * 0.8 ) * 0.055;
+			if ( inWater ) roll *= 0.35 + slip * 0.5;
 			audio.tireGain.gain.value += ( roll - audio.tireGain.gain.value ) * 0.2;
 			var tf = inMud ? 280 : ( inWater ? 480 : ( inCreek ? 540 : 640 + sp * 95 ) );
 			audio.tireBP.frequency.value += ( tf - audio.tireBP.frequency.value ) * 0.2;
