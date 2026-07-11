@@ -250,9 +250,9 @@
 		{ id: 'th3', name: 'Faith', x: 1873, y: 1505, w: 26, h: 26, scale: 2.2,
 		  href: '/faith', build: 'treehouse', kidColor: 0x9a7fd8, kidCss: '#cbb2ff',
 		  prompt: 'Faith’s treehouse — the family key opens it' },
-		{ id: 'radio', name: 'the radio mast', x: 4095, y: 1260, w: 30, h: 30, scale: 1.45,
+		{ id: 'radio', name: 'the Bare Your Rare tower', x: 4095, y: 1260, w: 30, h: 30, scale: 1.45,
 		  href: 'https://bareyourrare.org', external: true, build: 'mast', signTo: { x: 3955, y: 1295 },
-		  prompt: 'The radio mast — broadcasting beyond the fence' },
+		  prompt: 'The Bare Your Rare tower — rare disorders, worn proud · Enter visits bareyourrare.org' },
 		{ id: 'barn', name: 'the arcade barn', x: 3539, y: 1435, w: 120, h: 80, scale: 1.6,
 		  href: null, build: 'barn', signTo: { x: 3325, y: 1505 },
 		  prompt: 'The arcade barn — the games are moving in here soon' },
@@ -364,10 +364,11 @@
 		// rolling ground under the doubled northwest forest
 		{ x: 900, z: 350, a: 22, r: 220 },
 		{ x: 350, z: 900, a: 20, r: 200 },
-		// the slough basin — one deep bowl under the big pond
-		{ x: 3730, z: 1000, a: -26, r: 420 },
-		{ x: 3880, z: 1090, a: -14, r: 240 },
-		{ x: 3600, z: 900, a: -12, r: 240 },
+		// the slough basin — one deep bowl under the big pond (enlarged
+		// with the pond itself)
+		{ x: 3730, z: 1000, a: -30, r: 560 },
+		{ x: 3955, z: 1135, a: -14, r: 320 },
+		{ x: 3535, z: 850, a: -12, r: 320 },
 		// inverted dimples — two swales ON the section road (line-choice
 		// hazards: they scrub speed if you take the lazy line)
 		{ x: 4050, z: 2690, a: -13, r: 130 },
@@ -377,11 +378,13 @@
 	// (see control()/render()). The blob outline is pondR(θ).
 	var POND = { x: 3730, z: 1000, depth: 20, waterY: 0 };
 	function pondR( th ) {
-		return 210 + 55 * Math.sin( 2 * th + 1.3 ) + 35 * Math.sin( 3 * th + 0.6 ) + 20 * Math.sin( 5 * th + 2.1 );
+		// 1.5× linear (~2.25× the water) — as big as the neighbourhood
+		// allows before the mast, barn and mill start flooding
+		return 315 + 82 * Math.sin( 2 * th + 1.3 ) + 52 * Math.sin( 3 * th + 0.6 ) + 30 * Math.sin( 5 * th + 2.1 );
 	}
 	function inPond( x, z ) {
 		var dx = x - POND.x, dz = z - POND.z;
-		if ( dx * dx + dz * dz > 108900 ) return false; // beyond the widest lobe
+		if ( dx * dx + dz * dz > 240100 ) return false; // beyond the widest lobe
 		return Math.hypot( dx, dz ) < pondR( Math.atan2( dz, dx ) ) - 3;
 	}
 	// the barnyard: chicken coop filling the empty northeast corner, pig
@@ -393,7 +396,7 @@
 	var MUD = { x: 1885, z: 2185, r: 75 };
 	// THE BOG — 3× long: a wallow RUN arcing across the whole south field
 	// (extended west; the east tip stays clear of the gate road)
-	var BOG = { x: 1689, z: 2135, rx: 510, rz: 95, rot: 0.5 };
+	var BOG = { x: 1689, z: 2135, rx: 510, rz: 180, rot: 0.5 };
 	// the bog is DUG IN: a chain of soft bowls along its axis, baked into
 	// hillsAt so the ground mesh, the physics and the mud all agree —
 	// you drop in, wallow through the goo, and climb out the far side
@@ -409,7 +412,12 @@
 		// side lobes — the run widens into pockets you can dip through
 		{ x: 1443, z: 2064, a: -5.5, r: 46 },
 		{ x: 1759, z: 2111, a: -5, r: 44 },
-		{ x: 1882, z: 2303, a: -6, r: 48 }
+		{ x: 1882, z: 2303, a: -6, r: 48 },
+		// the widened marsh (3×) — outer pockets both sides of the run
+		{ x: 1350, z: 2090, a: -5, r: 48 },
+		{ x: 1560, z: 2280, a: -6, r: 52 },
+		{ x: 1690, z: 1975, a: -5.5, r: 48 },
+		{ x: 1990, z: 2170, a: -5.5, r: 46 }
 	];
 	function inMudArea( x, z, pad ) {
 		pad = pad || 0;
@@ -565,26 +573,21 @@
 		// the MEGA pad — gold, bigger boost, feeds the mega ramp
 		{ x: MEGA.padX, z: -170, rot: Math.PI / 2, mega: true }
 	];
+	// 21 COINS — one per million bitcoin that will ever exist ;) — real ₿
+	// faces now. Curated from the old 30; store key bumped to v2 so old
+	// saves start the new hunt fresh. APPEND ONLY from here (saved indices
+	// must hold).
 	var TOKENS = [
 		{ x: 350, z: 350 }, { x: 4200, z: 315 }, { x: 315, z: 2188 },
-		{ x: 4165, z: 2310 }, { x: 2240, z: 210 }, { x: 1120, z: 210 },
-		{ x: 3325, z: 263 }, { x: 4288, z: 1225 }, { x: 175, z: 1225 },
-		{ x: 1225, z: 2363 }, { x: 2888, z: 2363 }, { x: 788, z: 1663 },
-		{ x: 1575, z: 315 }, { x: 2625, z: 1225 }, { x: 3763, z: 660 },
-		{ x: 613, z: 963 }, { x: 2695, z: 1724, air: true }, { x: 2205, z: 788, air: true },
-		{ x: 525, z: 2065 }, { x: 4078, z: 1138 },
-		// sky tokens on the ramp arcs — APPEND ONLY (saved indices must hold)
+		{ x: 4165, z: 2310 }, { x: 2240, z: 210 }, { x: 3325, z: 263 },
+		{ x: 4288, z: 1225 }, { x: 175, z: 1225 }, { x: 2888, z: 2363 },
+		{ x: 788, z: 1663 }, { x: 2625, z: 1225 }, { x: 613, z: 963 },
+		{ x: 2695, z: 1724, air: true }, { x: 2205, z: 788, air: true },
 		{ x: 2198, z: 1780, air: true, y: 70 },
-		{ x: 3319, z: 1448, air: true, y: 75 }, // rides the relocated ramp's arc
-		{ x: 3565, z: 990, air: true, y: 26 },
-		// section-road tokens (append only): four on the racing line, two
-		// in the air over the big south sender and the NE kicker
+		{ x: 3319, z: 1448, air: true, y: 75 },
 		{ x: 2000, z: 2690 }, { x: 4650, z: 1500 }, { x: 2240, z: -170 },
-		{ x: -170, z: 1500 },
 		{ x: 3760, z: 2690, air: true, y: 40 },
-		{ x: 4650, z: 640, air: true, y: 40 },
-		// #30: in the air over the second south table (append only)
-		{ x: 3200, z: 2690, air: true, y: 42 }
+		{ x: 4650, z: 640, air: true, y: 40 }
 	];
 
 	var stage, hudEl, chipEl;
@@ -661,7 +664,7 @@
 			y = y * ( 1 - w ) + f.h * w;
 		}
 		// the bog's dug-in bowls (bbox early-out keeps this free elsewhere)
-		if ( x > 1220 && x < 2160 && z > 1840 && z < 2440 ) {
+		if ( x > 1220 && x < 2160 && z > 1770 && z < 2470 ) {
 			for ( var bi = 0; bi < BOG_BOWLS.length; bi++ ) y += gauss( x, z, BOG_BOWLS[ bi ] );
 		}
 		return y;
@@ -1078,10 +1081,10 @@
 				var bogW = inMudArea( vx, vz, 0 ) ? 1 : 0.45;
 				var bogDeep = 0;
 				for ( var bw2 = 0; bw2 < BOG_BOWLS.length; bw2++ ) bogDeep -= gauss( vx, vz, BOG_BOWLS[ bw2 ] );
-				var deep = Math.max( 0, Math.min( 1, bogDeep / 6 ) );
-				var mr = ( 0.142 - deep * 0.07 ) * lift;
-				var mg = ( 0.098 - deep * 0.048 ) * lift;
-				var mb = ( 0.06 - deep * 0.028 ) * lift;
+				var deep = Math.max( 0, Math.min( 1, bogDeep / 5.5 ) );
+				var mr = ( 0.148 - deep * 0.088 ) * lift;
+				var mg = ( 0.102 - deep * 0.06 ) * lift;
+				var mb = ( 0.063 - deep * 0.036 ) * lift;
 				cr = cr + ( mr - cr ) * bogW;
 				cg = cg + ( mg - cg ) * bogW;
 				cb = cb + ( mb - cb ) * bogW;
@@ -1473,7 +1476,7 @@
 		}
 		if ( airborne ) {
 			worldY += vAlt * dt;
-			vAlt -= ( boostT > 0 ? 437 : 476 ) * dt; // heavier still (+15% again)
+			vAlt -= ( boostT > 0 ? 524 : 571 ) * dt; // +20% again — snappier arcs
 			airTime += dt;
 			// L/R Shift pitch the buggy for flips
 			var pitchVel = ( keys.tiltF ? -7.5 : 0 ) + ( keys.tiltB ? 7.5 : 0 );
@@ -1863,7 +1866,7 @@
 		geo.setAttribute( 'uv', new THREE.BufferAttribute( uv, 2 ) );
 		geo.computeVertexNormals();
 		var face = new THREE.Mesh( geo, applyAtmosphere( new THREE.MeshLambertMaterial( {
-			color: 0x5c4830, map: dirtTex( THREE ), side: THREE.DoubleSide } ), true ) );
+			color: 0x9a7c50, map: plankTex( THREE ), side: THREE.DoubleSide } ), true ) );
 		scene.add( face );
 		// lit lip bulbs so the top edge reads at night
 		[ -1, 1 ].forEach( function ( sd ) {
@@ -1877,8 +1880,9 @@
 	function buildRamps( THREE ) {
 		// world-space wedges that follow the terrain, matching rampAt()'s
 		// f² face exactly so the buggy rides the surface it sees
+		// the farm ramps are BUILT things now — boards, not dirt heaps
 		var dirt = applyAtmosphere( new THREE.MeshLambertMaterial( {
-			color: 0x5c4830, map: dirtTex( THREE ), side: THREE.DoubleSide } ), true );
+			color: 0xa88a5c, map: plankTex( THREE ), side: THREE.DoubleSide } ), true );
 		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb45e, 1.15 ) } );
 		RAMPS.forEach( function ( r ) {
 			var hw = r.w / 2;
@@ -1962,10 +1966,12 @@
 
 	function buildTokens( THREE ) {
 		var found = [];
-		try { found = JSON.parse( window.localStorage.getItem( 'tcBqTok_v1' ) || '[]' ); } catch ( err ) {}
+		try { found = JSON.parse( window.localStorage.getItem( 'tcBqTok_v2' ) || '[]' ); } catch ( err ) {}
 		var geo = new THREE.CylinderGeometry( 6, 6, 1.8, 16 );
 		geo.rotateZ( Math.PI / 2 );
-		var gold = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd76a, 1.4 ) } );
+		var goldSide = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd76a, 1.4 ) } );
+		var coinFace = new THREE.MeshBasicMaterial( { map: coinTex( THREE ), color: glow( THREE, 0xffffff, 1.2 ) } );
+		var gold = [ goldSide, coinFace, coinFace ];
 		tokenCount = TOKENS.length;
 		TOKENS.forEach( function ( tk, i ) {
 			var got = found.indexOf( i ) !== -1;
@@ -2001,7 +2007,7 @@
 		if ( changed ) {
 			try {
 				var got = tokens.filter( function ( k ) { return k.got; } ).map( function ( k ) { return k.idx; } );
-				window.localStorage.setItem( 'tcBqTok_v1', JSON.stringify( got ) );
+				window.localStorage.setItem( 'tcBqTok_v2', JSON.stringify( got ) );
 			} catch ( err ) {}
 			updateHud();
 			if ( tokenFound === tokenCount ) {
@@ -2099,7 +2105,7 @@
 		// a completed token hunt resets here too — the pad is the farm's
 		// "set it all up again" spot
 		if ( tokenCount > 0 && tokenFound === tokenCount ) {
-			try { window.localStorage.removeItem( 'tcBqTok_v1' ); } catch ( err ) {}
+			try { window.localStorage.removeItem( 'tcBqTok_v2' ); } catch ( err ) {}
 			tokens.forEach( function ( tk ) { tk.got = false; tk.mesh.visible = true; } );
 			tokenFound = 0;
 			updateHud();
@@ -2458,11 +2464,11 @@
 	function groundTex( THREE ) {
 		return cacheTex( THREE, 'ground', function ( x ) {
 			x.fillStyle = '#ece6da'; x.fillRect( 0, 0, 128, 128 );
-			for ( var i = 0; i < 300; i++ ) {
+			for ( var i = 0; i < 400; i++ ) {
 				var gx = Math.random() * 128, gy = Math.random() * 128;
-				var len = 4 + Math.random() * 6;
+				var len = 4 + Math.random() * 7;
 				var lean = ( Math.random() - 0.5 ) * 0.9;
-				x.strokeStyle = Math.random() < 0.5 ? 'rgba(96,120,58,0.30)' : 'rgba(238,246,212,0.30)';
+				x.strokeStyle = Math.random() < 0.5 ? 'rgba(88,114,50,0.36)' : 'rgba(240,248,210,0.34)';
 				x.lineWidth = 1;
 				x.beginPath();
 				x.moveTo( gx, gy );
@@ -2519,10 +2525,13 @@
 	function leafTex( THREE ) {
 		return cacheTex( THREE, 'leaf', function ( x ) {
 			x.fillStyle = '#e4e8d8'; x.fillRect( 0, 0, 128, 128 );
-			for ( var i = 0; i < 260; i++ ) {
-				x.fillStyle = Math.random() < 0.5 ? 'rgba(60,90,50,0.26)' : 'rgba(242,248,222,0.30)';
+			// dense leafy dabs, three tones — deeper shadow, brighter tips
+			for ( var i = 0; i < 380; i++ ) {
+				var pick = Math.random();
+				x.fillStyle = pick < 0.4 ? 'rgba(48,78,42,0.34)'
+					: ( pick < 0.7 ? 'rgba(90,120,64,0.26)' : 'rgba(246,252,226,0.36)' );
 				x.beginPath();
-				x.arc( Math.random() * 128, Math.random() * 128, 2 + Math.random() * 5, 0, 7 );
+				x.arc( Math.random() * 128, Math.random() * 128, 1.6 + Math.random() * 6, 0, 7 );
 				x.fill();
 			}
 		}, [ 2, 2 ] );
@@ -2558,6 +2567,44 @@
 				x.fill();
 			}
 		}, [ 2, 2 ] );
+	}
+	// built-ramp BOARDS — parallel planks with gaps + nail dots
+	function plankTex( THREE ) {
+		return cacheTex( THREE, 'plank', function ( x ) {
+			x.fillStyle = '#d8c4a0'; x.fillRect( 0, 0, 128, 128 );
+			for ( var p = 0; p < 8; p++ ) {
+				var py = p * 16;
+				x.fillStyle = 'rgba(120,90,54,' + ( 0.22 + Math.random() * 0.14 ).toFixed( 2 ) + ')';
+				x.fillRect( 0, py + 1, 128, 14 );
+				x.fillStyle = 'rgba(60,44,26,0.7)';
+				x.fillRect( 0, py, 128, 1.6 );
+				x.fillStyle = 'rgba(50,38,24,0.6)';
+				x.beginPath(); x.arc( 14 + Math.random() * 8, py + 8, 1.2, 0, 7 ); x.fill();
+				x.beginPath(); x.arc( 106 + Math.random() * 8, py + 8, 1.2, 0, 7 ); x.fill();
+			}
+			strokes( x, 30, [ 'rgba(150,116,74,0.25)' ], 30, 90, false );
+		}, [ 2, 2 ] );
+	}
+	// the coin face — ₿, the B with two strokes through it, on stamped gold
+	function coinTex( THREE ) {
+		return cacheTex( THREE, 'coin', function ( x ) {
+			x.fillStyle = '#e8b93a'; x.fillRect( 0, 0, 128, 128 );
+			x.strokeStyle = '#a87f1e';
+			x.lineWidth = 6;
+			x.beginPath(); x.arc( 64, 64, 54, 0, 7 ); x.stroke();
+			x.lineWidth = 2.5;
+			x.beginPath(); x.arc( 64, 64, 44, 0, 7 ); x.stroke();
+			x.fillStyle = '#7a5c14';
+			x.font = '700 62px Georgia, serif';
+			x.textAlign = 'center';
+			x.fillText( 'B', 64, 86 );
+			x.strokeStyle = '#7a5c14';
+			x.lineWidth = 5;
+			[ 54, 74 ].forEach( function ( bx ) {
+				x.beginPath(); x.moveTo( bx, 30 ); x.lineTo( bx, 42 ); x.stroke();
+				x.beginPath(); x.moveTo( bx, 86 ); x.lineTo( bx, 98 ); x.stroke();
+			} );
+		} );
 	}
 	// a sawn log's end — growth rings + a check crack
 	function logEndTex( THREE ) {
@@ -3177,18 +3224,56 @@
 	}
 
 	function buildMast( THREE ) {
+		// 2.25× taller — a real broadcast tower with its aircraft beacon
+		// blinking at the top, and the BARE YOUR RARE plaque at the base:
+		// the rainbow zebra, the symbol of rare disorders
 		var g = new THREE.Group();
-		var tower = new THREE.Mesh( new THREE.CylinderGeometry( 1.6, 7, 150, 4, 1, true ),
+		var tower = new THREE.Mesh( new THREE.CylinderGeometry( 2.4, 11, 338, 4, 1, true ),
 			new THREE.MeshLambertMaterial( { color: 0x6a7076, wireframe: true } ) );
-		tower.position.y = 75;
+		tower.position.y = 169;
 		g.add( tower );
-		var spine = new THREE.Mesh( new THREE.CylinderGeometry( 0.9, 0.9, 150, 4 ), mat( THREE, 0x8a9096 ) );
-		spine.position.y = 75;
+		var spine = new THREE.Mesh( new THREE.CylinderGeometry( 1.2, 1.2, 338, 4 ), mat( THREE, 0x8a9096 ) );
+		spine.position.y = 169;
 		g.add( spine );
-		mastLamp = new THREE.Mesh( new THREE.SphereGeometry( 3.4, 8, 8 ),
+		mastLamp = new THREE.Mesh( new THREE.SphereGeometry( 4.4, 8, 8 ),
 			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xff3b30, 1.6 ) } ) );
-		mastLamp.position.y = 154;
+		mastLamp.position.y = 344;
 		g.add( mastLamp );
+
+		// the plaque: the rainbow zebra + the site's name, on two posts
+		var zc = document.createElement( 'canvas' );
+		zc.width = 128; zc.height = 64;
+		var zx = zc.getContext( '2d' );
+		zx.fillStyle = '#241f1a'; zx.fillRect( 0, 0, 128, 64 );
+		zx.strokeStyle = 'rgba(255,225,180,0.5)'; zx.lineWidth = 3;
+		zx.strokeRect( 2, 2, 124, 60 );
+		// the zebra: white body, rainbow stripes clipped to it
+		zx.save();
+		zx.beginPath();
+		zx.ellipse( 44, 30, 24, 12, 0, 0, 7 );          // body
+		zx.ellipse( 68, 20, 8, 6, -0.5, 0, 7 );         // head/neck
+		zx.rect( 26, 36, 5, 14 ); zx.rect( 56, 36, 5, 14 ); // legs
+		zx.fillStyle = '#f4f2ea';
+		zx.fill();
+		zx.clip();
+		[ '#d84a30', '#e8963a', '#e8d23a', '#4a9a4a', '#3a6ac8', '#8a4ac8' ].forEach( function ( rc2, ri2 ) {
+			zx.fillStyle = rc2;
+			zx.fillRect( 22 + ri2 * 9, 8, 4.5, 48 );
+		} );
+		zx.restore();
+		zx.fillStyle = '#ffe3b0';
+		zx.font = '700 13px Georgia, serif';
+		zx.textAlign = 'center';
+		zx.fillText( 'BARE YOUR RARE', 64, 60 );
+		[ -9, 9 ].forEach( function ( px2 ) {
+			var post = new THREE.Mesh( new THREE.BoxGeometry( 2, 16, 2 ), mat( THREE, 0x3a2c1c ) );
+			post.position.set( px2, 8, 16 );
+			g.add( post );
+		} );
+		var plaque = new THREE.Mesh( new THREE.PlaneGeometry( 24, 12 ),
+			new THREE.MeshLambertMaterial( { map: new THREE.CanvasTexture( zc ) } ) );
+		plaque.position.set( 0, 14, 17.1 );
+		g.add( plaque );
 		return g;
 	}
 
@@ -4120,16 +4205,16 @@
 			windmillBlades.add( arm );
 		}
 		g.add( windmillBlades );
-		var lm = { id: 'windmill', name: 'the windmill', x: 3480, y: 870, href: '/lakemans',
+		var lm = { id: 'windmill', name: 'the windmill', x: 3370, y: 813, href: '/lakemans',
 			prompt: 'The windmill — the Dutch lines still turn in the wind' };
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
 		g.rotation.y = -0.5; // sails face the slough
-		g.scale.set( 2.5, 2.5, 2.5 ); // a proper mill, right on the shore
+		g.scale.set( 5, 5, 5 ); // 2× again — a LANDMARK mill on the shore
 		g.userData.lm = lm;
 		scene.add( g );
 		clickables.push( g );
 		PROMPTS.push( lm );
-		Matter.Composite.add( engine.world, Matter.Bodies.circle( lm.x, lm.y, 42, { isStatic: true } ) );
+		Matter.Composite.add( engine.world, Matter.Bodies.circle( lm.x, lm.y, 84, { isStatic: true } ) );
 
 		// tulip rows beside the mill — red, yellow, pink
 		var rows = [ 0xc8321e, 0xe8b93a, 0xd86f9a ];
@@ -4144,8 +4229,8 @@
 		var ti = 0;
 		rows.forEach( function ( rc, ri ) {
 			for ( var cix = 0; cix < COLS; cix++ ) {
-				var tx = 3336 + cix * 12 + ( Math.random() - 0.5 ) * 5;
-				var tz = 752 + ri * 15 + ( Math.random() - 0.5 ) * 5;
+				var tx = 3160 + cix * 12 + ( Math.random() - 0.5 ) * 5;
+				var tz = 660 + ri * 15 + ( Math.random() - 0.5 ) * 5;
 				var ty = hillsAt( tx, tz );
 				dummy.position.set( tx, ty + 3.5, tz );
 				dummy.updateMatrix();
@@ -4191,9 +4276,9 @@
 	}
 
 	function buildDucks( THREE ) {
-		for ( var i = 0; i < 5; i++ ) {
+		for ( var i = 0; i < 10; i++ ) { // doubled with the bigger water
 			var th = Math.random() * Math.PI * 2;
-			var rr = 40 + Math.random() * 110;
+			var rr = 60 + Math.random() * 230;
 			addDuck( THREE, POND.x + Math.cos( th ) * rr, POND.z + Math.sin( th ) * rr );
 		}
 	}
@@ -4334,6 +4419,26 @@
 		pipe2.rotation.y = -0.5;
 		pipe2.position.set( 26, 1.8, -8 );
 		g.add( pipe2 );
+		// the TANK BATTERY — two production tanks behind the unit with a
+		// catwalk plank between and a feed line, very Alberta
+		[ -8, 8 ].forEach( function ( tz2 ) {
+			var tank = new THREE.Mesh( new THREE.CylinderGeometry( 7, 7, 16, 10 ), rust );
+			tank.position.set( -34, 8, tz2 );
+			g.add( tank );
+			var lid = new THREE.Mesh( new THREE.CylinderGeometry( 7.4, 7.4, 1, 10 ), black );
+			lid.position.set( -34, 16.6, tz2 );
+			g.add( lid );
+			var hatch = new THREE.Mesh( new THREE.CylinderGeometry( 1.6, 1.6, 1.6, 6 ), black );
+			hatch.position.set( -34, 18, tz2 );
+			g.add( hatch );
+		} );
+		var catwalk = new THREE.Mesh( new THREE.BoxGeometry( 4, 0.8, 10 ), black );
+		catwalk.position.set( -34, 16.4, 0 );
+		g.add( catwalk );
+		var feed = new THREE.Mesh( new THREE.CylinderGeometry( 0.7, 0.7, 12, 5 ), black );
+		feed.rotation.z = Math.PI / 2;
+		feed.position.set( -26, 3, -8 );
+		g.add( feed );
 		var lm = { id: 'pumpjack', name: 'the pumpjack', x: 3820, y: 2280, href: null,
 			prompt: 'The pumpjack — the oilpatch kept the lights on' };
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
@@ -4354,36 +4459,36 @@
 		var fPad = new THREE.Mesh( new THREE.BoxGeometry( 18, 2, 14 ), stoneMat( THREE, 0x6a655c ) );
 		fPad.position.set( fx, fy + 1, fz );
 		scene.add( fPad );
-		var stack = new THREE.Mesh( new THREE.CylinderGeometry( 1.8, 2.6, 69, 7 ),
+		var stack = new THREE.Mesh( new THREE.CylinderGeometry( 3.2, 4.8, 138, 7 ),
 			applyAtmosphere( new THREE.MeshLambertMaterial( { map: flareStripeTex( THREE ) } ), true ) );
-		stack.position.set( fx, fy + 34.5, fz );
+		stack.position.set( fx, fy + 69, fz );
 		scene.add( stack );
-		var fDeck = new THREE.Mesh( new THREE.CylinderGeometry( 4.2, 4.2, 1, 8 ), black );
-		fDeck.position.set( fx, fy + 64, fz );
+		var fDeck = new THREE.Mesh( new THREE.CylinderGeometry( 7.4, 7.4, 1.4, 8 ), black );
+		fDeck.position.set( fx, fy + 128, fz );
 		scene.add( fDeck );
-		var fRail = new THREE.Mesh( new THREE.TorusGeometry( 4.3, 0.35, 5, 8 ), black );
+		var fRail = new THREE.Mesh( new THREE.TorusGeometry( 7.6, 0.5, 5, 8 ), black );
 		fRail.rotation.x = Math.PI / 2;
-		fRail.position.set( fx, fy + 67, fz );
+		fRail.position.set( fx, fy + 133, fz );
 		scene.add( fRail );
 		// ladder up the west face
-		[ -0.9, 0.9 ].forEach( function ( lz ) {
-			var lrail = new THREE.Mesh( new THREE.BoxGeometry( 0.5, 60, 0.5 ), black );
-			lrail.position.set( fx - 3, fy + 32, fz + lz );
+		[ -1.1, 1.1 ].forEach( function ( lz ) {
+			var lrail = new THREE.Mesh( new THREE.BoxGeometry( 0.6, 122, 0.6 ), black );
+			lrail.position.set( fx - 5, fy + 64, fz + lz );
 			scene.add( lrail );
 		} );
-		for ( var lr = 0; lr < 10; lr++ ) {
-			var rung2 = new THREE.Mesh( new THREE.BoxGeometry( 0.4, 0.4, 2.2 ), black );
-			rung2.position.set( fx - 3, fy + 6 + lr * 6, fz );
+		for ( var lr = 0; lr < 20; lr++ ) {
+			var rung2 = new THREE.Mesh( new THREE.BoxGeometry( 0.5, 0.5, 2.6 ), black );
+			rung2.position.set( fx - 5, fy + 7 + lr * 6, fz );
 			scene.add( rung2 );
 		}
 		// guy wires to ground anchors
 		[ 0.4, 2.5, 4.6 ].forEach( function ( ga2 ) {
-			var ax2 = fx + Math.cos( ga2 ) * 26, az2 = fz + Math.sin( ga2 ) * 26;
+			var ax2 = fx + Math.cos( ga2 ) * 52, az2 = fz + Math.sin( ga2 ) * 52;
 			var ay2 = hillsAt( ax2, az2 );
-			var ddx = ax2 - fx, ddy = ay2 - ( fy + 52 ), ddz = az2 - fz;
+			var ddx = ax2 - fx, ddy = ay2 - ( fy + 104 ), ddz = az2 - fz;
 			var wlen = Math.sqrt( ddx * ddx + ddy * ddy + ddz * ddz );
 			var wire = new THREE.Mesh( new THREE.CylinderGeometry( 0.16, 0.16, wlen, 4 ), black );
-			wire.position.set( fx + ddx / 2, fy + 52 + ddy / 2, fz + ddz / 2 );
+			wire.position.set( fx + ddx / 2, fy + 104 + ddy / 2, fz + ddz / 2 );
 			wire.quaternion.setFromUnitVectors( new THREE.Vector3( 0, 1, 0 ),
 				new THREE.Vector3( ddx / wlen, ddy / wlen, ddz / wlen ) );
 			scene.add( wire );
@@ -4397,12 +4502,12 @@
 		feed.rotation.z = Math.PI / 2;
 		feed.position.set( fx - 4, fy + 3.4, fz + 4 );
 		scene.add( feed );
-		flareFlame = new THREE.Mesh( new THREE.ConeGeometry( 4.5, 15, 6 ),
+		flareFlame = new THREE.Mesh( new THREE.ConeGeometry( 7.5, 26, 6 ),
 			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffa03a, 2.2 ), transparent: true, opacity: 0.9 } ) );
-		flareFlame.position.set( fx, fy + 76, fz );
+		flareFlame.position.set( fx, fy + 150, fz );
 		scene.add( flareFlame );
-		flareLight = new THREE.PointLight( 0xff8c3a, 0.7, 380 );
-		flareLight.position.set( fx, fy + 74, fz );
+		flareLight = new THREE.PointLight( 0xff8c3a, 0.8, 560 );
+		flareLight.position.set( fx, fy + 146, fz );
 		scene.add( flareLight );
 		Matter.Composite.add( engine.world, Matter.Bodies.circle( fx, fz, 5, { isStatic: true } ) );
 	}
@@ -4484,6 +4589,13 @@
 			glint.scale.set( 1.5, 1, 1 );
 			glint.position.set( bw.x, hillsAt( bw.x, bw.z ) + 0.6, bw.z );
 			scene.add( glint );
+			// a smaller offset pool beside each — the goo pools unevenly
+			var g2x = bw.x + ( Math.random() - 0.5 ) * bw.r;
+			var g2z = bw.z + ( Math.random() - 0.5 ) * bw.r;
+			var glint2 = new THREE.Mesh( new THREE.CircleGeometry( bw.r * 0.2, 10 ), glintMat );
+			glint2.rotation.x = -Math.PI / 2;
+			glint2.position.set( g2x, hillsAt( g2x, g2z ) + 0.55, g2z );
+			scene.add( glint2 );
 		} );
 		var rutMat = mat( THREE, 0x1c130b );
 		var ca = Math.cos( BOG.rot ), sa = Math.sin( BOG.rot );
@@ -5064,11 +5176,11 @@
 	// reachable ones (inside the walls) get physics.
 	function buildForest( THREE ) {
 		var spots = [], guard = 0;
-		while ( spots.length < 240 && guard++ < 4000 ) {
-			var x = -640 + Math.random() * ( W + 1280 );
-			var z = -640 + Math.random() * ( H + 1280 );
+		while ( spots.length < 380 && guard++ < 7000 ) {
+			var x = -940 + Math.random() * ( W + 1880 );
+			var z = -940 + Math.random() * ( H + 1880 );
 			var out = Math.max( Math.max( -x, x - W, 0 ), Math.max( -z, z - H, 0 ) );
-			if ( out < 300 || out > 640 ) continue;
+			if ( out < 300 || out > 940 ) continue;
 			// clear of the stands, light towers and drive-in billboards
 			if ( Math.hypot( x - 1900, z + 300 ) < 250 || Math.hypot( x - 2580, z + 300 ) < 250 ) continue;
 			var blocked = false;
@@ -5080,10 +5192,11 @@
 				if ( Math.hypot( x - LINES[ li ].x, z - LINES[ li ].z ) < 160 ) blocked = true;
 			}
 			for ( var si = 0; si < spots.length && ! blocked; si++ ) {
-				if ( Math.hypot( x - spots[ si ].x, z - spots[ si ].z ) < 52 ) blocked = true;
+				if ( Math.hypot( x - spots[ si ].x, z - spots[ si ].z ) < 88 ) blocked = true;
 			}
 			if ( blocked ) continue;
-			spots.push( { x: x, z: z, gy: hillsAt( x, z ), sc: 0.8 + Math.random() * 0.7 } );
+			// 3× the old size — a REAL forest wall out there
+			spots.push( { x: x, z: z, gy: hillsAt( x, z ), sc: 2.2 + Math.random() * 1.8 } );
 		}
 		var trunkInst = new THREE.InstancedMesh(
 			new THREE.CylinderGeometry( 3, 4.5, 24, 5 ), woodMat( THREE, 0x33281a ), spots.length );
@@ -5920,7 +6033,7 @@
 		if ( ! audio.ctx ) return;
 		[ { name: 'coop', x: COOP.x, z: COOP.z, gain: 0.5, loop: true },
 		  { name: 'crowd', x: 2240, z: -300, gain: 0.4, loop: true },
-		  { name: 'creak', x: 3480, z: 870, gain: 0.6, rate: 0.85, gapMin: 2400, gapMax: 5600 } ].forEach( function ( d ) {
+		  { name: 'creak', x: 3370, z: 813, gain: 0.7, rate: 0.8, gapMin: 2000, gapMax: 4600 } ].forEach( function ( d ) {
 			if ( posStarted[ d.name ] || ! sampleBufs[ d.name ] ) return;
 			posStarted[ d.name ] = true;
 			var panner = makePanner( d.x, d.z );
@@ -5964,6 +6077,29 @@
 		g.connect( makePanner( 3820, 2280 ) );
 		o.start( t0 );
 		o.stop( t0 + 0.24 );
+	}
+
+	// the windmill's sail SWOOSH — a soft noise swell from the shore
+	function millSwoosh() {
+		if ( ! audio.on || ! audio.ctx || ! audio.noise ) return;
+		var t0 = audio.ctx.currentTime;
+		var src = audio.ctx.createBufferSource();
+		src.buffer = audio.noise.buffer;
+		src.loop = true;
+		var bp = audio.ctx.createBiquadFilter();
+		bp.type = 'bandpass';
+		bp.frequency.setValueAtTime( 180, t0 );
+		bp.frequency.exponentialRampToValueAtTime( 420, t0 + 0.5 );
+		bp.Q.value = 1.4;
+		var g = audio.ctx.createGain();
+		g.gain.setValueAtTime( 0.0001, t0 );
+		g.gain.exponentialRampToValueAtTime( 0.5, t0 + 0.32 );
+		g.gain.exponentialRampToValueAtTime( 0.0001, t0 + 0.85 );
+		src.connect( bp );
+		bp.connect( g );
+		g.connect( makePanner( 3370, 813 ) );
+		src.start( t0 );
+		src.stop( t0 + 0.9 );
 	}
 
 	// a short filtered-noise burst — the workhorse for splash/mud/snort/cheer
@@ -6074,6 +6210,12 @@
 		if ( audio.pumpT <= 0 ) {
 			audio.pumpT = 1848; // one clank per sin(t*1.7) cycle
 			if ( Math.hypot( buggyBody.position.x - 3820, buggyBody.position.y - 2280 ) < 1000 ) pumpClank();
+		}
+		// the mill's sails swoosh by — one per blade pass, from the shore
+		audio.millT = ( audio.millT || 0 ) - dms;
+		if ( audio.millT <= 0 ) {
+			audio.millT = 2618; // rev 10.47s / 4 sails
+			if ( Math.hypot( buggyBody.position.x - 3370, buggyBody.position.y - 813 ) < 1400 ) millSwoosh();
 		}
 		// the crowd rises as you rip past the grandstands
 		audio.cheerT = ( audio.cheerT || 0 ) - dms;
