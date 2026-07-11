@@ -2437,19 +2437,67 @@
 			}
 		}, [ 2, 2 ] );
 	}
-	// generic ground detail — subtle speckle multiplied over the vertex
-	// colours of the terrain (near-white so it doesn't recolour the roads)
+	// GRASS: short leaning blade strokes in two tones, multiplied over the
+	// terrain's vertex colours — dry-olive tufts on the fields; on the
+	// painted roads/bog the same strokes read as track marks, not grass
 	function groundTex( THREE ) {
 		return cacheTex( THREE, 'ground', function ( x ) {
-			x.fillStyle = '#efe9df'; x.fillRect( 0, 0, 128, 128 );
-			for ( var i = 0; i < 320; i++ ) {
-				x.fillStyle = Math.random() < 0.5 ? 'rgba(140,130,110,0.16)' : 'rgba(255,252,244,0.22)';
+			x.fillStyle = '#ece6da'; x.fillRect( 0, 0, 128, 128 );
+			for ( var i = 0; i < 300; i++ ) {
+				var gx = Math.random() * 128, gy = Math.random() * 128;
+				var len = 4 + Math.random() * 6;
+				var lean = ( Math.random() - 0.5 ) * 0.9;
+				x.strokeStyle = Math.random() < 0.5 ? 'rgba(96,120,58,0.30)' : 'rgba(238,246,212,0.30)';
+				x.lineWidth = 1;
 				x.beginPath();
-				x.arc( Math.random() * 128, Math.random() * 128, 0.6 + Math.random() * 1.8, 0, 7 );
+				x.moveTo( gx, gy );
+				x.lineTo( gx + lean * len, gy - len );
+				x.stroke();
+			}
+			for ( var d = 0; d < 160; d++ ) {
+				x.fillStyle = Math.random() < 0.5 ? 'rgba(140,130,105,0.14)' : 'rgba(252,250,240,0.18)';
+				x.beginPath();
+				x.arc( Math.random() * 128, Math.random() * 128, 0.6 + Math.random() * 1.4, 0, 7 );
 				x.fill();
 			}
-			strokes( x, 40, [ 'rgba(150,140,116,0.12)' ], 14, 44, false );
-		}, [ 46, 33 ] );
+		}, [ 58, 42 ] );
+	}
+	// running-bond brickwork for the windmill tower
+	function brickTex( THREE ) {
+		return cacheTex( THREE, 'brick', function ( x ) {
+			x.fillStyle = '#ded2c4'; x.fillRect( 0, 0, 128, 128 ); // mortar
+			for ( var row = 0; row < 13; row++ ) {
+				var offs = row % 2 ? 10 : 0;
+				for ( var bcol = -1; bcol < 7; bcol++ ) {
+					var shade = 0.28 + Math.random() * 0.16;
+					x.fillStyle = 'rgba(120,62,40,' + shade.toFixed( 2 ) + ')';
+					x.fillRect( bcol * 20 + offs + 1, row * 10 + 1, 18, 8 );
+				}
+			}
+		}, [ 3, 2 ] );
+	}
+	// sailcloth lattice for the windmill sails
+	function sailTex( THREE ) {
+		return cacheTex( THREE, 'sail', function ( x ) {
+			x.fillStyle = '#eae4d4'; x.fillRect( 0, 0, 128, 128 );
+			x.strokeStyle = 'rgba(70,54,36,0.5)';
+			x.lineWidth = 2;
+			for ( var v2 = 8; v2 < 128; v2 += 24 ) {
+				x.beginPath(); x.moveTo( v2, 0 ); x.lineTo( v2, 128 ); x.stroke();
+			}
+			for ( var h2 = 8; h2 < 128; h2 += 16 ) {
+				x.beginPath(); x.moveTo( 0, h2 ); x.lineTo( 128, h2 ); x.stroke();
+			}
+		} );
+	}
+	// aviation bands for the flare stack
+	function flareStripeTex( THREE ) {
+		return cacheTex( THREE, 'flarestripe', function ( x ) {
+			for ( var i = 0; i < 8; i++ ) {
+				x.fillStyle = i % 2 ? '#d8d3c4' : '#a83a2a';
+				x.fillRect( 0, i * 16, 128, 16 );
+			}
+		} );
 	}
 	// role materials — same tint as before, now with painted grain
 	// foliage mottle — leafy dabs of dark + light so canopies stop being flat
@@ -3699,34 +3747,68 @@
 	/* ---- heritage + heartland dressing: windmill, tulips, cattails,
 	 *      ducks, and the oilpatch corner ---- */
 	function buildWindmill( THREE ) {
-		// a Dutch windmill on the slough's west shore — the Lakeman/Verboom nod
+		// a Dutch windmill on the slough's west shore — the Lakeman/Verboom
+		// nod, upgraded: running-bond brickwork, a stone base skirt, the
+		// GALLERY (octagonal stage + railing), a tail pole off the cap,
+		// latticed sailcloth with crossbars, and a second lit window
 		var g = new THREE.Group();
-		var brick = mat( THREE, 0x6e4632 );
+		var brick = skinMat( THREE, 0x8a5a40, brickTex( THREE ) );
+		var millWood = woodMat( THREE, 0x54402a );
 		var tower = new THREE.Mesh( new THREE.CylinderGeometry( 10, 16, 52, 8 ), brick );
 		tower.position.y = 26;
 		g.add( tower );
-		var cap = new THREE.Mesh( new THREE.ConeGeometry( 12, 14, 8 ), mat( THREE, 0x3a2c1c ) );
+		var skirt = new THREE.Mesh( new THREE.CylinderGeometry( 17, 18.5, 4, 8 ), stoneMat( THREE, 0x8a857c ) );
+		skirt.position.y = 2;
+		g.add( skirt );
+		var cap = new THREE.Mesh( new THREE.ConeGeometry( 12, 14, 8 ), woodMat( THREE, 0x3a2c1c ) );
 		cap.position.y = 59;
 		g.add( cap );
+		// the gallery — an octagonal stage ringing the tower
+		var deck = new THREE.Mesh( new THREE.CylinderGeometry( 16.5, 16.5, 1.4, 8 ), millWood );
+		deck.position.y = 22;
+		g.add( deck );
+		var galRail = new THREE.Mesh( new THREE.TorusGeometry( 16.2, 0.5, 5, 8 ), millWood );
+		galRail.rotation.x = Math.PI / 2;
+		galRail.position.y = 27;
+		g.add( galRail );
+		for ( var gp = 0; gp < 8; gp++ ) {
+			var ga = gp / 8 * Math.PI * 2 + Math.PI / 8;
+			var gpost = new THREE.Mesh( new THREE.BoxGeometry( 0.8, 5.2, 0.8 ), millWood );
+			gpost.position.set( Math.cos( ga ) * 16.2, 24.5, Math.sin( ga ) * 16.2 );
+			g.add( gpost );
+		}
+		// tail pole: from the cap down past the gallery (how millers turned her)
+		var tailPole = new THREE.Mesh( new THREE.CylinderGeometry( 0.7, 0.9, 26, 5 ), millWood );
+		tailPole.position.set( 0, 40, -16 );
+		tailPole.rotation.x = 0.62;
+		g.add( tailPole );
 		var door = new THREE.Mesh( new THREE.PlaneGeometry( 7, 11 ), mat( THREE, 0x171310 ) );
 		door.position.set( 0, 6, 14.6 );
 		g.add( door );
 		addWindow( THREE, g, 5, 6, 0, 34, 12.4 );
-		// four sails on a hub, spun in render
+		addWindow( THREE, g, 4, 5, 0, 46, 11.2 );
+		// four sails on a hub, spun in render — latticed cloth + crossbars
 		windmillBlades = new THREE.Group();
 		windmillBlades.position.set( 0, 52, 14 );
 		var hub = new THREE.Mesh( new THREE.CylinderGeometry( 2.4, 2.4, 4, 8 ), mat( THREE, 0x2a211b ) );
 		hub.rotation.x = Math.PI / 2;
 		windmillBlades.add( hub );
+		var sailMat2 = applyAtmosphere( new THREE.MeshLambertMaterial( {
+			color: 0xd8d3c4, map: sailTex( THREE ), side: THREE.DoubleSide } ), true );
 		for ( var bi = 0; bi < 4; bi++ ) {
 			var arm = new THREE.Group();
 			arm.rotation.z = bi * Math.PI / 2;
 			var spar = new THREE.Mesh( new THREE.BoxGeometry( 2, 34, 1.2 ), mat( THREE, 0x3a2c1c ) );
 			spar.position.y = 17;
 			arm.add( spar );
-			var sail = new THREE.Mesh( new THREE.BoxGeometry( 7, 26, 0.6 ), mat( THREE, 0xd8d3c4 ) );
+			var sail = new THREE.Mesh( new THREE.PlaneGeometry( 7, 26 ), sailMat2 );
 			sail.position.set( 4.2, 20, 0 );
 			arm.add( sail );
+			[ 12, 20, 28 ].forEach( function ( cy ) {
+				var cross = new THREE.Mesh( new THREE.BoxGeometry( 7.6, 0.8, 0.9 ), mat( THREE, 0x3a2c1c ) );
+				cross.position.set( 4.2, cy, 0 );
+				arm.add( cross );
+			} );
 			windmillBlades.add( arm );
 		}
 		g.add( windmillBlades );
@@ -3956,12 +4038,57 @@
 		Matter.Composite.add( engine.world,
 			Matter.Bodies.rectangle( lm.x, lm.y, 85, 45, { isStatic: true } ) );
 
-		// flare stack, always burning — taller, seen across the quarter
+		// flare stack, always burning — now a real unit: aviation-striped
+		// barrel, top platform + railing, a ladder up the side, three guy
+		// wires, a knockout drum at the base on a concrete pad
 		var fx = 3888, fz = 2238;
 		var fy = hillsAt( fx, fz );
-		var stack = new THREE.Mesh( new THREE.CylinderGeometry( 1.8, 2.6, 69, 7 ), black );
+		var fPad = new THREE.Mesh( new THREE.BoxGeometry( 18, 2, 14 ), stoneMat( THREE, 0x6a655c ) );
+		fPad.position.set( fx, fy + 1, fz );
+		scene.add( fPad );
+		var stack = new THREE.Mesh( new THREE.CylinderGeometry( 1.8, 2.6, 69, 7 ),
+			applyAtmosphere( new THREE.MeshLambertMaterial( { map: flareStripeTex( THREE ) } ), true ) );
 		stack.position.set( fx, fy + 34.5, fz );
 		scene.add( stack );
+		var fDeck = new THREE.Mesh( new THREE.CylinderGeometry( 4.2, 4.2, 1, 8 ), black );
+		fDeck.position.set( fx, fy + 64, fz );
+		scene.add( fDeck );
+		var fRail = new THREE.Mesh( new THREE.TorusGeometry( 4.3, 0.35, 5, 8 ), black );
+		fRail.rotation.x = Math.PI / 2;
+		fRail.position.set( fx, fy + 67, fz );
+		scene.add( fRail );
+		// ladder up the west face
+		[ -0.9, 0.9 ].forEach( function ( lz ) {
+			var lrail = new THREE.Mesh( new THREE.BoxGeometry( 0.5, 60, 0.5 ), black );
+			lrail.position.set( fx - 3, fy + 32, fz + lz );
+			scene.add( lrail );
+		} );
+		for ( var lr = 0; lr < 10; lr++ ) {
+			var rung2 = new THREE.Mesh( new THREE.BoxGeometry( 0.4, 0.4, 2.2 ), black );
+			rung2.position.set( fx - 3, fy + 6 + lr * 6, fz );
+			scene.add( rung2 );
+		}
+		// guy wires to ground anchors
+		[ 0.4, 2.5, 4.6 ].forEach( function ( ga2 ) {
+			var ax2 = fx + Math.cos( ga2 ) * 26, az2 = fz + Math.sin( ga2 ) * 26;
+			var ay2 = hillsAt( ax2, az2 );
+			var ddx = ax2 - fx, ddy = ay2 - ( fy + 52 ), ddz = az2 - fz;
+			var wlen = Math.sqrt( ddx * ddx + ddy * ddy + ddz * ddz );
+			var wire = new THREE.Mesh( new THREE.CylinderGeometry( 0.16, 0.16, wlen, 4 ), black );
+			wire.position.set( fx + ddx / 2, fy + 52 + ddy / 2, fz + ddz / 2 );
+			wire.quaternion.setFromUnitVectors( new THREE.Vector3( 0, 1, 0 ),
+				new THREE.Vector3( ddx / wlen, ddy / wlen, ddz / wlen ) );
+			scene.add( wire );
+		} );
+		// knockout drum + feed pipe at the base
+		var drum = new THREE.Mesh( new THREE.CylinderGeometry( 3, 3, 9, 8 ), black );
+		drum.rotation.z = Math.PI / 2;
+		drum.position.set( fx - 9, fy + 3.4, fz + 4 );
+		scene.add( drum );
+		var feed = new THREE.Mesh( new THREE.CylinderGeometry( 0.7, 0.7, 8, 5 ), black );
+		feed.rotation.z = Math.PI / 2;
+		feed.position.set( fx - 4, fy + 3.4, fz + 4 );
+		scene.add( feed );
 		flareFlame = new THREE.Mesh( new THREE.ConeGeometry( 4.5, 15, 6 ),
 			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffa03a, 2.2 ), transparent: true, opacity: 0.9 } ) );
 		flareFlame.position.set( fx, fy + 76, fz );
