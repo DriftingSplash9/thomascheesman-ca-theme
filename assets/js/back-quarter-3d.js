@@ -2901,6 +2901,21 @@
 		addWindow( THREE, g, 10, 9, 55.2, 17, 0, Math.PI / 2 );
 		addWindow( THREE, g, 9, 8, 40.2, 43, -3, Math.PI / 2 );
 
+		// exterior lights: sconces flanking the door, one on the balcony,
+		// one over the east patio — plus a warm pool of porch light
+		var sconceMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb45e, 1.05 ) } );
+		[ [ 17, 16, 32.6 ], [ 31, 16, 32.6 ], [ -6, 42, 36 ], [ 66, 16, 26 ] ].forEach( function ( sc2 ) {
+			var bulb = new THREE.Mesh( new THREE.SphereGeometry( 1.1, 8, 6 ), sconceMat );
+			bulb.position.set( sc2[ 0 ], sc2[ 1 ], sc2[ 2 ] );
+			g.add( bulb );
+			var shade = new THREE.Mesh( new THREE.ConeGeometry( 1.5, 1.4, 6 ), trimMat );
+			shade.position.set( sc2[ 0 ], sc2[ 1 ] + 1.4, sc2[ 2 ] );
+			g.add( shade );
+		} );
+		var porchLight = new THREE.PointLight( 0xffb45e, 0.5, 280 );
+		porchLight.position.set( 24, 20, 44 );
+		g.add( porchLight );
+
 		// the big garden out back: tilled soil beds + a REAL mixed crop —
 		// row greens, cabbages, pumpkins — not seven identical spheres
 		var soilMat = dirtMat( THREE, 0x33261a );
@@ -3032,35 +3047,58 @@
 		var kidColor = ( lm && lm.kidColor ) || 0x33261a;
 		var bark = 0x2c2418;
 		var lms = leafMats( THREE );
+		var barkMat = woodMat( THREE, bark );
 
-		// the trees it nests in — a big one behind + two flanking, canopies
-		// rising above and around the roof so the cabin reads as tucked in
-		[ [ 0, -13, 3.6, 4.8, 88, 15, 54 ],
-		  [ -17, 7, 2.6, 3.6, 72, 11, 44 ],
-		  [ 16, 9, 2.6, 3.6, 68, 11, 42 ] ].forEach( function ( t, ti ) {
-			var trunk = new THREE.Mesh(
-				new THREE.CylinderGeometry( t[ 2 ], t[ 3 ], t[ 4 ], 6 ), woodMat( THREE, bark ) );
-			trunk.position.set( t[ 0 ], t[ 4 ] / 2, t[ 1 ] );
-			g.add( trunk );
-			var f1 = new THREE.Mesh( lumpy( new THREE.ConeGeometry( t[ 5 ], t[ 6 ], 7 ), 0.12 ), lms[ ti % 4 ] );
-			f1.position.set( t[ 0 ], t[ 4 ] - t[ 6 ] * 0.15, t[ 1 ] );
-			g.add( f1 );
-			var f2 = new THREE.Mesh( lumpy( new THREE.ConeGeometry( t[ 5 ] * 0.68, t[ 6 ] * 0.68, 7 ), 0.14 ), lms[ ( ti + 1 ) % 4 ] );
-			f2.position.set( t[ 0 ], t[ 4 ] + t[ 6 ] * 0.28, t[ 1 ] );
-			g.add( f2 );
-		} );
-
-		// the stilted deck the cabin stands on
+		// ONE great tree carries the house: a thick trunk rises through the
+		// deck and out the roof, with the whole canopy ABOVE the roofline —
+		// unmistakably a house built IN a tree
 		var deckTop = 35;
-		var postGeo = new THREE.CylinderGeometry( 1.7, 1.7, deckTop, 5 );
-		[ [ -11, -8 ], [ 11, -8 ], [ -11, 9 ], [ 11, 9 ] ].forEach( function ( p ) {
-			var st = new THREE.Mesh( postGeo, mat( THREE, bark ) );
-			st.position.set( p[ 0 ], deckTop / 2, p[ 1 ] );
-			g.add( st );
+		var bigTrunk = new THREE.Mesh( new THREE.CylinderGeometry( 5, 7.5, 100, 7 ), barkMat );
+		bigTrunk.position.set( -5, 50, -3 );
+		g.add( bigTrunk );
+		// canopy: a cluster of lumpy crowns high over the roof
+		[ [ -5, 84, -3, 17 ], [ 6, 78, 4, 12 ], [ -14, 76, 3, 11 ], [ -2, 92, 2, 12 ] ].forEach( function ( cn, ci ) {
+			var crown = new THREE.Mesh( lumpy( new THREE.SphereGeometry( cn[ 3 ], 8, 6 ), 0.2 ), lms[ ci % 4 ] );
+			crown.position.set( cn[ 0 ], cn[ 1 ], cn[ 2 ] );
+			g.add( crown );
 		} );
-		var deck = new THREE.Mesh( new THREE.BoxGeometry( 30, 3, 26 ), mat( THREE, 0x5a4630 ) );
+		// a big side branch with a ROPE SWING hanging off it
+		var branch = new THREE.Mesh( new THREE.CylinderGeometry( 1.4, 1.9, 22, 5 ), barkMat );
+		branch.position.set( 6, 66, -3 );
+		branch.rotation.z = -1.35;
+		g.add( branch );
+		[ -2.6, 2.6 ].forEach( function ( rz2 ) {
+			var rope = new THREE.Mesh( new THREE.CylinderGeometry( 0.22, 0.22, 24, 4 ), mat( THREE, 0x8a744a ) );
+			rope.position.set( 15, 53, -3 + rz2 );
+			g.add( rope );
+		} );
+		var seat2 = new THREE.Mesh( new THREE.BoxGeometry( 3, 1, 7.5 ), woodMat( THREE, 0x6b5236 ) );
+		seat2.position.set( 15, 41, -3 );
+		g.add( seat2 );
+		// two framing trees set well out so they don't swallow the house
+		[ [ -28, 8, 60, 10, 38 ], [ 26, 12, 54, 9, 34 ] ].forEach( function ( t, ti ) {
+			var trunk = new THREE.Mesh( new THREE.CylinderGeometry( 2.4, 3.4, t[ 2 ] * 0.55, 6 ), barkMat );
+			trunk.position.set( t[ 0 ], t[ 2 ] * 0.27, t[ 1 ] );
+			g.add( trunk );
+			var f1 = new THREE.Mesh( lumpy( new THREE.ConeGeometry( t[ 3 ], t[ 4 ], 7 ), 0.12 ), lms[ ti % 4 ] );
+			f1.position.set( t[ 0 ], t[ 2 ] * 0.55 + t[ 4 ] * 0.3, t[ 1 ] );
+			g.add( f1 );
+		} );
+
+		// the deck, braced FROM the trunk with knee braces (no stilts —
+		// treehouses hang off their tree)
+		var deck = new THREE.Mesh( new THREE.BoxGeometry( 30, 3, 26 ), woodMat( THREE, 0x5a4630 ) );
 		deck.position.y = deckTop - 1.5;
 		g.add( deck );
+		[ [ -13, -11 ], [ 13, -11 ], [ -13, 11 ], [ 13, 11 ] ].forEach( function ( bc ) {
+			var bdx = bc[ 0 ] - ( -5 ), bdz = bc[ 1 ] - ( -3 );
+			var blen = Math.sqrt( bdx * bdx + 144 + bdz * bdz ); // 12 down
+			var brace = new THREE.Mesh( new THREE.BoxGeometry( 1.8, blen, 1.8 ), barkMat );
+			brace.position.set( ( -5 + bc[ 0 ] ) / 2, deckTop - 8, ( -3 + bc[ 1 ] ) / 2 );
+			brace.quaternion.setFromUnitVectors( new THREE.Vector3( 0, 1, 0 ),
+				new THREE.Vector3( bdx / blen, 12 / blen, bdz / blen ) );
+			g.add( brace );
+		} );
 
 		// a low railing round the deck, with a gap at front-centre for the ladder
 		var railMat = mat( THREE, 0x4a3a28 ), railY = deckTop + 4;
@@ -3078,17 +3116,29 @@
 			g.add( frontRail );
 		} );
 
-		// the cabin: a clear little house sitting on the deck
-		var cabin = new THREE.Mesh( new THREE.BoxGeometry( 22, 17, 18 ), woodMat( THREE, 0x6b5236 ) );
+		// the cabin: bright playhouse lumber, white window trim, the kid's
+		// own colour on the door AND roof, and their flag flying the ridge
+		var cabin = new THREE.Mesh( new THREE.BoxGeometry( 22, 17, 18 ), woodMat( THREE, 0x8a6a42 ) );
 		cabin.position.y = deckTop + 8.5;
 		g.add( cabin );
 		var roof = gableRoof( THREE, 26, 13, kidColor );
 		roof.position.y = deckTop + 21;
 		g.add( roof );
-		var door = new THREE.Mesh( new THREE.PlaneGeometry( 6, 11 ), mat( THREE, 0x2a2016 ) );
-		door.position.set( 6, deckTop + 5.5, 9.2 );
+		var door = new THREE.Mesh( new THREE.PlaneGeometry( 6.5, 11.5 ),
+			applyAtmosphere( new THREE.MeshLambertMaterial( { color: kidColor } ), true ) );
+		door.position.set( 6, deckTop + 5.7, 9.2 );
 		g.add( door );
-		addWindow( THREE, g, 8, 8, -4, deckTop + 9, 9.2 ); // warm glowing window
+		var winTrim = new THREE.Mesh( new THREE.BoxGeometry( 9.6, 9.6, 0.5 ), woodMat( THREE, 0xd8d3c4 ) );
+		winTrim.position.set( -4, deckTop + 9, 9.05 );
+		g.add( winTrim );
+		addWindow( THREE, g, 8, 8, -4, deckTop + 9, 9.4 ); // warm glowing window
+		var flagPole2 = new THREE.Mesh( new THREE.CylinderGeometry( 0.35, 0.35, 8, 4 ), barkMat );
+		flagPole2.position.set( 8, deckTop + 30, 0 );
+		g.add( flagPole2 );
+		var kidFlag = new THREE.Mesh( new THREE.PlaneGeometry( 6, 3.6 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, kidColor, 1.1 ), side: THREE.DoubleSide } ) );
+		kidFlag.position.set( 11.2, deckTop + 32.4, 0 );
+		g.add( kidFlag );
 
 		// the ladder up the front to the deck
 		[ -3, 3 ].forEach( function ( x ) {
@@ -4280,8 +4330,11 @@
 		if ( fireFlames.length ) {
 			var ff = 0.7 + Math.sin( t * 11 + 1 ) * 0.2 + Math.random() * 0.18;
 			for ( var fi2 = 0; fi2 < fireFlames.length; fi2++ ) {
-				fireFlames[ fi2 ].scale.set( 1, ff * ( 1 + fi2 * 0.15 ), 1 );
-				fireFlames[ fi2 ].material.opacity = 0.55 + ff * 0.35;
+				// each layer breathes on its own phase and slowly twists
+				var fw = 1 + Math.sin( t * 7 + fi2 * 2.1 ) * 0.12;
+				fireFlames[ fi2 ].scale.set( fw, ff * ( 1 + fi2 * 0.15 ), fw );
+				fireFlames[ fi2 ].rotation.y += 0.012 + fi2 * 0.009;
+				fireFlames[ fi2 ].material.opacity = 0.45 + ff * 0.4;
 			}
 			if ( fireLight ) fireLight.intensity = 0.55 + ff * 0.5;
 		}
@@ -4392,13 +4445,32 @@
 			rock.rotation.y = a;
 			scene.add( rock );
 		}
-		// the fire — two flickering cones + warm light
-		[ 0, 1 ].forEach( function ( fi ) {
-			var flame = new THREE.Mesh( new THREE.ConeGeometry( 4 - fi * 1.6, 9 - fi * 2, 6 ),
-				new THREE.MeshBasicMaterial( { color: glow( THREE, fi ? 0xffd27a : 0xff8c3a, 2.2 ), transparent: true, opacity: 0.9 } ) );
-			flame.position.set( HX, gy + 5 + fi * 2, HZ );
+		// the fire — three nested flame cones (deep red → orange → hot
+		// yellow core) over a glowing ember bed, charred logs crossed in
+		// the ring, warm light; smoke rises from initSmoke's emitter
+		[ { r: 5, h: 11, c: 0xd8551e, b: 1.7, o: 0.55 },
+		  { r: 3.4, h: 8.5, c: 0xff8c3a, b: 2.0, o: 0.75 },
+		  { r: 1.9, h: 6, c: 0xffe09a, b: 2.2, o: 0.9 } ].forEach( function ( f, fi ) {
+			var flame = new THREE.Mesh( new THREE.ConeGeometry( f.r, f.h, 6 ),
+				new THREE.MeshBasicMaterial( { color: glow( THREE, f.c, f.b ), transparent: true, opacity: f.o } ) );
+			flame.position.set( HX, gy + 3.5 + f.h / 2 + fi * 0.8, HZ );
 			scene.add( flame );
 			fireFlames.push( flame );
+		} );
+		var embers = new THREE.Mesh( new THREE.CircleGeometry( 6, 12 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xff5a1a, 1.5 ), transparent: true, opacity: 0.8 } ) );
+		embers.rotation.x = -Math.PI / 2;
+		embers.position.set( HX, gy + 1.4, HZ );
+		scene.add( embers );
+		var charMat = mat( THREE, 0x241a12 );
+		var charGeo = new THREE.CylinderGeometry( 1.8, 1.8, 16, 6 );
+		charGeo.rotateZ( Math.PI / 2 );
+		[ 0, 1.05, 2.1 ].forEach( function ( la ) {
+			var clog = new THREE.Mesh( charGeo, charMat );
+			clog.position.set( HX, gy + 2.6, HZ );
+			clog.rotation.y = la;
+			clog.rotation.z = 0.12;
+			scene.add( clog );
 		} );
 		fireLight = new THREE.PointLight( 0xff9c46, 0.9, 420 );
 		fireLight.position.set( HX, gy + 14, HZ );
@@ -4426,32 +4498,76 @@
 			}
 		}
 		Matter.Composite.add( engine.world, Matter.Bodies.rectangle( wx, wz, 30, 16, { isStatic: true } ) );
-		// the camper
+		// the camper — a proper 1960s canned-ham: rounded roofline, teal
+		// belt stripe, chrome trim, fender skirt over a real wheel, striped
+		// awning off the door side, step, roof vent, propane up front
 		var cx2 = 1700, cz2 = 755;
 		var cgy = hillsAt( cx2, cz2 );
 		var camper = new THREE.Group();
-		var shell = new THREE.Mesh( new THREE.BoxGeometry( 62, 24, 22 ), mat( THREE, 0xd8d5cc ) );
-		shell.position.y = 20;
+		var shellMat = applyAtmosphere( new THREE.MeshPhongMaterial( {
+			color: 0xdcd8cc, shininess: 55, specular: 0x555044 } ), true );
+		var tealMat = applyAtmosphere( new THREE.MeshPhongMaterial( {
+			color: 0x2a7a8a, shininess: 45, specular: 0x224444 } ), true );
+		var shell = new THREE.Mesh( new THREE.BoxGeometry( 58, 18, 22 ), shellMat );
+		shell.position.y = 17;
 		camper.add( shell );
-		var stripe = new THREE.Mesh( new THREE.BoxGeometry( 62.4, 4, 22.4 ), mat( THREE, 0x8a5a30 ) );
-		stripe.position.y = 16;
-		camper.add( stripe );
-		var door = new THREE.Mesh( new THREE.PlaneGeometry( 8, 15 ), mat( THREE, 0x3a3630 ) );
-		door.position.set( 6, 15.5, 11.3 );
+		var roofCurve = new THREE.Mesh( new THREE.CylinderGeometry( 11, 11, 57, 12, 1, false, 0, Math.PI ), shellMat );
+		roofCurve.rotation.z = Math.PI / 2;
+		roofCurve.position.y = 26;
+		camper.add( roofCurve );
+		var belt = new THREE.Mesh( new THREE.BoxGeometry( 58.4, 4.5, 22.4 ), tealMat );
+		belt.position.y = 13;
+		camper.add( belt );
+		var chromeTrim = new THREE.Mesh( new THREE.BoxGeometry( 58.4, 0.8, 22.5 ), metalMat( THREE, 0xb8bec2 ) );
+		chromeTrim.position.y = 15.6;
+		camper.add( chromeTrim );
+		var door = new THREE.Mesh( new THREE.PlaneGeometry( 8, 14 ), tealMat );
+		door.position.set( 8, 15, 11.3 );
 		camper.add( door );
-		addWindow( THREE, camper, 9, 6, -16, 24, 11.3 );
-		var wheelGeo2 = new THREE.CylinderGeometry( 5, 5, 4, 10 );
-		wheelGeo2.rotateX( Math.PI / 2 );
-		[ -14, 14 ].forEach( function ( ox ) {
-			var wh = new THREE.Mesh( wheelGeo2, mat( THREE, 0x1c1512 ) );
-			wh.position.set( ox, 5, 9 );
-			camper.add( wh );
+		var doorWin = new THREE.Mesh( new THREE.PlaneGeometry( 4.5, 4 ), mat( THREE, 0x2a2e30 ) );
+		doorWin.position.set( 8, 19, 11.4 );
+		camper.add( doorWin );
+		var handle = new THREE.Mesh( new THREE.BoxGeometry( 0.6, 2, 0.5 ), metalMat( THREE, 0xb8bec2 ) );
+		handle.position.set( 4.6, 14.5, 11.5 );
+		camper.add( handle );
+		var step = new THREE.Mesh( new THREE.BoxGeometry( 7, 1.4, 4 ), mat( THREE, 0x3a3630 ) );
+		step.position.set( 8, 4.5, 13.5 );
+		camper.add( step );
+		addWindow( THREE, camper, 9, 6, -14, 21, 11.3 );
+		addWindow( THREE, camper, 8, 5.5, 14, 21, -11.3, Math.PI );
+		var vent = new THREE.Mesh( new THREE.BoxGeometry( 8, 1.6, 7 ), shellMat );
+		vent.position.set( -6, 36.4, 0 );
+		vent.rotation.z = 0.1;
+		camper.add( vent );
+		// striped awning rolled out over the door, on two poles
+		var ac = document.createElement( 'canvas' );
+		ac.width = 64; ac.height = 32;
+		var ax = ac.getContext( '2d' );
+		for ( var as = 0; as < 8; as++ ) {
+			ax.fillStyle = as % 2 ? '#d8d3c4' : '#2a7a8a';
+			ax.fillRect( as * 8, 0, 8, 32 );
+		}
+		var awning = new THREE.Mesh( new THREE.PlaneGeometry( 24, 12 ),
+			new THREE.MeshLambertMaterial( { map: new THREE.CanvasTexture( ac ), side: THREE.DoubleSide } ) );
+		awning.position.set( 2, 25, 17 );
+		awning.rotation.x = -1.25;
+		camper.add( awning );
+		[ -8, 12 ].forEach( function ( axp ) {
+			var pole = new THREE.Mesh( new THREE.CylinderGeometry( 0.4, 0.4, 20, 5 ), metalMat( THREE, 0xb8bec2 ) );
+			pole.position.set( axp, 10, 21.5 );
+			camper.add( pole );
 		} );
+		var wh = makeWheel( THREE, 5, 4, 'wheelCamper', '#d8d3c4', '#2a7a8a' );
+		wh.position.set( 2, 5, 9.5 );
+		camper.add( wh );
+		var skirtF = new THREE.Mesh( new THREE.BoxGeometry( 14, 6, 1.6 ), shellMat );
+		skirtF.position.set( 2, 9.5, 10.8 );
+		camper.add( skirtF );
 		var tongue = new THREE.Mesh( new THREE.BoxGeometry( 16, 2, 2.4 ), mat( THREE, 0x59554c ) );
-		tongue.position.set( -38, 9, 0 );
+		tongue.position.set( -36, 9, 0 );
 		camper.add( tongue );
-		var propane = new THREE.Mesh( new THREE.SphereGeometry( 4, 8, 8 ), mat( THREE, 0xd8d5cc ) );
-		propane.position.set( -33, 14, 0 );
+		var propane = new THREE.Mesh( new THREE.SphereGeometry( 3.4, 8, 8 ), shellMat );
+		propane.position.set( -31, 12, 0 );
 		camper.add( propane );
 		camper.position.set( cx2, cgy, cz2 );
 		camper.rotation.y = 0.45;
@@ -5486,7 +5602,8 @@
 		// chimney tops: farmhouse local (22, 77, -10) × 3.0, cookshack
 		// local (18, 52, 6) × 2.8 — move these when a chimney moves
 		[ { x: 1277, y: hillsAt( 1211, 588 ) + 231, z: 558 },
-		  { x: 2290, y: hillsAt( 2240, 462 ) + 146, z: 479 } ].forEach( function ( at ) {
+		  { x: 2290, y: hillsAt( 2240, 462 ) + 146, z: 479 },
+		  { x: 1580, y: hillsAt( 1580, 800 ) + 16, z: 800 } ].forEach( function ( at ) { // firepit
 			var em = { at: at, parts: [], timer: Math.random() * 600 };
 			for ( var i = 0; i < 7; i++ ) {
 				var spr = new THREE.Sprite( new THREE.SpriteMaterial( {
@@ -6166,7 +6283,8 @@
 			var bulb = new THREE.Mesh( new THREE.SphereGeometry( 1.6, 8, 8 ), lampMat );
 			bulb.position.set( 24.2, 4.4, z );
 			chassisGroup.add( bulb );
-			var spot = new THREE.SpotLight( 0xffd9a0, 1.1, 500, 0.5, 0.55, 1.2 );
+			// warmer + gentler: 1.1 pale-gold washed white walls to paper
+			var spot = new THREE.SpotLight( 0xffb45e, 0.72, 440, 0.46, 0.6, 1.3 );
 			spot.position.set( 22, 12, z );
 			spot.target.position.set( 300, -4, z * 3 );
 			g.add( spot );
