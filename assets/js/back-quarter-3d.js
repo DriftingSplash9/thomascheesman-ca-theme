@@ -1121,11 +1121,9 @@
 		statics.push( Matter.Bodies.rectangle( W / 2, H + OUT - 6, W + OUT * 2 + 80, T, { isStatic: true } ) );
 		statics.push( Matter.Bodies.rectangle( -OUT + 6, H / 2, T, H + OUT * 2 + 80, { isStatic: true } ) );
 		statics.push( Matter.Bodies.rectangle( W + OUT - 6, H / 2, T, H + OUT * 2 + 80, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( W / 2, 3, W, 10, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( 3, H / 2, 10, H, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( W - 3, H / 2, 10, H, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( 2180 / 2, H - 3, 2180, 10, { isStatic: true } ) );
-		statics.push( Matter.Bodies.rectangle( ( 2300 + W ) / 2, H - 3, W - 2300, 10, { isStatic: true } ) );
+		// (the farm-edge walls are GONE — the fence rings the OUTSIDE of the
+		// section road now, so the track belongs to the quarter and you can
+		// roll onto it from anywhere; the outer world walls above still hold)
 		LANDMARKS.forEach( function ( lm ) {
 			var s = lm.scale || 1;
 			if ( lm.build === 'treehouse' ) {
@@ -1145,6 +1143,7 @@
 		buildGrove( THREE );
 		buildPoplars( THREE );
 		buildFence( THREE );
+		buildForest( THREE );
 		buildGateway( THREE );
 		buildTrack( THREE );
 		buildTrackLights( THREE );
@@ -1153,6 +1152,7 @@
 		buildAnimals( THREE );
 		buildCoop( THREE );
 		buildChickens( THREE );
+		buildPeacock( THREE );
 		buildPigPen( THREE );
 		buildTractor( THREE );
 		buildWindmill( THREE );
@@ -1579,6 +1579,7 @@
 		updateAnimals( dms );
 		updateTractor();
 		updateChickens( dms, t );
+		updatePeacock( dms );
 		updatePigs( dms );
 		updateDucks( dms, t );
 		updateScenery( dms, t );
@@ -2559,6 +2560,22 @@
 			}
 		}, [ 2, 2 ] );
 	}
+	// a sawn log's end — growth rings + a check crack
+	function logEndTex( THREE ) {
+		return cacheTex( THREE, 'logend', function ( x ) {
+			x.fillStyle = '#c8a878'; x.fillRect( 0, 0, 128, 128 );
+			x.strokeStyle = 'rgba(120,84,48,0.55)';
+			for ( var r = 10; r < 62; r += 9 ) {
+				x.lineWidth = 1.6 + Math.random();
+				x.beginPath();
+				x.arc( 64, 64, r + Math.random() * 3, 0, 7 );
+				x.stroke();
+			}
+			x.strokeStyle = 'rgba(90,60,32,0.7)';
+			x.lineWidth = 2.4;
+			x.beginPath(); x.moveTo( 64, 64 ); x.lineTo( 108, 84 ); x.stroke();
+		} );
+	}
 	// the rolled-bale END — an archimedean spiral, so a bale never again
 	// reads as a giant gold token in the headlights
 	function baleEndTex( THREE ) {
@@ -2908,15 +2925,39 @@
 			}
 		}
 		// shrubs hugging the walls — mixed greens, mottled, squashed a touch
+		// (the three that had crept into the garden beds are pulled)
 		var shrubMats = [ leafMat( THREE, 0x263f24 ), leafMat( THREE, 0x2e4a2a ) ];
-		[ [ -60, 38 ], [ -62, 8 ], [ -60, -26 ], [ 34, 52 ], [ 8, 54 ],
-		  [ 62, -38 ], [ 28, -40 ], [ -22, -40 ] ].forEach( function ( s, si ) {
+		[ [ -60, 38 ], [ -62, 8 ], [ -60, -26 ], [ 34, 52 ], [ 8, 54 ] ].forEach( function ( s, si ) {
 			var shrub = new THREE.Mesh( lumpy( new THREE.SphereGeometry( 3 + Math.random() * 1.6, 7, 6 ), 0.26 ),
 				shrubMats[ si % 2 ] );
 			shrub.scale.y = 0.75 + Math.random() * 0.25;
 			shrub.position.set( s[ 0 ], 3, s[ 1 ] );
 			g.add( shrub );
 		} );
+
+		// the firewood pile — a proper winter's worth, stacked on the west
+		// side between two stakes, ring-sawn ends facing out
+		var logSide = woodMat( THREE, 0x6b4a2e );
+		var logEnd = applyAtmosphere( new THREE.MeshLambertMaterial( { map: logEndTex( THREE ) } ), true );
+		var logGeo = new THREE.CylinderGeometry( 1.3, 1.3, 11, 7 );
+		logGeo.rotateX( Math.PI / 2 );
+		[ 6, 5, 4, 3, 2 ].forEach( function ( rowN, ri ) {
+			for ( var li2 = 0; li2 < rowN; li2++ ) {
+				var lg = new THREE.Mesh( logGeo, [ logSide, logEnd, logEnd ] );
+				lg.position.set( -72 - ri * 0.15 + ( li2 - rowN / 2 ) * 2.75 + ri * 1.35,
+					1.3 + ri * 2.3, -14 + ( Math.random() - 0.5 ) * 0.8 );
+				lg.rotation.y = ( Math.random() - 0.5 ) * 0.06;
+				g.add( lg );
+			}
+		} );
+		[ -81, -63 ].forEach( function ( sx ) {
+			var stake = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 14, 1.6 ), trimMat );
+			stake.position.set( sx, 7, -14 );
+			g.add( stake );
+		} );
+		var s3 = lm.scale || 1;
+		Matter.Composite.add( engine.world, Matter.Bodies.rectangle(
+			lm.x - 72 * s3, lm.y - 14 * s3, 22 * s3, 13 * s3, { isStatic: true } ) );
 
 		return g;
 	}
@@ -3583,6 +3624,103 @@
 		penRun( THREE, COOP.x + 36, COOP.z + 68, COOP.x + 156, COOP.z + 68 );
 		PROMPTS.push( { id: 'coop', name: 'the chicken coop', x: COOP.x, y: COOP.z, href: null,
 			prompt: 'The coop — mind the girls' } );
+	}
+
+	/* ---- the peacock — he patrols the treehouse grounds like he owns
+	 *      them, train fanned, unbothered by anything but the buggy ---- */
+	var peacock = null;
+
+	function peacockTrainTex( THREE ) {
+		return cacheTex( THREE, 'peacock', function ( x ) {
+			x.clearRect( 0, 0, 128, 128 );
+			// the fan
+			x.fillStyle = 'rgba(22,92,58,0.96)';
+			x.beginPath();
+			x.moveTo( 64, 122 );
+			x.arc( 64, 122, 116, Math.PI + 0.28, -0.28 );
+			x.closePath();
+			x.fill();
+			// eyespots arcing across it
+			for ( var e = 0; e < 9; e++ ) {
+				var an = Math.PI + 0.5 + ( e / 8 ) * ( Math.PI - 1.0 );
+				var ex2 = 64 + Math.cos( an ) * 88, ey = 122 + Math.sin( an ) * 88;
+				x.fillStyle = '#d8b23a';
+				x.beginPath(); x.arc( ex2, ey, 9, 0, 7 ); x.fill();
+				x.fillStyle = '#15505e';
+				x.beginPath(); x.arc( ex2, ey, 6, 0, 7 ); x.fill();
+				x.fillStyle = '#2a7a8a';
+				x.beginPath(); x.arc( ex2, ey, 3, 0, 7 ); x.fill();
+			}
+		} );
+	}
+
+	function buildPeacock( THREE ) {
+		var g = new THREE.Group();
+		var blue = mat( THREE, 0x1a4a8a );
+		var body = new THREE.Mesh( new THREE.BoxGeometry( 6, 4.5, 4 ), blue );
+		body.position.y = 5.5;
+		g.add( body );
+		var neck = new THREE.Mesh( new THREE.BoxGeometry( 1.8, 6, 1.8 ), blue );
+		neck.position.set( 2.6, 9.5, 0 );
+		g.add( neck );
+		var head = new THREE.Mesh( new THREE.BoxGeometry( 2.2, 2, 2 ), blue );
+		head.position.set( 2.6, 13, 0 );
+		g.add( head );
+		var crest = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 1.4, 0.3 ), mat( THREE, 0x2a7a8a ) );
+		crest.position.set( 2.6, 14.6, 0 );
+		g.add( crest );
+		var beak = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 0.9, 1 ), mat( THREE, 0xd8a23a ) );
+		beak.position.set( 4.1, 12.8, 0 );
+		g.add( beak );
+		[ -1.4, 1.4 ].forEach( function ( lz ) {
+			var leg = new THREE.Mesh( new THREE.BoxGeometry( 0.6, 3.4, 0.6 ), mat( THREE, 0x8a7a4a ) );
+			leg.position.set( 0, 1.7, lz );
+			g.add( leg );
+		} );
+		// the TRAIN — fanned up behind him, eyespots out
+		var train = new THREE.Mesh( new THREE.PlaneGeometry( 15, 13 ),
+			new THREE.MeshLambertMaterial( {
+				map: peacockTrainTex( THREE ), transparent: true, side: THREE.DoubleSide } ) );
+		train.position.set( -3.4, 9.5, 0 );
+		train.rotation.y = Math.PI / 2;
+		train.rotation.x = -0.28;
+		g.add( train );
+		g.scale.setScalar( 1.15 );
+		scene.add( g );
+		var body2d = Matter.Bodies.circle( 1631, 1210, 5, { frictionAir: 0.22, density: 0.0008 } );
+		Matter.Composite.add( engine.world, body2d );
+		peacock = { g: g, body: body2d, homeX: 1631, homeZ: 1281, wanderT: 900, cd: 0 };
+		PROMPTS.push( { id: 'peacock', name: 'the peacock', x: 1631, y: 1210, href: null,
+			prompt: 'The peacock — he thinks the treehouses are his' } );
+	}
+
+	function updatePeacock( dms ) {
+		if ( ! peacock ) return;
+		var p = peacock;
+		p.wanderT -= dms;
+		p.cd -= dms;
+		var px = p.body.position.x, pz = p.body.position.y;
+		if ( p.wanderT <= 0 ) {
+			p.wanderT = 1400 + Math.random() * 2600;
+			var dir = Math.hypot( px - p.homeX, pz - p.homeZ ) > 180
+				? Math.atan2( p.homeZ - pz, p.homeX - px )
+				: Math.random() * Math.PI * 2;
+			Matter.Body.setVelocity( p.body, { x: Math.cos( dir ) * 0.45, y: Math.sin( dir ) * 0.45 } );
+		}
+		var b = buggyBody;
+		if ( p.cd <= 0 && Math.hypot( px - b.position.x, pz - b.position.y ) < 50 &&
+		     Math.hypot( b.velocity.x, b.velocity.y ) > 1 ) {
+			p.cd = 1400;
+			var fa = Math.atan2( pz - b.position.y, px - b.position.x );
+			Matter.Body.setVelocity( p.body, { x: Math.cos( fa ) * 2, y: Math.sin( fa ) * 2 } );
+		}
+		p.g.position.set( px, heightAt( px, pz ), pz );
+		var v = p.body.velocity;
+		if ( Math.hypot( v.x, v.y ) > 0.1 ) p.g.rotation.y = -Math.atan2( v.y, v.x );
+		// keep his prompt where he is
+		for ( var i = 0; i < PROMPTS.length; i++ ) {
+			if ( PROMPTS[ i ].id === 'peacock' ) { PROMPTS[ i ].x = px; PROMPTS[ i ].y = pz; break; }
+		}
 	}
 
 	function buildChickens( THREE ) {
@@ -4397,6 +4535,14 @@
 			if ( ! farFromLandmarks( x, z, 280 ) || ! farFromRoads( x, z, 42 ) ||
 			     inPond( x, z ) || inCompound( x, z, 40 ) ||
 			     inMudArea( x, z, 40 ) || nearCreek( x, z, 40 ) ) return;
+			// stay OFF the launch features — apple trees were squatting on
+			// the hay piles and ramp run-ups
+			for ( var mi = 0; mi < MOUNDS.length; mi++ ) {
+				if ( Math.hypot( x - MOUNDS[ mi ].x, z - MOUNDS[ mi ].z ) < MOUNDS[ mi ].r * 1.6 + 34 ) return;
+			}
+			for ( var ri2 = 0; ri2 < RAMPS.length; ri2++ ) {
+				if ( Math.hypot( x - RAMPS[ ri2 ].x, z - RAMPS[ ri2 ].z ) < 110 ) return;
+			}
 			for ( var i = 0; i < spots.length; i++ ) {
 				if ( Math.hypot( x - spots[ i ].x, z - spots[ i ].z ) < minSpace ) return;
 			}
@@ -4707,21 +4853,80 @@
 		} );
 	}
 
+	// THE OUTER FOREST — the void beyond the section road becomes a belt of
+	// instanced conifers running from past the berms out beyond the world
+	// walls to the horizon. Three instanced draws for ~240 trees; only the
+	// reachable ones (inside the walls) get physics.
+	function buildForest( THREE ) {
+		var spots = [], guard = 0;
+		while ( spots.length < 240 && guard++ < 4000 ) {
+			var x = -640 + Math.random() * ( W + 1280 );
+			var z = -640 + Math.random() * ( H + 1280 );
+			var out = Math.max( Math.max( -x, x - W, 0 ), Math.max( -z, z - H, 0 ) );
+			if ( out < 300 || out > 640 ) continue;
+			// clear of the stands, light towers and drive-in billboards
+			if ( Math.hypot( x - 1900, z + 300 ) < 250 || Math.hypot( x - 2580, z + 300 ) < 250 ) continue;
+			var blocked = false;
+			[ { x: -300, z: -300 }, { x: W + 300, z: -300 },
+			  { x: -300, z: H + 300 }, { x: W + 300, z: H + 300 } ].forEach( function ( tw ) {
+				if ( Math.hypot( x - tw.x, z - tw.z ) < 110 ) blocked = true;
+			} );
+			for ( var li = 0; li < LINES.length && ! blocked; li++ ) {
+				if ( Math.hypot( x - LINES[ li ].x, z - LINES[ li ].z ) < 160 ) blocked = true;
+			}
+			for ( var si = 0; si < spots.length && ! blocked; si++ ) {
+				if ( Math.hypot( x - spots[ si ].x, z - spots[ si ].z ) < 52 ) blocked = true;
+			}
+			if ( blocked ) continue;
+			spots.push( { x: x, z: z, gy: hillsAt( x, z ), sc: 0.8 + Math.random() * 0.7 } );
+		}
+		var trunkInst = new THREE.InstancedMesh(
+			new THREE.CylinderGeometry( 3, 4.5, 24, 5 ), woodMat( THREE, 0x33281a ), spots.length );
+		var cone1 = new THREE.InstancedMesh(
+			lumpy( new THREE.ConeGeometry( 14, 52, 6 ), 0.11 ), leafMat( THREE, 0xffffff ), spots.length );
+		var cone2 = new THREE.InstancedMesh(
+			lumpy( new THREE.ConeGeometry( 8.5, 26, 6 ), 0.13 ), leafMat( THREE, 0xffffff ), spots.length );
+		var dummy = new THREE.Object3D();
+		var col = new THREE.Color();
+		var greens = [ 0x1d3a26, 0x254428, 0x1a3620, 0x2a4a2c ];
+		spots.forEach( function ( s, i ) {
+			dummy.rotation.y = Math.random() * Math.PI;
+			dummy.scale.set( s.sc, s.sc, s.sc );
+			dummy.position.set( s.x, s.gy + 12 * s.sc, s.z );
+			dummy.updateMatrix();
+			trunkInst.setMatrixAt( i, dummy.matrix );
+			dummy.position.set( s.x, s.gy + ( 24 + 20 ) * s.sc, s.z );
+			dummy.updateMatrix();
+			cone1.setMatrixAt( i, dummy.matrix );
+			col.setHex( greens[ i % 4 ] );
+			cone1.setColorAt( i, col );
+			dummy.position.set( s.x, s.gy + ( 24 + 44 ) * s.sc, s.z );
+			dummy.updateMatrix();
+			cone2.setMatrixAt( i, dummy.matrix );
+			col.setHex( greens[ ( i + 1 ) % 4 ] );
+			cone2.setColorAt( i, col );
+			var out2 = Math.max( Math.max( -s.x, s.x - W, 0 ), Math.max( -s.z, s.z - H, 0 ) );
+			if ( out2 < 415 ) { // reachable — give it a trunk to hit
+				Matter.Composite.add( engine.world,
+					Matter.Bodies.circle( s.x, s.z, 9 * s.sc, { isStatic: true } ) );
+			}
+		} );
+		scene.add( trunkInst );
+		scene.add( cone1 );
+		scene.add( cone2 );
+	}
+
 	function buildFence( THREE ) {
-		var step = 300;
-		for ( var x = 0; x < W; x += step ) {
-			fenceRun( THREE, x, 0, Math.min( x + step, W ), 0 );
+		// the perimeter fence rings the OUTSIDE of the section road now —
+		// the track is part of the quarter, not an outer loop beyond a fence
+		var F = 424, step = 300;
+		for ( var x = -F; x < W + F; x += step ) {
+			fenceRun( THREE, x, -F, Math.min( x + step, W + F ), -F );
+			fenceRun( THREE, x, H + F, Math.min( x + step, W + F ), H + F );
 		}
-		// south side leaves the farm gate open — the way out to the track
-		for ( var xa = 0; xa < 2180; xa += step ) {
-			fenceRun( THREE, xa, H, Math.min( xa + step, 2180 ), H );
-		}
-		for ( var xb = 2300; xb < W; xb += step ) {
-			fenceRun( THREE, xb, H, Math.min( xb + step, W ), H );
-		}
-		for ( var z = 0; z < H; z += step ) {
-			fenceRun( THREE, 0, z, 0, Math.min( z + step, H ) );
-			fenceRun( THREE, W, z, W, Math.min( z + step, H ) );
+		for ( var z = -F; z < H + F; z += step ) {
+			fenceRun( THREE, -F, z, -F, Math.min( z + step, H + F ) );
+			fenceRun( THREE, W + F, z, W + F, Math.min( z + step, H + F ) );
 		}
 	}
 
