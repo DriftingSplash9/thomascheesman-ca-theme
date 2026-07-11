@@ -2,6 +2,15 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * ANIMAL ART PASS (1.0.732): "at least they're not Minecraft" — the herd
+ * loses its crates. Ellipsoid barrels on cattle/horses/pigs (the chest/
+ * rump spheres finish the rounding), dark hooves; horse heads rebuilt
+ * (angled skull + dropped muzzle, tapered cylinder neck, forelock,
+ * hanging tapered tail); some cows carry horns, some an udder; sheep get
+ * a wool cap over the dark face, a fleece stub tail and dark legs; pigs
+ * get a disc snout with nostrils, brow-flopped ears and a two-nub curl
+ * tail.
+ *
  * FEEDBACK PASS (1.0.731): the grain elevator RETIRES — the /hcs landmark
  * is now a MEDIC HUT in the open field west of the old site (white canvas,
  * red cross on all four walls + the medic flag overhead; the "one of fewer
@@ -3505,7 +3514,7 @@
 		var headC = bull ? 0x0d0a08
 			: ( ( cow || horse ) ? new THREE.Color( bodyC ).multiplyScalar( 0.72 ).getHex() : 0x2a2420 );
 		var legC = bull ? 0x0d0a08
-			: ( ( cow || horse ) ? new THREE.Color( bodyC ).multiplyScalar( 0.55 ).getHex() : 0xbdb7a6 );
+			: ( ( cow || horse ) ? new THREE.Color( bodyC ).multiplyScalar( 0.55 ).getHex() : 0x3a342c );
 		var coatTex = cow ? hideTex( THREE ) : ( horse ? null : woolTex( THREE ) );
 		var bodyMat = coatTex ? skinMat( THREE, bodyC, coatTex ) : mat( THREE, bodyC );
 		var bw = horse ? 22 : ( cow ? 20 : 13 );
@@ -3513,9 +3522,16 @@
 		var bd = horse ? 8 : ( cow ? 10 : 9 );
 		var legH = horse ? 9 : ( cow ? 6 : 4 );
 		[ [ 1, 1 ], [ 1, -1 ], [ -1, 1 ], [ -1, -1 ] ].forEach( function ( c ) {
+			var lx = c[ 0 ] * ( bw / 2 - 2 ), lz = c[ 1 ] * ( bd / 2 - 1.5 );
 			var leg = new THREE.Mesh( new THREE.BoxGeometry( 1.6, legH, 1.6 ), mat( THREE, legC ) );
-			leg.position.set( c[ 0 ] * ( bw / 2 - 2 ), legH / 2, c[ 1 ] * ( bd / 2 - 1.5 ) );
+			leg.position.set( lx, legH / 2, lz );
 			g.add( leg );
+			// dark hooves ground the cattle + horses
+			if ( cow || horse ) {
+				var hoof = new THREE.Mesh( new THREE.BoxGeometry( 2, 1.4, 2 ), mat( THREE, 0x181410 ) );
+				hoof.position.set( lx, 0.7, lz );
+				g.add( hoof );
+			}
 		} );
 		// sheep are WOOLLY now — a lumpy fleece blob, not a crate; cattle
 		// and horses get rounded chest + rump so the silhouette reads flesh
@@ -3524,7 +3540,10 @@
 			body = new THREE.Mesh( lumpy( new THREE.SphereGeometry( bw * 0.62, 9, 7 ), 0.24 ), bodyMat );
 			body.scale.set( 1.15, 0.85, 0.8 );
 		} else {
-			body = new THREE.Mesh( new THREE.BoxGeometry( bw, bh, bd ), bodyMat );
+			// a real BARREL, not a crate: ellipsoid torso — the chest/rump
+			// spheres below finish the rounding ("not Minecraft" pass)
+			body = new THREE.Mesh( new THREE.SphereGeometry( 1, 12, 9 ), bodyMat );
+			body.scale.set( bw * 0.55, bh * 0.62, bd * 0.66 );
 		}
 		body.position.y = legH + bh / 2 - 0.5;
 		g.add( body );
@@ -3556,6 +3575,20 @@
 			tail.position.set( -bw / 2 - 0.6, legH + bh - 3.2, 0 );
 			tail.rotation.z = 0.16;
 			g.add( tail );
+			// a herd of individuals: some carry horns, some an udder
+			if ( ! bull && Math.random() < 0.45 ) {
+				[ -1, 1 ].forEach( function ( sd ) {
+					var horn = new THREE.Mesh( new THREE.BoxGeometry( 1.1, 1.1, 3.2 ), mat( THREE, 0xd8d0bc ) );
+					horn.position.set( bw / 2 + 2, legH + bh + 3, sd * 3.6 );
+					g.add( horn );
+				} );
+			}
+			if ( ! bull && Math.random() < 0.5 ) {
+				var udder = new THREE.Mesh( new THREE.SphereGeometry( 2.4, 8, 6 ), mat( THREE, 0xd8a090 ) );
+				udder.scale.set( 1.1, 0.75, 0.95 );
+				udder.position.set( -bw / 2 + 6, legH - 1.8, 0 );
+				g.add( udder );
+			}
 		}
 		if ( type === 'sheep' ) {
 			[ -1, 1 ].forEach( function ( sd ) {
@@ -3563,6 +3596,14 @@
 				ear.position.set( bw / 2 + 2, legH + bh + 1.4, sd * 3 );
 				g.add( ear );
 			} );
+			// a wool cap over the dark face + a stubby fleece tail
+			var cap = new THREE.Mesh( lumpy( new THREE.SphereGeometry( 2.7, 8, 6 ), 0.22 ), bodyMat );
+			cap.scale.set( 1, 0.7, 1.05 );
+			cap.position.set( bw / 2 + 1.6, legH + bh + 2.6, 0 );
+			g.add( cap );
+			var stub = new THREE.Mesh( lumpy( new THREE.SphereGeometry( 1.7, 7, 5 ), 0.25 ), bodyMat );
+			stub.position.set( -bw * 0.68, legH + bh - 1.5, 0 );
+			g.add( stub );
 		}
 		if ( ! bull ) {
 			// horses stand a real head taller than everything now (they were
@@ -3571,26 +3612,37 @@
 			g.scale.set( js, js, js );
 		}
 		if ( horse ) {
-			// raised neck + head, mane ridge, tail
-			head.position.set( bw / 2 + 4.5, legH + bh + 6, 0 );
-			head.scale.set( 1.2, 0.8, 0.75 );
-			var neck = new THREE.Mesh( new THREE.BoxGeometry( 4, 10, 3.6 ), mat( THREE, bodyC ) );
-			neck.position.set( bw / 2 - 0.5, legH + bh + 2, 0 );
-			neck.rotation.z = -0.35;
+			// a HEAD, not a plank: angled skull with a narrower muzzle
+			// dropping off it, forelock between pricked ears — the profile
+			// finally reads horse
+			head.geometry = new THREE.BoxGeometry( 5.6, 4.2, 3.2 );
+			head.position.set( bw / 2 + 5.2, legH + bh + 6.4, 0 );
+			head.rotation.z = -0.45;
+			var muzzle = new THREE.Mesh( new THREE.BoxGeometry( 4, 2.7, 2.4 ), mat( THREE, headC ) );
+			muzzle.position.set( bw / 2 + 8.6, legH + bh + 4.6, 0 );
+			muzzle.rotation.z = -0.45;
+			g.add( muzzle );
+			// arched, tapered neck in the coat colour
+			var neck = new THREE.Mesh( new THREE.CylinderGeometry( 1.9, 3, 11, 7 ), bodyMat );
+			neck.position.set( bw / 2 + 0.5, legH + bh + 1.6, 0 );
+			neck.rotation.z = -0.38;
 			g.add( neck );
-			var mane = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 9, 1.2 ), mat( THREE, horseManes[ hIdx ] ) );
-			mane.position.set( bw / 2 - 2.4, legH + bh + 3.4, 0 );
-			mane.rotation.z = -0.35;
+			var mane = new THREE.Mesh( new THREE.BoxGeometry( 1.5, 10, 1.6 ), mat( THREE, horseManes[ hIdx ] ) );
+			mane.position.set( bw / 2 - 2.2, legH + bh + 3.2, 0 );
+			mane.rotation.z = -0.38;
 			g.add( mane );
-			// pricked ears — the silhouette detail the horses were missing
+			var forelock = new THREE.Mesh( new THREE.BoxGeometry( 2, 1.4, 1.8 ), mat( THREE, horseManes[ hIdx ] ) );
+			forelock.position.set( bw / 2 + 3.4, legH + bh + 8.6, 0 );
+			g.add( forelock );
 			[ -1, 1 ].forEach( function ( sd ) {
 				var ear = new THREE.Mesh( new THREE.BoxGeometry( 1, 2.4, 1 ), mat( THREE, headC ) );
-				ear.position.set( bw / 2 + 3.6, legH + bh + 9, sd * 1.6 );
+				ear.position.set( bw / 2 + 4.4, legH + bh + 9.6, sd * 1.5 );
 				g.add( ear );
 			} );
-			var tail = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 8, 1.6 ), mat( THREE, horseManes[ hIdx ] ) );
-			tail.position.set( -bw / 2 - 0.5, legH + bh - 2, 0 );
-			tail.rotation.z = 0.4;
+			// the tail HANGS — full at the dock, tapering as it falls
+			var tail = new THREE.Mesh( new THREE.CylinderGeometry( 1.6, 0.6, 9, 5 ), mat( THREE, horseManes[ hIdx ] ) );
+			tail.position.set( -bw / 2 - 1.6, legH + bh - 3.5, 0 );
+			tail.rotation.z = 0.5;
 			g.add( tail );
 		}
 		if ( bull ) {
@@ -4197,20 +4249,40 @@
 			leg.position.set( c[ 0 ] * 3.6, 1.75, c[ 1 ] * 2 );
 			g.add( leg );
 		} );
-		var body = new THREE.Mesh( new THREE.BoxGeometry( 11, 7, 6.5 ), pink );
+		// a TUB, not a crate: ellipsoid body, round head, proper disc snout
+		// with nostrils, flopped ears and the curly tail
+		var body = new THREE.Mesh( new THREE.SphereGeometry( 1, 11, 8 ), pink );
+		body.scale.set( 6.3, 4.4, 4 );
 		body.position.y = 6.5;
 		g.add( body );
-		var head = new THREE.Mesh( new THREE.BoxGeometry( 4.5, 5, 5 ), pink );
+		var head = new THREE.Mesh( new THREE.SphereGeometry( 2.9, 9, 7 ), pink );
+		head.scale.set( 1, 0.95, 0.9 );
 		head.position.set( 7, 7, 0 );
 		g.add( head );
-		var snout = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 2, 2.4 ), mat( THREE, 0xb87a70 ) );
-		snout.position.set( 9.6, 6.4, 0 );
+		var snout = new THREE.Mesh( new THREE.CylinderGeometry( 1.5, 1.5, 1.4, 8 ), mat( THREE, 0xb87a70 ) );
+		snout.rotation.z = Math.PI / 2;
+		snout.position.set( 9.9, 6.6, 0 );
 		g.add( snout );
 		[ -1, 1 ].forEach( function ( sd ) {
-			var ear = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 1.8, 1.4 ), mat( THREE, 0xb87a70 ) );
-			ear.position.set( 6.4, 10, sd * 1.8 );
+			var nos = new THREE.Mesh( new THREE.BoxGeometry( 0.5, 0.7, 0.5 ), mat( THREE, 0x8a5a52 ) );
+			nos.position.set( 10.7, 6.6, sd * 0.55 );
+			g.add( nos );
+			// ears flopped forward over the brow
+			var ear = new THREE.Mesh( new THREE.BoxGeometry( 1.8, 2.2, 1.5 ), mat( THREE, 0xb87a70 ) );
+			ear.position.set( 7.6, 9.6, sd * 1.9 );
+			ear.rotation.z = 0.55;
+			ear.rotation.x = sd * 0.3;
 			g.add( ear );
 		} );
+		// the curl: two tiny offset nubs read as a twist at this scale
+		var t1 = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 0.7, 0.7 ), mat( THREE, 0xb87a70 ) );
+		t1.position.set( -6.6, 8, 0.4 );
+		t1.rotation.y = 0.7;
+		g.add( t1 );
+		var t2 = new THREE.Mesh( new THREE.BoxGeometry( 1.2, 0.6, 0.6 ), mat( THREE, 0xb87a70 ) );
+		t2.position.set( -7.3, 8.5, -0.3 );
+		t2.rotation.y = -0.8;
+		g.add( t2 );
 		scene.add( g );
 		var body2d = Matter.Bodies.circle( x, z, Math.max( 3, 6 * js ), { frictionAir: 0.18, density: 0.002 } );
 		Matter.Composite.add( engine.world, body2d );
