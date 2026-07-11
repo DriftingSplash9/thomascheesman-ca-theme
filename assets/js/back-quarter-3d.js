@@ -508,15 +508,15 @@
 		if ( trackJumpsBuilt ) return;
 		trackJumpsBuilt = true;
 		var X = { x: 1, z: 0 }, Z = { x: 0, z: 1 };
-		// SOUTH straight past the start line — a rhythm of three tables,
-		// building to a big steep one
+		// SOUTH straight past the start line — two floaty tables building to
+		// a steep SKY kicker (mix of big-air distance and big-height shots)
 		addJump( 2700, 2690, X, 'table', { h: 24, up: 52, flat: 42, down: 42 } );
 		addJump( 3200, 2690, X, 'table', { h: 30, up: 54, flat: 24, down: 28 } );
-		addJump( 3760, 2690, X, 'table', { h: 36, up: 56, flat: 18, down: 26 } );
+		addJump( 3760, 2690, X, 'kick', { h: 46, up: 42, down: 24 } ); // SKY shot
 		// EAST straight
 		addJump( 4650, 1820, Z, 'table', { h: 30, up: 54, flat: 22, down: 28 } );
 		addJump( 4650, 1240, Z, 'table', { h: 24, up: 52, flat: 38, down: 40 } );
-		addJump( 4650, 640, Z, 'kick', { h: 34, up: 58, down: 18 } ); // launch before the NE berm
+		addJump( 4650, 640, Z, 'kick', { h: 44, up: 46, down: 18 } ); // SKY before the NE berm
 		// WEST straight
 		addJump( -170, 700, Z, 'table', { h: 30, up: 54, flat: 22, down: 28 } );
 		addJump( -170, 1280, Z, 'table', { h: 26, up: 52, flat: 34, down: 38 } );
@@ -1171,13 +1171,8 @@
 		buildSoundToggle();
 
 		LANDMARKS.forEach( function ( lm ) { PROMPTS.push( lm ); } );
-		PROMPTS.push( {
-			id: 'familygate', name: 'the family gate', x: GATE.x + 6, y: GATE.z,
-			href: isFamily ? null : '/family-login',
-			prompt: isFamily
-				? 'The gate lifts for you — welcome home'
-				: 'The family gate — locked. The family key opens it'
-		} );
+		// (the physical family gate is gone — the treehouse pages carry the
+		// login gate themselves; the compound is open ground now)
 		PROMPTS.push( {
 			id: 'restack', name: 'the restack pad', x: restackPad.x, y: restackPad.z,
 			href: null, prompt: 'Park here a moment and the bales restack'
@@ -1445,9 +1440,16 @@
 			if ( groundRate < -60 && sp > 4.6 && ! inWater ) {
 				airborne = true;
 				// the lip drop alone launches modestly; carried climb rate
-				// (slope × speed) is what buys big air off ramps/mounds
-				vAlt = Math.min( 185, Math.max( Math.min( -groundRate * 0.85, 110 ), climb * 0.7 ) );
+				// (slope × speed) is what buys big air off ramps/mounds.
+				// Steeper cap + climb factor = launches go UP more…
+				vAlt = Math.min( 230, Math.max( Math.min( -groundRate * 0.85, 110 ), climb * 0.85 ) );
 				worldY = prevGy;
+				// …and a hard launch trades forward speed for that height
+				// (Thomas: "too far forward, not enough right up in the air")
+				if ( vAlt > 140 ) {
+					var keep2 = Math.max( 0.7, 1 - ( vAlt - 140 ) * 0.0026 );
+					Matter.Body.setVelocity( b, { x: b.velocity.x * keep2, y: b.velocity.y * keep2 } );
+				}
 			} else {
 				// afloat on the slough: ride the water line, bobbing
 				worldY = inWater
@@ -1628,7 +1630,7 @@
 			var d = Math.hypot( b.position.x - lm.x, b.position.y - lm.y );
 			// big buildings need a bigger trigger — you park at the wall,
 			// which is already ~half the footprint from the centre
-			var range = ( lm.id === 'familygate' || lm.id === 'restack' ) ? 130
+			var range = lm.id === 'restack' ? 130
 				: ( lm.w ? Math.max( 180, Math.max( lm.w, lm.h ) * ( lm.scale || 1 ) / 2 + 60 ) : 180 );
 			if ( d < range && d < nearD ) { near = lm; nearD = d; }
 		}
@@ -1751,7 +1753,7 @@
 	function buildJumps( THREE ) {
 		var dirt = applyAtmosphere( new THREE.MeshLambertMaterial( {
 			color: 0x4a3323, map: dirtTex( THREE ), side: THREE.DoubleSide } ), true );
-		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } );
+		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb45e, 1.15 ) } );
 		JUMPS.forEach( function ( j ) {
 			var hw = j.w / 2, N = 20;
 			function pt( sd, t, y ) {
@@ -1852,7 +1854,7 @@
 		// f² face exactly so the buggy rides the surface it sees
 		var dirt = applyAtmosphere( new THREE.MeshLambertMaterial( {
 			color: 0x5c4830, map: dirtTex( THREE ), side: THREE.DoubleSide } ), true );
-		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } );
+		var lampMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb45e, 1.15 ) } );
 		RAMPS.forEach( function ( r ) {
 			var hw = r.w / 2;
 			function pt( sd, t, y ) {
@@ -2578,8 +2580,8 @@
 	function addWindow( THREE, group, w, h, x, y, z, rotY ) {
 		var pane = new THREE.Mesh(
 			new THREE.PlaneGeometry( w, h ),
-			// 1.15: warm amber with a gentle halo — 1.7 blew out to white
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb65e, 1.15 ) } )
+			// deep warm amber, sub-1.0 so it can never clip toward white
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xff9440, 0.95 ) } )
 		);
 		pane.position.set( x, y, z );
 		if ( rotY ) pane.rotation.y = rotY;
@@ -2677,9 +2679,9 @@
 			if ( side < 0 ) face.rotation.y = Math.PI;
 			g.add( face );
 		} );
-		// a round bulb, softly lit — the glowing box read as a "light cube"
+		// a round bulb, softly lit — warm, never white
 		var lantern = new THREE.Mesh( new THREE.SphereGeometry( 1.9, 10, 8 ),
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.35 ) } ) );
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb45e, 1.05 ) } ) );
 		lantern.position.y = beamY + bh / 2 + 3.4;
 		g.add( lantern );
 		var cap = new THREE.Mesh( new THREE.ConeGeometry( 3.2, 2.8, 4 ), mat( THREE, 0x1c1512 ) );
@@ -2729,46 +2731,11 @@
 	 *  The family compound
 	 * ------------------------------------------------------------------ */
 	function buildCompound( THREE ) {
-		fenceRun( THREE, COMPOUND.x0, COMPOUND.z0, COMPOUND.x1, COMPOUND.z0 );
-		fenceRun( THREE, COMPOUND.x0, COMPOUND.z0, COMPOUND.x0, COMPOUND.z1 );
-		fenceRun( THREE, COMPOUND.x0, COMPOUND.z1, COMPOUND.x1, COMPOUND.z1 );
-		fenceRun( THREE, COMPOUND.x1, COMPOUND.z0, COMPOUND.x1, COMPOUND.gateZ0 );
-
-		var cx = ( COMPOUND.x0 + COMPOUND.x1 ) / 2;
-		var cz = ( COMPOUND.z0 + COMPOUND.z1 ) / 2;
-		var wReg = COMPOUND.x1 - COMPOUND.x0, hReg = COMPOUND.z1 - COMPOUND.z0;
-		Matter.Composite.add( engine.world, [
-			Matter.Bodies.rectangle( cx, COMPOUND.z0, wReg, 6, { isStatic: true } ),
-			Matter.Bodies.rectangle( cx, COMPOUND.z1, wReg, 6, { isStatic: true } ),
-			Matter.Bodies.rectangle( COMPOUND.x0, cz, 6, hReg, { isStatic: true } ),
-			Matter.Bodies.rectangle( COMPOUND.x1, ( COMPOUND.z0 + COMPOUND.gateZ0 ) / 2, 6,
-				COMPOUND.gateZ0 - COMPOUND.z0, { isStatic: true } )
-		] );
-
-		var gateH = hillsAt( GATE.x, GATE.z );
-		var postMat = mat( THREE, 0x59554c );
-		[ COMPOUND.gateZ0, COMPOUND.gateZ1 ].forEach( function ( z ) {
-			var p = new THREE.Mesh( new THREE.BoxGeometry( 6, 20, 6 ), postMat );
-			p.position.set( COMPOUND.x1, gateH + 10, z );
-			scene.add( p );
-		} );
-
-		var armGeo = new THREE.BoxGeometry( 2.4, 2.6, COMPOUND.gateZ1 - COMPOUND.gateZ0 - 4 );
-		armGeo.translate( 0, 0, ( COMPOUND.gateZ1 - COMPOUND.gateZ0 - 4 ) / 2 );
-		gateArm = new THREE.Mesh( armGeo, mat( THREE, 0xb8352c ) );
-		gateArm.position.set( COMPOUND.x1, gateH + 12, COMPOUND.gateZ0 + 2 );
-		scene.add( gateArm );
-		gateBody = Matter.Bodies.rectangle( GATE.x, GATE.z, 10,
-			COMPOUND.gateZ1 - COMPOUND.gateZ0, { isStatic: true } );
-		Matter.Composite.add( engine.world, gateBody );
-
+		// the fence + pay barrier are GONE (Thomas, 2026-07-10) — the kids'
+		// pages are gated by the family LOGIN itself, so the world stays
+		// open to drive. Only the sign remains, pointing the way.
 		buildSign( THREE, 'the treehouses · family only',
 			COMPOUND.x1 + 26, COMPOUND.gateZ0 - 14, HUB.x + 40, HUB.y );
-
-		var lamp = new THREE.Mesh( new THREE.SphereGeometry( 1.9, 10, 8 ),
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.35 ) } ) );
-		lamp.position.set( COMPOUND.x1, gateH + 22, COMPOUND.gateZ0 );
-		scene.add( lamp );
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -3481,7 +3448,7 @@
 
 	/* ---- the barnyard: coop + chickens, pig pen + mud pit ---- */
 	function penRun( THREE, x0, z0, x1, z1 ) {
-		var postMat = mat( THREE, 0x4a4034 );
+		var postMat = barnMat( THREE, 0x4a4034 );
 		var dx = x1 - x0, dz = z1 - z0;
 		var len = Math.hypot( dx, dz ), n = Math.max( 1, Math.round( len / 34 ) );
 		for ( var i = 0; i <= n; i++ ) {
@@ -3490,7 +3457,11 @@
 			p.position.set( px, hillsAt( px, pz ) + 5, pz );
 			scene.add( p );
 		}
-		var rail = new THREE.Mesh( new THREE.BoxGeometry( len, 1.5, 1.5 ), postMat );
+		var penTex = barnTex( THREE ).clone();
+		penTex.needsUpdate = true;
+		penTex.repeat.set( Math.max( 2, len / 26 ), 0.6 );
+		var rail = new THREE.Mesh( new THREE.BoxGeometry( len, 1.5, 1.5 ),
+			applyAtmosphere( new THREE.MeshLambertMaterial( { color: 0x4a4034, map: penTex } ), true ) );
 		rail.position.set( ( x0 + x1 ) / 2, hillsAt( ( x0 + x1 ) / 2, ( z0 + z1 ) / 2 ) + 8.4, ( z0 + z1 ) / 2 );
 		rail.rotation.y = -Math.atan2( dz, dx );
 		scene.add( rail );
@@ -3620,18 +3591,21 @@
 		penRun( THREE, PIGPEN.x - 72, PIGPEN.z - 78, PIGPEN.x + 72, PIGPEN.z - 78 );
 		penRun( THREE, PIGPEN.x - 72, PIGPEN.z - 78, PIGPEN.x - 72, PIGPEN.z + 78 );
 		penRun( THREE, PIGPEN.x + 72, PIGPEN.z - 78, PIGPEN.x + 72, PIGPEN.z + 78 );
-		// two huts — the herd grew
-		[ [ 48, -52 ], [ -48, -48 ] ].forEach( function ( hp ) {
+		// two huts at 4× — real pig housing, with dark open doorways
+		[ [ 42, -55 ], [ -42, -52 ] ].forEach( function ( hp ) {
 			var hx = PIGPEN.x + hp[ 0 ], hz = PIGPEN.z + hp[ 1 ];
-			var shed = new THREE.Mesh( new THREE.BoxGeometry( 24, 10, 16 ), woodMat( THREE, 0x54402a ) );
-			shed.position.set( hx, hillsAt( hx, hz ) + 5, hz );
+			var shed = new THREE.Mesh( new THREE.BoxGeometry( 48, 20, 32 ), woodMat( THREE, 0x54402a ) );
+			shed.position.set( hx, hillsAt( hx, hz ) + 10, hz );
 			scene.add( shed );
-			var shedRoof = new THREE.Mesh( new THREE.BoxGeometry( 28, 1.6, 20 ), mat( THREE, 0x3a2c1c ) );
-			shedRoof.position.set( hx, hillsAt( hx, hz ) + 11, hz );
+			var shedRoof = new THREE.Mesh( new THREE.BoxGeometry( 56, 3, 40 ), mat( THREE, 0x3a2c1c ) );
+			shedRoof.position.set( hx, hillsAt( hx, hz ) + 22, hz );
 			shedRoof.rotation.z = 0.12;
 			scene.add( shedRoof );
+			var doorway = new THREE.Mesh( new THREE.PlaneGeometry( 12, 13 ), mat( THREE, 0x14100c ) );
+			doorway.position.set( hx, hillsAt( hx, hz ) + 6.5, hz + 16.2 );
+			scene.add( doorway );
 			Matter.Composite.add( engine.world, Matter.Bodies.rectangle(
-				hx, hz, 24, 16, { isStatic: true } ) );
+				hx, hz, 48, 32, { isStatic: true } ) );
 		} );
 		// the mud pit — layered, rutted, glinting wet
 		buildMudPatch( THREE, MUD.x, MUD.z, MUD.r * 1.3, MUD.r, 0 );
@@ -3878,29 +3852,90 @@
 	}
 
 	function buildPumpjack( THREE ) {
-		// the oilpatch corner: a nodding pumpjack + a flare stack
-		var black = mat( THREE, 0x1c1512 );
-		var rust = mat( THREE, 0x8a3a2a );
+		// the oilpatch corner: a REAL pumping unit — A-frame samson post,
+		// walking beam with a curved horsehead + hanger cables, twin
+		// counterweight cranks with pitman arms, motor block, wellhead with
+		// a valve wheel, and the pipe run to the flare
+		var black = skinMat( THREE, 0x22201c, metalTex( THREE ) );
+		var rust = skinMat( THREE, 0x8a3a2a, metalTex( THREE ) );
 		var g = new THREE.Group();
-		var slab = new THREE.Mesh( new THREE.BoxGeometry( 30, 2, 12 ), mat( THREE, 0x4a443c ) );
+		var slab = new THREE.Mesh( new THREE.BoxGeometry( 34, 2, 16 ), stoneMat( THREE, 0x6a655c ) );
 		slab.position.y = 1;
 		g.add( slab );
-		var post = new THREE.Mesh( new THREE.BoxGeometry( 4, 20, 4 ), rust );
-		post.position.set( -2, 11, 0 );
-		g.add( post );
+		// A-frame samson post (two legs each side + cross braces)
+		[ -1, 1 ].forEach( function ( sd ) {
+			[ -4.5, 0.5 ].forEach( function ( lx ) {
+				var leg = new THREE.Mesh( new THREE.BoxGeometry( 2.2, 21, 2.2 ), rust );
+				leg.position.set( lx, 11.5, sd * ( 3.4 - 0.6 ) );
+				leg.rotation.x = sd * -0.13;
+				leg.rotation.z = lx < -2 ? 0.12 : -0.12;
+				g.add( leg );
+			} );
+			var brace = new THREE.Mesh( new THREE.BoxGeometry( 7, 1.4, 1.4 ), rust );
+			brace.position.set( -2, 12, sd * 2.4 );
+			g.add( brace );
+		} );
 		pumpBeam = new THREE.Group();
 		pumpBeam.position.set( -2, 21, 0 );
-		var beam = new THREE.Mesh( new THREE.BoxGeometry( 30, 3, 4 ), black );
+		var beam = new THREE.Mesh( new THREE.BoxGeometry( 32, 2.6, 3.4 ), black );
 		beam.position.x = 2;
 		pumpBeam.add( beam );
-		var horsehead = new THREE.Mesh( new THREE.BoxGeometry( 4, 9, 5 ), black );
-		horsehead.position.set( 16, -1, 0 );
-		pumpBeam.add( horsehead );
+		// the horsehead: a proper curved face (two angled slabs)
+		var headA = new THREE.Mesh( new THREE.BoxGeometry( 4.5, 8, 4.6 ), black );
+		headA.position.set( 17.4, -1.6, 0 );
+		headA.rotation.z = 0.18;
+		pumpBeam.add( headA );
+		var headB = new THREE.Mesh( new THREE.BoxGeometry( 3, 5.5, 4.6 ), black );
+		headB.position.set( 19.6, -3.4, 0 );
+		headB.rotation.z = 0.42;
+		pumpBeam.add( headB );
+		// hanger cable + polished rod dropping to the wellhead
+		var cable = new THREE.Mesh( new THREE.CylinderGeometry( 0.35, 0.35, 9, 5 ), black );
+		cable.position.set( 18.4, -8, 0 );
+		pumpBeam.add( cable );
 		g.add( pumpBeam );
-		pumpCrank = new THREE.Mesh( new THREE.CylinderGeometry( 5, 5, 3, 10 ), rust );
-		pumpCrank.rotation.x = Math.PI / 2;
-		pumpCrank.position.set( -13, 8, 0 );
+		// twin counterweight cranks — discs with offset weights, spun in render
+		pumpCrank = new THREE.Group();
+		pumpCrank.position.set( -13, 7.5, 0 );
+		[ -1, 1 ].forEach( function ( sd ) {
+			var disc = new THREE.Mesh( new THREE.CylinderGeometry( 5, 5, 1.6, 12 ), rust );
+			disc.rotation.x = Math.PI / 2;
+			disc.position.z = sd * 3.2;
+			pumpCrank.add( disc );
+			var weight = new THREE.Mesh( new THREE.BoxGeometry( 5.5, 3.4, 1.8 ), black );
+			weight.position.set( 0, -3.2, sd * 3.2 );
+			pumpCrank.add( weight );
+		} );
 		g.add( pumpCrank );
+		// pitman arms connecting cranks up to the beam tail
+		[ -1, 1 ].forEach( function ( sd ) {
+			var arm = new THREE.Mesh( new THREE.BoxGeometry( 1.2, 13, 1.2 ), black );
+			arm.position.set( -13.5, 14, sd * 3.2 );
+			arm.rotation.z = -0.08;
+			g.add( arm );
+		} );
+		// motor block + belt housing driving the cranks
+		var motor = new THREE.Mesh( new THREE.BoxGeometry( 7, 5, 6 ), black );
+		motor.position.set( -21, 4.5, 0 );
+		g.add( motor );
+		var belt = new THREE.Mesh( new THREE.CylinderGeometry( 2.2, 2.2, 1.4, 10 ), rust );
+		belt.rotation.x = Math.PI / 2;
+		belt.position.set( -18, 6.5, 3.4 );
+		g.add( belt );
+		// wellhead under the horsehead: casing + valve wheel
+		var casing = new THREE.Mesh( new THREE.CylinderGeometry( 1.6, 1.9, 7, 8 ), black );
+		casing.position.set( 16.4, 3.5, 0 );
+		g.add( casing );
+		var valve = new THREE.Mesh( new THREE.TorusGeometry( 1.7, 0.4, 6, 10 ), rust );
+		valve.position.set( 16.4, 7.6, 0 );
+		valve.rotation.x = Math.PI / 2;
+		g.add( valve );
+		// the pipe run heading off toward the flare stack
+		var pipe2 = new THREE.Mesh( new THREE.CylinderGeometry( 0.8, 0.8, 26, 6 ), black );
+		pipe2.rotation.z = Math.PI / 2;
+		pipe2.rotation.y = -0.5;
+		pipe2.position.set( 26, 1.8, -8 );
+		g.add( pipe2 );
 		var lm = { id: 'pumpjack', name: 'the pumpjack', x: 3820, y: 2280, href: null,
 			prompt: 'The pumpjack — the oilpatch kept the lights on' };
 		g.position.set( lm.x, hillsAt( lm.x, lm.y ), lm.y );
@@ -3932,7 +3967,7 @@
 	function updateScenery( dms, t ) {
 		if ( windmillBlades ) windmillBlades.rotation.z += dms * 0.0006;
 		if ( pumpBeam ) pumpBeam.rotation.z = Math.sin( t * 1.7 ) * 0.2;
-		if ( pumpCrank ) pumpCrank.rotation.y += dms * 0.0034;
+		if ( pumpCrank ) pumpCrank.rotation.z -= dms * 0.0034; // counterweights orbit
 		if ( flareFlame ) {
 			var fl = 0.75 + Math.sin( t * 13 ) * 0.18 + Math.random() * 0.14;
 			flareFlame.scale.set( 1, fl * 1.2, 1 );
@@ -4163,7 +4198,7 @@
 		// a lantern hangs from the ridge and lights the interior — no more
 		// black void when you wander in (glows under bloom)
 		var lantern = new THREE.Mesh( new THREE.SphereGeometry( 2.8, 10, 8 ),
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } ) );
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb45e, 1.1 ) } ) );
 		lantern.position.set( 0, 41, -8 );
 		g.add( lantern );
 		var cap = new THREE.Mesh( new THREE.ConeGeometry( 4, 3, 4 ), mat( THREE, 0x1c1512 ) );
@@ -4202,23 +4237,24 @@
 			}
 			spots.push( { x: x, z: z, gy: hillsAt( x, z ) } );
 		}
-		// hedgerows: brush along both shoulders of every farm road
+		// hedgerows: DENSE brush hugging both shoulders of every farm road —
+		// the trails carry the planting, the open quarter stays open
 		PATHS.forEach( function ( seg ) {
 			var ax = seg[ 0 ].x, az = seg[ 0 ].y, bx = seg[ 1 ].x, bz = seg[ 1 ].y;
 			var len = Math.hypot( bx - ax, bz - az );
 			var nx = -( bz - az ) / len, nz = ( bx - ax ) / len;
-			var count = Math.floor( len / 95 );
+			var count = Math.floor( len / 52 );
 			for ( var k = 0; k < count; k++ ) {
 				var t2 = ( k + 0.3 + Math.random() * 0.5 ) / count;
 				var side = Math.random() < 0.5 ? 1 : -1;
-				var off = 48 + Math.random() * 26;
+				var off = 44 + Math.random() * 20;
 				tryAdd( ax + ( bx - ax ) * t2 + nx * off * side,
-					az + ( bz - az ) * t2 + nz * off * side, 26 );
+					az + ( bz - az ) * t2 + nz * off * side, 21 );
 			}
 		} );
-		// bluffs: find a void (far from everything), plant a clump in it
+		// a few bluffs in the true voids (was 16 — they scattered the look)
 		var clusters = 0, cGuard = 0;
-		while ( clusters < 16 && cGuard++ < 400 ) {
+		while ( clusters < 7 && cGuard++ < 400 ) {
 			var cx = 300 + Math.random() * ( W - 600 );
 			var cz = 300 + Math.random() * ( H - 600 );
 			if ( ! farFromLandmarks( cx, cz, 340 ) || ! farFromRoads( cx, cz, 130 ) ||
@@ -4491,8 +4527,15 @@
 			scene.add( p );
 		}
 		var midY = hillsAt( ( x0 + x1 ) / 2, ( z0 + z1 ) / 2 );
+		// rails get their own texture repeat along the length — the shared
+		// barn map was stretched over 300 units and vanished
+		var railTex = barnTex( THREE ).clone();
+		railTex.needsUpdate = true;
+		railTex.repeat.set( Math.max( 2, len / 26 ), 0.6 );
+		var railMat2 = applyAtmosphere( new THREE.MeshLambertMaterial( {
+			color: 0x4a4034, map: railTex } ), true );
 		[ 12, 6 ].forEach( function ( y ) {
-			var rail = new THREE.Mesh( new THREE.BoxGeometry( len, 2, 2 ), postMat );
+			var rail = new THREE.Mesh( new THREE.BoxGeometry( len, 2, 2 ), railMat2 );
 			rail.position.set( ( x0 + x1 ) / 2, midY + y, ( z0 + z1 ) / 2 );
 			rail.rotation.y = -Math.atan2( dz, dx );
 			scene.add( rail );
@@ -4545,7 +4588,7 @@
 			post.position.set( START.x, hillsAt( START.x, pz ) + 17, pz );
 			scene.add( post );
 			var lamp = new THREE.Mesh( new THREE.SphereGeometry( 2.2, 10, 8 ),
-				new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.4 ) } ) );
+				new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb45e, 1.1 ) } ) );
 			lamp.position.set( START.x, hillsAt( START.x, pz ) + 37, pz );
 			scene.add( lamp );
 		} );
@@ -4700,9 +4743,9 @@
 
 	function loadLaps() {
 		if ( ghostStore ) return ghostStore;
-		// v3: the north straight changed (speed bumps + the MEGA ramp) — old
-		// ghosts ran different ground, fresh records only
-		try { ghostStore = JSON.parse( window.localStorage.getItem( 'tcBqLaps_v3' ) || 'null' ); } catch ( err ) {}
+		// v4: two track jumps became steep SKY kickers + launch physics
+		// retuned — old ghosts ran different ground, fresh records only
+		try { ghostStore = JSON.parse( window.localStorage.getItem( 'tcBqLaps_v4' ) || 'null' ); } catch ( err ) {}
 		if ( ! ghostStore || typeof ghostStore !== 'object' ) ghostStore = { best: null, recent: [] };
 		if ( ! ghostStore.recent ) ghostStore.recent = [];
 		return ghostStore;
@@ -4710,7 +4753,7 @@
 
 	function saveLaps( st ) {
 		ghostStore = st;
-		try { window.localStorage.setItem( 'tcBqLaps_v3', JSON.stringify( st ) ); } catch ( err ) {}
+		try { window.localStorage.setItem( 'tcBqLaps_v4', JSON.stringify( st ) ); } catch ( err ) {}
 	}
 
 	function fmtLap( ms ) {
@@ -4824,7 +4867,7 @@
 		bar.position.set( 2240, gh + 27, H - 6 );
 		scene.add( bar );
 		var lantern = new THREE.Mesh( new THREE.SphereGeometry( 2.2, 10, 8 ),
-			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffd9a0, 1.35 ) } ) );
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb45e, 1.05 ) } ) );
 		lantern.position.set( 2240, gh + 31, H - 6 );
 		scene.add( lantern );
 	}
