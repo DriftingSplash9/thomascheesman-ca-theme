@@ -2,6 +2,19 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * RACE DAY (1.0.740): the loose lap timer becomes STRUCTURED RACING +
+ * path-1 async multiplayer. Nothing times until you ARM a race at the
+ * start line — 1: single lap · 3: three-lap race · T: rolling time
+ * trial · X abandons; crossing unarmed just gets a hint chip, and laps
+ * no longer roll over silently (single/three finish with results; only
+ * the trial rolls). Direction stays free — you pick it off the line.
+ * THE FARM RECORD: the fastest visitor's lap (time + 20 Hz stream)
+ * lives in WP REST (inc/bq-ghost.php, tc-games/v1/bq-ghost, arcade-
+ * grade hardening) and races every player as a fourth CYAN ghost; beat
+ * it and your actual run takes the crown (name from localStorage
+ * tcBqRaceName, one-time prompt). HUD: lap n/3, trial lap count, 👻
+ * farm-record time.
+ *
  * THE PEACOCK IS MAGNIFICENT (1.0.739): rounded iridescent body (the
  * farm's ONLY Phong specular — he shimmers), breast + folded wings,
  * S-neck, white cheek flashes, gold cone beak, five-pin teal-tipped
@@ -702,6 +715,12 @@
 	var slip = 0; // wheelspin 0..1 — throttle on a soft surface, eased
 	var chickens = [], pigs = [];
 	var lap = { active: false, t: 0, dir: 0, next: 0, rec: [] };
+	// structured racing: nothing times until you ARM a race at the line
+	// (1 = single lap, 3 = three-lap race, T = rolling time trial, X quits)
+	var race = { mode: null, armed: null, lapNum: 0, laps: [] };
+	// the FARM RECORD — the fastest visitor ever, fetched from WP REST and
+	// raced as a fourth (cyan) ghost; beat it and your run takes the crown
+	var farmGhost = null, farmGhostState = 0; // 0 unfetched · 1 fetching · 2 done
 	var ghosts = [], ghostStore = null, prevSX = 0, lastHudTenth = -1;
 	var skyGroup = null, moonLight = null, moonTarget = null;
 	var ambLight = null, hemiLight = null;
@@ -1272,6 +1291,7 @@
 		initTracks( THREE );
 		initSmoke( THREE );
 		initMotes( THREE );
+		fetchFarmGhost(); // the farm-record lap rides in while you drive
 		buildSoundToggle();
 
 		LANDMARKS.forEach( function ( lm ) { PROMPTS.push( lm ); } );
@@ -1325,9 +1345,12 @@
 			+ tokenFound + '/' + tokenCount;
 		if ( lap.active ) {
 			txt += ' · ⏱ ' + fmtLap( lap.t );
+			if ( race.mode === 'three' ) txt += ' · lap ' + race.lapNum + '/3';
+			if ( race.mode === 'trial' ) txt += ' · trial lap ' + ( race.laps.length + 1 );
 		} else {
 			var st = loadLaps();
 			if ( st.best ) txt += ' · 🏁 ' + fmtLap( st.best.t );
+			if ( farmGhost && farmGhost.t ) txt += ' · 👻 ' + fmtLap( farmGhost.t );
 		}
 		hudEl.textContent = txt;
 	}
@@ -1342,7 +1365,8 @@
 			var k = e.key.toLowerCase();
 			var map = { w: 'up', arrowup: 'up', s: 'down', arrowdown: 'down',
 				a: 'left', arrowleft: 'left', d: 'right', arrowright: 'right',
-				enter: 'enter', escape: 'esc', h: 'honk' };
+				enter: 'enter', escape: 'esc', h: 'honk',
+				'1': 'race1', '3': 'race3', t: 'raceT', x: 'raceX' };
 			if ( k in map ) act = map[ k ];
 		}
 		if ( ! act ) return;
@@ -1352,6 +1376,10 @@
 		if ( down && act === 'esc' ) stage.blur();
 		if ( down && act === 'enter' && nearLandmark ) enterLandmark( nearLandmark );
 		if ( down && act === 'honk' ) honk();
+		if ( down && act === 'race1' ) armRace( 'single' );
+		if ( down && act === 'race3' ) armRace( 'three' );
+		if ( down && act === 'raceT' ) armRace( 'trial' );
+		if ( down && act === 'raceX' ) abandonRace();
 	}
 
 	function onClick( e ) {
@@ -5755,12 +5783,13 @@
 		} );
 
 		PROMPTS.push( { id: 'raceline', name: 'the section road', x: START.x, y: START.z, href: null,
-			prompt: 'The section road — cross the line to race the clock (and your ghosts)' } );
+			prompt: 'The start line — 1: single lap · 3: three-lap race · T: time trial' } );
 
-		// three ghost buggies: gold = best ever, silver = the two most recent
-		for ( var gi = 0; gi < 3; gi++ ) {
+		// four ghost buggies: gold = your best, silver ×2 = your recents,
+		// cyan = THE FARM RECORD (the fastest visitor ever, via REST)
+		for ( var gi = 0; gi < 4; gi++ ) {
 			var gm = new THREE.MeshLambertMaterial( {
-				color: gi === 0 ? 0xd8b25e : 0x8fa8c8,
+				color: gi === 0 ? 0xd8b25e : ( gi === 3 ? 0x7fd8d8 : 0x8fa8c8 ),
 				transparent: true, opacity: 0.34, depthWrite: false
 			} );
 			var gg = new THREE.Group();
@@ -5939,14 +5968,20 @@
 			if ( ! skipped && st.best && r.t === st.best.t ) { skipped = true; return; }
 			if ( r.s && streams.length < 3 ) streams.push( r.s );
 		} );
-		for ( var i = 0; i < ghosts.length; i++ ) {
+		for ( var i = 0; i < 3; i++ ) {
 			ghosts[ i ].s = streams[ i ] || null;
 			ghosts[ i ].gt = 0;
 			ghosts[ i ].mesh.visible = !! ghosts[ i ].s;
 		}
-		flashChip( streams.length
-			? 'Lap started — the ghosts are running'
-			: 'Lap started — three corners and home' );
+		// slot 3 (cyan) is the FARM RECORD — another visitor's actual run
+		// (skipped if the record IS your own local best, no point doubling)
+		var fg = farmGhost && farmGhost.s && ! ( st.best && farmGhost.t === st.best.t ) ? farmGhost : null;
+		ghosts[ 3 ].s = fg ? fg.s : null;
+		ghosts[ 3 ].gt = 0;
+		ghosts[ 3 ].mesh.visible = !! fg;
+		flashChip( fg
+			? 'GO — the farm record is running (' + fg.name + ' · ' + fmtLap( fg.t ) + ')'
+			: ( streams.length ? 'GO — the ghosts are running' : 'GO — three corners and home' ) );
 		tone( 784, 0.12, 0.12, 'square' ); // start blip
 	}
 
@@ -5964,6 +5999,84 @@
 			? 'NEW BEST LAP — ' + fmtLap( entry.t ) + ' 🏆'
 			: 'Lap ' + fmtLap( entry.t ) + ' · best ' + fmtLap( st.best.t ) );
 		if ( isBest ) fanfare(); else tone( 988, 0.16, 0.11, 'square' );
+		maybeClaimFarmRecord( entry );
+		return entry;
+	}
+
+	function armRace( mode ) {
+		if ( race.mode || ! buggyBody ) return;
+		if ( Math.hypot( buggyBody.position.x - START.x, buggyBody.position.y - START.z ) > 300 ) return;
+		race.armed = mode;
+		fetchFarmGhost();
+		flashChip( ( mode === 'single' ? 'SINGLE LAP' : ( mode === 'three' ? 'THREE-LAP RACE' : 'TIME TRIAL' ) )
+			+ ' armed — cross the line to start (X cancels)' );
+		tone( 659, 0.1, 0.1, 'square' );
+	}
+
+	function abandonRace() {
+		if ( ! race.mode && ! race.armed ) return;
+		var trialDone = race.mode === 'trial' && race.laps.length;
+		race.mode = null;
+		race.armed = null;
+		lap.active = false;
+		for ( var i = 0; i < ghosts.length; i++ ) ghosts[ i ].mesh.visible = false;
+		flashChip( trialDone
+			? '🏁 TRIAL OVER — ' + race.laps.length + ' lap' + ( race.laps.length === 1 ? '' : 's' )
+				+ ', best ' + fmtLap( Math.min.apply( null, race.laps ) )
+			: 'Race abandoned — the line will wait' );
+	}
+
+	function finishRace() {
+		var mode = race.mode;
+		race.mode = null;
+		lap.active = false;
+		for ( var i = 0; i < ghosts.length; i++ ) ghosts[ i ].mesh.visible = false;
+		if ( mode === 'three' ) {
+			var total = 0;
+			for ( var li = 0; li < race.laps.length; li++ ) total += race.laps[ li ];
+			flashChip( '🏁 THREE LAPS — ' + fmtLap( total )
+				+ ' · best lap ' + fmtLap( Math.min.apply( null, race.laps ) ) );
+		} else {
+			flashChip( '🏁 FINISH — ' + fmtLap( race.laps[ 0 ] ) );
+		}
+	}
+
+	// the farm record rides in lazily, first time anyone arms a race
+	function fetchFarmGhost() {
+		if ( farmGhostState || ! window.fetch ) return;
+		farmGhostState = 1;
+		fetch( '/wp-json/tc-games/v1/bq-ghost' )
+			.then( function ( r ) { return r.json(); } )
+			.then( function ( d ) { farmGhost = ( d && d.ghost ) || null; farmGhostState = 2; } )
+			.catch( function () { farmGhostState = 2; } );
+	}
+
+	// beat the farm record and your run — the actual stream — takes the
+	// crown for every future visitor to race against
+	function maybeClaimFarmRecord( entry ) {
+		if ( ! entry.s || farmGhostState !== 2 || ! window.fetch ) return;
+		if ( farmGhost && farmGhost.t <= entry.t ) return;
+		var nm = '';
+		try { nm = window.localStorage.getItem( 'tcBqRaceName' ) || ''; } catch ( err ) {}
+		if ( ! nm ) {
+			nm = ( window.prompt( 'FARM RECORD! Sign your run (name or initials):', '' ) || 'Anonymous' ).slice( 0, 16 );
+			try { window.localStorage.setItem( 'tcBqRaceName', nm ); } catch ( err ) {}
+		}
+		farmGhost = { name: nm, t: entry.t, s: entry.s }; // optimistic — server keeps the truly faster
+		fetch( '/wp-json/tc-games/v1/bq-ghost', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify( { name: nm, t: entry.t, s: entry.s } )
+		} ).then( function ( r ) { return r.json(); } ).then( function ( d ) {
+			if ( d && d.success && d.beaten ) {
+				flashChip( '🏆 FARM RECORD — ' + nm + ' · ' + fmtLap( entry.t ) );
+			} else if ( d && d.ghost ) {
+				// someone out-ran us in the meantime — pull their run down
+				farmGhost = null;
+				farmGhostState = 0;
+				fetchFarmGhost();
+			}
+		} ).catch( function () {} );
 	}
 
 	// called every 60 Hz physics step
@@ -5973,8 +6086,32 @@
 		var onLine = Math.abs( b.position.y - START.z ) < 80;
 		if ( onLine && ( ( prevSX < 0 && sx >= 0 ) || ( prevSX > 0 && sx <= 0 ) ) ) {
 			var dir = sx >= 0 ? 1 : -1; // 1 = heading east = counterclockwise
-			if ( lap.active && dir === lap.dir && lap.next === 3 ) finishLap();
-			startLap( dir );
+			if ( race.armed ) {
+				// the flag drops — direction is whichever way you drove off
+				race.mode = race.armed;
+				race.armed = null;
+				race.lapNum = 1;
+				race.laps = [];
+				startLap( dir );
+			} else if ( race.mode && lap.active && dir === lap.dir && lap.next === 3 ) {
+				var entry = finishLap();
+				race.laps.push( entry.t );
+				if ( race.mode === 'trial' ) {
+					startLap( dir ); // the trial rolls until X
+				} else if ( race.mode === 'three' && race.lapNum < 3 ) {
+					race.lapNum++;
+					startLap( dir );
+					flashChip( 'Lap ' + race.lapNum + ' of 3 — GO' );
+				} else {
+					finishRace();
+				}
+			} else if ( race.mode && lap.active && dir === lap.dir ) {
+				flashChip( 'Not yet — ' + ( 3 - lap.next ) + ' corner' + ( lap.next === 2 ? '' : 's' ) + ' to go' );
+			} else if ( race.mode && lap.active ) {
+				flashChip( 'WRONG WAY — turn her around!' );
+			} else {
+				flashChip( 'Pick a race first — 1: single lap · 3: three laps · T: time trial' );
+			}
 		}
 		prevSX = sx;
 		if ( ! lap.active ) return;
