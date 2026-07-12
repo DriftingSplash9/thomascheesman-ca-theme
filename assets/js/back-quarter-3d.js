@@ -2,6 +2,15 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * RWD + SPRUNG PASS (1.0.735): she's rear-wheel drive now — on the gas
+ * the tail kicks past the fronts' bite (angular kick scaled by throttle
+ * × steer × slip: a drift on dry dirt, full DONUTS in a mud/water
+ * spin-out) and on-throttle lateral grip loosens (power oversteer; lift
+ * and she tucks in). Landings are SPRUNG, not welded: impacts > 100
+ * rebound one damped hop (bounceAir guards the thud + never pogos), and
+ * chassisDip is a real damped spring that overshoots. Roost pools 60 →
+ * 100, spray cones fire from slip 0.35 (second pair past 0.7), hotter.
+ *
  * WHEELSPIN PASS (1.0.734): throttle on mud/water/creek SPINS OUT — a
  * `slip` factor (worst bogged near-still at full throttle, fading as
  * ground speed comes up) revs the engine UP (it used to rev DOWN with
@@ -650,6 +659,7 @@
 	var soundBtn = null;
 	var tokens = [], tokenCount = 0, tokenFound = 0;
 	var airborne = false, vAlt = 0, worldY = 0, prevGy = 0, climb = 0, chassisDip = 0;
+	var chassisVel = 0, bounceAir = false; // suspension spring + rebound-hop state
 	var groupPitchS = 0, groupRollS = 0; // smoothed whole-buggy terrain alignment
 	var airTime = 0; // seconds aloft — big air pays boost on the landing
 	var airPitch = 0, jumpCooldown = 0;
@@ -1413,6 +1423,10 @@
 		// looser — she slides now; on soft ground the tires barely bite,
 		// so the sideways slop mostly survives (mud-bog traction)
 		var grip = airborne ? 0.995 : ( inWater ? 0.94 : ( inMud ? 0.92 : 0.84 ) );
+		// REAR-WHEEL DRIVE: on the gas the rear tires spend their grip on
+		// GO, so the tail walks (power oversteer); lift off and she tucks
+		// back in. Wheelspin loosens it further.
+		if ( ! airborne && throttleInput > 0 ) grip = Math.min( 0.97, grip + 0.05 + slip * 0.04 );
 		var nvx = heading.x * fwd + lat.x * latSpeed * grip;
 		var nvy = heading.y * fwd + lat.y * latSpeed * grip;
 
@@ -1441,6 +1455,14 @@
 				( 1 - Math.min( 1, sp / ( cap * 1.15 ) ) * 0.65 );
 		}
 		slip += ( slipT - slip ) * 0.12;
+
+		// RWD tail-kick: power + steering rotates her past what the front
+		// wheels bite — a drift on dry dirt, full donuts in a mud/water
+		// spin-out (steer at a near-standstill and she comes right around)
+		if ( ! airborne && throttleInput > 0 && steerVal ) {
+			Matter.Body.setAngularVelocity( b, b.angularVelocity +
+				steerVal * throttleInput * ( 0.014 + slip * 0.035 ) * Math.min( 1, sp / 3 + slip ) );
+		}
 
 		if ( boostT > 0 ) boostT -= 16.666;
 		if ( jumpCooldown > 0 ) jumpCooldown -= 16.666;
@@ -1543,9 +1565,11 @@
 			if ( worldY <= landY ) {
 				airborne = false;
 				worldY = landY;
-				chassisDip = -Math.min( 7, 2 + ( -vAlt ) * 0.03 ); // suspension compresses
+				var impact = -vAlt;
+				chassisDip = -Math.min( 7, 2 + impact * 0.03 ); // suspension compresses
 				vAlt = 0;
-				if ( splash ) splashSound(); else thud( Math.hypot( b.velocity.x, b.velocity.y ) );
+				if ( splash ) splashSound();
+				else if ( ! bounceAir ) thud( Math.hypot( b.velocity.x, b.velocity.y ) );
 				var n = wrapAngle( airPitch );
 				if ( splash ) {
 					// splash-down — she floats
@@ -1587,6 +1611,17 @@
 				airPitch = 0;
 				airTime = 0;
 				megaAir = false;
+				// she's SPRUNG, not welded: a hard landing rebounds into a
+				// small damped hop (the rebound comes down under threshold,
+				// so it's one hop and settle — never a pogo)
+				if ( ! splash && ! bounceAir && impact > 100 ) {
+					airborne = true;
+					bounceAir = true;
+					vAlt = Math.min( 120, 30 + impact * 0.28 );
+					worldY = landY + 0.5;
+				} else {
+					bounceAir = false;
+				}
 			}
 		}
 		prevGy = gy;
@@ -1617,7 +1652,11 @@
 		tPitch = Math.max( -0.35, Math.min( 0.35, tPitch ) );
 		chassisGroup.rotation.x += ( tRoll - chassisGroup.rotation.x ) * 0.18;
 		chassisGroup.rotation.z += ( tPitch - chassisGroup.rotation.z ) * 0.18;
-		chassisDip += ( 0 - chassisDip ) * 0.2;             // suspension rebound
+		// suspension is a damped SPRING now — it overshoots and jiggles a
+		// touch on the way back instead of easing rigidly home
+		chassisVel += ( 0 - chassisDip ) * 0.26;
+		chassisVel *= 0.74;
+		chassisDip += chassisVel;
 		chassisGroup.position.y = 10 + chassisDip;
 		// wheelspin: spinning-out tires whirl far faster than the ground speed
 		for ( var i = 0; i < wheels.length; i++ ) wheels[ i ].rotation.z -= ( sp + slip * 12 ) * 0.09;
@@ -1689,9 +1728,13 @@
 				spawnSplash( wheelWorld( -18, -4 ), sp * 1.3 );
 			}
 			// dug-in wheelspin: spray CONES fan out behind the rear tires
-			if ( slip > 0.45 ) {
-				spawnSplash( wheelWorld( -16 - Math.random() * 6, 7 + Math.random() * 7 ), 2 + slip * 6 );
-				spawnSplash( wheelWorld( -16 - Math.random() * 6, -7 - Math.random() * 7 ), 2 + slip * 6 );
+			if ( slip > 0.35 ) {
+				spawnSplash( wheelWorld( -16 - Math.random() * 6, 7 + Math.random() * 7 ), 2 + slip * 8 );
+				spawnSplash( wheelWorld( -16 - Math.random() * 6, -7 - Math.random() * 7 ), 2 + slip * 8 );
+				if ( slip > 0.7 ) {
+					spawnSplash( wheelWorld( -20 - Math.random() * 8, 5 + Math.random() * 9 ), 3 + slip * 9 );
+					spawnSplash( wheelWorld( -20 - Math.random() * 8, -5 - Math.random() * 9 ), 3 + slip * 9 );
+				}
 			}
 		} else if ( inMud && ( sp > 1.2 || slip > 0.25 ) ) {
 			// ROOST: all four corners sling mud, harder with speed
@@ -1706,9 +1749,13 @@
 				spawnMud( wheelWorld( -18, -4 ), sp * 1.3 );
 			}
 			// dug-in wheelspin: mud CONES fan out behind the rear tires
-			if ( slip > 0.45 ) {
-				spawnMud( wheelWorld( -16 - Math.random() * 6, 7 + Math.random() * 7 ), 2 + slip * 6 );
-				spawnMud( wheelWorld( -16 - Math.random() * 6, -7 - Math.random() * 7 ), 2 + slip * 6 );
+			if ( slip > 0.35 ) {
+				spawnMud( wheelWorld( -16 - Math.random() * 6, 7 + Math.random() * 7 ), 2 + slip * 8 );
+				spawnMud( wheelWorld( -16 - Math.random() * 6, -7 - Math.random() * 7 ), 2 + slip * 8 );
+				if ( slip > 0.7 ) {
+					spawnMud( wheelWorld( -20 - Math.random() * 8, 5 + Math.random() * 9 ), 3 + slip * 9 );
+					spawnMud( wheelWorld( -20 - Math.random() * 8, -5 - Math.random() * 9 ), 3 + slip * 9 );
+				}
 			}
 		} else if ( inCreek && ( sp > 1.5 || slip > 0.3 ) ) {
 			spawnSplash( wheelWorld( 8, ( Math.random() < 0.5 ? 11 : -11 ) ), sp * 0.7 );
@@ -5923,8 +5970,8 @@
 	}
 
 	function initDust( THREE ) { initPool( THREE, dustPool, 44, makePuffTexture( THREE, 158, 138, 106 ) ); }
-	function initSplash( THREE ) { initPool( THREE, splashPool, 60, makePuffTexture( THREE, 140, 180, 214 ) ); }
-	function initMud( THREE ) { initPool( THREE, mudPool, 60, makePuffTexture( THREE, 74, 56, 38 ) ); }
+	function initSplash( THREE ) { initPool( THREE, splashPool, 100, makePuffTexture( THREE, 140, 180, 214 ) ); }
+	function initMud( THREE ) { initPool( THREE, mudPool, 100, makePuffTexture( THREE, 74, 56, 38 ) ); }
 
 	function spawnFrom( pool, at, sp ) {
 		for ( var i = 0; i < pool.length; i++ ) {
