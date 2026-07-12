@@ -2,6 +2,17 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * ATMOSPHERE PASS (1.0.736): the air is INHABITED — 220 dust motes
+ * drift on a lazy wind in a recycling cloud around the buggy (fuller by
+ * day, faint by night). The prairie chorus is sparse + DISTANT (2.6–7s
+ * gaps, panners 350–1000 out): crickets own the night, synth songbirds
+ * the day, FROGS croak from the slough rim (harder after dark). Stars:
+ * 2× the count at size 4 (was 900 at 7). Nights darker: moon 0.6→0.34
+ * floor, amb/hemi dip with it. The flare + firepit light DANCES (two
+ * incommensurate sines + jitter, and the PointLight itself sways around
+ * its base). The firepit CRACKLES through its own steep-rolloff panner
+ * (ref 8 / rolloff 2.6) — it swells fast as you walk up.
+ *
  * RWD + SPRUNG PASS (1.0.735): she's rear-wheel drive now — on the gas
  * the tail kicks past the fronts' bite (angular kick scaled by throttle
  * × steer × slip: a drift on dry dirt, full DONUTS in a mud/water
@@ -850,7 +861,9 @@
 		skyGroup.add( new THREE.Mesh( new THREE.SphereGeometry( 6500, 32, 16 ), skyMat ) );
 		skyMatRef = skyMat;
 
-		var N = 900, sp = new Float32Array( N * 3 );
+		// a FINER field: twice the stars at nearly half the size — dust of
+		// stars, not chunky squares
+		var N = 1800, sp = new Float32Array( N * 3 );
 		for ( var i = 0; i < N; i++ ) {
 			var y = Math.random() * 0.9 + 0.08;      // height fraction (upper sky)
 			var s = Math.sqrt( 1 - y * y ), a = Math.random() * Math.PI * 2, r = 6200;
@@ -861,7 +874,7 @@
 		var starGeo = new THREE.BufferGeometry();
 		starGeo.setAttribute( 'position', new THREE.BufferAttribute( sp, 3 ) );
 		starMatRef = new THREE.PointsMaterial( {
-			color: 0xcfe0ff, size: 7, sizeAttenuation: false, fog: false,
+			color: 0xcfe0ff, size: 4, sizeAttenuation: false, fog: false,
 			transparent: true, opacity: 0.9
 		} );
 		skyGroup.add( new THREE.Points( starGeo, starMatRef ) );
@@ -926,9 +939,11 @@
 			atmo.amt.value = 0.42 + ( 1 - df ) * 0.18; // heavier at night
 		}
 		// day stack trimmed — the old sums clipped white walls to paper
-		ambLight.intensity = 0.5 + df * 0.32;
-		hemiLight.intensity = 0.32 + df * 0.26;
-		moonLight.intensity = 0.6 + df * 0.36;
+		// darker nights (Thomas's call): the moon backs way off and the
+		// fills dip with it — the burning windows/lanterns carry the dark
+		ambLight.intensity = 0.44 + df * 0.38;
+		hemiLight.intensity = 0.26 + df * 0.32;
+		moonLight.intensity = 0.34 + df * 0.62;
 		moonLight.color.copy( dnNight.sun ).lerp( dnDay.sun, df );
 		starMatRef.opacity = 0.9 * ( 1 - df );
 		// bloom is a NIGHT instrument: by day the threshold rises past any
@@ -1234,6 +1249,7 @@
 		initFireworks( THREE );
 		initTracks( THREE );
 		initSmoke( THREE );
+		initMotes( THREE );
 		buildSoundToggle();
 
 		LANDMARKS.forEach( function ( lm ) { PROMPTS.push( lm ); } );
@@ -1771,6 +1787,7 @@
 		}
 		updateTracks( dms );
 		updateSmoke( dms );
+		updateMotes( dms, t );
 		updateAudio( dms, sp );
 
 		var near = null, nearD = 1e9;
@@ -4819,6 +4836,7 @@
 		scene.add( flareFlame );
 		flareLight = new THREE.PointLight( 0xff8c3a, 0.8, 560 );
 		flareLight.position.set( fx, fy + 146, fz );
+		flareLight.userData = { bx: fx, bz: fz }; // base — the dance wobbles around it
 		scene.add( flareLight );
 		Matter.Composite.add( engine.world, Matter.Bodies.circle( fx, fz, 5, { isStatic: true } ) );
 	}
@@ -4828,13 +4846,20 @@
 		if ( pumpBeam ) pumpBeam.rotation.z = Math.sin( t * 1.7 ) * 0.2;
 		if ( pumpCrank ) pumpCrank.rotation.z -= dms * 0.0034; // counterweights orbit
 		if ( flareFlame ) {
-			var fl = 0.75 + Math.sin( t * 13 ) * 0.18 + Math.random() * 0.14;
-			flareFlame.scale.set( 1, fl * 1.2, 1 );
+			// the warm light DANCES: two incommensurate sines + jitter on the
+			// intensity, and the light itself sways around its base — the
+			// glow crawls across the ground the way real flame-light does
+			var fl = 0.72 + Math.sin( t * 13 ) * 0.14 + Math.sin( t * 29 + 1.7 ) * 0.1 + Math.random() * 0.16;
+			flareFlame.scale.set( 1 + Math.sin( t * 17 ) * 0.08, fl * 1.2, 1 );
 			flareFlame.material.opacity = 0.6 + fl * 0.3;
-			if ( flareLight ) flareLight.intensity = 0.4 + fl * 0.5;
+			if ( flareLight ) {
+				flareLight.intensity = 0.32 + fl * 0.78;
+				flareLight.position.x = flareLight.userData.bx + Math.sin( t * 21 ) * 4;
+				flareLight.position.z = flareLight.userData.bz + Math.cos( t * 17 ) * 4;
+			}
 		}
 		if ( fireFlames.length ) {
-			var ff = 0.7 + Math.sin( t * 11 + 1 ) * 0.2 + Math.random() * 0.18;
+			var ff = 0.68 + Math.sin( t * 11 + 1 ) * 0.16 + Math.sin( t * 23 ) * 0.1 + Math.random() * 0.18;
 			for ( var fi2 = 0; fi2 < fireFlames.length; fi2++ ) {
 				// each layer breathes on its own phase and slowly twists
 				var fw = 1 + Math.sin( t * 7 + fi2 * 2.1 ) * 0.12;
@@ -4842,7 +4867,11 @@
 				fireFlames[ fi2 ].rotation.y += 0.012 + fi2 * 0.009;
 				fireFlames[ fi2 ].material.opacity = 0.45 + ff * 0.4;
 			}
-			if ( fireLight ) fireLight.intensity = 0.55 + ff * 0.5;
+			if ( fireLight ) {
+				fireLight.intensity = 0.42 + ff * 0.78;
+				fireLight.position.x = fireLight.userData.bx + Math.sin( t * 19 ) * 3;
+				fireLight.position.z = fireLight.userData.bz + Math.cos( t * 26 ) * 3;
+			}
 		}
 	}
 
@@ -4975,6 +5004,7 @@
 		} );
 		fireLight = new THREE.PointLight( 0xff9c46, 0.9, 420 );
 		fireLight.position.set( HX, gy + 14, HZ );
+		fireLight.userData = { bx: HX, bz: HZ }; // base — the dance wobbles around it
 		scene.add( fireLight );
 		// log benches around the pit
 		var logMat = mat( THREE, 0x4a3423 );
@@ -6141,6 +6171,52 @@
 		}
 	}
 
+	// AIR MOTES — fine dust hanging in the air, drifting on a lazy wind.
+	// The cloud recycles around the buggy so the air is always inhabited;
+	// each recycled mote re-seats itself off the terrain under it.
+	var moteField = null, MOTE_N = 220, MOTE_R = 340;
+	function initMotes( THREE ) {
+		var bx = buggyBody ? buggyBody.position.x : SPAWN.x;
+		var bz = buggyBody ? buggyBody.position.y : SPAWN.y;
+		var pos = new Float32Array( MOTE_N * 3 );
+		for ( var i = 0; i < MOTE_N; i++ ) {
+			var mx = bx + ( Math.random() - 0.5 ) * MOTE_R * 2;
+			var mz = bz + ( Math.random() - 0.5 ) * MOTE_R * 2;
+			pos[ i * 3 ] = mx;
+			pos[ i * 3 + 1 ] = hillsAt( mx, mz ) + 3 + Math.random() * 55;
+			pos[ i * 3 + 2 ] = mz;
+		}
+		var geo = new THREE.BufferGeometry();
+		geo.setAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+		moteField = new THREE.Points( geo, new THREE.PointsMaterial( {
+			map: makePuffTexture( THREE, 216, 206, 182 ), color: 0xd8cdb4,
+			size: 2.4, sizeAttenuation: true, transparent: true,
+			opacity: 0.3, depthWrite: false
+		} ) );
+		scene.add( moteField );
+	}
+	function updateMotes( dms, t ) {
+		if ( ! moteField || ! buggyBody ) return;
+		var pos = moteField.geometry.attributes.position;
+		var bx = buggyBody.position.x, bz = buggyBody.position.y;
+		var dt2 = dms / 1000;
+		for ( var i = 0; i < MOTE_N; i++ ) {
+			var x = pos.getX( i ) + ( 2.6 + Math.sin( t * 0.7 + i ) * 1.8 ) * dt2;
+			var y = pos.getY( i ) + Math.sin( t * 1.1 + i * 2.7 ) * 2.4 * dt2;
+			var z = pos.getZ( i ) + Math.cos( t * 0.5 + i * 1.3 ) * 2.2 * dt2;
+			var re = false;
+			if ( x < bx - MOTE_R ) { x += MOTE_R * 2; re = true; }
+			else if ( x > bx + MOTE_R ) { x -= MOTE_R * 2; re = true; }
+			if ( z < bz - MOTE_R ) { z += MOTE_R * 2; re = true; }
+			else if ( z > bz + MOTE_R ) { z -= MOTE_R * 2; re = true; }
+			if ( re ) y = hillsAt( x, z ) + 3 + Math.random() * 55;
+			pos.setXYZ( i, x, y, z );
+		}
+		pos.needsUpdate = true;
+		// motes catch the light — fuller by day, faint sparks by night
+		moteField.material.opacity = 0.12 + dayFactor * 0.22;
+	}
+
 	function initSmoke( THREE ) {
 		var tex = makePuffTexture( THREE, 186, 188, 198 );
 		// chimney tops: farmhouse local (22, 77, -10) × 3.0, cookshack
@@ -6286,6 +6362,20 @@
 		audio.tireGain = audio.ctx.createGain(); audio.tireGain.gain.value = 0;
 		audio.noise.connect( audio.tireBP ); audio.tireBP.connect( audio.tireGain );
 		audio.tireGain.connect( audio.master );
+
+		// FIRE CRACKLE — the firepit's voice: band-passed noise POPPED at
+		// random (updateAudio drives the pops); its own steep-rolloff panner
+		// so it swells fast as you walk up and dies away across the yard
+		audio.crackleGain = audio.ctx.createGain();
+		audio.crackleGain.gain.value = 0;
+		var ckBP = audio.ctx.createBiquadFilter();
+		ckBP.type = 'bandpass'; ckBP.frequency.value = 2400; ckBP.Q.value = 0.55;
+		audio.noise.connect( ckBP );
+		ckBP.connect( audio.crackleGain );
+		var ckPan = makePanner( 1580, 800 ); // the firepit
+		ckPan.refDistance = 8;
+		ckPan.rolloffFactor = 2.6;
+		audio.crackleGain.connect( ckPan );
 
 		audio.noise.start();
 	}
@@ -6507,9 +6597,31 @@
 			audio.tireBP.frequency.value += ( tf - audio.tireBP.frequency.value ) * 0.2;
 		}
 
-		// scheduled ambience
+		// scheduled ambience — the prairie chorus: sparse and DISTANT, never
+		// constant. Crickets own the night, songbirds the day, and the
+		// frogs sing from the slough rim (harder after dark).
 		audio.cricketT = ( audio.cricketT || 0 ) - dms;
-		if ( audio.cricketT <= 0 ) { audio.cricketT = 900 + Math.random() * 1700; cricket(); }
+		if ( audio.cricketT <= 0 ) {
+			audio.cricketT = 2600 + Math.random() * 4600;
+			if ( dayFactor < 0.5 ) cricket(); else birdChirp();
+		}
+		audio.frogT = ( audio.frogT || 0 ) - dms;
+		if ( audio.frogT <= 0 ) {
+			audio.frogT = ( dayFactor < 0.5 ? 1700 : 4200 ) + Math.random() * 3800;
+			frogCroak();
+		}
+		// the fire CRACKLES — random pops through the steep-rolloff panner;
+		// distance does "louder as you close in", this keeps it irregular
+		if ( audio.crackleGain ) {
+			audio.crackleT = ( audio.crackleT || 0 ) - dms;
+			if ( audio.crackleT <= 0 ) {
+				audio.crackleT = 30 + Math.random() * 170;
+				var ck0 = audio.ctx.currentTime;
+				audio.crackleGain.gain.cancelScheduledValues( ck0 );
+				audio.crackleGain.gain.setValueAtTime( 0.5 + Math.random() * 0.9, ck0 );
+				audio.crackleGain.gain.exponentialRampToValueAtTime( 0.06, ck0 + 0.04 + Math.random() * 0.1 );
+			}
+		}
 		audio.cluckT = ( audio.cluckT || 0 ) - dms;
 		if ( audio.cluckT <= 0 ) {
 			audio.cluckT = 4200 + Math.random() * 6500;
@@ -6653,7 +6765,7 @@
 	}
 
 	// a short tone helper (beeps, snort pitch, fanfare notes)
-	function tone( freq, dur, peak, type, t0 ) {
+	function tone( freq, dur, peak, type, t0, dest ) {
 		if ( ! audio.on || ! audio.ctx ) return;
 		t0 = t0 || audio.ctx.currentTime;
 		var o = audio.ctx.createOscillator();
@@ -6663,7 +6775,7 @@
 		g.gain.setValueAtTime( 0.0001, t0 );
 		g.gain.exponentialRampToValueAtTime( peak, t0 + 0.015 );
 		g.gain.exponentialRampToValueAtTime( 0.0001, t0 + dur );
-		o.connect( g ); g.connect( audio.master );
+		o.connect( g ); g.connect( dest || audio.master );
 		o.start( t0 ); o.stop( t0 + dur + 0.02 );
 	}
 
@@ -6687,10 +6799,74 @@
 		noiseBurst( 0.16, 'lowpass', 500, 0.7, 0.06 );
 	}
 	function snort() { noiseBurst( 0.28, 'bandpass', 340, 1.4, 0.11, 190 ); }
+	// a random patch of distant prairie, bearing off the buggy — the
+	// chorus surrounds you but is never ON you
+	function distantAt( minD, maxD ) {
+		var a = Math.random() * Math.PI * 2;
+		var d = minD + Math.random() * ( maxD - minD );
+		return makePanner( buggyBody.position.x + Math.cos( a ) * d,
+			buggyBody.position.y + Math.sin( a ) * d );
+	}
 	function cricket() {
 		if ( ! audio.on || ! audio.ctx ) return;
 		var t0 = audio.ctx.currentTime;
-		for ( var i = 0; i < 3; i++ ) tone( 4300 + Math.random() * 300, 0.03, 0.018, 'triangle', t0 + i * 0.055 );
+		var out = distantAt( 380, 1000 );
+		var n = 3 + ( Math.random() * 3 | 0 );
+		for ( var i = 0; i < n; i++ ) tone( 4300 + Math.random() * 300, 0.03, 0.06, 'triangle', t0 + i * 0.055, out );
+	}
+	// a distant songbird — a few warbled down-chirps from somewhere off
+	// in the trees
+	function birdChirp() {
+		if ( ! audio.on || ! audio.ctx ) return;
+		var t0 = audio.ctx.currentTime;
+		var out = distantAt( 350, 950 );
+		var n = 2 + ( Math.random() * 3 | 0 );
+		var f0 = 2300 + Math.random() * 1400;
+		for ( var i = 0; i < n; i++ ) {
+			var ts = t0 + i * ( 0.11 + Math.random() * 0.07 );
+			var o = audio.ctx.createOscillator();
+			o.type = 'sine';
+			o.frequency.setValueAtTime( f0 + Math.random() * 500, ts );
+			o.frequency.exponentialRampToValueAtTime( f0 * ( 0.6 + Math.random() * 0.25 ), ts + 0.09 );
+			var g = audio.ctx.createGain();
+			g.gain.setValueAtTime( 0.0001, ts );
+			g.gain.exponentialRampToValueAtTime( 0.14, ts + 0.02 );
+			g.gain.exponentialRampToValueAtTime( 0.0001, ts + 0.1 );
+			o.connect( g ); g.connect( out );
+			o.start( ts ); o.stop( ts + 0.12 );
+		}
+	}
+	// frogs on the slough rim — low sawtooth croaks with a throat-sac
+	// rattle, placed on the shore so the pond announces itself
+	function frogCroak() {
+		if ( ! audio.on || ! audio.ctx ) return;
+		var th = Math.random() * Math.PI * 2;
+		var rr = pondR( th ) + 4;
+		var out = makePanner( POND.x + Math.cos( th ) * rr, POND.z + Math.sin( th ) * rr );
+		var t0 = audio.ctx.currentTime;
+		var n = 1 + ( Math.random() * 3 | 0 );
+		for ( var i = 0; i < n; i++ ) {
+			var ts = t0 + i * ( 0.32 + Math.random() * 0.18 );
+			var o = audio.ctx.createOscillator();
+			o.type = 'sawtooth';
+			o.frequency.setValueAtTime( 82 + Math.random() * 30, ts );
+			o.frequency.linearRampToValueAtTime( 64, ts + 0.16 );
+			var wob = audio.ctx.createOscillator(); // the throat-sac rattle
+			wob.frequency.value = 22 + Math.random() * 8;
+			var wg = audio.ctx.createGain();
+			wg.gain.value = 0.5;
+			var g = audio.ctx.createGain();
+			g.gain.setValueAtTime( 0.0001, ts );
+			g.gain.exponentialRampToValueAtTime( 0.85, ts + 0.03 );
+			g.gain.exponentialRampToValueAtTime( 0.0001, ts + 0.2 );
+			wob.connect( wg ); wg.connect( g.gain );
+			var lp = audio.ctx.createBiquadFilter();
+			lp.type = 'lowpass';
+			lp.frequency.value = 640;
+			o.connect( lp ); lp.connect( g ); g.connect( out );
+			o.start( ts ); o.stop( ts + 0.22 );
+			wob.start( ts ); wob.stop( ts + 0.22 );
+		}
 	}
 	function softCluck() { noiseBurst( 0.14, 'bandpass', 700, 1.2, 0.045, 480 ); }
 	function cheer( level ) {
