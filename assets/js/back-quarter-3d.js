@@ -2,6 +2,13 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * HEADLIGHT FIX (1.0.737): the spots aimed nearly level (target 300 out
+ * at −4 → ~3° slope), so the beams sailed over the dirt and lit only
+ * what stood at lamp height. Targets now 120 out at −10 (cone centre
+ * strikes ~55 ahead), cone widened 0.46→0.54 + penumbra 0.75, intensity
+ * 0.8, plus a small warm PointLight fill off the bull bar for the first
+ * few metres of ground.
+ *
  * ATMOSPHERE PASS (1.0.736): the air is INHABITED — 220 dust motes
  * drift on a lazy wind in a recycling cloud around the buggy (fuller by
  * day, faint by night). The prairie chorus is sparse + DISTANT (2.6–7s
@@ -7037,12 +7044,21 @@
 			bulb.position.set( 24.2, 4.4, z );
 			chassisGroup.add( bulb );
 			// warmer + gentler: 1.1 pale-gold washed white walls to paper
-			var spot = new THREE.SpotLight( 0xffb45e, 0.72, 440, 0.46, 0.6, 1.3 );
+			var spot = new THREE.SpotLight( 0xffb45e, 0.8, 440, 0.54, 0.75, 1.3 );
 			spot.position.set( 22, 12, z );
-			spot.target.position.set( 300, -4, z * 3 );
+			// aim DOWN the road, not along it: the old target (300 out, −4)
+			// gave a 3° slope, so the beam sailed over the dirt and only lit
+			// whatever stood at lamp height. The cone centre now strikes the
+			// ground ~55 units ahead — a real lit pool in front of her.
+			spot.target.position.set( 120, -10, z * 2 );
 			g.add( spot );
 			g.add( spot.target );
 		} );
+		// ground FILL: a warm pool right off the bull bar — catches the
+		// dirt the spot cones still fly over in the first few metres
+		var hlFill = new THREE.PointLight( 0xffb45e, 0.34, 150, 1.7 );
+		hlFill.position.set( 42, 8, 0 );
+		g.add( hlFill );
 
 		// taillights (they bloom), exhaust with a chrome tip, mud flaps
 		var tailMat = new THREE.MeshBasicMaterial( { color: glow( THREE, 0xff3b30, 1.5 ) } );
