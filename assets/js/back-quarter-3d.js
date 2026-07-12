@@ -2,6 +2,13 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * FEEL TRIM (1.0.738): the fire crackle clicked like FIRECRACKERS — the
+ * pops were instant gain jumps (discontinuity = click) through a bright
+ * 2400Hz band. Now 1100Hz, ramped 14ms attacks, softer pops (0.12–0.28,
+ * one in ~8 snaps 0.5), slower cadence. And the landing bounce is for
+ * BIG hits only: threshold 100→180, rebound proportional (0.2×, no +30
+ * floor) — a small hill-roller no longer rebounds higher than the hop.
+ *
  * HEADLIGHT FIX (1.0.737): the spots aimed nearly level (target 300 out
  * at −4 → ~3° slope), so the beams sailed over the dirt and lit only
  * what stood at lamp height. Targets now 120 out at −10 (cone centre
@@ -1634,13 +1641,15 @@
 				airPitch = 0;
 				airTime = 0;
 				megaAir = false;
-				// she's SPRUNG, not welded: a hard landing rebounds into a
-				// small damped hop (the rebound comes down under threshold,
-				// so it's one hop and settle — never a pogo)
-				if ( ! splash && ! bounceAir && impact > 100 ) {
+				// she's SPRUNG, not welded — but only BIG landings hop. The
+				// old +30 floor at a 100 threshold made a small hill-roller
+				// rebound nearly as high as the hop itself; now the rebound
+				// is purely proportional and rolling terrain never triggers
+				// it (the chassis spring carries the everyday squish).
+				if ( ! splash && ! bounceAir && impact > 180 ) {
 					airborne = true;
 					bounceAir = true;
-					vAlt = Math.min( 120, 30 + impact * 0.28 );
+					vAlt = Math.min( 80, impact * 0.2 );
 					worldY = landY + 0.5;
 				} else {
 					bounceAir = false;
@@ -6376,7 +6385,7 @@
 		audio.crackleGain = audio.ctx.createGain();
 		audio.crackleGain.gain.value = 0;
 		var ckBP = audio.ctx.createBiquadFilter();
-		ckBP.type = 'bandpass'; ckBP.frequency.value = 2400; ckBP.Q.value = 0.55;
+		ckBP.type = 'bandpass'; ckBP.frequency.value = 1100; ckBP.Q.value = 0.5;
 		audio.noise.connect( ckBP );
 		ckBP.connect( audio.crackleGain );
 		var ckPan = makePanner( 1580, 800 ); // the firepit
@@ -6617,16 +6626,19 @@
 			audio.frogT = ( dayFactor < 0.5 ? 1700 : 4200 ) + Math.random() * 3800;
 			frogCroak();
 		}
-		// the fire CRACKLES — random pops through the steep-rolloff panner;
-		// distance does "louder as you close in", this keeps it irregular
+		// the fire CRACKLES — a soft hiss floor with gentle pops (ramped
+		// attacks: an instant gain jump CLICKS like a firecracker, which is
+		// exactly what it sounded like). One pop in ~8 snaps a bit louder.
 		if ( audio.crackleGain ) {
 			audio.crackleT = ( audio.crackleT || 0 ) - dms;
 			if ( audio.crackleT <= 0 ) {
-				audio.crackleT = 30 + Math.random() * 170;
+				audio.crackleT = 60 + Math.random() * 220;
 				var ck0 = audio.ctx.currentTime;
+				var pop = Math.random() < 0.12 ? 0.5 : 0.12 + Math.random() * 0.16;
 				audio.crackleGain.gain.cancelScheduledValues( ck0 );
-				audio.crackleGain.gain.setValueAtTime( 0.5 + Math.random() * 0.9, ck0 );
-				audio.crackleGain.gain.exponentialRampToValueAtTime( 0.06, ck0 + 0.04 + Math.random() * 0.1 );
+				audio.crackleGain.gain.setValueAtTime( Math.max( 0.04, audio.crackleGain.gain.value ), ck0 );
+				audio.crackleGain.gain.linearRampToValueAtTime( pop, ck0 + 0.014 );
+				audio.crackleGain.gain.exponentialRampToValueAtTime( 0.045, ck0 + 0.1 + Math.random() * 0.15 );
 			}
 		}
 		audio.cluckT = ( audio.cluckT || 0 ) - dms;
