@@ -2,6 +2,20 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * HOMESTEAD PASS (1.0.743): three photo-referenced rebuilds. COWS are
+ * BLACK ANGUS — solid black coats (four shades, no hide patches), legs
+ * 6 → 9 (they read pig-on-stumps), slimmer flanks, POLLED (no horns —
+ * Trumac keeps his). PUMPJACK rebuilt off Thomas's reference photo:
+ * rust-streaked cream on beam/head/post/weights, skid rails, 4-leg
+ * A-frame + ladder, big rounded horsehead (slab+crown+face), twin
+ * bridle cables → spreader → polished rod, KIDNEY counterweights over
+ * a dark gearbox. THE BIG RED BARN: 3.2× (2× the old), true GAMBREL
+ * roof + gable pentagons, white trim/corner boards, hayloft door +
+ * octagon window, west doors slid OPEN with matching physics shell
+ * (wall segments + door gap) — park the buggy (or the horse, someday)
+ * inside; plank floor + lantern glow. FLAT pad grown to keep the floor
+ * level wall-to-wall.
+ *
  * FIRE VOICE III (1.0.742): the crackle still read as "tin bashing" —
  * every pop was the SAME continuous noise through the SAME resonant
  * bandpass, ringing one note. Now the bed is a lowpassed (460Hz) ember
@@ -363,9 +377,9 @@
 		{ id: 'radio', name: 'the Bare Your Rare tower', x: 4095, y: 1260, w: 30, h: 30, scale: 1.45,
 		  href: 'https://bareyourrare.org', external: true, build: 'mast', signTo: { x: 3955, y: 1295 },
 		  prompt: 'The Bare Your Rare tower — rare disorders, worn proud · Enter visits bareyourrare.org' },
-		{ id: 'barn', name: 'the arcade barn', x: 3539, y: 1435, w: 120, h: 80, scale: 1.6,
+		{ id: 'barn', name: 'the big red barn', x: 3539, y: 1435, w: 120, h: 80, scale: 3.2,
 		  href: null, build: 'barn', signTo: { x: 3325, y: 1505 },
-		  prompt: 'The arcade barn — the games are moving in here soon' },
+		  prompt: 'The big red barn — pull her right inside (the arcade moves in soon)' },
 		{ id: 'shed', name: 'the old shed', x: 651, y: 1932, w: 60, h: 44, scale: 2.9,
 		  href: null, build: 'shed', signTo: { x: 753, y: 1838 },
 		  prompt: 'The shed is padlocked… but a drawer in the house opens' },
@@ -580,7 +594,7 @@
 		{ x: 2240, z: 462, ri: 170, ro: 340 },
 		{ x: 2960, z: 810, ri: 120, ro: 260 }, // the medic hut (the elevator's old pad retired with it)
 		{ x: 693, z: 1302, ri: 230, ro: 400 },
-		{ x: 3539, z: 1435, ri: 158, ro: 315 },
+		{ x: 3539, z: 1435, ri: 210, ro: 400 }, // the barn at 3.2× needs a flat floor wall-to-wall
 		{ x: 651, z: 1932, ri: 160, ro: 330 },
 		{ x: 4095, z: 1260, ri: 88, ro: 228 },
 		{ x: 2240, z: 2432, ri: 245, ro: 455 },
@@ -1256,6 +1270,17 @@
 				statics.push( Matter.Bodies.circle( lm.x, lm.y, 13 * s, { isStatic: true } ) );
 			} else if ( lm.build === 'mailbox' ) {
 				statics.push( Matter.Bodies.circle( lm.x, lm.y, 7, { isStatic: true } ) );
+			} else if ( lm.id === 'barn' ) {
+				// the DRIVE-IN barn: wall segments matching the mesh (100×66
+				// local × scale) with the west-end door gap left open, so
+				// the buggy (and one day the horse) can park inside
+				var hw = 50 * s, hd = 33 * s, wt = 4 * s, doorHalf = 17 * s;
+				statics.push( Matter.Bodies.rectangle( lm.x, lm.y - hd, hw * 2, wt, { isStatic: true } ) );
+				statics.push( Matter.Bodies.rectangle( lm.x, lm.y + hd, hw * 2, wt, { isStatic: true } ) );
+				statics.push( Matter.Bodies.rectangle( lm.x + hw, lm.y, wt, hd * 2, { isStatic: true } ) );
+				var flank = hd - doorHalf;
+				statics.push( Matter.Bodies.rectangle( lm.x - hw, lm.y - ( doorHalf + flank / 2 ), wt, flank, { isStatic: true } ) );
+				statics.push( Matter.Bodies.rectangle( lm.x - hw, lm.y + ( doorHalf + flank / 2 ), wt, flank, { isStatic: true } ) );
 			} else {
 				statics.push( Matter.Bodies.rectangle( lm.x, lm.y, lm.w * s, lm.h * s, { isStatic: true } ) );
 			}
@@ -3526,19 +3551,128 @@
 	}
 
 	function buildBarnHouse( THREE, lm ) {
+		// THE BIG RED BARN, rebuilt off Thomas's reference photo: gambrel
+		// roof, white trim, hayloft door + octagon window on the gable, and
+		// the WEST-end doors slid OPEN so you can drive her right inside —
+		// the physics shell (barn branch in the landmark statics) matches.
 		var g = new THREE.Group();
-		var walls = new THREE.Mesh( new THREE.BoxGeometry( 100, 40, 66 ), barnMat( THREE, 0x7a2b22 ) );
-		walls.position.y = 20;
-		g.add( walls );
-		var roof = gableRoof( THREE, 108, 42, 0x3a2c24 );
-		roof.position.y = 52;
-		g.add( roof );
-		var door = new THREE.Mesh( new THREE.PlaneGeometry( 30, 28 ), mat( THREE, 0x571f18 ) );
-		door.position.set( 0, 15, 33.2 );
-		g.add( door );
-		addWindow( THREE, g, 10, 9, -34, 26, 33.2 );
-		addWindow( THREE, g, 10, 9, 34, 26, 33.2 );
-		addWindow( THREE, g, 9, 8, 50.2, 22, 0, Math.PI / 2 );
+		var red = barnMat( THREE, 0x8a2f24 );
+		var redDS = barnMat( THREE, 0x8a2f24 );
+		redDS.side = THREE.DoubleSide;
+		var trim = woodMat( THREE, 0xe2ddd2 );
+		// walls as SEGMENTS so the west end truly opens
+		var wallN = new THREE.Mesh( new THREE.BoxGeometry( 100, 40, 3 ), red );
+		wallN.position.set( 0, 20, -31.5 );
+		g.add( wallN );
+		var wallS = wallN.clone();
+		wallS.position.z = 31.5;
+		g.add( wallS );
+		var wallE = new THREE.Mesh( new THREE.BoxGeometry( 3, 40, 66 ), red );
+		wallE.position.set( 48.5, 20, 0 );
+		g.add( wallE );
+		[ -1, 1 ].forEach( function ( sd ) {
+			var flank = new THREE.Mesh( new THREE.BoxGeometry( 3, 40, 16 ), red );
+			flank.position.set( -48.5, 20, sd * 25 );
+			g.add( flank );
+		} );
+		var header = new THREE.Mesh( new THREE.BoxGeometry( 3, 10, 34 ), red );
+		header.position.set( -48.5, 35, 0 );
+		g.add( header );
+		// the doors, slid open along the wall — red with the white X brace
+		[ -1, 1 ].forEach( function ( sd ) {
+			var door = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 28, 15 ), red );
+			door.position.set( -50.6, 14, sd * 26 );
+			g.add( door );
+			[ -1, 1 ].forEach( function ( xd ) {
+				var cross = new THREE.Mesh( new THREE.BoxGeometry( 0.6, 19, 2 ), trim );
+				cross.rotation.x = xd * 0.6;
+				cross.position.set( -51.6, 14, sd * 26 );
+				g.add( cross );
+			} );
+		} );
+		// white door frame
+		[ -17.8, 17.8 ].forEach( function ( dz ) {
+			var jamb = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 31, 1.8 ), trim );
+			jamb.position.set( -49.6, 15.5, dz );
+			g.add( jamb );
+		} );
+		var lintel = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 1.8, 37 ), trim );
+		lintel.position.set( -49.6, 30.6, 0 );
+		g.add( lintel );
+		// GAMBREL roof — steep lower panels breaking to a shallow top,
+		// the classic profile from the photo
+		var roofM = barnMat( THREE, 0x4a3f38 );
+		[ -1, 1 ].forEach( function ( sd ) {
+			var lower = new THREE.Mesh( new THREE.BoxGeometry( 108, 1.7, 29.5 ), roofM );
+			lower.rotation.x = sd * 0.76;
+			lower.position.set( 0, 50, sd * 26 );
+			g.add( lower );
+			var upper = new THREE.Mesh( new THREE.BoxGeometry( 108, 1.7, 19.5 ), roofM );
+			upper.rotation.x = sd * 0.56;
+			upper.position.set( 0, 65, sd * 8 );
+			g.add( upper );
+		} );
+		// gable-end pentagons filling under the gambrel
+		var pent = new THREE.Shape();
+		pent.moveTo( -33, 0 );
+		pent.lineTo( 33, 0 );
+		pent.lineTo( 16, 20 );
+		pent.lineTo( 0, 30 );
+		pent.lineTo( -16, 20 );
+		pent.closePath();
+		var pentGeo = new THREE.ShapeGeometry( pent );
+		[ -48.4, 48.4 ].forEach( function ( px ) {
+			var endW = new THREE.Mesh( pentGeo, redDS );
+			endW.rotation.y = px < 0 ? -Math.PI / 2 : Math.PI / 2;
+			endW.position.set( px, 40, 0 );
+			g.add( endW );
+		} );
+		// white corner boards + eave fascia
+		[ [ -48.5, -31.5 ], [ -48.5, 31.5 ], [ 48.5, -31.5 ], [ 48.5, 31.5 ] ].forEach( function ( c ) {
+			var cb = new THREE.Mesh( new THREE.BoxGeometry( 2.2, 40, 2.2 ), trim );
+			cb.position.set( c[ 0 ], 20, c[ 1 ] );
+			g.add( cb );
+		} );
+		[ -1, 1 ].forEach( function ( sd ) {
+			var fascia = new THREE.Mesh( new THREE.BoxGeometry( 108, 2, 1.4 ), trim );
+			fascia.position.set( 0, 40.6, sd * 33.4 );
+			g.add( fascia );
+		} );
+		// HAYLOFT door + octagon window on the west gable, like the photo
+		var loft = new THREE.Mesh( new THREE.BoxGeometry( 1, 12, 11 ), red );
+		loft.position.set( -49.4, 50, 0 );
+		g.add( loft );
+		[ -5.9, 5.9 ].forEach( function ( lz ) {
+			var lf = new THREE.Mesh( new THREE.BoxGeometry( 0.8, 13, 1.2 ), trim );
+			lf.position.set( -49.8, 50, lz );
+			g.add( lf );
+		} );
+		[ 56.3, 43.7 ].forEach( function ( ly ) {
+			var lf2 = new THREE.Mesh( new THREE.BoxGeometry( 0.8, 1.2, 13 ), trim );
+			lf2.position.set( -49.8, ly, 0 );
+			g.add( lf2 );
+		} );
+		var octo = new THREE.Mesh( new THREE.CircleGeometry( 2.6, 8 ),
+			new THREE.MeshBasicMaterial( { color: 0xe2ddd2 } ) );
+		octo.rotation.y = -Math.PI / 2;
+		octo.position.set( -49.9, 62, 0 );
+		g.add( octo );
+		// windows with lit panes on the long walls
+		addWindow( THREE, g, 10, 9, -30, 26, 33.2 );
+		addWindow( THREE, g, 10, 9, 30, 26, 33.2 );
+		addWindow( THREE, g, 10, 9, 0, 26, -33.2, Math.PI );
+		// INSIDE: plank floor + a lantern so the open door glows at night
+		var floor = new THREE.Mesh( new THREE.PlaneGeometry( 94, 60 ), woodMat( THREE, 0x6a5136 ) );
+		floor.rotation.x = -Math.PI / 2;
+		floor.position.y = 0.5;
+		g.add( floor );
+		var lantern = new THREE.Mesh( new THREE.SphereGeometry( 1.6, 8, 6 ),
+			new THREE.MeshBasicMaterial( { color: glow( THREE, 0xffb45e, 1.05 ) } ) );
+		lantern.position.set( 0, 34, 0 );
+		g.add( lantern );
+		var inLight = new THREE.PointLight( 0xffb45e, 0.55, 520, 1.4 );
+		inLight.position.set( 0, 30, 0 );
+		g.add( inLight );
 		return g;
 	}
 
@@ -3682,7 +3816,9 @@
 		var cow = type === 'cow' || bull;
 		// a HERD, not clones: each animal draws a coat from its breed's
 		// palette, wears a hide/wool texture, and comes out its own size
-		var cowCoats = [ 0x6f4a33, 0x3a2a1e, 0x8a6a4a, 0xb8a890 ];
+		// BLACK ANGUS across the herd (Thomas's call) — solid black, shade
+		// varying just enough that they read as individuals, no hide patches
+		var cowCoats = [ 0x191512, 0x120f0c, 0x201b16, 0x16110e ];
 		// NO brown horses (Thomas's call) — white, dapple grey, black,
 		// palomino, each with its true mane/tail (palomino flies a cream one)
 		var horseCoats = [ 0xe6e0d2, 0x9aa0a8, 0x23211f, 0xc9a35e ];
@@ -3697,12 +3833,13 @@
 			: ( ( cow || horse ) ? new THREE.Color( bodyC ).multiplyScalar( 0.72 ).getHex() : 0x2a2420 );
 		var legC = bull ? 0x0d0a08
 			: ( ( cow || horse ) ? new THREE.Color( bodyC ).multiplyScalar( 0.55 ).getHex() : 0x3a342c );
-		var coatTex = cow ? hideTex( THREE ) : ( horse ? null : woolTex( THREE ) );
+		var coatTex = ( cow || horse ) ? null : woolTex( THREE ); // Angus wear solid black
 		var bodyMat = coatTex ? skinMat( THREE, bodyC, coatTex ) : mat( THREE, bodyC );
 		var bw = horse ? 22 : ( cow ? 20 : 13 );
 		var bh = horse ? 11 : ( cow ? 11 : 8.5 );
 		var bd = horse ? 8 : ( cow ? 10 : 9 );
-		var legH = horse ? 9 : ( cow ? 6 : 4 );
+		// real cattle legs — 6 read as a pig on stumps
+		var legH = horse ? 9 : ( cow ? 9 : 4 );
 		// yaw (heading) first, then z-pitch in the yawed frame — the graze
 		// lean below stays nose-down whichever way the animal faces
 		g.rotation.order = 'YZX';
@@ -3728,9 +3865,11 @@
 			body.scale.set( 1.15, 0.85, 0.8 );
 		} else {
 			// a real BARREL, not a crate: ellipsoid torso — the chest/rump
-			// spheres below finish the rounding ("not Minecraft" pass)
+			// spheres below finish the rounding ("not Minecraft" pass);
+			// cattle ride slimmer through the flanks (the fat ellipsoid on
+			// short legs was reading PIG)
 			body = new THREE.Mesh( new THREE.SphereGeometry( 1, 12, 9 ), bodyMat );
-			body.scale.set( bw * 0.55, bh * 0.62, bd * 0.66 );
+			body.scale.set( bw * 0.55, bh * 0.62, bd * ( cow ? 0.58 : 0.66 ) );
 		}
 		body.position.y = legH + bh / 2 - 0.5;
 		g.add( body );
@@ -3762,14 +3901,8 @@
 			tail.position.set( -bw / 2 - 0.6, legH + bh - 3.2, 0 );
 			tail.rotation.z = 0.16;
 			g.add( tail );
-			// a herd of individuals: some carry horns, some an udder
-			if ( ! bull && Math.random() < 0.45 ) {
-				[ -1, 1 ].forEach( function ( sd ) {
-					var horn = new THREE.Mesh( new THREE.BoxGeometry( 1.1, 1.1, 3.2 ), mat( THREE, 0xd8d0bc ) );
-					horn.position.set( bw / 2 + 2, legH + bh + 3, sd * 3.6 );
-					g.add( horn );
-				} );
-			}
+			// Angus are POLLED — no horns on the cows (Trumac keeps his);
+			// half the herd carries an udder
 			if ( ! bull && Math.random() < 0.5 ) {
 				var udder = new THREE.Mesh( new THREE.SphereGeometry( 2.4, 8, 6 ), mat( THREE, 0xd8a090 ) );
 				udder.scale.set( 1.1, 0.75, 0.95 );
@@ -4830,71 +4963,123 @@
 		// walking beam with a curved horsehead + hanger cables, twin
 		// counterweight cranks with pitman arms, motor block, wellhead with
 		// a valve wheel, and the pipe run to the flare
-		var black = skinMat( THREE, 0x22201c, metalTex( THREE ) );
-		var rust = skinMat( THREE, 0x8a3a2a, metalTex( THREE ) );
+		// palette straight off Thomas's reference photo: rust-streaked
+		// CREAM paint on everything that moves, dark oil-black iron below
+		var cream = skinMat( THREE, 0xcfc3ac, metalTex( THREE ) );
+		var rust = skinMat( THREE, 0x7a4a32, metalTex( THREE ) );
+		var black = skinMat( THREE, 0x241f19, metalTex( THREE ) );
 		var g = new THREE.Group();
-		var slab = new THREE.Mesh( new THREE.BoxGeometry( 34, 2, 16 ), stoneMat( THREE, 0x6a655c ) );
+		// gravel pad + the steel SKID rails the whole unit sits on
+		var slab = new THREE.Mesh( new THREE.BoxGeometry( 40, 2, 18 ), stoneMat( THREE, 0x6a655c ) );
 		slab.position.y = 1;
 		g.add( slab );
-		// A-frame samson post (two legs each side + cross braces)
+		[ -6.5, 6.5 ].forEach( function ( rz ) {
+			var rail = new THREE.Mesh( new THREE.BoxGeometry( 38, 1.8, 2.2 ), black );
+			rail.position.set( -2, 2.6, rz );
+			g.add( rail );
+		} );
+		// A-frame samson post — four legs to a dark bearing block
 		[ -1, 1 ].forEach( function ( sd ) {
-			[ -4.5, 0.5 ].forEach( function ( lx ) {
-				var leg = new THREE.Mesh( new THREE.BoxGeometry( 2.2, 21, 2.2 ), rust );
-				leg.position.set( lx, 11.5, sd * ( 3.4 - 0.6 ) );
-				leg.rotation.x = sd * -0.13;
-				leg.rotation.z = lx < -2 ? 0.12 : -0.12;
+			[ -1, 1 ].forEach( function ( xd ) {
+				var leg = new THREE.Mesh( new THREE.BoxGeometry( 2, 21.5, 2 ), cream );
+				leg.position.set( -2 + xd * 3.2, 12, sd * 3 );
+				leg.rotation.x = sd * -0.26;
+				leg.rotation.z = xd * -0.3;
 				g.add( leg );
 			} );
-			var brace = new THREE.Mesh( new THREE.BoxGeometry( 7, 1.4, 1.4 ), rust );
-			brace.position.set( -2, 12, sd * 2.4 );
+			var brace = new THREE.Mesh( new THREE.BoxGeometry( 9, 1.3, 1.3 ), cream );
+			brace.position.set( -2, 11, sd * 4.2 );
 			g.add( brace );
 		} );
+		var bearing = new THREE.Mesh( new THREE.BoxGeometry( 5, 2.6, 7 ), black );
+		bearing.position.set( -2, 20.4, 0 );
+		g.add( bearing );
+		// the ladder up the post (it's in the photo)
+		[ -1.4, 1.4 ].forEach( function ( lz ) {
+			var railL = new THREE.Mesh( new THREE.BoxGeometry( 0.5, 19, 0.5 ), rust );
+			railL.position.set( 3.4, 10.5, lz );
+			g.add( railL );
+		} );
+		for ( var ru = 0; ru < 7; ru++ ) {
+			var rung = new THREE.Mesh( new THREE.BoxGeometry( 0.4, 0.4, 2.8 ), rust );
+			rung.position.set( 3.4, 3.5 + ru * 2.6, 0 );
+			g.add( rung );
+		}
 		pumpBeam = new THREE.Group();
 		pumpBeam.position.set( -2, 21, 0 );
-		var beam = new THREE.Mesh( new THREE.BoxGeometry( 32, 2.6, 3.4 ), black );
+		// the walking beam — cream, deeper through the pivot like a real I-beam
+		var beam = new THREE.Mesh( new THREE.BoxGeometry( 34, 3.2, 3 ), cream );
 		beam.position.x = 2;
 		pumpBeam.add( beam );
-		// the horsehead: a proper curved face (two angled slabs)
-		var headA = new THREE.Mesh( new THREE.BoxGeometry( 4.5, 8, 4.6 ), black );
-		headA.position.set( 17.4, -1.6, 0 );
-		headA.rotation.z = 0.18;
+		var beamRib = new THREE.Mesh( new THREE.BoxGeometry( 14, 1.6, 3.4 ), cream );
+		beamRib.position.set( -1, -2, 0 );
+		pumpBeam.add( beamRib );
+		var tailPlate = new THREE.Mesh( new THREE.BoxGeometry( 2.4, 4.6, 3.6 ), black );
+		tailPlate.position.set( -14.4, 0, 0 );
+		pumpBeam.add( tailPlate );
+		// the HORSEHEAD — the photo's big rounded plate: tall main slab,
+		// crown bulge on top, curved face dropping away at the nose
+		var headA = new THREE.Mesh( new THREE.BoxGeometry( 5.2, 11, 4.4 ), cream );
+		headA.position.set( 18, -0.8, 0 );
+		headA.rotation.z = 0.12;
 		pumpBeam.add( headA );
-		var headB = new THREE.Mesh( new THREE.BoxGeometry( 3, 5.5, 4.6 ), black );
-		headB.position.set( 19.6, -3.4, 0 );
-		headB.rotation.z = 0.42;
-		pumpBeam.add( headB );
-		// hanger cable + polished rod dropping to the wellhead
-		var cable = new THREE.Mesh( new THREE.CylinderGeometry( 0.35, 0.35, 9, 5 ), black );
-		cable.position.set( 18.4, -8, 0 );
-		pumpBeam.add( cable );
+		var headCrown = new THREE.Mesh( new THREE.BoxGeometry( 4.6, 3.4, 4.4 ), cream );
+		headCrown.position.set( 16.9, 4.6, 0 );
+		headCrown.rotation.z = -0.34;
+		pumpBeam.add( headCrown );
+		var headFace = new THREE.Mesh( new THREE.BoxGeometry( 3.4, 7.5, 4.4 ), cream );
+		headFace.position.set( 20.4, -3.6, 0 );
+		headFace.rotation.z = 0.4;
+		pumpBeam.add( headFace );
+		// bridle: TWIN cables off the head to a spreader + polished rod
+		[ -1.1, 1.1 ].forEach( function ( cz ) {
+			var cable = new THREE.Mesh( new THREE.CylinderGeometry( 0.22, 0.22, 9.5, 4 ), black );
+			cable.position.set( 19.2, -9, cz );
+			pumpBeam.add( cable );
+		} );
+		var spreader = new THREE.Mesh( new THREE.BoxGeometry( 1.6, 1, 3.4 ), black );
+		spreader.position.set( 19.2, -13.4, 0 );
+		pumpBeam.add( spreader );
+		var rod = new THREE.Mesh( new THREE.CylinderGeometry( 0.3, 0.3, 6, 5 ), black );
+		rod.position.set( 19.2, -16.5, 0 );
+		pumpBeam.add( rod );
 		g.add( pumpBeam );
-		// twin counterweight cranks — discs with offset weights, spun in render
+		// crank + KIDNEY counterweights (the photo's rounded double-lobe
+		// plates) in cream — spun in render
 		pumpCrank = new THREE.Group();
 		pumpCrank.position.set( -13, 7.5, 0 );
 		[ -1, 1 ].forEach( function ( sd ) {
-			var disc = new THREE.Mesh( new THREE.CylinderGeometry( 5, 5, 1.6, 12 ), rust );
-			disc.rotation.x = Math.PI / 2;
-			disc.position.z = sd * 3.2;
-			pumpCrank.add( disc );
-			var weight = new THREE.Mesh( new THREE.BoxGeometry( 5.5, 3.4, 1.8 ), black );
-			weight.position.set( 0, -3.2, sd * 3.2 );
-			pumpCrank.add( weight );
+			var lobeA = new THREE.Mesh( new THREE.CylinderGeometry( 5.4, 5.4, 1.8, 14 ), cream );
+			lobeA.rotation.x = Math.PI / 2;
+			lobeA.position.z = sd * 3.4;
+			pumpCrank.add( lobeA );
+			var lobeB = new THREE.Mesh( new THREE.CylinderGeometry( 3.6, 3.6, 1.8, 12 ), cream );
+			lobeB.rotation.x = Math.PI / 2;
+			lobeB.position.set( -3.4, -2.6, sd * 3.4 );
+			pumpCrank.add( lobeB );
+			var carm = new THREE.Mesh( new THREE.BoxGeometry( 7.5, 2.4, 1.9 ), black );
+			carm.position.set( -1.4, -1.2, sd * 3.4 );
+			carm.rotation.z = 0.6;
+			pumpCrank.add( carm );
 		} );
 		g.add( pumpCrank );
 		// pitman arms connecting cranks up to the beam tail
 		[ -1, 1 ].forEach( function ( sd ) {
-			var arm = new THREE.Mesh( new THREE.BoxGeometry( 1.2, 13, 1.2 ), black );
-			arm.position.set( -13.5, 14, sd * 3.2 );
-			arm.rotation.z = -0.08;
-			g.add( arm );
+			var parm = new THREE.Mesh( new THREE.BoxGeometry( 1.3, 13.5, 1.3 ), cream );
+			parm.position.set( -13.5, 14, sd * 3.4 );
+			parm.rotation.z = -0.08;
+			g.add( parm );
 		} );
-		// motor block + belt housing driving the cranks
-		var motor = new THREE.Mesh( new THREE.BoxGeometry( 7, 5, 6 ), black );
-		motor.position.set( -21, 4.5, 0 );
+		// the GEARBOX hulk + motor behind it, all dark iron
+		var gearbox = new THREE.Mesh( new THREE.BoxGeometry( 9, 7.5, 7.5 ), black );
+		gearbox.position.set( -14, 4.2, 0 );
+		g.add( gearbox );
+		var motor = new THREE.Mesh( new THREE.BoxGeometry( 5.5, 4.2, 4.5 ), black );
+		motor.position.set( -21.5, 3.4, 0 );
 		g.add( motor );
-		var belt = new THREE.Mesh( new THREE.CylinderGeometry( 2.2, 2.2, 1.4, 10 ), rust );
+		var belt = new THREE.Mesh( new THREE.CylinderGeometry( 2.4, 2.4, 1.4, 10 ), rust );
 		belt.rotation.x = Math.PI / 2;
-		belt.position.set( -18, 6.5, 3.4 );
+		belt.position.set( -18, 5.5, 3.6 );
 		g.add( belt );
 		// wellhead under the horsehead: casing + valve wheel
 		var casing = new THREE.Mesh( new THREE.CylinderGeometry( 1.6, 1.9, 7, 8 ), black );
