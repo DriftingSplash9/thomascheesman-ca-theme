@@ -131,8 +131,8 @@ add_action( 'wp_head', function () {
 	echo '<meta name="apple-mobile-web-app-capable" content="yes">' . "\n";
 	echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">' . "\n";
 	echo '<meta name="apple-mobile-web-app-title" content="Back Quarter">' . "\n";
-	echo '<link rel="apple-touch-icon" href="' . esc_url( $icon ) . '">' . "\n";
-}, 2 );
+	echo '<link rel="apple-touch-icon" sizes="180x180" href="' . esc_url( $icon ) . '">' . "\n";
+}, 100 ); // after wp_site_icon (99) so iOS uses the buggy app icon, not the Site Icon
 
 /**
  * Register the service worker (front-end only, all pages, so the app
