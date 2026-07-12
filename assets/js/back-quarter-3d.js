@@ -2,6 +2,15 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * SOFTER HANDLING (1.0.745): the controls were twitchy. THROTTLE now
+ * eases in/out (throttleInput ramps toward the target at 0.055) so
+ * acceleration builds and lift-off coasts instead of switching. STEER
+ * wind-on softened 0.11 → 0.075. And a REAL TURNING RADIUS: the yaw
+ * rate follows forward speed (turnEase = min(1, speed/4)) so she can't
+ * tank-pivot in place — she has to be rolling to turn, eases into it,
+ * and reversing flips the steer sense. Max turn 0.05 → 0.042 dry /
+ * 0.036 → 0.03 wet. Air keeps its flat yaw for landings.
+ *
  * MOBILE PLAY (1.0.744): phones are IN (supersedes the old PC/tablet-
  * only call). TOUCH detection builds on-screen controls: a floating
  * analog joystick owns the left half (steer + throttle, spawns under
@@ -1652,22 +1661,37 @@
 		b.frictionAir = airborne ? 0.02
 			: ( inWater ? 0.3 : ( inMud ? 0.2 : ( inCreek ? 0.18 : 0.14 ) ) );
 
-		throttleInput = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.65 : 0 );
+		var throttleTarget = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.65 : 0 );
 		steerInput = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
 		// the thumb overrides the keys — analog steer + throttle
 		if ( touchPad.active ) {
-			throttleInput = touchPad.throttle;
+			throttleTarget = touchPad.throttle;
 			steerInput = touchPad.steer;
 		}
+		// SOFTER PEDAL: the throttle eases in and out instead of slamming
+		// on/off — acceleration builds and lift-off coasts, no switch feel
+		throttleInput += ( throttleTarget - throttleInput ) * 0.055;
+		if ( Math.abs( throttleTarget - throttleInput ) < 0.008 ) throttleInput = throttleTarget;
 
-		// eased steering: the wheel winds in and out instead of snapping
-		// heavier steering: slower to wind on, slower turn rate — she's a
-		// farm rig, not a go-kart (Thomas: "not so responsive")
-		steerVal += ( steerInput - steerVal ) * 0.11;
+		// eased steering: the wheel winds in and out instead of snapping —
+		// softened further (0.11 → 0.075) so the turn-in is gradual
+		steerVal += ( steerInput - steerVal ) * 0.075;
 		if ( ! steerInput && Math.abs( steerVal ) < 0.02 ) steerVal = 0;
-		// spinning tires don't steer either — less bite in the wet stuff
-		Matter.Body.setAngularVelocity( b, steerVal *
-			( airborne ? 0.026 : ( inMud || inWater ? 0.036 : 0.05 ) ) );
+		// REALISTIC TURNING RADIUS: the yaw rate now follows FORWARD SPEED,
+		// so she can't tank-pivot in place — she has to be rolling to turn,
+		// and eases into the turn over the first bit of roll. Reversing
+		// flips the steer sense like a real car backing up. (Air keeps a
+		// flat yaw for lining up landings.)
+		if ( airborne ) {
+			Matter.Body.setAngularVelocity( b, steerVal * 0.026 );
+		} else {
+			var vYaw = b.velocity;
+			var fwdYaw = vYaw.x * heading.x + vYaw.y * heading.y;
+			var turnEase = Math.min( 1, Math.hypot( vYaw.x, vYaw.y ) / 4 );
+			var maxTurn = ( inMud || inWater ) ? 0.03 : 0.042;
+			Matter.Body.setAngularVelocity( b,
+				steerVal * maxTurn * turnEase * ( fwdYaw < -0.05 ? -1 : 1 ) );
+		}
 
 		var power = boostT > 0 ? 0.0078 : 0.0042;
 		if ( airborne ) power *= 0.25;
