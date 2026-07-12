@@ -158,17 +158,31 @@
 	function fsElement() {
 		return document.fullscreenElement || document.webkitFullscreenElement || null;
 	}
+	var pseudoFs = false;
 	function toggleFullscreen() {
 		if ( fsElement() ) {
 			( document.exitFullscreen || document.webkitExitFullscreen ).call( document );
-		} else {
+		} else if ( stage.requestFullscreen || stage.webkitRequestFullscreen ) {
 			( stage.requestFullscreen || stage.webkitRequestFullscreen ).call( stage );
+		} else {
+			// iPhones have NO element-fullscreen API — fake it: pin the
+			// stage over the whole viewport and lock the page scroll. The
+			// 3D module's ResizeObserver follows the stage automatically.
+			pseudoFs = ! pseudoFs;
+			stage.style.position = pseudoFs ? 'fixed' : '';
+			stage.style.inset = pseudoFs ? '0' : '';
+			stage.style.zIndex = pseudoFs ? '2147483000' : '';
+			stage.style.width = pseudoFs ? '100vw' : '';
+			stage.style.height = pseudoFs ? '100vh' : '';
+			if ( pseudoFs ) stage.style.height = '100dvh'; // keeps under iOS toolbars where supported
+			document.documentElement.style.overflow = pseudoFs ? 'hidden' : '';
+			updateFsLabel();
 		}
 	}
 	function updateFsLabel() {
 		var fsBtn = stage.querySelector( '.bq-fs' );
 		if ( ! fsBtn ) return;
-		var on = fsElement() === stage;
+		var on = fsElement() === stage || pseudoFs;
 		fsBtn.textContent = on ? '⤡ Exit' : '⛶ Fullscreen';
 		fsBtn.setAttribute( 'aria-label', on ? 'Exit fullscreen' : 'Enter fullscreen' );
 	}

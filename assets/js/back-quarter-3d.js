@@ -2,6 +2,17 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * MOBILE PLAY (1.0.744): phones are IN (supersedes the old PC/tablet-
+ * only call). TOUCH detection builds on-screen controls: a floating
+ * analog joystick owns the left half (steer + throttle, spawns under
+ * the thumb, dead zone 0.14, reverse at 0.65), HOP/flip/honk cluster
+ * bottom-right, contextual ENTER + race-mode + ✕ buttons that appear
+ * only when they apply. LITE tier (touch + screen < 820): pixel ratio
+ * 1, NO bloom composer, 1024 shadow map — playable, not a slideshow.
+ * Fullscreen: back-quarter.js gains a pseudo-fullscreen fallback for
+ * iPhones (no element-fullscreen API there) — fixed-position stage +
+ * scroll lock; the ResizeObserver does the rest.
+ *
  * HOMESTEAD PASS (1.0.743): three photo-referenced rebuilds. COWS are
  * BLACK ANGUS — solid black coats (four shades, no hide patches), legs
  * 6 → 9 (they read pig-on-stumps), slimmer flanks, POLLED (no horns —
@@ -714,6 +725,14 @@
 		{ x: 4650, z: 640, air: true, y: 40 }
 	];
 
+	// TOUCH: phones + tablets get the on-screen controls; LITE (small
+	// touch screens, i.e. phones) additionally drops bloom, pixel ratio
+	// and shadow resolution so the farm runs instead of slideshows
+	var TOUCH = ( 'ontouchstart' in window ) ||
+		( window.matchMedia && window.matchMedia( '(pointer: coarse)' ).matches );
+	var LITE = TOUCH && Math.min( window.screen.width, window.screen.height ) < 820;
+	var touchPad = { active: false, id: null, ox: 0, oy: 0, steer: 0, throttle: 0 };
+	var touchUi = null;
 	var stage, hudEl, chipEl;
 	var renderer, scene, camera, clock;
 	var composer = null, bloomPass = null; // bloom stack — null renders plain
@@ -1072,7 +1091,7 @@
 		}
 
 		renderer = new THREE.WebGLRenderer( { antialias: true } );
-		renderer.setPixelRatio( Math.min( window.devicePixelRatio || 1, 2 ) );
+		renderer.setPixelRatio( LITE ? 1 : Math.min( window.devicePixelRatio || 1, 2 ) );
 		renderer.setSize( stage.clientWidth, stage.clientHeight );
 		// filmic tone mapping — the biggest single "less cheesy" win: it
 		// pulls the flat-bright night into contrast and lets the lights read.
@@ -1096,7 +1115,7 @@
 		// glow() materials. Composer render targets lose the canvas MSAA, so
 		// bloom is WebGL2-only (multisample target keeps the AA) — WebGL1
 		// falls back to the plain aliasing-free direct render, no bloom.
-		if ( THREE.EffectComposer && THREE.UnrealBloomPass &&
+		if ( ! LITE && THREE.EffectComposer && THREE.UnrealBloomPass &&
 			renderer.capabilities.isWebGL2 && THREE.WebGLMultisampleRenderTarget ) {
 			var pr = renderer.getPixelRatio();
 			var msTarget = new THREE.WebGLMultisampleRenderTarget(
@@ -1155,7 +1174,7 @@
 		moonLight = new THREE.DirectionalLight( 0xaecdf0, 0.6 );
 		moonLight.position.set( -700, 900, -600 );
 		moonLight.castShadow = true;
-		moonLight.shadow.mapSize.set( 2048, 2048 );
+		moonLight.shadow.mapSize.set( LITE ? 1024 : 2048, LITE ? 1024 : 2048 );
 		moonLight.shadow.bias = -0.0004;
 		moonLight.shadow.normalBias = 1.2;
 		var sc = moonLight.shadow.camera; // a tight frustum that follows the buggy
@@ -1337,6 +1356,7 @@
 		initMotes( THREE );
 		fetchFarmGhost(); // the farm-record lap rides in while you drive
 		buildSoundToggle();
+		buildTouchUi(); // phones + tablets get the on-screen controls
 
 		LANDMARKS.forEach( function ( lm ) { PROMPTS.push( lm ); } );
 		// (the physical family gate is gone — the treehouse pages carry the
@@ -1385,8 +1405,10 @@
 	function updateHud() {
 		if ( ! hudEl ) return;
 		hudEl.hidden = false;
-		var txt = '3D beta · WASD drives · Space jumps · L/R Shift flips · H honks · Enter steps inside · ⛁ '
-			+ tokenFound + '/' + tokenCount;
+		var txt = ( TOUCH
+			? '3D beta · left thumb drives · HOP jumps · buttons do the rest'
+			: '3D beta · WASD drives · Space jumps · L/R Shift flips · H honks · Enter steps inside' )
+			+ ' · ⛁ ' + tokenFound + '/' + tokenCount;
 		if ( lap.active ) {
 			txt += ' · ⏱ ' + fmtLap( lap.t );
 			if ( race.mode === 'three' ) txt += ' · lap ' + race.lapNum + '/3';
@@ -1424,6 +1446,134 @@
 		if ( down && act === 'race3' ) armRace( 'three' );
 		if ( down && act === 'raceT' ) armRace( 'trial' );
 		if ( down && act === 'raceX' ) abandonRace();
+	}
+
+	/* ------------------------------------------------------------------ *
+	 *  TOUCH CONTROLS — the phone build. A floating joystick owns the
+	 *  left half of the screen (analog steer + throttle, appears under
+	 *  the thumb); HOP / flip / honk cluster bottom-right; contextual
+	 *  ENTER + race buttons show themselves only when they mean something.
+	 * ------------------------------------------------------------------ */
+	function tbtn( txt, css ) {
+		var d = document.createElement( 'div' );
+		d.textContent = txt;
+		d.setAttribute( 'style',
+			'position:absolute;user-select:none;-webkit-user-select:none;' +
+			'touch-action:none;display:flex;align-items:center;justify-content:center;' +
+			'color:#eaf6f2;font:700 14px/1.1 system-ui,sans-serif;text-align:center;' +
+			'background:rgba(8,22,20,.44);border:1.5px solid rgba(126,231,209,.55);' +
+			'border-radius:999px;z-index:30;' + css );
+		stage.appendChild( d );
+		return d;
+	}
+	function holdKey( el2, act ) {
+		el2.addEventListener( 'touchstart', function ( e ) {
+			e.preventDefault();
+			e.stopPropagation();
+			keys[ act ] = true;
+			el2.style.background = 'rgba(126,231,209,.35)';
+		}, { passive: false } );
+		[ 'touchend', 'touchcancel' ].forEach( function ( ev ) {
+			el2.addEventListener( ev, function ( e ) {
+				e.preventDefault();
+				keys[ act ] = false;
+				el2.style.background = 'rgba(8,22,20,.44)';
+			}, { passive: false } );
+		} );
+	}
+	function tapDo( el2, fn ) {
+		el2.addEventListener( 'touchstart', function ( e ) {
+			e.preventDefault();
+			e.stopPropagation();
+			fn();
+		}, { passive: false } );
+	}
+	function buildTouchUi() {
+		if ( ! TOUCH ) return;
+		stage.style.touchAction = 'none';
+		touchUi = {};
+		touchUi.base = tbtn( '', 'width:104px;height:104px;left:0;top:0;display:none;opacity:.85;' );
+		touchUi.nub = tbtn( '', 'width:44px;height:44px;left:0;top:0;display:none;background:rgba(126,231,209,.4);' );
+		touchUi.jump = tbtn( 'HOP', 'width:78px;height:78px;right:16px;bottom:64px;font-size:17px;' );
+		holdKey( touchUi.jump, 'jump' );
+		touchUi.flipF = tbtn( '⟲ flip', 'width:56px;height:56px;right:106px;bottom:112px;font-size:12px;' );
+		holdKey( touchUi.flipF, 'tiltF' );
+		touchUi.flipB = tbtn( 'flip ⟳', 'width:56px;height:56px;right:102px;bottom:46px;font-size:12px;' );
+		holdKey( touchUi.flipB, 'tiltB' );
+		touchUi.honk = tbtn( '📯', 'width:46px;height:46px;right:32px;bottom:156px;font-size:18px;' );
+		tapDo( touchUi.honk, function () { honk(); } );
+		touchUi.act = tbtn( 'ENTER ↵', 'height:46px;padding:0 18px;right:16px;bottom:216px;display:none;' );
+		tapDo( touchUi.act, function () { if ( nearLandmark ) enterLandmark( nearLandmark ); } );
+		touchUi.race1 = tbtn( '1 lap', 'height:44px;padding:0 14px;left:50%;bottom:116px;transform:translateX(-135%);display:none;' );
+		tapDo( touchUi.race1, function () { armRace( 'single' ); } );
+		touchUi.race3 = tbtn( '3 laps', 'height:44px;padding:0 14px;left:50%;bottom:116px;transform:translateX(-50%);display:none;' );
+		tapDo( touchUi.race3, function () { armRace( 'three' ); } );
+		touchUi.raceT = tbtn( 'trial', 'height:44px;padding:0 14px;left:50%;bottom:116px;transform:translateX(45%);display:none;' );
+		tapDo( touchUi.raceT, function () { armRace( 'trial' ); } );
+		touchUi.raceX = tbtn( '✕ race', 'height:44px;padding:0 16px;left:16px;bottom:216px;display:none;' );
+		tapDo( touchUi.raceX, function () { abandonRace(); } );
+		stage.addEventListener( 'touchstart', padStart, { passive: false } );
+		stage.addEventListener( 'touchmove', padMove, { passive: false } );
+		stage.addEventListener( 'touchend', padEnd, { passive: false } );
+		stage.addEventListener( 'touchcancel', padEnd, { passive: false } );
+	}
+	function padPlace( el2, cx, cy, half ) {
+		var r = stage.getBoundingClientRect();
+		el2.style.left = ( cx - r.left - half ) + 'px';
+		el2.style.top = ( cy - r.top - half ) + 'px';
+	}
+	function padStart( e ) {
+		if ( ! touchUi ) return;
+		var r = stage.getBoundingClientRect();
+		for ( var i = 0; i < e.changedTouches.length; i++ ) {
+			var t2 = e.changedTouches[ i ];
+			if ( touchPad.id === null && t2.clientX - r.left < r.width * 0.52 ) {
+				e.preventDefault();
+				touchPad.id = t2.identifier;
+				touchPad.active = true;
+				touchPad.ox = t2.clientX;
+				touchPad.oy = t2.clientY;
+				touchPad.steer = touchPad.throttle = 0;
+				padPlace( touchUi.base, t2.clientX, t2.clientY, 52 );
+				padPlace( touchUi.nub, t2.clientX, t2.clientY, 22 );
+				touchUi.base.style.display = touchUi.nub.style.display = 'flex';
+			}
+		}
+	}
+	function padMove( e ) {
+		if ( touchPad.id === null ) return;
+		for ( var i = 0; i < e.changedTouches.length; i++ ) {
+			var t2 = e.changedTouches[ i ];
+			if ( t2.identifier !== touchPad.id ) continue;
+			e.preventDefault();
+			var dx = t2.clientX - touchPad.ox, dy = t2.clientY - touchPad.oy;
+			var m = Math.hypot( dx, dy ), R = 54;
+			if ( m > R ) { dx *= R / m; dy *= R / m; }
+			var sx2 = dx / R, sy2 = -dy / R;
+			// dead zone, then analog: up = drive, down = reverse (gentler)
+			touchPad.steer = Math.abs( sx2 ) < 0.14 ? 0 : sx2;
+			touchPad.throttle = Math.abs( sy2 ) < 0.14 ? 0 : ( sy2 > 0 ? sy2 : sy2 * 0.65 );
+			padPlace( touchUi.nub, touchPad.ox + dx, touchPad.oy + dy, 22 );
+		}
+	}
+	function padEnd( e ) {
+		if ( ! touchUi ) return;
+		for ( var i = 0; i < e.changedTouches.length; i++ ) {
+			if ( e.changedTouches[ i ].identifier === touchPad.id ) {
+				touchPad.id = null;
+				touchPad.active = false;
+				touchPad.steer = touchPad.throttle = 0;
+				touchUi.base.style.display = touchUi.nub.style.display = 'none';
+			}
+		}
+	}
+	function updateTouchUi() {
+		if ( ! touchUi ) return;
+		touchUi.act.style.display = ( nearLandmark && nearLandmark.href ) ? 'flex' : 'none';
+		var atLine = nearLandmark && nearLandmark.id === 'raceline' && ! race.mode && ! race.armed;
+		touchUi.race1.style.display = touchUi.race3.style.display =
+			touchUi.raceT.style.display = atLine ? 'flex' : 'none';
+		touchUi.raceX.style.display = ( race.mode || race.armed ) ? 'flex' : 'none';
 	}
 
 	function onClick( e ) {
@@ -1504,6 +1654,11 @@
 
 		throttleInput = ( keys.up ? 1 : 0 ) - ( keys.down ? 0.65 : 0 );
 		steerInput = ( keys.right ? 1 : 0 ) - ( keys.left ? 1 : 0 );
+		// the thumb overrides the keys — analog steer + throttle
+		if ( touchPad.active ) {
+			throttleInput = touchPad.throttle;
+			steerInput = touchPad.steer;
+		}
 
 		// eased steering: the wheel winds in and out instead of snapping
 		// heavier steering: slower to wind on, slower turn rate — she's a
@@ -1884,6 +2039,7 @@
 		updateTracks( dms );
 		updateSmoke( dms );
 		updateMotes( dms, t );
+		updateTouchUi();
 		updateAudio( dms, sp );
 
 		var near = null, nearD = 1e9;
