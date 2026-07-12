@@ -2,6 +2,14 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * THE PEACOCK IS MAGNIFICENT (1.0.739): rounded iridescent body (the
+ * farm's ONLY Phong specular — he shimmers), breast + folded wings,
+ * S-neck, white cheek flashes, gold cone beak, five-pin teal-tipped
+ * crown, and a THREE-LAYER train nearly twice his height (radial
+ * gradient, 17 feather rays, two arcs of four-ring eyespots) that
+ * breathes — regal sway + shimmer pulse in updatePeacock. Scale 1.15 →
+ * 1.5, physics 5 → 7.
+ *
  * FEEL TRIM (1.0.738): the fire crackle clicked like FIRECRACKERS — the
  * pops were instant gain jumps (discontinuity = click) through a bright
  * 2400Hz band. Now 1100Hz, ramped 14ms attacks, softer pops (0.12–0.28,
@@ -4078,63 +4086,131 @@
 	function peacockTrainTex( THREE ) {
 		return cacheTex( THREE, 'peacock', function ( x ) {
 			x.clearRect( 0, 0, 128, 128 );
-			// the fan
-			x.fillStyle = 'rgba(22,92,58,0.96)';
+			// the fan — deep teal at the root blooming green toward the rim
+			var grad = x.createRadialGradient( 64, 122, 8, 64, 122, 118 );
+			grad.addColorStop( 0, 'rgba(10,58,44,0.98)' );
+			grad.addColorStop( 0.55, 'rgba(18,96,62,0.97)' );
+			grad.addColorStop( 0.85, 'rgba(30,128,78,0.96)' );
+			grad.addColorStop( 1, 'rgba(56,152,92,0.9)' );
+			x.fillStyle = grad;
 			x.beginPath();
 			x.moveTo( 64, 122 );
-			x.arc( 64, 122, 116, Math.PI + 0.28, -0.28 );
+			x.arc( 64, 122, 117, Math.PI + 0.24, -0.24 );
 			x.closePath();
 			x.fill();
-			// eyespots arcing across it
-			for ( var e = 0; e < 9; e++ ) {
-				var an = Math.PI + 0.5 + ( e / 8 ) * ( Math.PI - 1.0 );
-				var ex2 = 64 + Math.cos( an ) * 88, ey = 122 + Math.sin( an ) * 88;
-				x.fillStyle = '#d8b23a';
-				x.beginPath(); x.arc( ex2, ey, 9, 0, 7 ); x.fill();
-				x.fillStyle = '#15505e';
-				x.beginPath(); x.arc( ex2, ey, 6, 0, 7 ); x.fill();
-				x.fillStyle = '#2a7a8a';
-				x.beginPath(); x.arc( ex2, ey, 3, 0, 7 ); x.fill();
+			// individual feather rays
+			x.strokeStyle = 'rgba(8,44,30,0.5)';
+			x.lineWidth = 1.2;
+			for ( var r = 0; r < 17; r++ ) {
+				var an0 = Math.PI + 0.3 + ( r / 16 ) * ( Math.PI - 0.6 );
+				x.beginPath();
+				x.moveTo( 64 + Math.cos( an0 ) * 12, 122 + Math.sin( an0 ) * 12 );
+				x.lineTo( 64 + Math.cos( an0 ) * 115, 122 + Math.sin( an0 ) * 115 );
+				x.stroke();
+			}
+			// TWO arcs of eyespots — gold ring, violet, sapphire, teal spark
+			function eye( ex2, ey, s ) {
+				x.fillStyle = '#e6c04a';
+				x.beginPath(); x.arc( ex2, ey, 6.5 * s, 0, 7 ); x.fill();
+				x.fillStyle = '#7a3fa0';
+				x.beginPath(); x.arc( ex2, ey, 4.6 * s, 0, 7 ); x.fill();
+				x.fillStyle = '#123c8a';
+				x.beginPath(); x.arc( ex2, ey, 3.1 * s, 0, 7 ); x.fill();
+				x.fillStyle = '#39c8d8';
+				x.beginPath(); x.arc( ex2, ey, 1.4 * s, 0, 7 ); x.fill();
+			}
+			for ( var e = 0; e < 11; e++ ) {
+				var an = Math.PI + 0.42 + ( e / 10 ) * ( Math.PI - 0.84 );
+				eye( 64 + Math.cos( an ) * 96, 122 + Math.sin( an ) * 96, 1.05 );
+			}
+			for ( var e2 = 0; e2 < 7; e2++ ) {
+				var an2 = Math.PI + 0.55 + ( e2 / 6 ) * ( Math.PI - 1.1 );
+				eye( 64 + Math.cos( an2 ) * 62, 122 + Math.sin( an2 ) * 62, 0.8 );
 			}
 		} );
 	}
 
 	function buildPeacock( THREE ) {
 		var g = new THREE.Group();
-		var blue = mat( THREE, 0x1a4a8a );
-		var body = new THREE.Mesh( new THREE.BoxGeometry( 6, 4.5, 4 ), blue );
-		body.position.y = 5.5;
+		// iridescent royal blue — the only Phong specular on the farm, so
+		// he SHIMMERS as the light moves. Magnificence is the whole job.
+		var blue = applyAtmosphere( new THREE.MeshPhongMaterial( {
+			color: 0x1d4fae, specular: 0x5fe8c8, shininess: 42, emissive: 0x071a3a } ), true );
+		var body = new THREE.Mesh( new THREE.SphereGeometry( 3.4, 10, 8 ), blue );
+		body.scale.set( 1.15, 0.95, 0.82 );
+		body.position.y = 5.8;
 		g.add( body );
-		var neck = new THREE.Mesh( new THREE.BoxGeometry( 1.8, 6, 1.8 ), blue );
-		neck.position.set( 2.6, 9.5, 0 );
+		var breast = new THREE.Mesh( new THREE.SphereGeometry( 2.1, 9, 7 ), blue );
+		breast.position.set( 2.2, 5.6, 0 );
+		g.add( breast );
+		// folded wing panels, a shade deeper
+		var wingM = mat( THREE, 0x14406e );
+		[ -1, 1 ].forEach( function ( s ) {
+			var wing = new THREE.Mesh( new THREE.SphereGeometry( 2.4, 8, 6 ), wingM );
+			wing.scale.set( 1.25, 0.7, 0.45 );
+			wing.position.set( -0.6, 6, s * 2.6 );
+			g.add( wing );
+		} );
+		// the S-neck: tapered, with a round head riding high
+		var neck = new THREE.Mesh( new THREE.CylinderGeometry( 0.7, 1.2, 7, 7 ), blue );
+		neck.position.set( 2.8, 9.6, 0 );
+		neck.rotation.z = -0.14;
 		g.add( neck );
-		var head = new THREE.Mesh( new THREE.BoxGeometry( 2.2, 2, 2 ), blue );
-		head.position.set( 2.6, 13, 0 );
+		var head = new THREE.Mesh( new THREE.SphereGeometry( 1.4, 9, 7 ), blue );
+		head.position.set( 3.4, 13.4, 0 );
 		g.add( head );
-		var crest = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 1.4, 0.3 ), mat( THREE, 0x2a7a8a ) );
-		crest.position.set( 2.6, 14.6, 0 );
-		g.add( crest );
-		var beak = new THREE.Mesh( new THREE.BoxGeometry( 1.4, 0.9, 1 ), mat( THREE, 0xd8a23a ) );
-		beak.position.set( 4.1, 12.8, 0 );
+		// white face flashes + gold beak
+		[ -1, 1 ].forEach( function ( s ) {
+			var cheek = new THREE.Mesh( new THREE.BoxGeometry( 0.9, 0.7, 0.3 ), mat( THREE, 0xe8e4da ) );
+			cheek.position.set( 4.1, 13.2, s * 0.9 );
+			g.add( cheek );
+		} );
+		var beak = new THREE.Mesh( new THREE.ConeGeometry( 0.55, 1.6, 5 ), mat( THREE, 0xd8a23a ) );
+		beak.rotation.z = -Math.PI / 2;
+		beak.position.set( 5.2, 13.1, 0 );
 		g.add( beak );
+		// the CROWN — five pin feathers tipped in teal
+		for ( var c = 0; c < 5; c++ ) {
+			var ca = ( c - 2 ) * 0.28;
+			var pin = new THREE.Mesh( new THREE.CylinderGeometry( 0.09, 0.09, 1.9, 4 ), mat( THREE, 0x123c6a ) );
+			pin.position.set( 3.4 + Math.sin( ca ) * 0.5, 15.1, Math.sin( ca ) * 0.9 );
+			pin.rotation.x = ca * 0.6;
+			g.add( pin );
+			var tip = new THREE.Mesh( new THREE.SphereGeometry( 0.3, 6, 5 ), mat( THREE, 0x2fb8a8 ) );
+			tip.position.set( pin.position.x, 16.1, pin.position.z );
+			g.add( tip );
+		}
 		[ -1.4, 1.4 ].forEach( function ( lz ) {
 			var leg = new THREE.Mesh( new THREE.BoxGeometry( 0.6, 3.4, 0.6 ), mat( THREE, 0x8a7a4a ) );
 			leg.position.set( 0, 1.7, lz );
 			g.add( leg );
 		} );
-		// the TRAIN — fanned up behind him, eyespots out
-		var train = new THREE.Mesh( new THREE.PlaneGeometry( 15, 13 ),
-			new THREE.MeshLambertMaterial( {
-				map: peacockTrainTex( THREE ), transparent: true, side: THREE.DoubleSide } ) );
-		train.position.set( -3.4, 9.5, 0 );
-		train.rotation.y = Math.PI / 2;
-		train.rotation.x = -0.28;
+		// THE TRAIN — three nested fans, nearly twice his height, that
+		// breathe in updatePeacock (slow regal sway + shimmer pulse)
+		var trainMat = new THREE.MeshLambertMaterial( {
+			map: peacockTrainTex( THREE ), transparent: true, side: THREE.DoubleSide } );
+		var train = new THREE.Group();
+		[ [ 21, 18, 0 ], [ 16.5, 14, 0.15 ], [ 12.5, 10.5, 0.3 ] ].forEach( function ( ly, li ) {
+			var layer = new THREE.Mesh( new THREE.PlaneGeometry( ly[ 0 ], ly[ 1 ] ), trainMat );
+			layer.position.set( li * 0.7, ly[ 1 ] / 2 - 2, 0 );
+			layer.rotation.y = Math.PI / 2;
+			layer.rotation.x = -ly[ 2 ];
+			train.add( layer );
+		} );
+		train.position.set( -3.8, 7.5, 0 );
+		train.rotation.x = -0.22;
 		g.add( train );
-		g.scale.setScalar( 1.15 );
+		// tail coverts — a teal tuft rooting the fan to the body
+		var covert = new THREE.Mesh( new THREE.ConeGeometry( 1.9, 4.4, 7 ), mat( THREE, 0x1a7a6a ) );
+		covert.rotation.z = 0.9;
+		covert.position.set( -3.2, 6.4, 0 );
+		g.add( covert );
+		g.scale.setScalar( 1.5 );
 		scene.add( g );
-		var body2d = Matter.Bodies.circle( 1631, 1210, 5, { frictionAir: 0.22, density: 0.0008 } );
+		var body2d = Matter.Bodies.circle( 1631, 1210, 7, { frictionAir: 0.22, density: 0.0008 } );
 		Matter.Composite.add( engine.world, body2d );
-		peacock = { g: g, body: body2d, homeX: 1631, homeZ: 1281, wanderT: 900, cd: 0 };
+		peacock = { g: g, body: body2d, train: train, t: Math.random() * 6,
+			homeX: 1631, homeZ: 1281, wanderT: 900, cd: 0 };
 		PROMPTS.push( { id: 'peacock', name: 'the peacock', x: 1631, y: 1210, href: null,
 			prompt: 'The peacock — he thinks the treehouses are his' } );
 	}
@@ -4158,6 +4234,14 @@
 			p.cd = 1400;
 			var fa = Math.atan2( pz - b.position.y, px - b.position.x );
 			Matter.Body.setVelocity( p.body, { x: Math.cos( fa ) * 2, y: Math.sin( fa ) * 2 } );
+		}
+		// the train BREATHES — a slow regal sway and a shimmer pulse
+		p.t += dms / 1000;
+		if ( p.train ) {
+			p.train.rotation.x = -0.22 + Math.sin( p.t * 0.9 ) * 0.05;
+			p.train.rotation.z = Math.sin( p.t * 0.6 ) * 0.04;
+			var ts2 = 1 + Math.sin( p.t * 1.3 ) * 0.025;
+			p.train.scale.set( ts2, ts2, ts2 );
 		}
 		p.g.position.set( px, heightAt( px, pz ), pz );
 		var v = p.body.velocity;
