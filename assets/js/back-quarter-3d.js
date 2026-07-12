@@ -2,6 +2,14 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * FIRE VOICE III (1.0.742): the crackle still read as "tin bashing" —
+ * every pop was the SAME continuous noise through the SAME resonant
+ * bandpass, ringing one note. Now the bed is a lowpassed (460Hz) ember
+ * roar at constant low gain, and pops are discrete 12–45ms one-shot
+ * noise slices, EACH through its own randomly-tuned lowpass (500–2400)
+ * — different colour every snap, nothing rings, occasional knot-crack
+ * + ember clusters. Same steep-rolloff panner.
+ *
  * THE LIVING FARM (1.0.741): the herd was too still — a single velocity
  * impulse died to friction in under a second, so animals stood like
  * statues between "moves". Now a walk HOLDS its heading 1.4–4.6s with
@@ -6627,19 +6635,23 @@
 		audio.noise.connect( audio.tireBP ); audio.tireBP.connect( audio.tireGain );
 		audio.tireGain.connect( audio.master );
 
-		// FIRE CRACKLE — the firepit's voice: band-passed noise POPPED at
-		// random (updateAudio drives the pops); its own steep-rolloff panner
-		// so it swells fast as you walk up and dies away across the yard
+		// FIRE VOICE, take three. The old pops were shaped from ONE
+		// continuous noise source through ONE resonant bandpass — every pop
+		// rang the same note ("tin bashing"). Now: a soft LOWPASSED roar
+		// bed here, and discrete millisecond snaps (firePop, each through
+		// its own randomly-tuned filter) fired by updateAudio. Both share
+		// a steep-rolloff panner so the fire swells as you walk up.
+		audio.noiseBuf = nb; // firePop slices its snaps from this
 		audio.crackleGain = audio.ctx.createGain();
-		audio.crackleGain.gain.value = 0;
-		var ckBP = audio.ctx.createBiquadFilter();
-		ckBP.type = 'bandpass'; ckBP.frequency.value = 1100; ckBP.Q.value = 0.5;
-		audio.noise.connect( ckBP );
-		ckBP.connect( audio.crackleGain );
-		var ckPan = makePanner( 1580, 800 ); // the firepit
-		ckPan.refDistance = 8;
-		ckPan.rolloffFactor = 2.6;
-		audio.crackleGain.connect( ckPan );
+		audio.crackleGain.gain.value = 0.05; // the constant ember roar
+		var ckLP = audio.ctx.createBiquadFilter();
+		ckLP.type = 'lowpass'; ckLP.frequency.value = 460;
+		audio.noise.connect( ckLP );
+		ckLP.connect( audio.crackleGain );
+		audio.cracklePan = makePanner( 1580, 800 ); // the firepit
+		audio.cracklePan.refDistance = 8;
+		audio.cracklePan.rolloffFactor = 2.6;
+		audio.crackleGain.connect( audio.cracklePan );
 
 		audio.noise.start();
 	}
@@ -6757,6 +6769,29 @@
 				} )();
 			}
 		} );
+	}
+
+	// one fire SNAP: a 12–45ms noise slice through its own randomly-tuned
+	// lowpass — every pop a different colour, none of them ring. One in
+	// ~8 is a louder knot-crack.
+	function firePop() {
+		if ( ! audio.on || ! audio.ctx || ! audio.cracklePan || ! audio.noiseBuf ) return;
+		var t0 = audio.ctx.currentTime;
+		var src = audio.ctx.createBufferSource();
+		src.buffer = audio.noiseBuf;
+		var lp = audio.ctx.createBiquadFilter();
+		lp.type = 'lowpass';
+		lp.frequency.value = 500 + Math.random() * 1900;
+		var g = audio.ctx.createGain();
+		var peak = Math.random() < 0.12 ? 0.55 : 0.14 + Math.random() * 0.18;
+		var dur = 0.012 + Math.random() * 0.033;
+		g.gain.setValueAtTime( 0.0001, t0 );
+		g.gain.linearRampToValueAtTime( peak, t0 + 0.003 );
+		g.gain.exponentialRampToValueAtTime( 0.0001, t0 + dur );
+		src.connect( lp );
+		lp.connect( g );
+		g.connect( audio.cracklePan );
+		src.start( t0, Math.random() * ( audio.noiseBuf.duration - 0.1 ), dur + 0.02 );
 	}
 
 	// TRUMAC'S BELLOW — the moo sample pitched down to a chest-deep roar,
@@ -6918,19 +6953,14 @@
 			audio.bellowT = 26000 + Math.random() * 38000;
 			trumacBellow();
 		}
-		// the fire CRACKLES — a soft hiss floor with gentle pops (ramped
-		// attacks: an instant gain jump CLICKS like a firecracker, which is
-		// exactly what it sounded like). One pop in ~8 snaps a bit louder.
-		if ( audio.crackleGain ) {
+		// the fire SNAPS — short discrete pops on an irregular clock, which
+		// sometimes cluster the way settling embers do
+		if ( audio.cracklePan ) {
 			audio.crackleT = ( audio.crackleT || 0 ) - dms;
 			if ( audio.crackleT <= 0 ) {
-				audio.crackleT = 60 + Math.random() * 220;
-				var ck0 = audio.ctx.currentTime;
-				var pop = Math.random() < 0.12 ? 0.5 : 0.12 + Math.random() * 0.16;
-				audio.crackleGain.gain.cancelScheduledValues( ck0 );
-				audio.crackleGain.gain.setValueAtTime( Math.max( 0.04, audio.crackleGain.gain.value ), ck0 );
-				audio.crackleGain.gain.linearRampToValueAtTime( pop, ck0 + 0.014 );
-				audio.crackleGain.gain.exponentialRampToValueAtTime( 0.045, ck0 + 0.1 + Math.random() * 0.15 );
+				audio.crackleT = 90 + Math.random() * 320;
+				firePop();
+				if ( Math.random() < 0.3 ) setTimeout( firePop, 30 + Math.random() * 70 );
 			}
 		}
 		audio.cluckT = ( audio.cluckT || 0 ) - dms;
