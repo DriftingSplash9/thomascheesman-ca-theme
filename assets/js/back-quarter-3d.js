@@ -2,6 +2,17 @@
  * THE BACK QUARTER 3D — Path C (Bruno-Simon-style).
  * Spec: docs/QUARTER-SECTION-SPEC.md §8.
  *
+ * THE LIVING FARM (1.0.741): the herd was too still — a single velocity
+ * impulse died to friction in under a second, so animals stood like
+ * statues between "moves". Now a walk HOLDS its heading 1.4–4.6s with
+ * velocity re-applied per frame, chosen more often (85% on a 1.1–3.2s
+ * clock) — cows/horses/sheep/pigs genuinely wander. SCATTER + CLUSTER:
+ * ~25% of hens are farm-wide rangers (range 1500) while the rest hold
+ * the coop (180, rooster stays home); same for adult pigs (900 vs 190,
+ * piglets stay). TRUMAC: +10% (scale 1.43, physics 17) and a BELLOW —
+ * the moo sample at 0.5 rate through a barely-rolling-off panner
+ * (ref 90 / rolloff 0.4) every 26–64s, heard across the whole quarter.
+ *
  * RACE DAY (1.0.740): the loose lap timer becomes STRUCTURED RACING +
  * path-1 async multiplayer. Nothing times until you ARM a race at the
  * start line — 1: single lap · 3: three-lap race · T: rolling time
@@ -3820,14 +3831,14 @@
 				horn.position.set( bw / 2 + 2, legH + bh + 2.2, sd * 4.4 );
 				g.add( horn );
 			} );
-			g.scale.set( 1.3, 1.3, 1.3 );
+			g.scale.set( 1.43, 1.43, 1.43 ); // +10% — Trumac earned it
 		}
 		scene.add( g );
-		var body2d = Matter.Bodies.circle( x, z, bull ? 15 : ( horse ? 17 : ( cow ? 11 : 7 ) ),
+		var body2d = Matter.Bodies.circle( x, z, bull ? 17 : ( horse ? 17 : ( cow ? 11 : 7 ) ),
 			{ frictionAir: 0.18, density: bull ? 0.006 : ( horse ? 0.0035 : 0.003 ) } );
 		Matter.Composite.add( engine.world, body2d );
 		var entry = { g: g, body: body2d, type: type, wanderT: 800 + Math.random() * 2400,
-			legs: legs, phase: Math.random() * 6.28,
+			walkT: 0, walkDir: 0, legs: legs, phase: Math.random() * 6.28,
 			grazeT: 1500 + Math.random() * 4000, graze: 0, grazeOn: false };
 		animals.push( entry );
 		return entry;
@@ -3838,13 +3849,21 @@
 			var a = animals[ i ];
 			a.wanderT -= dms;
 			if ( a.wanderT <= 0 ) {
-				a.wanderT = 1800 + Math.random() * 2800;
-				if ( Math.random() < 0.7 ) {
-					var dir = Math.random() * Math.PI * 2;
-					var spd = a.type === 'bull' ? 0.4
-					: ( a.type === 'cow' ? 0.5 : ( a.type === 'horse' ? 0.6 : 0.7 ) );
-					Matter.Body.setVelocity( a.body, { x: Math.cos( dir ) * spd, y: Math.sin( dir ) * spd } );
+				a.wanderT = 1100 + Math.random() * 2100;
+				if ( Math.random() < 0.85 ) {
+					// a real WALK, not a nudge — the old single impulse died
+					// to friction in under a second, so the herd stood like
+					// statues. Now a heading is held for a stretch.
+					a.walkDir = Math.random() * Math.PI * 2;
+					a.walkT = 1400 + Math.random() * 3200;
 				}
+			}
+			if ( a.walkT > 0 ) {
+				a.walkT -= dms;
+				var spd = a.type === 'bull' ? 0.4
+					: ( a.type === 'cow' ? 0.5 : ( a.type === 'horse' ? 0.65 : 0.7 ) );
+				Matter.Body.setVelocity( a.body,
+					{ x: Math.cos( a.walkDir ) * spd, y: Math.sin( a.walkDir ) * spd } );
 			}
 			var px = a.body.position.x, pz = a.body.position.y;
 			if ( a.lm ) { a.lm.x = px; a.lm.y = pz; } // Trumac's prompt follows him
@@ -4428,7 +4447,10 @@
 		scene.add( g );
 		var body2d = Matter.Bodies.circle( x, z, rooster ? 5 : 4, { frictionAir: 0.24, density: 0.0008 } );
 		Matter.Composite.add( engine.world, body2d );
+		// most hens cluster the coop; a quarter of them are RANGERS who
+		// peck their way across the whole farm (the rooster holds his yard)
 		chickens.push( { g: g, body: body2d, wingL: wingL, wingR: wingR,
+			range: ( ! rooster && Math.random() < 0.25 ) ? 1500 : 180,
 			wanderT: 400 + Math.random() * 2000, fT: 0, cd: 0 } );
 	}
 
@@ -4444,8 +4466,9 @@
 			if ( c.wanderT <= 0 ) {
 				c.wanderT = 900 + Math.random() * 2200;
 				if ( Math.random() < 0.8 ) {
-					// peck about, but keep close to home
-					var dir = Math.hypot( px - COOP.x, pz - COOP.z ) > 200
+					// peck about inside your range — tight for the coop
+					// cluster, farm-wide for the rangers
+					var dir = Math.hypot( px - COOP.x, pz - COOP.z ) > ( c.range || 200 )
 						? Math.atan2( COOP.z - pz, COOP.x - px )
 						: Math.random() * Math.PI * 2;
 					Matter.Body.setVelocity( c.body, { x: Math.cos( dir ) * 0.9, y: Math.sin( dir ) * 0.9 } );
@@ -4557,7 +4580,11 @@
 		scene.add( g );
 		var body2d = Matter.Bodies.circle( x, z, Math.max( 3, 6 * js ), { frictionAir: 0.18, density: 0.002 } );
 		Matter.Composite.add( engine.world, body2d );
-		pigs.push( { g: g, body: body2d, wanderT: 600 + Math.random() * 2000, cd: 0 } );
+		// most pigs cluster the pen/bog; a quarter of the ADULTS are rangers
+		// who root their way out across the farm (piglets stay home)
+		pigs.push( { g: g, body: body2d,
+			range: ( ! opts.scale && Math.random() < 0.25 ) ? 900 : 190,
+			wanderT: 600 + Math.random() * 2000, cd: 0 } );
 	}
 
 	function updatePigs( dms ) {
@@ -4570,7 +4597,7 @@
 			if ( p.wanderT <= 0 ) {
 				p.wanderT = 1600 + Math.random() * 2600;
 				var dir;
-				if ( Math.hypot( px - PIGPEN.x, pz - PIGPEN.z ) > 190 ) {
+				if ( Math.hypot( px - PIGPEN.x, pz - PIGPEN.z ) > ( p.range || 190 ) ) {
 					dir = Math.atan2( PIGPEN.z - pz, PIGPEN.x - px );
 				} else if ( Math.random() < 0.4 ) {
 					// pigs love the mud
@@ -6732,6 +6759,44 @@
 		} );
 	}
 
+	// TRUMAC'S BELLOW — the moo sample pitched down to a chest-deep roar,
+	// through a barely-rolling-off panner so the whole quarter hears him
+	// (louder near the bull, but never gone). Synth fallback: low saw swell.
+	function trumacBellow() {
+		if ( ! audio.on || ! audio.ctx || ! trumacRef ) return;
+		if ( sampleBufs.moo ) {
+			var src = audio.ctx.createBufferSource();
+			src.buffer = sampleBufs.moo;
+			src.playbackRate.value = 0.5 + Math.random() * 0.08;
+			var g = audio.ctx.createGain();
+			g.gain.value = 0.9;
+			var p = makePanner( trumacRef.body.position.x, trumacRef.body.position.y );
+			p.refDistance = 90;
+			p.rolloffFactor = 0.4;
+			src.connect( g );
+			g.connect( p );
+			src.start();
+		} else {
+			var t0 = audio.ctx.currentTime;
+			var o = audio.ctx.createOscillator();
+			o.type = 'sawtooth';
+			o.frequency.setValueAtTime( 72, t0 );
+			o.frequency.linearRampToValueAtTime( 54, t0 + 0.7 );
+			var lp = audio.ctx.createBiquadFilter();
+			lp.type = 'lowpass';
+			lp.frequency.value = 300;
+			var gg = audio.ctx.createGain();
+			gg.gain.setValueAtTime( 0.0001, t0 );
+			gg.gain.exponentialRampToValueAtTime( 0.3, t0 + 0.12 );
+			gg.gain.exponentialRampToValueAtTime( 0.0001, t0 + 0.9 );
+			o.connect( lp );
+			lp.connect( gg );
+			gg.connect( audio.master );
+			o.start( t0 );
+			o.stop( t0 + 0.95 );
+		}
+	}
+
 	// the pumpjack's clank — synth, but placed in the world at the unit
 	function pumpClank() {
 		if ( ! audio.on || ! audio.ctx ) return;
@@ -6846,6 +6911,12 @@
 		if ( audio.frogT <= 0 ) {
 			audio.frogT = ( dayFactor < 0.5 ? 1700 : 4200 ) + Math.random() * 3800;
 			frogCroak();
+		}
+		// Trumac sounds off across the whole farm, on his own clock
+		audio.bellowT = ( audio.bellowT === undefined ? 12000 + Math.random() * 20000 : audio.bellowT ) - dms;
+		if ( audio.bellowT <= 0 ) {
+			audio.bellowT = 26000 + Math.random() * 38000;
+			trumacBellow();
 		}
 		// the fire CRACKLES — a soft hiss floor with gentle pops (ramped
 		// attacks: an instant gain jump CLICKS like a firecracker, which is
