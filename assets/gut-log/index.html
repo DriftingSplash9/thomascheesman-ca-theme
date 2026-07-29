@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gut Tracking Log</title>
+<meta name="theme-color" content="#3B6E5E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gut Log">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #F6F3EC;
+    --card: #FFFFFF;
+    --ink: #2B2A26;
+    --ink-soft: #6B6A62;
+    --ink-faint: #9C9A90;
+    --line: #E4E1D6;
+    --sage: #3B6E5E;
+    --sage-dark: #2C5347;
+    --sage-tint: #E4EEE9;
+    --amber: #C6813F;
+    --amber-tint: #FBEEDD;
+    --danger: #B0503F;
+    --radius: 14px;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { padding-bottom: 90px; }
+  a { color: var(--sage); }
+
+  header.top {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--sage);
+    color: #fff;
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px;
+  }
+  header.top .row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  header.top h1 { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  header.top .icon-btn {
+    background: rgba(255,255,255,0.16); border: none; color: #fff;
+    width: 36px; height: 36px; border-radius: 10px; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .day-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 10px; }
+  .day-nav button.arrow {
+    background: rgba(255,255,255,0.18); border: none; color: #fff;
+    width: 40px; height: 40px; border-radius: 10px; font-size: 18px; flex-shrink: 0;
+  }
+  .day-nav button.arrow:disabled { opacity: 0.35; }
+  .day-nav .center { text-align: center; flex: 1; }
+  .day-nav .day-count { font-size: 12px; opacity: 0.85; letter-spacing: 0.03em; text-transform: uppercase; }
+  .day-nav .day-date { font-size: 19px; font-weight: 700; margin-top: 1px; }
+
+  .day-dots { display: flex; gap: 5px; overflow-x: auto; padding: 12px 16px 4px; scrollbar-width: none; }
+  .day-dots::-webkit-scrollbar { display: none; }
+  .day-dots button {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--card); color: var(--ink-soft); font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .day-dots button.filled { background: var(--sage-tint); border-color: var(--sage); color: var(--sage-dark); }
+  .day-dots button.active { background: var(--sage); border-color: var(--sage); color: #fff; }
+
+  main { padding: 4px 16px 24px; max-width: 640px; margin: 0 auto; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 14px;
+  }
+  .card h2 {
+    font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--sage-dark); margin: 0 0 12px;
+  }
+  .card h2 .hint { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--ink-faint); font-size: 12px; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+    border-radius: 999px; padding: 9px 14px; font-size: 13.5px; font-weight: 600;
+    line-height: 1.2; user-select: none;
+  }
+  .chip.small { padding: 8px 11px; font-size: 13px; min-width: 38px; text-align: center; }
+  .chip.selected { background: var(--sage); border-color: var(--sage); color: #fff; }
+  .chip.selected.warn { background: var(--amber); border-color: var(--amber); }
+  .chip.selected.bad { background: var(--danger); border-color: var(--danger); }
+
+  .field-label { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin: 14px 0 6px; }
+  .field-label:first-child { margin-top: 0; }
+
+  input[type=text], input[type=number], input[type=time], textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 11px; font-size: 15px; background: var(--bg); color: var(--ink);
+    font-family: inherit;
+  }
+  input:focus, textarea:focus { outline: 2px solid var(--sage); outline-offset: 1px; }
+  textarea { resize: vertical; min-height: 54px; }
+
+  .meal-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .meal-row .meal-idx {
+    flex: 0 0 22px; font-size: 12px; font-weight: 700; color: var(--ink-faint); text-align: center;
+  }
+  .meal-row input[type=time] { flex: 0 0 92px; }
+  .meal-row input[type=text] { flex: 1; }
+
+  .med-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+  .med-line:first-of-type { border-top: none; }
+  .med-line .name { font-size: 14.5px; font-weight: 600; }
+  .med-line .times { display: flex; gap: 6px; }
+  .med-line .times input[type=time] { width: 92px; }
+  .dose-chips { display: flex; gap: 6px; }
+  .dose-chip {
+    width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg);
+    font-size: 12px; font-weight: 700; color: var(--ink-soft);
+  }
+  .dose-chip.selected { background: var(--sage); border-color: var(--sage); color: #fff; }
+  .toggle-chip {
+    width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg);
+  }
+  .toggle-chip.selected { background: var(--sage); border-color: var(--sage); }
+  .toggle-chip.selected::after { content: "✓"; color: #fff; font-size: 15px; font-weight: 700; }
+
+  .bm-entry { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+  .bm-entry .bm-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .bm-entry .bm-top input[type=time] { flex: 0 0 auto; }
+  .bm-entry .bm-remove {
+    border: none; background: none; color: var(--ink-faint); font-size: 12.5px; font-weight: 600;
+  }
+  .bm-add {
+    width: 100%; border: 1px dashed var(--line); background: none; color: var(--sage-dark);
+    border-radius: 10px; padding: 11px; font-size: 13.5px; font-weight: 600; margin-top: 2px;
+  }
+  .bristol-row { display: flex; gap: 6px; }
+  .bristol-row .chip.small { flex: 1; padding: 8px 4px; }
+
+  .weight-row { display: flex; gap: 8px; align-items: center; }
+  .weight-row input[type=number] { flex: 1; }
+  .unit-toggle { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; flex: 0 0 auto; }
+  .unit-toggle button { border: none; background: var(--bg); color: var(--ink-soft); padding: 10px 14px; font-size: 13.5px; font-weight: 700; }
+  .unit-toggle button.selected { background: var(--sage); color: #fff; }
+
+  .save-toast {
+    position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%) translateY(12px);
+    background: var(--ink); color: #fff; font-size: 12.5px; font-weight: 600;
+    padding: 8px 14px; border-radius: 999px; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease; z-index: 40;
+  }
+  .save-toast.show { opacity: 0.92; transform: translateX(-50%) translateY(0); }
+
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    background: var(--card); border-top: 1px solid var(--line);
+    padding: 8px 10px calc(env(safe-area-inset-bottom, 0px) + 8px);
+    display: flex; gap: 6px;
+  }
+  nav.bottom button {
+    flex: 1; border: none; background: none; color: var(--ink-soft);
+    font-size: 11.5px; font-weight: 600; padding: 8px 4px; border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  nav.bottom button .ic { font-size: 18px; }
+  nav.bottom button.active { color: var(--sage-dark); background: var(--sage-tint); }
+
+  /* ---- overlay screens (export, settings, info) ---- */
+  .screen {
+    position: fixed; inset: 0; background: var(--bg); z-index: 50;
+    display: none; flex-direction: column;
+  }
+  .screen.open { display: flex; }
+  .screen header {
+    background: var(--sage); color: #fff;
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .screen header h1 { font-size: 17px; margin: 0; font-weight: 700; }
+  .screen header button { background: rgba(255,255,255,0.18); border: none; color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 15px; }
+  .screen .body { flex: 1; overflow-y: auto; padding: 14px 16px calc(env(safe-area-inset-bottom, 0px) + 24px); max-width: 640px; margin: 0 auto; width: 100%; }
+
+  .btn { display: block; width: 100%; text-align: center; border: none; border-radius: 12px; padding: 13px; font-size: 14.5px; font-weight: 700; margin-bottom: 10px; }
+  .btn.primary { background: var(--sage); color: #fff; }
+  .btn.secondary { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+  .btn.danger { background: #fff; color: var(--danger); border: 1px solid var(--danger); }
+
+  .export-day { margin-bottom: 22px; }
+  .export-day h3 { font-size: 15px; margin: 0 0 8px; border-bottom: 2px solid var(--sage); padding-bottom: 4px; }
+  .export-day .row { font-size: 13.5px; margin: 3px 0; line-height: 1.5; }
+  .export-day .row b { color: var(--ink-soft); font-weight: 600; }
+  .export-empty { color: var(--ink-faint); font-size: 13.5px; text-align: center; padding: 40px 20px; }
+
+  .info-block { margin-bottom: 20px; }
+  .info-block h3 { font-size: 14px; margin: 0 0 8px; color: var(--sage-dark); }
+  .info-block p, .info-block li { font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); margin: 0 0 4px; }
+  .info-block ol { margin: 0; padding-left: 18px; }
+
+  @media print {
+    header.top, .day-dots, nav.bottom, .save-toast, #app-main, .screen header, .btn { display: none !important; }
+    .screen#exportScreen { position: static; display: block !important; background: #fff; }
+    .screen#exportScreen .body { padding: 0; max-width: none; overflow: visible; }
+    body { padding-bottom: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top" id="mainHeader">
+  <div class="row1">
+    <h1>Gut Tracking Log</h1>
+    <button class="icon-btn" id="infoBtn" aria-label="Info">ⓘ</button>
+  </div>
+  <div class="day-nav">
+    <button class="arrow" id="prevDay" aria-label="Previous day">‹</button>
+    <div class="center">
+      <div class="day-count">Day <span id="dayNum">1</span> of 21</div>
+      <div class="day-date" id="dayDate">Wed, Jul 29</div>
+    </div>
+    <button class="arrow" id="nextDay" aria-label="Next day">›</button>
+  </div>
+</header>
+
+<div class="day-dots" id="dayDots"></div>
+
+<main id="app-main">
+
+  <div class="card">
+    <h2>Meal Pattern</h2>
+    <div class="chip-row" id="mealPatternRow">
+      <button class="chip" data-val="3">3 regular meals</button>
+      <button class="chip" data-val="5">5 small meals</button>
+      <button class="chip" data-val="other">Other</button>
+    </div>
+    <input type="text" id="mealPatternOther" placeholder="Describe pattern…" style="margin-top:8px; display:none;">
+  </div>
+
+  <div class="card">
+    <h2>Food &amp; Fluids <span class="hint">simple descriptions, approx quantities</span></h2>
+    <div id="mealRows"></div>
+    <div class="field-label">Extra / Drinks</div>
+    <input type="text" id="extraDrinks" placeholder="Water, tea, juice…">
+  </div>
+
+  <div class="card">
+    <h2>Supplements <span class="hint">tap each one taken today</span></h2>
+    <div class="chip-row" id="supplementRow"></div>
+    <div class="field-label">Other</div>
+    <input type="text" id="supplementOther" placeholder="Anything else taken…">
+  </div>
+
+  <div class="card">
+    <h2>Medications</h2>
+    <div class="med-line">
+      <div class="name">Pregabalin</div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div class="dose-chips" id="pregabalinDoses">
+          <button class="dose-chip" data-i="0">1</button>
+          <button class="dose-chip" data-i="1">2</button>
+        </div>
+        <div class="times">
+          <input type="time" id="pregabalinTime0">
+          <input type="time" id="pregabalinTime1">
+        </div>
+      </div>
+    </div>
+    <div class="med-line">
+      <div class="name">Tylenol + Codeine</div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div class="dose-chips" id="tylenolDoses">
+          <button class="dose-chip" data-i="0">1</button>
+          <button class="dose-chip" data-i="1">2</button>
+          <button class="dose-chip" data-i="2">3</button>
+        </div>
+        <div class="times">
+          <input type="time" id="tylenolTime0">
+          <input type="time" id="tylenolTime1">
+          <input type="time" id="tylenolTime2">
+        </div>
+      </div>
+    </div>
+    <div class="med-line">
+      <div class="name">Duloxetine</div>
+      <button class="toggle-chip" id="med_duloxetine"></button>
+    </div>
+    <div class="med-line">
+      <div class="name">Aripiprazole (Abilify)</div>
+      <button class="toggle-chip" id="med_aripiprazole"></button>
+    </div>
+    <div class="med-line">
+      <div class="name">Mometasone cream</div>
+      <button class="toggle-chip" id="med_mometasone"></button>
+    </div>
+    <div class="med-line">
+      <div class="name">Jublia (nail)</div>
+      <button class="toggle-chip" id="med_jublia"></button>
+    </div>
+    <div class="field-label">Other med notes</div>
+    <input type="text" id="medOther" placeholder="…">
+  </div>
+
+  <div class="card">
+    <h2>Bowel Movements <span class="hint">never bloody / mucusy</span></h2>
+    <div id="bmList"></div>
+    <button class="bm-add" id="bmAdd">+ Add bowel movement</button>
+  </div>
+
+  <div class="card">
+    <h2>Daily Symptoms &amp; Weight</h2>
+    <div class="field-label">Appetite</div>
+    <div class="chip-row" id="appetiteRow">
+      <button class="chip" data-val="good">Good</button>
+      <button class="chip" data-val="poor">Poor</button>
+      <button class="chip" data-val="terrible">Terrible</button>
+    </div>
+    <div class="field-label">Pain (1–10)</div>
+    <div class="chip-row" id="painRow"></div>
+    <div class="field-label">Sleep</div>
+    <div class="chip-row" id="sleepRow">
+      <button class="chip" data-val="good">Good</button>
+      <button class="chip" data-val="bad">Bad</button>
+    </div>
+    <div class="field-label">Energy</div>
+    <div class="chip-row" id="energyRow">
+      <button class="chip" data-val="low">Low</button>
+      <button class="chip" data-val="medium">Medium</button>
+      <button class="chip" data-val="high">High</button>
+    </div>
+    <div class="field-label">Skin</div>
+    <div class="chip-row" id="skinRow">
+      <button class="chip" data-val="calm">Calm</button>
+      <button class="chip" data-val="itchy">Itchy</button>
+    </div>
+    <div class="field-label">Weight (bedtime)</div>
+    <div class="weight-row">
+      <input type="number" inputmode="decimal" id="weightVal" placeholder="0.0">
+      <div class="unit-toggle" id="weightUnit">
+        <button data-val="lb">lb</button>
+        <button data-val="kg">kg</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Other Notes</h2>
+    <textarea id="otherNotes" placeholder="Anything else worth noting today…"></textarea>
+  </div>
+
+</main>
+
+<div class="save-toast" id="saveToast">Saved on this device</div>
+
+<nav class="bottom">
+  <button class="active" id="navToday">
+    <span class="ic">📝</span>Log
+  </button>
+  <button id="navExport">
+    <span class="ic">📄</span>Export
+  </button>
+  <button id="navBackup">
+    <span class="ic">💾</span>Backup
+  </button>
+</nav>
+
+<!-- EXPORT SCREEN -->
+<div class="screen" id="exportScreen">
+  <header>
+    <h1>Export for dietitian</h1>
+    <button id="closeExport">✕</button>
+  </header>
+  <div class="body">
+    <button class="btn primary" id="printBtn">Print / Save as PDF</button>
+    <div id="exportContent"></div>
+  </div>
+</div>
+
+<!-- BACKUP SCREEN -->
+<div class="screen" id="backupScreen">
+  <header>
+    <h1>Backup &amp; Restore</h1>
+    <button id="closeBackup">✕</button>
+  </header>
+  <div class="body">
+    <div class="info-block">
+      <h3>Where your data lives</h3>
+      <p>Everything you type is saved only on this device, in this browser. Nothing is sent anywhere. If you switch phones, reinstall the app, or clear browser data, use the backup below to move your log with you.</p>
+    </div>
+    <button class="btn primary" id="exportJson">Download backup (.json)</button>
+    <button class="btn secondary" id="importJsonBtn">Restore from backup file</button>
+    <input type="file" id="importJsonFile" accept="application/json" style="display:none;">
+    <button class="btn danger" id="clearAllBtn">Erase all entries on this device</button>
+  </div>
+</div>
+
+<!-- INFO SCREEN -->
+<div class="screen" id="infoScreen">
+  <header>
+    <h1>Reference</h1>
+    <button id="closeInfo">✕</button>
+  </header>
+  <div class="body">
+    <div class="info-block">
+      <h3>How to use</h3>
+      <ol>
+        <li>Choose your meal pattern each day.</li>
+        <li>Record foods simply — quantities and textures matter more than perfect calories.</li>
+        <li>Check off every supplement and medication dose taken. Note time where useful.</li>
+        <li>For bowel movements: time + Bristol type (1–7) + intensity. No blood or mucus expected.</li>
+        <li>Rate appetite, pain, sleep, energy, and skin. Record weight at bedtime.</li>
+      </ol>
+    </div>
+    <div class="info-block">
+      <h3>Bristol Stool Scale</h3>
+      <p><b>1</b> — Separate hard lumps (nuts), hard to pass</p>
+      <p><b>2</b> — Sausage-shaped but lumpy</p>
+      <p><b>3</b> — Sausage with cracks on surface</p>
+      <p><b>4</b> — Smooth soft sausage/snake — ideal</p>
+      <p><b>5</b> — Soft blobs with clear edges</p>
+      <p><b>6</b> — Fluffy pieces, ragged edges — mushy</p>
+      <p><b>7</b> — Watery, no solid pieces — liquid</p>
+    </div>
+    <div class="info-block">
+      <h3>This log covers</h3>
+      <p>3 weeks — Wednesday, July 29, 2026 through Tuesday, August 18, 2026. Prepared for your dietitian appointment. This is a personal tracking tool only; it does not replace medical advice.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var DAYS = [
+    { n:1, iso:'2026-07-29', label:'Wed, Jul 29' },
+    { n:2, iso:'2026-07-30', label:'Thu, Jul 30' },
+    { n:3, iso:'2026-07-31', label:'Fri, Jul 31' },
+    { n:4, iso:'2026-08-01', label:'Sat, Aug 1' },
+    { n:5, iso:'2026-08-02', label:'Sun, Aug 2' },
+    { n:6, iso:'2026-08-03', label:'Mon, Aug 3' },
+    { n:7, iso:'2026-08-04', label:'Tue, Aug 4' },
+    { n:8, iso:'2026-08-05', label:'Wed, Aug 5' },
+    { n:9, iso:'2026-08-06', label:'Thu, Aug 6' },
+    { n:10, iso:'2026-08-07', label:'Fri, Aug 7' },
+    { n:11, iso:'2026-08-08', label:'Sat, Aug 8' },
+    { n:12, iso:'2026-08-09', label:'Sun, Aug 9' },
+    { n:13, iso:'2026-08-10', label:'Mon, Aug 10' },
+    { n:14, iso:'2026-08-11', label:'Tue, Aug 11' },
+    { n:15, iso:'2026-08-12', label:'Wed, Aug 12' },
+    { n:16, iso:'2026-08-13', label:'Thu, Aug 13' },
+    { n:17, iso:'2026-08-14', label:'Fri, Aug 14' },
+    { n:18, iso:'2026-08-15', label:'Sat, Aug 15' },
+    { n:19, iso:'2026-08-16', label:'Sun, Aug 16' },
+    { n:20, iso:'2026-08-17', label:'Mon, Aug 17' },
+    { n:21, iso:'2026-08-18', label:'Tue, Aug 18' }
+  ];
+
+  var SUPPLEMENTS = [
+    { key: 'calcium', label: 'Calcium 1.35 g' },
+    { key: 'vitaminD3', label: 'Vitamin D3' },
+    { key: 'vitaminK2', label: 'Vitamin K2' },
+    { key: 'zinc', label: 'Zinc' },
+    { key: 'vitaminE', label: 'Vitamin E' },
+    { key: 'sBoulardii', label: 'S. boulardii' },
+    { key: 'lGlutamine', label: 'L-Glutamine' },
+    { key: 'b100', label: 'B100' },
+    { key: 'iron', label: 'Iron' },
+    { key: 'fibre', label: 'Fibre' }
+  ];
+
+  var STORE_KEY = 'gutlog:v1';
+  var todayIndex = 0;
+
+  function findClosestDayIndex() {
+    var now = new Date();
+    var todayIso = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    for (var i = 0; i < DAYS.length; i++) {
+      if (DAYS[i].iso === todayIso) return i;
+    }
+    if (todayIso < DAYS[0].iso) return 0;
+    if (todayIso > DAYS[DAYS.length-1].iso) return DAYS.length - 1;
+    return 0;
+  }
+
+  function emptyDay() {
+    return {
+      mealPattern: '', mealPatternOther: '',
+      meals: [ {time:'',desc:''}, {time:'',desc:''}, {time:'',desc:''}, {time:'',desc:''}, {time:'',desc:''} ],
+      extraDrinks: '',
+      supplements: {}, supplementOther: '',
+      meds: {
+        pregabalin: [false,false], pregabalinTimes: ['',''],
+        tylenol: [false,false,false], tylenolTimes: ['','',''],
+        duloxetine: false, aripiprazole: false, mometasone: false, jublia: false,
+        other: ''
+      },
+      bms: [],
+      appetite: '', pain: null, sleep: '', energy: '', skin: '',
+      weight: '', weightUnit: 'lb',
+      otherNotes: ''
+    };
+  }
+
+  var db = loadDb();
+  function loadDb() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+  var saveTimer = null;
+  function saveDb() {
+    localStorage.setItem(STORE_KEY, JSON.stringify(db));
+    clearTimeout(saveTimer);
+    var toast = document.getElementById('saveToast');
+    toast.classList.add('show');
+    saveTimer = setTimeout(function () { toast.classList.remove('show'); }, 900);
+    renderDots();
+  }
+  function getDay(iso) {
+    if (!db[iso]) db[iso] = emptyDay();
+    // backfill any fields added after a user already had data for this day
+    var blank = emptyDay();
+    for (var k in blank) if (!(k in db[iso])) db[iso][k] = blank[k];
+    return db[iso];
+  }
+  function dayHasData(iso) {
+    var d = db[iso];
+    if (!d) return false;
+    if (d.mealPattern) return true;
+    if (d.meals.some(function(m){ return m.time || m.desc; })) return true;
+    if (d.extraDrinks) return true;
+    if (Object.keys(d.supplements).some(function(k){ return d.supplements[k]; })) return true;
+    if (d.supplementOther) return true;
+    var m = d.meds;
+    if (m.pregabalin.some(Boolean) || m.tylenol.some(Boolean) || m.duloxetine || m.aripiprazole || m.mometasone || m.jublia || m.other) return true;
+    if (d.bms && d.bms.length) return true;
+    if (d.appetite || d.pain || d.sleep || d.energy || d.skin || d.weight) return true;
+    if (d.otherNotes) return true;
+    return false;
+  }
+
+  var curIndex = 0;
+
+  // ---------- render: static per-day rows ----------
+  var mealRowsEl = document.getElementById('mealRows');
+  for (var i = 0; i < 5; i++) {
+    var row = document.createElement('div');
+    row.className = 'meal-row';
+    row.innerHTML =
+      '<div class="meal-idx">' + (i+1) + '</div>' +
+      '<input type="time" data-meal="' + i + '" data-f="time">' +
+      '<input type="text" data-meal="' + i + '" data-f="desc" placeholder="Meal / snack ' + (i+1) + ' description">';
+    mealRowsEl.appendChild(row);
+  }
+
+  var suppRowEl = document.getElementById('supplementRow');
+  SUPPLEMENTS.forEach(function (s) {
+    var b = document.createElement('button');
+    b.className = 'chip';
+    b.dataset.key = s.key;
+    b.textContent = s.label;
+    suppRowEl.appendChild(b);
+  });
+
+  var painRowEl = document.getElementById('painRow');
+  for (var p = 1; p <= 10; p++) {
+    var pb = document.createElement('button');
+    pb.className = 'chip small';
+    pb.dataset.val = p;
+    pb.textContent = p;
+    painRowEl.appendChild(pb);
+  }
+
+  var dotsEl = document.getElementById('dayDots');
+  DAYS.forEach(function (d, idx) {
+    var b = document.createElement('button');
+    b.textContent = d.n;
+    b.dataset.idx = idx;
+    dotsEl.appendChild(b);
+  });
+
+  // ---------- bowel movement rows ----------
+  var bmListEl = document.getElementById('bmList');
+  function renderBms(day) {
+    bmListEl.innerHTML = '';
+    day.bms.forEach(function (bm, idx) {
+      var el = document.createElement('div');
+      el.className = 'bm-entry';
+      var bristolChips = '';
+      for (var b = 1; b <= 7; b++) {
+        bristolChips += '<button class="chip small bristol-chip' + (bm.bristol === b ? ' selected' : '') + '" data-idx="' + idx + '" data-val="' + b + '">' + b + '</button>';
+      }
+      el.innerHTML =
+        '<div class="bm-top">' +
+          '<input type="time" class="bm-time" data-idx="' + idx + '" value="' + (bm.time || '') + '">' +
+          '<button class="bm-remove" data-idx="' + idx + '">Remove</button>' +
+        '</div>' +
+        '<div class="field-label" style="margin-top:0;">Bristol type</div>' +
+        '<div class="bristol-row">' + bristolChips + '</div>' +
+        '<div class="field-label">Intensity</div>' +
+        '<div class="chip-row">' +
+          ['violent','moderate','calm'].map(function (v) {
+            return '<button class="chip intensity-chip' + (bm.intensity === v ? ' selected' : '') + '" data-idx="' + idx + '" data-val="' + v + '">' + v.charAt(0).toUpperCase() + v.slice(1) + '</button>';
+          }).join('') +
+        '</div>' +
+        '<div class="field-label">Notes <span style="font-weight:400;">(nocturnal? urgency?)</span></div>' +
+        '<input type="text" class="bm-notes" data-idx="' + idx + '" value="' + escapeAttr(bm.notes || '') + '">';
+      bmListEl.appendChild(el);
+    });
+
+    bmListEl.querySelectorAll('.bm-time').forEach(function (inp) {
+      inp.addEventListener('input', function () { day.bms[+this.dataset.idx].time = this.value; saveDb(); });
+    });
+    bmListEl.querySelectorAll('.bm-notes').forEach(function (inp) {
+      inp.addEventListener('input', function () { day.bms[+this.dataset.idx].notes = this.value; saveDb(); });
+    });
+    bmListEl.querySelectorAll('.bm-remove').forEach(function (btn) {
+      btn.addEventListener('click', function () { day.bms.splice(+this.dataset.idx, 1); renderBms(day); saveDb(); });
+    });
+    bmListEl.querySelectorAll('.bristol-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        day.bms[+this.dataset.idx].bristol = +this.dataset.val;
+        renderBms(day); saveDb();
+      });
+    });
+    bmListEl.querySelectorAll('.intensity-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        day.bms[+this.dataset.idx].intensity = this.dataset.val;
+        renderBms(day); saveDb();
+      });
+    });
+  }
+  document.getElementById('bmAdd').addEventListener('click', function () {
+    var day = getDay(DAYS[curIndex].iso);
+    day.bms.push({ time:'', bristol:null, intensity:'', notes:'' });
+    renderBms(day);
+    saveDb();
+  });
+
+  function escapeAttr(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ---------- load a day into the form ----------
+  function renderDay() {
+    var d = DAYS[curIndex];
+    document.getElementById('dayNum').textContent = d.n;
+    document.getElementById('dayDate').textContent = d.label;
+    document.getElementById('prevDay').disabled = curIndex === 0;
+    document.getElementById('nextDay').disabled = curIndex === DAYS.length - 1;
+
+    var day = getDay(d.iso);
+
+    // meal pattern
+    document.querySelectorAll('#mealPatternRow .chip').forEach(function (c) {
+      c.classList.toggle('selected', c.dataset.val === day.mealPattern);
+    });
+    var otherInput = document.getElementById('mealPatternOther');
+    otherInput.style.display = day.mealPattern === 'other' ? 'block' : 'none';
+    otherInput.value = day.mealPatternOther;
+
+    // meals
+    mealRowsEl.querySelectorAll('input').forEach(function (inp) {
+      var idx = +inp.dataset.meal, f = inp.dataset.f;
+      inp.value = day.meals[idx][f];
+    });
+    document.getElementById('extraDrinks').value = day.extraDrinks;
+
+    // supplements
+    suppRowEl.querySelectorAll('.chip').forEach(function (c) {
+      c.classList.toggle('selected', !!day.supplements[c.dataset.key]);
+    });
+    document.getElementById('supplementOther').value = day.supplementOther;
+
+    // meds
+    document.querySelectorAll('#pregabalinDoses .dose-chip').forEach(function (c) {
+      c.classList.toggle('selected', day.meds.pregabalin[+c.dataset.i]);
+    });
+    document.getElementById('pregabalinTime0').value = day.meds.pregabalinTimes[0];
+    document.getElementById('pregabalinTime1').value = day.meds.pregabalinTimes[1];
+    document.querySelectorAll('#tylenolDoses .dose-chip').forEach(function (c) {
+      c.classList.toggle('selected', day.meds.tylenol[+c.dataset.i]);
+    });
+    document.getElementById('tylenolTime0').value = day.meds.tylenolTimes[0];
+    document.getElementById('tylenolTime1').value = day.meds.tylenolTimes[1];
+    document.getElementById('tylenolTime2').value = day.meds.tylenolTimes[2];
+    document.getElementById('med_duloxetine').classList.toggle('selected', day.meds.duloxetine);
+    document.getElementById('med_aripiprazole').classList.toggle('selected', day.meds.aripiprazole);
+    document.getElementById('med_mometasone').classList.toggle('selected', day.meds.mometasone);
+    document.getElementById('med_jublia').classList.toggle('selected', day.meds.jublia);
+    document.getElementById('medOther').value = day.meds.other;
+
+    renderBms(day);
+
+    // symptoms
+    document.querySelectorAll('#appetiteRow .chip').forEach(function (c) { c.classList.toggle('selected', c.dataset.val === day.appetite); });
+    document.querySelectorAll('#painRow .chip').forEach(function (c) { c.classList.toggle('selected', +c.dataset.val === day.pain); });
+    document.querySelectorAll('#sleepRow .chip').forEach(function (c) { c.classList.toggle('selected', c.dataset.val === day.sleep); });
+    document.querySelectorAll('#energyRow .chip').forEach(function (c) { c.classList.toggle('selected', c.dataset.val === day.energy); });
+    document.querySelectorAll('#skinRow .chip').forEach(function (c) { c.classList.toggle('selected', c.dataset.val === day.skin); });
+    document.getElementById('weightVal').value = day.weight;
+    document.querySelectorAll('#weightUnit button').forEach(function (b) { b.classList.toggle('selected', b.dataset.val === day.weightUnit); });
+
+    document.getElementById('otherNotes').value = day.otherNotes;
+
+    renderDots();
+    window.scrollTo(0, 0);
+  }
+
+  function renderDots() {
+    dotsEl.querySelectorAll('button').forEach(function (b) {
+      var idx = +b.dataset.idx;
+      b.classList.toggle('active', idx === curIndex);
+      b.classList.toggle('filled', idx !== curIndex && dayHasData(DAYS[idx].iso));
+    });
+  }
+
+  // ---------- event wiring ----------
+  document.getElementById('prevDay').addEventListener('click', function () { if (curIndex > 0) { curIndex--; renderDay(); } });
+  document.getElementById('nextDay').addEventListener('click', function () { if (curIndex < DAYS.length - 1) { curIndex++; renderDay(); } });
+  dotsEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    curIndex = +btn.dataset.idx;
+    renderDay();
+  });
+
+  document.getElementById('mealPatternRow').addEventListener('click', function (e) {
+    var btn = e.target.closest('.chip'); if (!btn) return;
+    var day = getDay(DAYS[curIndex].iso);
+    day.mealPattern = day.mealPattern === btn.dataset.val ? '' : btn.dataset.val;
+    renderDay(); saveDb();
+  });
+  document.getElementById('mealPatternOther').addEventListener('input', function () {
+    getDay(DAYS[curIndex].iso).mealPatternOther = this.value; saveDb();
+  });
+
+  mealRowsEl.addEventListener('input', function (e) {
+    var inp = e.target.closest('input'); if (!inp) return;
+    var day = getDay(DAYS[curIndex].iso);
+    day.meals[+inp.dataset.meal][inp.dataset.f] = inp.value;
+    saveDb();
+  });
+  document.getElementById('extraDrinks').addEventListener('input', function () {
+    getDay(DAYS[curIndex].iso).extraDrinks = this.value; saveDb();
+  });
+
+  suppRowEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('.chip'); if (!btn) return;
+    var day = getDay(DAYS[curIndex].iso);
+    var k = btn.dataset.key;
+    day.supplements[k] = !day.supplements[k];
+    btn.classList.toggle('selected', day.supplements[k]);
+    saveDb();
+  });
+  document.getElementById('supplementOther').addEventListener('input', function () {
+    getDay(DAYS[curIndex].iso).supplementOther = this.value; saveDb();
+  });
+
+  function wireDoseChips(containerId, medKey) {
+    document.querySelectorAll('#' + containerId + ' .dose-chip').forEach(function (c) {
+      c.addEventListener('click', function () {
+        var day = getDay(DAYS[curIndex].iso);
+        var i = +this.dataset.i;
+        day.meds[medKey][i] = !day.meds[medKey][i];
+        this.classList.toggle('selected', day.meds[medKey][i]);
+        saveDb();
+      });
+    });
+  }
+  wireDoseChips('pregabalinDoses', 'pregabalin');
+  wireDoseChips('tylenolDoses', 'tylenol');
+
+  ['pregabalinTime0','pregabalinTime1'].forEach(function (id, i) {
+    document.getElementById(id).addEventListener('input', function () {
+      getDay(DAYS[curIndex].iso).meds.pregabalinTimes[i] = this.value; saveDb();
+    });
+  });
+  ['tylenolTime0','tylenolTime1','tylenolTime2'].forEach(function (id, i) {
+    document.getElementById(id).addEventListener('input', function () {
+      getDay(DAYS[curIndex].iso).meds.tylenolTimes[i] = this.value; saveDb();
+    });
+  });
+  [['med_duloxetine','duloxetine'],['med_aripiprazole','aripiprazole'],['med_mometasone','mometasone'],['med_jublia','jublia']].forEach(function (pair) {
+    document.getElementById(pair[0]).addEventListener('click', function () {
+      var day = getDay(DAYS[curIndex].iso);
+      day.meds[pair[1]] = !day.meds[pair[1]];
+      this.classList.toggle('selected', day.meds[pair[1]]);
+      saveDb();
+    });
+  });
+  document.getElementById('medOther').addEventListener('input', function () {
+    getDay(DAYS[curIndex].iso).meds.other = this.value; saveDb();
+  });
+
+  function wireSingleChoice(containerId, field, parse) {
+    document.getElementById(containerId).addEventListener('click', function (e) {
+      var btn = e.target.closest('.chip'); if (!btn) return;
+      var day = getDay(DAYS[curIndex].iso);
+      var val = parse ? parse(btn.dataset.val) : btn.dataset.val;
+      day[field] = day[field] === val ? (parse ? null : '') : val;
+      document.querySelectorAll('#' + containerId + ' .chip').forEach(function (c) {
+        c.classList.toggle('selected', c === btn && day[field] !== (parse ? null : ''));
+      });
+      saveDb();
+    });
+  }
+  wireSingleChoice('appetiteRow', 'appetite');
+  wireSingleChoice('painRow', 'pain', function (v) { return +v; });
+  wireSingleChoice('sleepRow', 'sleep');
+  wireSingleChoice('energyRow', 'energy');
+  wireSingleChoice('skinRow', 'skin');
+
+  document.getElementById('weightVal').addEventListener('input', function () {
+    getDay(DAYS[curIndex].iso).weight = this.value; saveDb();
+  });
+  document.getElementById('weightUnit').addEventListener('click', function (e) {
+    var btn = e.target.closest('button'); if (!btn) return;
+    var day = getDay(DAYS[curIndex].iso);
+    day.weightUnit = btn.dataset.val;
+    document.querySelectorAll('#weightUnit button').forEach(function (b) { b.classList.toggle('selected', b === btn); });
+    saveDb();
+  });
+
+  document.getElementById('otherNotes').addEventListener('input', function () {
+    getDay(DAYS[curIndex].iso).otherNotes = this.value; saveDb();
+  });
+
+  // ---------- screens ----------
+  function openScreen(id) { document.getElementById(id).classList.add('open'); }
+  function closeScreen(id) { document.getElementById(id).classList.remove('open'); }
+
+  document.getElementById('infoBtn').addEventListener('click', function () { openScreen('infoScreen'); });
+  document.getElementById('closeInfo').addEventListener('click', function () { closeScreen('infoScreen'); });
+
+  document.getElementById('navToday').addEventListener('click', function () {
+    closeScreen('exportScreen'); closeScreen('backupScreen');
+    setActiveNav('navToday');
+  });
+  document.getElementById('navExport').addEventListener('click', function () {
+    buildExport(); openScreen('exportScreen'); setActiveNav('navExport');
+  });
+  document.getElementById('closeExport').addEventListener('click', function () { closeScreen('exportScreen'); setActiveNav('navToday'); });
+  document.getElementById('navBackup').addEventListener('click', function () { openScreen('backupScreen'); setActiveNav('navBackup'); });
+  document.getElementById('closeBackup').addEventListener('click', function () { closeScreen('backupScreen'); setActiveNav('navToday'); });
+
+  function setActiveNav(id) {
+    document.querySelectorAll('nav.bottom button').forEach(function (b) { b.classList.toggle('active', b.id === id); });
+  }
+
+  document.getElementById('printBtn').addEventListener('click', function () { window.print(); });
+
+  function buildExport() {
+    var out = document.getElementById('exportContent');
+    var html = '';
+    var any = false;
+    DAYS.forEach(function (d) {
+      if (!dayHasData(d.iso)) return;
+      any = true;
+      var day = db[d.iso];
+      html += '<div class="export-day"><h3>Day ' + d.n + ' — ' + d.label + '</h3>';
+
+      var patternLabel = day.mealPattern === '3' ? '3 regular meals' : day.mealPattern === '5' ? '5 small meals' : day.mealPattern === 'other' ? ('Other: ' + escapeHtml(day.mealPatternOther)) : '';
+      if (patternLabel) html += '<div class="row"><b>Meal pattern:</b> ' + patternLabel + '</div>';
+
+      day.meals.forEach(function (m, i) {
+        if (m.time || m.desc) html += '<div class="row"><b>Meal ' + (i+1) + (m.time ? ' (' + m.time + ')' : '') + ':</b> ' + escapeHtml(m.desc) + '</div>';
+      });
+      if (day.extraDrinks) html += '<div class="row"><b>Extra/drinks:</b> ' + escapeHtml(day.extraDrinks) + '</div>';
+
+      var supps = SUPPLEMENTS.filter(function (s) { return day.supplements[s.key]; }).map(function (s) { return s.label; });
+      if (day.supplementOther) supps.push(day.supplementOther);
+      if (supps.length) html += '<div class="row"><b>Supplements:</b> ' + escapeHtml(supps.join(', ')) + '</div>';
+
+      var medsTaken = [];
+      var pregTaken = day.meds.pregabalin.map(function(v,i){return v ? ('dose '+(i+1)+(day.meds.pregabalinTimes[i]?(' @'+day.meds.pregabalinTimes[i]):'')) : null;}).filter(Boolean);
+      if (pregTaken.length) medsTaken.push('Pregabalin ' + pregTaken.join(', '));
+      var tylTaken = day.meds.tylenol.map(function(v,i){return v ? ('dose '+(i+1)+(day.meds.tylenolTimes[i]?(' @'+day.meds.tylenolTimes[i]):'')) : null;}).filter(Boolean);
+      if (tylTaken.length) medsTaken.push('Tylenol+Codeine ' + tylTaken.join(', '));
+      if (day.meds.duloxetine) medsTaken.push('Duloxetine');
+      if (day.meds.aripiprazole) medsTaken.push('Aripiprazole');
+      if (day.meds.mometasone) medsTaken.push('Mometasone cream');
+      if (day.meds.jublia) medsTaken.push('Jublia');
+      if (day.meds.other) medsTaken.push(day.meds.other);
+      if (medsTaken.length) html += '<div class="row"><b>Medications:</b> ' + escapeHtml(medsTaken.join('; ')) + '</div>';
+
+      (day.bms || []).forEach(function (bm, i) {
+        html += '<div class="row"><b>BM ' + (i+1) + ':</b> ' + (bm.time || '—') + ', Bristol ' + (bm.bristol || '—') + ', ' + (bm.intensity || '—') + (bm.notes ? (' — ' + escapeHtml(bm.notes)) : '') + '</div>';
+      });
+
+      var sym = [];
+      if (day.appetite) sym.push('Appetite: ' + day.appetite);
+      if (day.pain !== null && day.pain !== undefined && day.pain !== '') sym.push('Pain: ' + day.pain + '/10');
+      if (day.sleep) sym.push('Sleep: ' + day.sleep);
+      if (day.energy) sym.push('Energy: ' + day.energy);
+      if (day.skin) sym.push('Skin: ' + day.skin);
+      if (day.weight) sym.push('Weight: ' + day.weight + ' ' + day.weightUnit);
+      if (sym.length) html += '<div class="row"><b>Symptoms:</b> ' + escapeHtml(sym.join(', ')) + '</div>';
+
+      if (day.otherNotes) html += '<div class="row"><b>Notes:</b> ' + escapeHtml(day.otherNotes) + '</div>';
+
+      html += '</div>';
+    });
+    out.innerHTML = any ? html : '<div class="export-empty">No entries yet. Fill in a day from the Log tab and it will appear here, ready to print or save as a PDF for your dietitian.</div>';
+  }
+
+  // ---------- backup ----------
+  document.getElementById('exportJson').addEventListener('click', function () {
+    var blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'gut-log-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importJsonBtn').addEventListener('click', function () {
+    document.getElementById('importJsonFile').click();
+  });
+  document.getElementById('importJsonFile').addEventListener('change', function (e) {
+    var file = e.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var parsed = JSON.parse(reader.result);
+        db = parsed || {};
+        saveDb();
+        renderDay();
+        alert('Backup restored.');
+      } catch (err) {
+        alert('That file could not be read as a backup.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+  document.getElementById('clearAllBtn').addEventListener('click', function () {
+    if (confirm('Erase every entry on this device? This cannot be undone — download a backup first if you want to keep it.')) {
+      db = {};
+      saveDb();
+      renderDay();
+    }
+  });
+
+  // ---------- boot ----------
+  curIndex = findClosestDayIndex();
+  renderDay();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('service-worker.js').catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

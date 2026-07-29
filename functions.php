@@ -13,6 +13,7 @@ require_once get_stylesheet_directory() . '/inc/desk-menu.php';
 require_once get_stylesheet_directory() . '/inc/games-leaderboard.php';
 require_once get_stylesheet_directory() . '/inc/bq-ghost.php';
 require_once get_stylesheet_directory() . '/inc/pwa.php';
+require_once get_stylesheet_directory() . '/inc/gut-log.php';
 require_once get_stylesheet_directory() . '/inc/daily-quote.php';
 require_once get_stylesheet_directory() . '/inc/agent-role.php';
 require_once get_stylesheet_directory() . '/inc/agent-password-page.php';
