@@ -34,3 +34,4 @@ service-account*.json
 
 # Python bytecode cache
 __pycache__/
+_to_delete/
