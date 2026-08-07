@@ -765,6 +765,39 @@ add_action( 'wp_head', function () {
 }, 1 );
 
 /**
+ * Hidden page: the Economic Report Influence Graph (/reports-graph).
+ *
+ * A separate project of Thomas's — a 3D map of which official reports
+ * are calculated from which others (Vite + React + three.js) — built
+ * as a static bundle and dropped into assets/report-graph/. Served
+ * whole via the same parse_request interception the Bing token uses:
+ * no WP page exists, so it appears in no menu, no sitemap and no
+ * search index; the bundle's index.html also carries a robots
+ * noindex meta, and the X-Robots-Tag header below backs it up.
+ *
+ * Unlisted by design — reachable only by the direct URL
+ * https://thomascheesman.ca/reports-graph. To update it: in the graph
+ * repo (Reports Clustering), run
+ *   npx vite build --base=/wp-content/themes/tc-ventures-child-theme/assets/report-graph/ --outDir=dist-wp
+ * then replace assets/report-graph/ with dist-wp/ wholesale (the JS
+ * filename is content-hashed, so no cache-busting worries).
+ */
+add_action( 'parse_request', function () {
+    $req  = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
+    $path = strtolower( strtok( $req, '?' ) );
+    if ( $path === '/reports-graph' || $path === '/reports-graph/' ) {
+        $file = get_stylesheet_directory() . '/assets/report-graph/index.html';
+        if ( is_readable( $file ) ) {
+            status_header( 200 );
+            header( 'Content-Type: text/html; charset=UTF-8' );
+            header( 'X-Robots-Tag: noindex, nofollow' );
+            readfile( $file );
+            exit;
+        }
+    }
+}, 0 );
+
+/**
  * Legacy-URL recovery (review finding: Google's index still holds the
  * OLD site's URLs — all 404 today, including the Rycroft naming post
  * that ranked #1 for Rycroft pioneer queries). 301 the three known
