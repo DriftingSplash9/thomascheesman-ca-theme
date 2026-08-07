@@ -23,7 +23,7 @@ The site is **live** at https://thomascheesman.ca (staging hostname previously: 
 
 ## ⭐ Hard rules (memorize)
 
-1. **Commit-and-push is pre-authorized on THIS project (TC).** Thomas has standing authorization (granted 2026-06-06) to commit + push each finished unit of work without asking first — do it when the work is ready, with a clear message. **This is TC-specific; it does NOT carry to BYR / GPRS**, where the cross-site rule still holds (propose + wait). Even with auto-push on: **stage explicit paths — never `git add .`** (the tree holds unrelated changes + loose `sk_*.html` research scrapes that must never be swept in), and don't push half-finished or unreviewed-risky work — finish the unit first.
+1. **Commit-and-push is pre-authorized on this project (TC)** — granted 2026-06-06. **As of 2026-08-04 this also carries to BYR and GPRS**, whose own `AGENTS.md` files were updated the same way (propose-and-wait was slowing work down without catching a real problem across ~50 hours of site work). Commit + push each finished unit of work without asking first, with a clear message. Even with auto-push on: **stage explicit paths — never `git add .`** (the tree holds unrelated changes + loose `sk_*.html` research scrapes that must never be swept in), and don't push half-finished or unreviewed-risky work — finish the unit first.
 2. **Bump `style.css` `Version:`** on every commit that touches theme code. Patch increment. Pure docs / `.gitignore`-only commits don't bump. **Bump it with the Edit tool, never `sed`** (`sed -i` rewrites all line endings → a phantom multi-thousand-line CRLF diff).
 3. **Never use `object-fit: cover`** — always `contain`.
 4. **The desk menu (`inc/desk-menu.php` + `assets/js/desk-menu.js`) AND the drawer footer (`footer.php` + `assets/css/desk-drawer.css`) are BHAG-tier surfaces.** Plan + propose before changes; don't freelance.
@@ -37,7 +37,7 @@ The site is **live** at https://thomascheesman.ca (staging hostname previously: 
 - **Commits**: imperative subject, body explains the *why*. Co-author footer:
   `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
 - **Branches**: feature branches optional; main is the deploy branch.
-- **Session handoffs**: at the end of a meaningful session, write the next-numbered `V0.*.md` at repo root (V0.18 is the latest as of this writing). Use the most recent V0.*.md as the template — it carries current state and the open task list.
+- **Session handoffs**: at the end of a meaningful session, write the next-numbered `V0.*.md` at repo root. Use the highest-numbered existing `V0.*.md` as the template — it carries current state and the open task list. (Don't hardcode a specific number here — it goes stale immediately; check the folder.)
 - **Deep references**: anything that warrants its own doc lives in `docs/`. CLAUDE.md points to them by filename.
 
 ## Where to find what
