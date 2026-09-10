@@ -151,6 +151,7 @@
                 </button>
                 <div class="tc-headnav__drawer" id="hn-elsewhere">
                     <ul>
+                        <li><a href="<?php echo esc_url( home_url( '/projects' ) ); ?>"<?php echo is_page( 'projects' ) ? ' aria-current="page"' : ''; ?>>Projects</a></li>
                         <li><a href="https://bareyourrare.org" target="_blank" rel="noopener noreferrer">Bare Your Rare <span class="tc-headnav__ext" aria-hidden="true">&#x2197;</span></a></li>
                         <li><a href="https://www.gpresidentialsociety.com" target="_blank" rel="noopener noreferrer">GPRS <span class="tc-headnav__ext" aria-hidden="true">&#x2197;</span></a></li>
                         <li><a href="https://tc-timeline.vercel.app/" target="_blank" rel="noopener noreferrer">My whole life <span class="tc-headnav__ext" aria-hidden="true">&#x2197;</span></a></li>

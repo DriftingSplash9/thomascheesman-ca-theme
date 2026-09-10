@@ -408,6 +408,19 @@ function tc_ventures_enqueue_scripts() {
         );
     }
 
+    // Projects page (/projects, page-projects.php). Per-entry furniture
+    // only — the meta line, screenshot pair, spec table and the rocket
+    // descent diagram. The prose keeps the shared .about-section chrome
+    // from style.css, so this file stays small and page-local.
+    if ( is_page( 'projects' ) ) {
+        wp_enqueue_style(
+            'tc-projects',
+            get_stylesheet_directory_uri() . '/assets/css/projects.css',
+            array( 'astra-child-style' ),
+            $tc_theme_ver
+        );
+    }
+
     // The Lanterns of Record — the converging-families map at /map
     // (page-map.php; spec at docs/CONVERGING-MAP-SPEC.md). D3 + the
     // topojson client (CDN, pinned) and the map engine load ONLY on

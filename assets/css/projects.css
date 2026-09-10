@@ -1,0 +1,294 @@
+/* ============================================
+   PROJECTS PAGE  —  /projects (page-projects.php)
+   ============================================
+   Loaded only on the Projects page (conditional enqueue in
+   functions.php). Everything here is furniture the essay chrome in
+   style.css does not already provide: the meta line above each title,
+   the screenshot pair, the spec table, and the rocket descent diagram.
+   Prose keeps .about-section's styling — this file does not touch it.
+
+   Per-entry accent: each .project-entry sets --project-accent and every
+   accented part inside it (status dot, rubric headings, button, link
+   underline, diagram strokes) reads that one variable. A third project
+   is one modifier rule and nothing else.
+
+   The monospace stack is scoped to this page rather than added to
+   :root. Data — corpus counts, terminal velocities, altitudes — is set
+   in mono with tabular figures so the spec columns line up. Nothing
+   else on the site wants mono.
+*/
+
+.project-entry {
+    --project-accent: var(--primary-color);
+    --project-mono: ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+    --project-hairline: rgba(148, 163, 184, 0.16);
+}
+
+/* Instrument amber. Warm enough to separate from the site cyan at a
+   glance, desaturated enough not to fight it on the same scroll. */
+.project-entry--rocket {
+    --project-accent: #F0A93E;
+}
+
+/* ---- Intro ---- */
+
+.projects-intro {
+    max-width: 62ch;
+}
+
+/* ---- Meta line + title ---- */
+
+.project-entry__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 22px;
+    margin: 0 0 12px 0;
+    font-family: var(--project-mono);
+    font-size: 12px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--text-light);
+}
+
+/* A lit dot reads as "state" faster than a bordered chip, and adds no
+   box to an already dense meta row. */
+.project-entry__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--text-dark);
+}
+
+.project-entry__status::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--project-accent);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+.project-entry__title {
+    text-wrap: balance;
+}
+
+/* ---- Lead and body ---- */
+
+.project-entry__lead,
+.project-entry__body {
+    max-width: 64ch;
+}
+
+.project-entry__lead {
+    margin-bottom: clamp(28px, 4vw, 44px);
+}
+
+.project-entry__lead p {
+    font-size: clamp(1.05rem, 1.9vw, 1.2rem);
+}
+
+.project-entry__body {
+    margin-top: clamp(28px, 4vw, 44px);
+}
+
+/* Rubric headings are labels, not titles — mono and small, so they mark
+   the turn in the argument without competing with the entry title. */
+.project-entry__rubric {
+    margin: 2em 0 0.9em 0;
+    font-family: var(--project-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--project-accent);
+}
+
+.project-entry__body > .project-entry__rubric:first-child {
+    margin-top: 0;
+}
+
+/* ---- Screenshots ---- */
+
+.project-entry__shots {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 26px;
+}
+
+@media (min-width: 880px) {
+    /* Uneven split on purpose: the wide "everything" shot carries the
+       entry, the filtered shot is supporting evidence beside it. */
+    .project-entry__shots {
+        grid-template-columns: 1.55fr 1fr;
+        align-items: start;
+    }
+}
+
+.project-entry__figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.project-entry__figure--wide {
+    margin-top: clamp(28px, 4vw, 44px);
+}
+
+.project-entry__figure img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    /* object-fit stays contain per the theme rule — these are whole
+       screenshots and must never be cropped. */
+    object-fit: contain;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: var(--radius);
+}
+
+.project-entry__caption {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text-light);
+    max-width: 66ch;
+}
+
+/* ---- Open-the-graph button ---- */
+
+.project-entry__cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+    margin: clamp(24px, 3vw, 34px) 0 0 0;
+}
+
+.project-entry__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 22px;
+    border: 1px solid var(--project-accent);
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--project-accent);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.project-entry__button:hover,
+.project-entry__button:focus-visible {
+    background: var(--project-accent);
+    color: var(--bg-base);
+    text-decoration: none;
+}
+
+.project-entry__cta-note {
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+/* ---- The descent diagram ---- */
+
+/* The SVG needs about 620px before its labels start colliding, so on a
+   phone it scrolls sideways inside its own box rather than shrinking the
+   type to nothing or pushing the page body wide. */
+.project-entry__scroller {
+    overflow-x: auto;
+    background: var(--bg-card);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: var(--radius);
+}
+
+.rl-diagram {
+    display: block;
+    width: 100%;
+    min-width: 620px;
+    height: auto;
+}
+
+.rl-axis { stroke: rgba(148, 163, 184, 0.35); stroke-width: 1; }
+.rl-grid { stroke: rgba(148, 163, 184, 0.16); stroke-width: 1; stroke-dasharray: 3 5; }
+.rl-commit { stroke: var(--project-accent); stroke-width: 1; stroke-dasharray: 5 5; opacity: 0.75; }
+.rl-sea { stroke: rgba(148, 163, 184, 0.4); stroke-width: 1.5; }
+.rl-sea--deck { opacity: 0.6; }
+.rl-path { fill: none; stroke: var(--project-accent); stroke-width: 2; }
+.rl-burn { fill: none; stroke: var(--project-accent); stroke-width: 3.5; }
+.rl-ship { fill: #C9D2E0; }
+.rl-barge { fill: #1A2231; stroke: rgba(148, 163, 184, 0.35); stroke-width: 1; }
+
+.rl-label {
+    font-family: var(--project-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    fill: var(--text-light);
+}
+
+.rl-label--key { fill: var(--text-dark); }
+.rl-label--hot { fill: var(--project-accent); }
+
+.rl-tick {
+    font-family: var(--project-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    fill: rgba(148, 163, 184, 0.75);
+}
+
+/* ---- Spec table ---- */
+
+.project-entry__spec {
+    margin: clamp(30px, 4vw, 44px) 0 0 0;
+    border-top: 1px solid var(--project-hairline);
+}
+
+.project-entry__spec > div {
+    display: grid;
+    grid-template-columns: minmax(140px, 200px) 1fr;
+    gap: 8px 24px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--project-hairline);
+}
+
+.project-entry__spec dt {
+    margin: 0;
+    padding-top: 0.15em;
+    font-family: var(--project-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-light);
+}
+
+.project-entry__spec dd {
+    margin: 0;
+    font-family: var(--project-mono);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dark);
+}
+
+@media (max-width: 560px) {
+    .project-entry__spec > div {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+}
+
+/* ---- Repo line ---- */
+
+.project-entry__repo {
+    margin: 22px 0 0 0;
+    font-family: var(--project-mono);
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+/* ---- Closing note ---- */
+
+.project-coda p {
+    max-width: 64ch;
+}
