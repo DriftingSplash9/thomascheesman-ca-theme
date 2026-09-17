@@ -791,9 +791,22 @@ add_action( 'wp_head', function () {
  * Unlisted by design — reachable only by the direct URL
  * https://thomascheesman.ca/reports-graph. To update it: in the graph
  * repo (Reports Clustering), run
+ *   npm run gen
  *   npx vite build --base=/wp-content/themes/tc-ventures-child-theme/assets/report-graph/ --outDir=dist-wp
  * then replace assets/report-graph/ with dist-wp/ wholesale (the JS
  * filename is content-hashed, so no cache-busting worries).
+ *
+ * Three things that are easy to get wrong, learned 2026-09-16:
+ *  1. `npm run gen` FIRST. The corpus now lives in corpus-data.json, which
+ *     gen writes and vite copies; skip it and you ship yesterday's data or
+ *     no data at all.
+ *  2. corpus-data.json is ~11 MB and must land beside index.html. The
+ *     bundle fetches it from BASE_URL, so it only resolves if the --base
+ *     above matches where the files actually sit.
+ *  3. The noindex meta below is NOT in the graph repo's index.html — it has
+ *     always been added by hand to the deployed copy, so every rebuild drops
+ *     it. Re-add it, or the X-Robots-Tag header here is the only thing
+ *     keeping this page out of the index.
  */
 add_action( 'parse_request', function () {
     $req  = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
