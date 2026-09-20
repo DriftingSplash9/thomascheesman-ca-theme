@@ -1415,8 +1415,8 @@
 		if ( ! hudEl ) return;
 		hudEl.hidden = false;
 		var txt = ( TOUCH
-			? '3D beta · left thumb drives · HOP jumps · buttons do the rest'
-			: '3D beta · WASD drives · Space jumps · L/R Shift flips · H honks · Enter steps inside' )
+			? 'left thumb drives · HOP jumps · buttons do the rest'
+			: 'WASD drives · Space jumps · L/R Shift flips · H honks · Enter steps inside' )
 			+ ' · ⛁ ' + tokenFound + '/' + tokenCount;
 		if ( lap.active ) {
 			txt += ' · ⏱ ' + fmtLap( lap.t );

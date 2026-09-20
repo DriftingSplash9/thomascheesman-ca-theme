@@ -8,7 +8,66 @@ get_header(); ?>
 
 <main id="primary" class="site-main">
     
-    <!-- HERO SECTION -->
+    <!-- THE BACK QUARTER — the front door. Promoted from mid-page to the
+         top of the homepage 2026-09-19; spec: docs/HERO-PROMOTION-SPEC.md.
+         The 3D world is the default and THE PAINTED MAP is the fallback
+         (phones, no-WebGL, or a failed engine load). Nothing heavy loads
+         until the visitor presses a button, and every destination in the
+         world is also an ordinary link in the ordinary menu. -->
+    <?php
+    // TWO IMAGES, TWO JOBS — do not collapse them.
+    //   $tc_bq_bg     the painted board. This is the PAINTED MAP'S GROUND,
+    //                 and back-quarter.js measures every landmark against
+    //                 its own 1280x720 pixel space. Swap it and the map
+    //                 sends people to the wrong buildings.
+    //   $tc_bq_poster the still a visitor sees before pressing anything.
+    //                 A frame of the 3D world, because that is what the
+    //                 button now opens. Purely a poster; no code reads it.
+    $tc_bq_bg     = 'https://thomascheesman.ca/wp-content/uploads/2026/07/6255f323-30c4-4d20-895f-c74230ed3231.jpg';
+    $tc_bq_poster = get_stylesheet_directory_uri() . '/assets/img/back-quarter-poster.webp';
+    ?>
+    <section class="bq-lede" aria-label="Welcome">
+        <div class="container">
+            <p class="bq-lede__name kinetic-fade">Thomas Cheesman</p>
+            <h1 class="hero-title bq-lede__title kinetic-text" aria-label="Chef until my hands retired me.">
+                Chef until my hands retired me.
+            </h1>
+            <p class="bq-lede__deck kinetic-fade">
+                The front door is a quarter section of Peace Country with everything on this site
+                standing on it. Drive up to a building and it opens &mdash; or take the plain way in.
+            </p>
+            <a class="bq-lede__skip" href="#bq-ledger">Skip the map &rarr;</a>
+        </div>
+    </section>
+
+    <section class="bq-section" aria-label="The Back Quarter">
+        <div class="container">
+            <div class="bq-stage" id="bq-stage" tabindex="0" role="application"
+                 data-bg="<?php echo esc_url( $tc_bq_bg ); ?>"
+                 aria-roledescription="driving mini-game"
+                 aria-label="The Back Quarter: drive a buggy around a map of this site. Decorative — every destination is also in the site menu.">
+                <img class="bq-poster" src="<?php echo esc_url( $tc_bq_poster ); ?>"
+                     width="1920" height="1080" fetchpriority="high" decoding="async" alt="" />
+                <div class="bq-preview">
+                    <p class="bq-preview__eyebrow">out past the yard light</p>
+                    <h2 class="bq-preview__title">The Back Quarter</h2>
+                    <p class="bq-preview__deck">A quarter section of everything on this site. Hop in the buggy and drive it.</p>
+                    <button type="button" class="tc-btn bq-preview__go">Start driving</button>
+                    <button type="button" class="tc-btn bq-map">Take the Painted Map</button>
+                    <p class="bq-preview__hint">W&thinsp;A&thinsp;S&thinsp;D or arrows &middot; Enter steps inside &middot; Esc hops out</p>
+                    <p class="bq-preview__note">drive up to any building to visit that corner of the site</p>
+                </div>
+                <button type="button" class="bq-fs" aria-label="Enter fullscreen">&#9974; Fullscreen</button>
+                <div class="bq-chip" hidden></div>
+                <div class="bq-hud" hidden>Esc hops out</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HERO SECTION — "the pass". Sits BELOW the Back Quarter as of
+         2026-09-19: the farm is the front door, this is the second screen.
+         Its <h1> moved up into .bq-lede (one h1 per page, and .kinetic-text
+         animates the FIRST match — a second one would sit at opacity 0). -->
     <?php
     // The hero "order ticket" cycles through these photos one at a time —
     // each one swaps in on the clip (lift + tilt + settle) via
@@ -64,9 +123,6 @@ get_header(); ?>
             <!-- LEFT: the menu, chalked on the board -->
             <div class="hero-board">
                 <p class="hero-board__name kinetic-fade">Thomas Cheesman</p>
-                <h1 class="hero-title kinetic-text" aria-label="Chef until my hands retired me.">
-                    Chef until my hands retired me.
-                </h1>
                 <p class="hero-subtitle kinetic-fade">
                     Dad of three. One of fewer than fifty people alive with Hajdu-Cheney syndrome. This is what I'm leaving behind &mdash; written while I can.
                 </p>
@@ -99,39 +155,6 @@ get_header(); ?>
                 </figure>
             </div>
 
-        </div>
-    </section>
-
-    <!-- THE BACK QUARTER — drivable-overworld BHAG, P0 walking skeleton.
-         Spec: docs/QUARTER-SECTION-SPEC.md. The stage is decorative
-         (role=application, canvas aria-hidden); every destination stays
-         reachable through the normal nav. Engine: assets/js/back-quarter.js
-         (front-page-only enqueue; Matter+Pixi lazy-load on engagement). -->
-    <?php
-    // The painted world (Grok Imagine → CapCut). One place to swap the art;
-    // JS reads it from data-bg, and it doubles as the pre-engagement preview.
-    $tc_bq_bg = 'https://thomascheesman.ca/wp-content/uploads/2026/07/6255f323-30c4-4d20-895f-c74230ed3231.jpg';
-    ?>
-    <section class="bq-section" aria-label="The Back Quarter">
-        <div class="container">
-            <div class="bq-stage" id="bq-stage" tabindex="0" role="application"
-                 data-bg="<?php echo esc_url( $tc_bq_bg ); ?>"
-                 style="background-image:url('<?php echo esc_url( $tc_bq_bg ); ?>');"
-                 aria-roledescription="driving mini-game"
-                 aria-label="The Back Quarter: drive a buggy around a map of this site. Decorative — every destination is also in the site menu.">
-                <div class="bq-preview">
-                    <p class="bq-preview__eyebrow">out past the yard light</p>
-                    <h2 class="bq-preview__title">The Back Quarter</h2>
-                    <p class="bq-preview__deck">A quarter section of everything on this site. Hop in the buggy and drive it.</p>
-                    <button type="button" class="tc-btn bq-preview__go">Start driving</button>
-                    <button type="button" class="tc-btn bq-3d" hidden>Try the 3D build (beta)</button>
-                    <p class="bq-preview__hint">W&thinsp;A&thinsp;S&thinsp;D or arrows &middot; Enter steps inside &middot; Esc hops out</p>
-                    <p class="bq-preview__note">drive up to any building to visit that corner of the site</p>
-                </div>
-                <button type="button" class="bq-fs" aria-label="Enter fullscreen">&#9974; Fullscreen</button>
-                <div class="bq-chip" hidden></div>
-                <div class="bq-hud" hidden>Esc hops out</div>
-            </div>
         </div>
     </section>
 

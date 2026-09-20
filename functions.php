@@ -226,6 +226,10 @@ function tc_ventures_enqueue_scripts() {
         // cache, so this is accurate for them; the public cached page is 0.
         'bqFamily' => ( function_exists( 'tc_user_is_family' ) && tc_user_is_family() ) ? 1 : 0,
         'threeUrl' => get_stylesheet_directory_uri() . '/assets/js/vendor/three-r128.min.js',
+        // Theme version, for scripts that are injected by hand rather than
+        // enqueued (the Back Quarter engines). Replaces the Date.now() bust
+        // those used while the 3D build was a beta — that could never cache.
+        'ver'      => wp_get_theme()->get( 'Version' ),
         // PhotoSwipe v5 ESM — SELF-HOSTED (PERF-1). main.js dynamically
         // imports the lightbox + core from the theme; no unpkg request.
         'pswpLightboxUrl' => get_stylesheet_directory_uri() . '/assets/js/vendor/photoswipe-5.4.4/photoswipe-lightbox.esm.js',

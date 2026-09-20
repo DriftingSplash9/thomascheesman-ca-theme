@@ -98,12 +98,12 @@
 			} );
 		}
 
-		if ( goBtn ) goBtn.addEventListener( 'click', engage );
+		if ( goBtn ) goBtn.addEventListener( 'click', engageDefault );
 		stage.addEventListener( 'keydown', function ( e ) {
 			if ( engaged ) return;
 			if ( e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp' ) {
 				e.preventDefault();
-				engage();
+				engageDefault();
 			}
 		} );
 
@@ -112,17 +112,50 @@
 		document.addEventListener( 'fullscreenchange', updateFsLabel );
 		document.addEventListener( 'webkitfullscreenchange', updateFsLabel );
 
-		// Path C beta door — visit /#bq3d to see the 3D build button.
-		// The 2D board stays the public experience until 3D earns the swap.
-		var btn3d = stage.querySelector( '.bq-3d' );
-		if ( btn3d ) {
-			if ( /bq3d/.test( window.location.hash ) ) btn3d.hidden = false;
-			btn3d.addEventListener( 'click', engage3d );
-		}
+		// The 3D world is the default as of 1.0.754. THE PAINTED MAP is the
+		// fallback and keeps its own button: it is what phones get, what a
+		// browser without WebGL gets, and what boots if the 3D engine fails
+		// to load. Not an old version — the version that always works.
+		var mapBtn = stage.querySelector( '.bq-map' );
+		if ( mapBtn ) mapBtn.addEventListener( 'click', engage );
+		// On a phone — or any browser without WebGL — the main button already
+		// opens the Painted Map, so a second button is the same door twice.
+		// NOTE: the hidden attribute alone loses to .tc-btn{display:inline-flex};
+		// style.css carries an explicit .bq-map[hidden] rule to win that fight.
+		if ( mapBtn && prefersPaintedMap() ) mapBtn.hidden = true;
 	} );
 
-	// Boot the 3D beta: Matter (physics) + the site's vendored Three r128
-	// (render) + the 3D module. Cache-busted with Date.now() while in beta.
+	// Which world a visitor gets when they press the one button. Phones take
+	// the Painted Map on purpose: the 3D engine is about a megabyte and a
+	// battery bill, and the painting is the same quarter section.
+	function engageDefault() {
+		if ( prefersPaintedMap() ) { engage(); return; }
+		engage3d();
+	}
+
+	function prefersPaintedMap() {
+		var touch = ( 'ontouchstart' in window ) || navigator.maxTouchPoints > 1;
+		var small = Math.min( window.innerWidth, window.innerHeight ) < 820;
+		return ( touch && small ) || ! hasWebGL();
+	}
+
+	function hasWebGL() {
+		try {
+			var c = document.createElement( 'canvas' );
+			return !! ( window.WebGLRenderingContext &&
+				( c.getContext( 'webgl' ) || c.getContext( 'experimental-webgl' ) ) );
+		} catch ( e ) { return false; }
+	}
+
+	// Cache-bust with the theme version, the same string the enqueued assets
+	// use. (It was Date.now() while 3D was a beta, which meant the engine was
+	// re-downloaded on every single visit and could never be cached.)
+	function themeVer() {
+		return ( window.tcVentures && window.tcVentures.ver ) || '1';
+	}
+
+	// Boot the 3D world: Matter (physics) + the site's vendored Three r128
+	// (render) + the 3D module.
 	function engage3d() {
 		if ( engaged ) return;
 		engaged = true;
@@ -135,12 +168,10 @@
 			.then( function () {
 				// bloom stack (EffectComposer + UnrealBloomPass) — optional:
 				// if it fails to load, the 3D module renders without bloom.
-				// Same Date.now() bust as the 3D module while in beta —
-				// browsers hold vendor files long past a LiteSpeed purge.
 				if ( window.THREE && window.THREE.ShaderPass ) return null;
-				return loadScript( base + '/assets/js/vendor/three-r128-postfx.js?cb=' + Date.now() ).catch( function () { return null; } );
+				return loadScript( base + '/assets/js/vendor/three-r128-postfx.js?ver=' + themeVer() ).catch( function () { return null; } );
 			} )
-			.then( function () { return loadScript( base + '/assets/js/back-quarter-3d.js?cb=' + Date.now() ); } )
+			.then( function () { return loadScript( base + '/assets/js/back-quarter-3d.js?ver=' + themeVer() ); } )
 			.then( function () {
 				if ( ! window.Matter || ! window.THREE || ! window.TCBackQuarter3D ) {
 					throw new Error( '3D globals missing' );
@@ -149,9 +180,12 @@
 				window.TCBackQuarter3D.boot( stage );
 			} )
 			.catch( function ( err ) {
-				console.warn( 'Back Quarter 3D failed to load.', err );
+				// Never leave a visitor looking at a dead button: fall through
+				// to the Painted Map, which needs no WebGL.
+				console.warn( 'Back Quarter 3D failed to load — falling back to the Painted Map.', err );
 				engaged = false;
-				if ( previewNote ) previewNote.textContent = '3D wouldn’t start — the 2D board still drives.';
+				if ( previewNote ) previewNote.textContent = 'raising the painted map…';
+				engage();
 			} );
 	}
 

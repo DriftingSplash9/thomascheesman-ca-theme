@@ -1,7 +1,9 @@
 # HERO-PROMOTION-SPEC.md — putting The Back Quarter at the top of the homepage
 
-> **Status:** PLAN, **decisions closed 2026-09-19** (§6). Ready to build on
-> Thomas's word. No code written yet.
+> **Status:** BUILT on disk 2026-09-19 (theme 1.0.754), **not yet pushed**.
+> Decisions are closed (§6). What shipped, the measured P0 numbers and the
+> verification list live in [`V0.42.md`](../V0.42.md) at the repo root; this
+> doc keeps the reasoning.
 > Requested 2026-09-19: *"I will make the backquarter menu at the top of the
 > homepage instead of out of view. It can be the hero can't it?"*
 >
@@ -108,9 +110,10 @@ back to A or forward to B if Thomas wants to move again.
 
 ## 5. Build order
 
-- **P0 — Measure.** Lighthouse on the homepage as it stands: LCP, total transfer,
-  and which element is LCP. Screenshot desktop and 390px. These are the numbers
-  the promotion gets judged against.
+- **P0 — Measure. DONE.** Live 1.0.753, headless, cold: LCP 2.10 s on both
+  desktop and phone, 38 requests, ~1.84 MB — and **the LCP element was
+  `SPAN.hero-ghost`**, the decorative photo behind the pass hero. Those are the
+  numbers the promotion is judged against.
 - **P1 — The board as a real asset.** Resize and convert the painted board,
   preload it, confirm the LCP element is the board and the number did not get
   worse. This ships on its own and is worth doing whatever else happens.
