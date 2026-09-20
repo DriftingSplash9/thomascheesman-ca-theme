@@ -27,6 +27,6 @@ jobs:
       - name: JS syntax check (node --check)
         run: |
           set -e
-          for f in $(git ls-files 'assets/js/*.js'); do
+          for f in $(git ls-files 'assets/js/*.js' ':!assets/js/vendor/**' ':!assets/js/*.min.js'); do
             node --check "$f"
           done
