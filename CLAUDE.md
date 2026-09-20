@@ -62,6 +62,7 @@ The site is **live** at https://thomascheesman.ca (staging hostname previously: 
 | WP 7.0 deprecations + AI notes | `docs/WORDPRESS-7.0.md` |
 | Converging-families map (planned) | `docs/CONVERGING-MAP-SPEC.md` — "Lanterns of Record" build spec (D3-geo; records-as-light; data from per-family xlsx) |
 | "The Back Quarter" homepage BHAG (approved) | `docs/QUARTER-SECTION-SPEC.md` — drivable-buggy overworld homepage build spec (Pixi + Matter; landmarks = site sections; ledger fallback). Decisions resolved §7. Read before homepage work. |
+| Promoting The Back Quarter to the top of the homepage | `docs/HERO-PROMOTION-SPEC.md` — plan only, awaiting Thomas's decisions (§6). Read before any front-page reorder. |
 
 ## Sharp edges (carried from V0.13+)
 
